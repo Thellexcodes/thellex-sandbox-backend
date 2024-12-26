@@ -1,0 +1,45 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiBody } from '@nestjs/swagger';
+import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { responseHandler } from '@/utils/helpers';
+import { LoginUserDto } from './dto/login-user.dto';
+
+@Controller('user')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Post()
+  @ApiBody({ type: CreateUserDto, description: 'Data required to create user' })
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const newUserData = this.userService.create(createUserDto);
+    responseHandler(newUserData, res, req);
+  }
+
+  @Post('login')
+  @ApiBody({ type: LoginUserDto, description: 'Data required to login user' })
+  async login(
+    @Body() loginUserDto: LoginUserDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ): Promise<any> {
+    const loginData = await this.userService.login(loginUserDto);
+    responseHandler(loginData, res, req);
+  }
+}
