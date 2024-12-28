@@ -74,6 +74,10 @@ export class UserService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const token = await this.signToken({ id: user.id });
+
+    return { token, isAuthenticated: true };
   }
 
   async findOneByEmail(email: string): Promise<UserEntity> {
@@ -93,8 +97,6 @@ export class UserService {
     //   subject: 'Verify your account',
     //   context: { code },
     // };
-
-    console.log(code);
 
     //[x] await this.mailService.sendEmailVerificationMail(emailOptions);
   }
@@ -117,10 +119,19 @@ export class UserService {
   }
 
   async signToken(payload: JwtPayload): Promise<string> {
-    const accessToken = await this.jwtService.signAsync(payload, {
-      secret: jwtConfigurations(this.configService).secret,
-      expiresIn: jwtConfigurations(this.configService).signOptions.expiresIn,
-    });
-    return accessToken;
+    return this.jwtService.signAsync(payload);
+  }
+
+  async findOneById(id: string): Promise<UserEntity> {
+    try {
+      const user = await this.userRepository
+        .createQueryBuilder('user')
+        .where('user.id = :id', { id })
+        .getOne();
+
+      return user;
+    } catch (err) {
+      console.log(err);
+    }
   }
 }

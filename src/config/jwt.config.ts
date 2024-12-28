@@ -7,7 +7,7 @@ export const jwtConfigurations = (
   return {
     secret: configService.get<string>('AUTH_JWT_SECRET'),
     signOptions: {
-      expiresIn: 60 * 60 * 24 * 30,
+      expiresIn: '30d',
     },
   };
 };

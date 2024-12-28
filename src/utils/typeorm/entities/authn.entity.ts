@@ -1,0 +1,16 @@
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { UserEntity } from './user.entity';
+
+@Entity({ name: 'authn' })
+export class AuthnEntity extends BaseEntity {
+  @ManyToOne(() => UserEntity, (user) => user.authn, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
+  user: UserEntity;
+
+  @Column({ nullable: false, unique: true })
+  challenge: string;
+
+  @Column({ nullable: true, default: false })
+  expired: boolean;
+}

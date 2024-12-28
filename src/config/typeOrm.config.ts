@@ -1,4 +1,6 @@
+import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
@@ -13,7 +15,12 @@ export const typeOrmConfig = async (
     username: configService.get<string>('POSTGRES_USER'),
     database: configService.get<string>('POSTGRES_DATABASE'),
     password: configService.get<string>('POSTGRES_PASSWORD'),
-    entities: [UserEntity, AuthVerificationCodesEntity],
+    entities: [
+      UserEntity,
+      AuthVerificationCodesEntity,
+      AuthnEntity,
+      DeviceEntity,
+    ],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     extra: {
       charset: 'utf8mb4_unicode_ci',

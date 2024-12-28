@@ -4,15 +4,21 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { typeOrmConfig } from './config/typeOrm.config';
-import { UserModule } from './user/user.module';
+import { UserModule } from './modules/user/user.module';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from './config/jwt.config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ErrorInterceptor } from './middleware/error.interceptor';
+import { AuthnController } from './modules/authn/authn.controller';
+import { AuthnService } from './modules/authn/authn.service';
+import { AuthModule } from './modules/authn/authn.module';
+import { UserService } from './modules/user/user.service';
+import { UserEntity } from './utils/typeorm/entities/user.entity';
+import { AuthnEntity } from './utils/typeorm/entities/authn.entity';
 
 @Module({
   imports: [
-    // TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, AuthnEntity]),
     TypeOrmModule.forRootAsync({
       useFactory: async (configService: ConfigService) =>
         await typeOrmConfig(configService),
@@ -29,11 +35,14 @@ import { ErrorInterceptor } from './middleware/error.interceptor';
       inject: [ConfigService],
     }),
     UserModule,
+    AuthModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthnController],
   providers: [
     AppService,
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
+    AuthnService,
+    UserService,
   ],
 })
 export class AppModule {}
