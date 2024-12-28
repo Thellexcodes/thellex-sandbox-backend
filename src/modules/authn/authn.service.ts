@@ -60,10 +60,12 @@ export class AuthnService {
       });
 
       if (verification.verified) {
-        // const { credentialID, credentialPublicKey } =
-        //   verification.registrationInfo;
-        //   console.log(base64url(credentialPublicKey))
-        //
+        const {
+          credential: { id, publicKey },
+        } = verification.registrationInfo;
+
+        console.log(base64url(id));
+
         //   db.users[userId].devices.push({
         //     credentialID: base64url(credentialID),
         //     publicKey: base64url(credentialPublicKey),
