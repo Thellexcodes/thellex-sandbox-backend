@@ -5,5 +5,24 @@
   "editor.tabSize": 2,
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#2B2B3F",
+    "activityBar.background": "#2B2B3F",
+    "activityBar.foreground": "#ffffff",
+    "activityBar.inactiveForeground": "#ffffff99",
+    "activityBarBadge.background": "#E18836",
+    "activityBarBadge.foreground": "#2B2B3F",
+    "commandCenter.border": "#E1883699",
+    "sash.hoverBorder": "#2B2B3F",
+    "statusBar.background": "#ffffff",
+    "statusBar.foreground": "#2B2B3F",
+    "statusBarItem.hoverBackground": "#2B2B3F",
+    "statusBarItem.remoteBackground": "#ffffff",
+    "statusBarItem.remoteForeground": "#2B2B3F",
+    "titleBar.activeBackground": "#2B2B3F",
+    "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveBackground": "#2B2B3F",
+    "titleBar.inactiveForeground": "#ffffff99"
   }
 }

@@ -15,10 +15,11 @@ import { AuthModule } from './modules/authn/authn.module';
 import { UserService } from './modules/user/user.service';
 import { UserEntity } from './utils/typeorm/entities/user.entity';
 import { AuthnEntity } from './utils/typeorm/entities/authn.entity';
+import { DeviceEntity } from './utils/typeorm/entities/device.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AuthnEntity]),
+    TypeOrmModule.forFeature([UserEntity, AuthnEntity, DeviceEntity]),
     TypeOrmModule.forRootAsync({
       useFactory: async (configService: ConfigService) =>
         await typeOrmConfig(configService),

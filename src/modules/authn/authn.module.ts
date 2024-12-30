@@ -8,10 +8,11 @@ import { AuthnController } from './authn.controller';
 import { AuthnService } from './authn.service';
 import { UserService } from '../user/user.service';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
+import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AuthnEntity]),
+    TypeOrmModule.forFeature([UserEntity, AuthnEntity, DeviceEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (

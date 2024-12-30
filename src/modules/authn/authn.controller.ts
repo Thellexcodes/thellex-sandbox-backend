@@ -4,7 +4,8 @@ import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { responseHandler } from '@/utils/helpers';
 import { AuthGuard } from '@/middleware/guards/local-auth-guard';
-import { VerifyRegistationDto } from './dto/verify-registeration.dto';
+import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
+import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
 
 @Controller('authn')
 export class AuthnController {
@@ -24,7 +25,7 @@ export class AuthnController {
   @UseGuards(AuthGuard)
   @ApiBody({ description: 'Verify registration response' })
   async verifyChallenge(
-    @Body() verifyRegistationDto: VerifyRegistationDto,
+    @Body() verifyRegistationDto: VerifyRegistrationDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
@@ -32,5 +33,27 @@ export class AuthnController {
       req.user,
       verifyRegistationDto,
     );
+
+    responseHandler(challenge, res, req);
+  }
+
+  @Post('auth-options')
+  @UseGuards(AuthGuard)
+  @ApiBody({ description: 'Start Authentication' })
+  async authOptions(@Req() req: CustomRequest, @Res() res: CustomResponse) {
+    const options = await this.authNService.authOptions(req.user);
+    responseHandler(options, res, req);
+  }
+
+  @Post('authenticate')
+  @UseGuards(AuthGuard)
+  @ApiBody({ description: 'Verify Authentication' })
+  async verifyAuth(
+    @Body() body: VerifyAuthenticationDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const options = await this.authNService.authenticate(req.user, body);
+    responseHandler(options, res, req);
   }
 }

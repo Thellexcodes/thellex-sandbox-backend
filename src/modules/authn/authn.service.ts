@@ -1,81 +1,251 @@
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  generateAuthenticationOptions,
+  GenerateAuthenticationOptionsOpts,
   generateRegistrationOptions,
+  GenerateRegistrationOptionsOpts,
+  verifyAuthenticationResponse,
+  VerifyAuthenticationResponseOpts,
   verifyRegistrationResponse,
+  VerifyRegistrationResponseOpts,
 } from '@simplewebauthn/server';
 import { Repository } from 'typeorm';
-import { VerifyRegistationDto } from './dto/verify-registeration.dto';
 import base64url from 'base64url';
+import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
+import { ConfigService } from '@nestjs/config';
+import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
+import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
 
 @Injectable()
 export class AuthnService {
   constructor(
     @InjectRepository(AuthnEntity)
     private readonly authnRepository: Repository<AuthnEntity>,
+
+    @InjectRepository(DeviceEntity)
+    private readonly deviceRepository: Repository<DeviceEntity>,
+
+    private configService: ConfigService,
   ) {}
 
   async createChallenge(
     user: UserEntity,
-  ): Promise<PublicKeyCredentialCreationOptionsJSON & { userId: string }> {
-    const options = await generateRegistrationOptions({
-      rpName: 'My App',
-      rpID: 'localhost',
-      userID: new Uint8Array(Buffer.from(user.id, 'utf8')),
-      userName: user.email,
-      attestationType: 'none',
-    });
+  ): Promise<
+    (PublicKeyCredentialCreationOptionsJSON & { userId: string }) | any
+  > {
+    try {
+      const rpID = this.configService.get<string>('RP_ID');
 
-    // Create new AuthnEntity
-    const authN = new AuthnEntity();
-    authN.challenge = options.challenge;
-    authN.user = user;
+      const opts: GenerateRegistrationOptionsOpts = {
+        rpName: 'Thellex SandBox',
+        rpID,
+        userName: user.email,
+        timeout: 60000,
+        attestationType: 'none',
+        excludeCredentials: user.devices.map((cred) => ({
+          id: cred.credentialID,
+          type: 'public-key',
+          transports: cred.transports,
+        })),
+        authenticatorSelection: {
+          residentKey: 'required',
+          userVerification: 'required',
+        },
+      };
 
-    // Save the challenge
-    await this.authnRepository.save(authN);
+      const options = await generateRegistrationOptions(opts);
 
-    return { ...options, userId: user.id };
+      const authN = this.authnRepository.create({
+        challenge: options.challenge,
+        user,
+      });
+
+      await this.authnRepository.save(authN);
+
+      return { ...options, userId: user.id };
+    } catch (err) {
+      console.error(err);
+      throw new CustomHttpException(
+        'Failed to create challenge',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async verifyRegistration(
     user: UserEntity,
-    verifyRegistationDto: VerifyRegistationDto,
+    verifyRegistrationDto: VerifyRegistrationDto,
   ) {
     try {
+      const rpID = this.configService.get<string>('RP_ID');
+      const expectedOrigin = this.configService.get<string>('CLIENT_URL');
+
       const challenge = await this.authnRepository.findOne({
         where: {
-          challenge: verifyRegistationDto.challenge,
+          challenge: verifyRegistrationDto.challenge,
           user: { id: user.id },
         },
         relations: ['user'],
       });
 
-      const verification = await verifyRegistrationResponse({
-        response: verifyRegistationDto.attestationResponse,
-        expectedChallenge: challenge.challenge,
-        expectedOrigin: 'http://localhost:3000', //[x] update to env later
-        expectedRPID: 'localhost',
+      if (!challenge) {
+        throw new CustomHttpException(
+          'Invalid or expired challenge',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const opts: VerifyRegistrationResponseOpts = {
+        response: verifyRegistrationDto.attestationResponse,
+        expectedChallenge: `${verifyRegistrationDto.challenge}`,
+        expectedOrigin: expectedOrigin,
+        expectedRPID: rpID,
+        requireUserVerification: false,
+      };
+
+      const verificationResult = await verifyRegistrationResponse(opts);
+
+      if (!verificationResult.verified) {
+        throw new CustomHttpException(
+          'Registration verification failed',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const { registrationInfo } = verificationResult;
+      const { id, publicKey, counter } = registrationInfo.credential;
+
+      const device = this.deviceRepository.create({
+        user,
+        publicKey: Buffer.from(publicKey).toString('base64'),
+        credentialID: id,
+        count: counter,
+        transports:
+          verifyRegistrationDto.attestationResponse.response.transports,
+        attestationObject: base64url.encode(
+          Buffer.from(registrationInfo.attestationObject),
+        ),
+        attestationResponse: verifyRegistrationDto.attestationResponse,
       });
 
-      if (verification.verified) {
-        const {
-          credential: { id, publicKey },
-        } = verification.registrationInfo;
+      //[x] delete challagen
 
-        console.log(base64url(id));
+      await this.deviceRepository.save(device);
 
-        //   db.users[userId].devices.push({
-        //     credentialID: base64url(credentialID),
-        //     publicKey: base64url(credentialPublicKey),
-        //     transports: attestationResponse.transports || [],
-        //     counter: 0,
-        //   });
-      }
-      // res.status(400).json({ success: false, message: 'Verification failed' });
+      return { message: 'Registration successful' };
     } catch (error) {
       console.error(error);
+      throw new CustomHttpException(
+        'Verification failed',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async authOptions(
+    user: UserEntity,
+  ): Promise<PublicKeyCredentialRequestOptionsJSON> {
+    try {
+      if (!user.devices.length) {
+        throw new CustomHttpException(
+          'No devices found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const rpID = this.configService.get<string>('RP_ID');
+
+      const opts: GenerateAuthenticationOptionsOpts = {
+        timeout: 60000,
+        allowCredentials: user.devices.map((cred) => ({
+          id: cred.credentialID,
+          type: 'public-key',
+          transports: cred.transports,
+        })),
+        userVerification: 'required',
+        rpID,
+      };
+
+      const options = await generateAuthenticationOptions(opts);
+
+      const authN = this.authnRepository.create({
+        challenge: options.challenge,
+        user,
+      });
+
+      await this.authnRepository.save(authN);
+
+      return options;
+    } catch (err) {
+      console.error(err);
+      throw new CustomHttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async authenticate(user: UserEntity, deviceDataDto: VerifyAuthenticationDto) {
+    try {
+      const rpID = this.configService.get<string>('RP_ID');
+      const expectedOrigin = this.configService.get<string>('CLIENT_URL');
+      console.log(deviceDataDto);
+
+      const challenge = await this.authnRepository.findOne({
+        where: {
+          challenge: deviceDataDto.challenge,
+          user: { id: user.id },
+        },
+        relations: ['user'],
+      });
+
+      if (!challenge) {
+        throw new CustomHttpException(
+          'Invalid or expired challenge',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const device = user.devices.find(
+        (device) =>
+          deviceDataDto.attestationResponse.id === device.credentialID,
+      );
+
+      if (!device) {
+        throw new CustomHttpException(
+          'Device not found',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const opts: VerifyAuthenticationResponseOpts = {
+        response: deviceDataDto.attestationResponse,
+        expectedChallenge: `${deviceDataDto.challenge}`,
+        expectedOrigin,
+        expectedRPID: rpID,
+        credential: {
+          id: device.credentialID,
+          publicKey: Buffer.from(device.publicKey, 'base64'),
+          counter: device.count,
+        },
+        requireUserVerification: false,
+      };
+
+      const verification = await verifyAuthenticationResponse(opts);
+
+      device.count = verification.authenticationInfo.newCounter;
+      await this.deviceRepository.save(device);
+
+      //[x] delete challagen
+
+      return { message: 'Authentication successful' };
+    } catch (err) {
+      console.error(err);
+      throw new CustomHttpException(
+        'Authentication failed',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 }

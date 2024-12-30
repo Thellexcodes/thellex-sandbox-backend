@@ -126,6 +126,7 @@ export class UserService {
     try {
       const user = await this.userRepository
         .createQueryBuilder('user')
+        .leftJoinAndSelect('user.devices', 'device')
         .where('user.id = :id', { id })
         .getOne();
 
