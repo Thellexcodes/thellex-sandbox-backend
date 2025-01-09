@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, Get, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBody } from '@nestjs/swagger';
@@ -12,12 +12,12 @@ export class UserController {
 
   @Post()
   @ApiBody({ type: CreateUserDto, description: 'Data required to create user' })
-  create(
+  async create(
     @Body() createUserDto: CreateUserDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    const newUserData = this.userService.create(createUserDto);
+    const newUserData = await this.userService.create(createUserDto);
     responseHandler(newUserData, res, req);
   }
 

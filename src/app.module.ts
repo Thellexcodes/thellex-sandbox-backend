@@ -16,6 +16,8 @@ import { UserService } from './modules/user/user.service';
 import { UserEntity } from './utils/typeorm/entities/user.entity';
 import { AuthnEntity } from './utils/typeorm/entities/authn.entity';
 import { DeviceEntity } from './utils/typeorm/entities/device.entity';
+import { MailModule } from './modules/mail/mail.module';
+import { MailService } from './modules/mail/mail.service';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { DeviceEntity } from './utils/typeorm/entities/device.entity';
     }),
     UserModule,
     AuthModule,
+    MailModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [
@@ -44,6 +47,7 @@ import { DeviceEntity } from './utils/typeorm/entities/device.entity';
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
     AuthnService,
     UserService,
+    MailService,
   ],
 })
 export class AppModule {}

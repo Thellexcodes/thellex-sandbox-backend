@@ -9,6 +9,7 @@ import { AuthnService } from './authn.service';
 import { UserService } from '../user/user.service';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
+import { MailService } from '../mail/mail.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
     }),
   ],
   controllers: [AuthnController],
-  providers: [AuthnService, UserService],
+  providers: [AuthnService, UserService, MailService],
   exports: [AuthnService],
 })
 export class AuthModule {}

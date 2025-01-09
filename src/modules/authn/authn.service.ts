@@ -190,7 +190,6 @@ export class AuthnService {
     try {
       const rpID = this.configService.get<string>('RP_ID');
       const expectedOrigin = this.configService.get<string>('CLIENT_URL');
-      console.log(deviceDataDto);
 
       const challenge = await this.authnRepository.findOne({
         where: {

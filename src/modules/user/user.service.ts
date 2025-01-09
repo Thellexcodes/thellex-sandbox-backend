@@ -5,12 +5,13 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
-import { jwtConfigurations, JwtPayload } from '@/config/jwt.config';
+import { JwtPayload } from '@/config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ERRORS } from '@/utils/types';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
@@ -21,6 +22,7 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async create(
@@ -43,8 +45,6 @@ export class UserService {
 
       await this.emailVerificationComposer(user);
       const token = await this.signToken({ id: user.id });
-
-      console.log(token);
 
       return token;
     } catch (error) {
@@ -92,13 +92,15 @@ export class UserService {
   async emailVerificationComposer(user: UserEntity): Promise<void> {
     const code = await this.generateAuthVerificationCode('email', user);
 
-    // const emailOptions = {
-    //   from: process.env.SENDGRID_FROM_EMAIL,
-    //   subject: 'Verify your account',
-    //   context: { code },
-    // };
+    const emailOptions = {
+      to: user.email,
+      from: this.configService.get<string>('GMAIL_USER'),
+      subject: 'Verify your account',
+      template: 'welcome',
+      context: { code },
+    };
 
-    //[x] await this.mailService.sendEmailVerificationMail(emailOptions);
+    await this.mailService.sendEmail(emailOptions);
   }
 
   async generateAuthVerificationCode(
