@@ -37,9 +37,9 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Unauthorized. Please login');
     }
 
-    // if (user.suspended) {
-    //   throw new UnauthorizedException('You account is currently suspended.');
-    // }
+    if (user.suspended) {
+      throw new UnauthorizedException('You account is currently suspended.');
+    }
 
     const { password, ...userData } = user;
 

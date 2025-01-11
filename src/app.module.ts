@@ -18,10 +18,16 @@ import { AuthnEntity } from './utils/typeorm/entities/authn.entity';
 import { DeviceEntity } from './utils/typeorm/entities/device.entity';
 import { MailModule } from './modules/mail/mail.module';
 import { MailService } from './modules/mail/mail.service';
+import { AuthVerificationCodesEntity } from './utils/typeorm/entities/authVerificationCodes.entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AuthnEntity, DeviceEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      AuthnEntity,
+      DeviceEntity,
+      AuthVerificationCodesEntity,
+    ]),
     TypeOrmModule.forRootAsync({
       useFactory: async (configService: ConfigService) =>
         await typeOrmConfig(configService),

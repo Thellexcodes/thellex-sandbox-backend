@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +11,7 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ERRORS } from '@/utils/types';
 import { MailService } from '../mail/mail.service';
+import { VerifyUserDto } from './dto/verify-user.dto';
 
 @Injectable()
 export class UserService {
@@ -20,6 +20,8 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(AuthVerificationCodesEntity)
+    private readonly authenticationRepository: Repository<AuthVerificationCodesEntity>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
@@ -30,18 +32,20 @@ export class UserService {
   ): Promise<string | CustomHttpException> {
     try {
       let user: UserEntity;
-      const userData = await this.findOneByEmail(createUserDto.email);
+      // const userData = await this.findOneByEmail(createUserDto.email);
       createUserDto.email = createUserDto.email.toLowerCase();
       const newUser = new UserEntity();
       newUser.email = createUserDto.email.toLowerCase();
 
-      if (userData)
-        throw new HttpException(
-          'This email is already associated with an account',
-          HttpStatus.BAD_REQUEST,
-        );
+      const userExists = await this.userRepository.findOneBy({
+        email: createUserDto.email,
+      });
 
-      user = await newUser.save();
+      if (!userExists) {
+        user = await newUser.save();
+      } else {
+        user = userExists;
+      }
 
       await this.emailVerificationComposer(user);
       const token = await this.signToken({ id: user.id });
@@ -136,5 +140,33 @@ export class UserService {
     } catch (err) {
       console.log(err);
     }
+  }
+
+  async verifyUser(
+    verifyUserDto: VerifyUserDto,
+    user: UserEntity,
+  ): Promise<boolean> {
+    const auth = await this.authenticationRepository.findOne({
+      where: {
+        code: verifyUserDto.code,
+        user: { id: user.id },
+      },
+    });
+
+    if (!auth || auth.expired)
+      throw new Error('Authentication code not found or expired');
+
+    if (auth.code == verifyUserDto.code) {
+      auth.expired = true;
+
+      user.emailVerified = true;
+
+      await this.authenticationRepository.save(auth);
+      await this.userRepository.save(user);
+
+      return true;
+    }
+
+    return false;
   }
 }

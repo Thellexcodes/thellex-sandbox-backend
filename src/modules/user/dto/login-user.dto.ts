@@ -12,3 +12,9 @@ export class LoginUserDto {
   @MinLength(6, { message: 'password/short' })
   password: string;
 }
+
+export class TokenLoginUserDto {
+  @IsNotEmpty({ message: 'identifier/empty' })
+  @IsString({ message: 'identifier/not-string' })
+  token: string;
+}

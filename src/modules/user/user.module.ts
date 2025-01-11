@@ -8,10 +8,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { MailService } from '../mail/mail.service';
+import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AuthnEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      AuthnEntity,
+      AuthVerificationCodesEntity,
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (

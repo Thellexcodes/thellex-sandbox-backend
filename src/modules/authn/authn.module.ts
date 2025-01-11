@@ -10,10 +10,16 @@ import { UserService } from '../user/user.service';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { MailService } from '../mail/mail.service';
+import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AuthnEntity, DeviceEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      AuthnEntity,
+      DeviceEntity,
+      AuthVerificationCodesEntity,
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (

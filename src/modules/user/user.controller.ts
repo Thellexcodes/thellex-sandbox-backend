@@ -1,10 +1,12 @@
-import { Controller, Post, Body, Req, Res, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
+import { AuthGuard } from '@/middleware/guards/local-auth-guard';
+import { VerifyUserDto } from './dto/verify-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -30,5 +32,32 @@ export class UserController {
   ): Promise<any> {
     const loginData = await this.userService.login(loginUserDto);
     responseHandler(loginData, res, req);
+  }
+
+  @Post('authLogin')
+  @UseGuards(AuthGuard)
+  @ApiBody({ description: 'Data required to login user' })
+  async tokenLogin(
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ): Promise<any> {
+    const user = req.user;
+    const authRecords = await this.userService.login({
+      identifier: user.email,
+    } as LoginUserDto);
+    responseHandler({ ...authRecords, ...user }, res, req);
+  }
+
+  @Post('verify')
+  @UseGuards(AuthGuard)
+  @ApiBody({ description: 'Verifies user' })
+  async verify(
+    @Body() verifyUserDto: VerifyUserDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
+    const result = await this.userService.verifyUser(verifyUserDto, user);
+    responseHandler(result, res, req);
   }
 }

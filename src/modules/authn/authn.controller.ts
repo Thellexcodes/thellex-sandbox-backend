@@ -53,7 +53,8 @@ export class AuthnController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    const options = await this.authNService.authenticate(req.user, body);
-    responseHandler(options, res, req);
+    console.log(body);
+    // const options = await this.authNService.authenticate(req.user, body);
+    // responseHandler(options, res, req);
   }
 }

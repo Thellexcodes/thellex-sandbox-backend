@@ -16,6 +16,7 @@ export class UserEntity extends BaseEntity {
   @OneToMany(
     () => AuthVerificationCodesEntity,
     (authVerificationCode) => authVerificationCode.user,
+    { cascade: true },
   )
   verificationCodes: AuthVerificationCodesEntity[];
 
@@ -24,6 +25,9 @@ export class UserEntity extends BaseEntity {
 
   @Column({ nullable: true })
   password: string;
+
+  @Column({ nullable: true })
+  suspended: boolean;
 
   @OneToMany(() => AuthnEntity, (authn) => authn.user)
   authn: AuthnEntity[];
