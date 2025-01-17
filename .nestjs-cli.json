@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [],
+    "watchAssets": true,
+    "exclude": ["src/thellex-sdk-v1"]
+  }
+}

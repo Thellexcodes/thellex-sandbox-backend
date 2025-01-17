@@ -32,19 +32,15 @@ export class UserService {
   ): Promise<string | CustomHttpException> {
     try {
       let user: UserEntity;
-      // const userData = await this.findOneByEmail(createUserDto.email);
+      const userData = await this.findOneByEmail(createUserDto.email);
       createUserDto.email = createUserDto.email.toLowerCase();
       const newUser = new UserEntity();
       newUser.email = createUserDto.email.toLowerCase();
 
-      const userExists = await this.userRepository.findOneBy({
-        email: createUserDto.email,
-      });
-
-      if (!userExists) {
+      if (!userData) {
         user = await newUser.save();
       } else {
-        user = userExists;
+        user = userData;
       }
 
       await this.emailVerificationComposer(user);

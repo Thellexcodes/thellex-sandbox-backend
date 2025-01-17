@@ -17,8 +17,10 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "exclude": ["./thellex-sdk-v1", "src/thellex-sdk-v1"]
 }
