@@ -20,7 +20,6 @@ import { MailModule } from './modules/mail/mail.module';
 import { MailService } from './modules/mail/mail.service';
 import { AuthVerificationCodesEntity } from './utils/typeorm/entities/authVerificationCodes.entities';
 import { HdwalletModule } from './modules/hdwallet/hdwallet.module';
-import { CacheModule } from '@nestjs/cache-manager';
 import { SwapModule } from './modules/aggregators/swap/swap.module';
 import { BridgeModule } from './modules/aggregators/bridge/bridge.module';
 import { TokenModule } from './modules/token/token.module';
@@ -33,7 +32,6 @@ import { TokenModule } from './modules/token/token.module';
       DeviceEntity,
       AuthVerificationCodesEntity,
     ]),
-    // CacheModule.register(),
     TypeOrmModule.forRootAsync({
       useFactory: async (configService: ConfigService) =>
         await typeOrmConfig(configService),
