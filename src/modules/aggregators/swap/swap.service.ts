@@ -1,19 +1,21 @@
 import { ethers } from 'ethers';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Token, DexAggregator } from '@/thellex-sdk-v1/src';
-import { V2RateDto } from './dto/v2-rate.dto';
+import { DexAggregator } from '@/thellex-sdk-v1/src';
+import { RateDto } from './dto/rate.dto';
 import { getRpcUrls, rateCache } from '@/utils/constants';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { Token } from '@uniswap/sdk-core';
+import { createTokensFromQueryParams } from '@/utils/helpers';
 
 @Injectable()
 export class SwapService {
   constructor() {}
 
-  async v2Rate(queryParams: V2RateDto) {
+  async v2Rate(queryParams: RateDto) {
     try {
       const cacheKey = `v2Rate-${queryParams.payToken.address}:${queryParams.receiveToken.address}:${queryParams.payAmount}`;
-
       const cachedRate = rateCache.get(cacheKey);
+
       if (cachedRate) return cachedRate;
 
       const baseAmount = ethers.parseUnits(
@@ -21,7 +23,7 @@ export class SwapService {
         Number(queryParams.payToken.decimals),
       );
 
-      const paths: Token[] = [queryParams.payToken, queryParams.receiveToken];
+      const paths = await createTokensFromQueryParams(queryParams);
 
       const dexAggregator = new DexAggregator(
         getRpcUrls(queryParams.chainId),
@@ -38,6 +40,52 @@ export class SwapService {
           paths,
           baseAmount,
           v2Pool.poolAddress,
+        );
+
+        if (rate) {
+          rateCache.set(cacheKey, rate);
+          return rate;
+        }
+      }
+    } catch (err) {
+      console.log(err);
+      throw new CustomHttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async v3Rate(queryParams: RateDto) {
+    try {
+      const cacheKey = `v3Rate-${queryParams.payToken.address}:${queryParams.receiveToken.address}:${queryParams.payAmount}:${queryParams.fee}`;
+      const cachedRate = rateCache.get(cacheKey);
+
+      if (cachedRate) return cachedRate;
+
+      const baseAmount = ethers.parseUnits(
+        `${queryParams.payAmount}`,
+        Number(queryParams.payToken.decimals),
+      );
+
+      const paths = await createTokensFromQueryParams(queryParams);
+
+      // console.log(paths);
+
+      const dexAggregator = new DexAggregator(
+        getRpcUrls(queryParams.chainId),
+        queryParams.chainId,
+      );
+
+      const v3Pool = await dexAggregator.getPoolAddressesFromUniswapV3Factory(
+        paths,
+        queryParams.chainId,
+        queryParams.fee,
+      );
+
+      if (v3Pool?.poolAddress) {
+        const rate = await dexAggregator.getUniswapV3BestRateForSwap(
+          paths,
+          baseAmount,
+          v3Pool.poolAddress,
+          queryParams.fee,
         );
 
         if (rate) {
