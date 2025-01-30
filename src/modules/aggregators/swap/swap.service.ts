@@ -83,7 +83,7 @@ export class SwapService {
       if (v3Pool?.poolAddress) {
         const rate = await dexAggregator.getUniswapV3BestRateForSwap(
           paths,
-          baseAmount,
+          Number(queryParams.payAmount),
           v3Pool.poolAddress,
           queryParams.fee,
         );

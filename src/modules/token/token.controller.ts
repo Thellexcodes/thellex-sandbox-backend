@@ -24,14 +24,7 @@ export class TokenController {
     status: 404,
     description: 'Chain ID not supported.',
   })
-  findAll(
-    @Query('chainId', new ParseIntPipe({ optional: true })) chainId: number,
-  ): Token[] {
-    return this.tokenService.findAll(chainId);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tokenService.findAll(+id);
+  findAll() {
+    return this.tokenService.findAll();
   }
 }

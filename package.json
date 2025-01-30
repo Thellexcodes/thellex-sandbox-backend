@@ -30,6 +30,7 @@
     "@nestjs/typeorm": "^10.0.2",
     "@simplewebauthn/server": "^13.0.0",
     "@uniswap/v3-sdk": "3.19.0",
+    "axios": "^1.7.9",
     "base64url": "^3.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

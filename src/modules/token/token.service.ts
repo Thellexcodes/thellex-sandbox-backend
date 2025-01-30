@@ -4,11 +4,10 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 
 @Injectable()
 export class TokenService {
-  findAll(chainId: number): Token[] {
+  async findAll(): Promise<any> {
     try {
-      const tokenManager = TokenManager.getInstance();
-      const tokens = tokenManager.getTokens(chainId);
-      return tokens;
+      const priorityTokens = await TokenManager.getInstance().fetchTokens(true);
+      return priorityTokens;
     } catch (err) {
       throw new CustomHttpException(err, HttpStatus.NOT_FOUND);
     }

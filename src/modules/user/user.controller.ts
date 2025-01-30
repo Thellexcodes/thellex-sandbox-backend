@@ -45,6 +45,7 @@ export class UserController {
     const authRecords = await this.userService.login({
       identifier: user.email,
     } as LoginUserDto);
+
     responseHandler({ ...authRecords, ...user }, res, req);
   }
 
