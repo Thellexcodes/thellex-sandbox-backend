@@ -25,28 +25,28 @@ export class SwapService {
 
       const paths = await createTokensFromQueryParams(queryParams);
 
-      const dexAggregator = new DexAggregator(
-        getRpcUrls(queryParams.chainId),
-        queryParams.chainId,
-      );
+      // const dexAggregator = new DexAggregator(
+      //   getRpcUrls(queryParams.chainId),
+      //   queryParams.chainId,
+      // );
 
-      const v2Pool = await dexAggregator.getPoolAddressesFromUniswapV2Factory(
-        paths,
-        queryParams.chainId,
-      );
+      // const v2Pool = await dexAggregator.getPoolAddressesFromUniswapV2Factory(
+      //   paths,
+      //   queryParams.chainId,
+      // );
 
-      if (v2Pool?.poolAddress) {
-        const rate = await dexAggregator.getUniswapV2BestRateForSwap(
-          paths,
-          baseAmount,
-          v2Pool.poolAddress,
-        );
+      // if (v2Pool?.poolAddress) {
+      //   const rate = await dexAggregator.getUniswapV2BestRateForSwap(
+      //     paths,
+      //     baseAmount,
+      //     v2Pool.poolAddress,
+      //   );
 
-        if (rate) {
-          rateCache.set(cacheKey, rate);
-          return rate;
-        }
-      }
+      //   if (rate) {
+      //     rateCache.set(cacheKey, rate);
+      //     return rate;
+      //   }
+      // }
     } catch (err) {
       console.log(err);
       throw new CustomHttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
