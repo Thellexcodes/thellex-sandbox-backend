@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { DexAggregator } from '@/thellex-sdk-v1/src';
+import { DexAggregator } from '@/thellex-sdk/src';
 import { RateDto } from './dto/rate.dto';
 import { getRpcUrls, rateCache } from '@/utils/constants';
 import { CustomHttpException } from '@/middleware/custom.http.exception';

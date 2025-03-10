@@ -1,7 +1,7 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { Token } from '@/thellex-sdk-v1/src';
+import { Token } from '@/thellex-sdk/src';
 
 @Controller('token')
 export class TokenController {
@@ -26,5 +26,31 @@ export class TokenController {
   })
   findAll() {
     return this.tokenService.findAll();
+  }
+
+  @Get('h_data')
+  findToken(
+    @Query('id') id: string,
+    @Query('symbol') symbol?: string,
+    @Query('name') name?: string,
+    @Query('address') address?: string,
+    @Query('current_price') currentPrice?: string,
+    @Query('price_change_percentage_24h')
+    priceChangePercentage24h?: string,
+    @Query('market_cap') marketCap?: string,
+    @Query('image') image?: string,
+  ) {
+    const tokenData = {
+      id,
+      symbol,
+      name,
+      address,
+      currentPrice,
+      priceChangePercentage24h,
+      marketCap,
+      image,
+    };
+
+    if (tokenData.id) return this.tokenService.findOne(tokenData);
   }
 }

@@ -20,3 +20,14 @@ export interface CustomRequest extends Request {
 }
 
 export interface CustomResponse extends Response {}
+
+export interface CryptoQueryParams {
+  id: string;
+  symbol?: string;
+  name?: string;
+  address?: string;
+  currentPrice?: string;
+  priceChangePercentage24h?: string;
+  marketCap?: string;
+  image?: string;
+}

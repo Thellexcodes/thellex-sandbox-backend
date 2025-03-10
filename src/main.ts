@@ -6,6 +6,7 @@ import { ErrorInterceptor } from '@/middleware/error.interceptor';
 import { ValidationPipe } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
 
 const certFolder = path.join(__dirname, '../cert');
 
@@ -51,6 +52,11 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new ErrorInterceptor());
+
+  app.use((req, res, next) => {
+    const middleware = new LogRequestMiddleware();
+    middleware.use(req, res, next);
+  });
 
   await app.listen(serverPort, serverIp);
 

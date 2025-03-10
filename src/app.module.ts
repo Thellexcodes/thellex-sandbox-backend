@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,6 +23,7 @@ import { HdwalletModule } from './modules/hdwallet/hdwallet.module';
 import { SwapModule } from './modules/aggregators/swap/swap.module';
 import { BridgeModule } from './modules/aggregators/bridge/bridge.module';
 import { TokenModule } from './modules/token/token.module';
+import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
 
 @Module({
   imports: [
@@ -64,4 +65,8 @@ import { TokenModule } from './modules/token/token.module';
     MailService,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LogRequestMiddleware).forRoutes('*');
+  }
+}

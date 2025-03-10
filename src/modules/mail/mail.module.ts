@@ -13,12 +13,12 @@ import { ConfigService } from '@nestjs/config';
     MailerModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         transport: {
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
+          host: 'mail.privateemail.com',
+          port: 465,
+          secure: true,
           auth: {
-            user: configService.get('GMAIL_USER'),
-            pass: configService.get('GMAIL_APP_PASSWORD'),
+            user: 'hello@thellex.com',
+            pass: '!Sophia2024',
           },
         },
         defaults: {

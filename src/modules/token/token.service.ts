@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { TokenManager, Token } from '@/thellex-sdk-v1/src';
+import { TokenManager, Token } from '@/thellex-sdk/src';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { CryptoQueryParams } from '@/types/request.types';
 
 @Injectable()
 export class TokenService {
@@ -13,11 +14,18 @@ export class TokenService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} token`;
-  }
+  async findOne(cryptoQueryParams: CryptoQueryParams): Promise<any> {
+    try {
+      const historyData =
+        await TokenManager.getInstance().coinHistoricalChartData({
+          startDate: `1711929600`,
+          endDate: `1712275200`,
+          id: cryptoQueryParams.id,
+        });
 
-  remove(id: number) {
-    return `This action removes a #${id} token`;
+      return historyData;
+    } catch (err) {
+      throw new CustomHttpException(err, HttpStatus.NOT_FOUND);
+    }
   }
 }

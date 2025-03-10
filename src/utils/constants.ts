@@ -1,4 +1,4 @@
-import { CHAINS } from '@/thellex-sdk-v1/src';
+import { CHAINS } from '@/thellex-sdk/src';
 import { LRUCache } from 'lru-cache';
 
 export const getRpcUrls = (chainId: number) => {

@@ -24,7 +24,7 @@ export class MailService {
       const mailData = {
         from: {
           name: this.configService.get<string>('APPLICATION_NAME'),
-          address: this.configService.get<string>('GMAIL_USER'),
+          address: this.configService.get<string>('MAIL_USER'),
         },
         to,
         templateName,
