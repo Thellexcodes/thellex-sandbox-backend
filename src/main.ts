@@ -11,17 +11,17 @@ import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
 const certFolder = path.join(__dirname, '../cert');
 
 async function bootstrap() {
-  let httpsOptions: any;
+  // let httpsOptions: any;
 
-  if (process.env.NODE_ENV === 'development') {
-    const keyFile = fs.readFileSync(path.join(certFolder, 'server.key'));
-    const certFile = fs.readFileSync(path.join(certFolder, 'server.cert'));
+  // if (process.env.NODE_ENV === 'development') {
+  //   const keyFile = fs.readFileSync(path.join(certFolder, 'server.key'));
+  //   const certFile = fs.readFileSync(path.join(certFolder, 'server.cert'));
 
-    httpsOptions = {
-      key: keyFile,
-      cert: certFile,
-    };
-  }
+  //   httpsOptions = {
+  //     key: keyFile,
+  //     cert: certFile,
+  //   };
+  // }
 
   const app = await NestFactory.create(AppModule, {});
 
