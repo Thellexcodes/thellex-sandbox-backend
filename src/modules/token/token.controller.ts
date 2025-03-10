@@ -1,7 +1,7 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { Token } from '@/thellex-sdk/src';
+// import { Token } from '@/thellex-sdk/src';
 
 @Controller('token')
 export class TokenController {
@@ -15,11 +15,11 @@ export class TokenController {
       'The chain ID to filter tokens by. If omitted, all tokens will be returned.',
     type: Number,
   })
-  @ApiResponse({
-    status: 200,
-    description: 'List of tokens for the specified chain ID.',
-    type: [Token],
-  })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'List of tokens for the specified chain ID.',
+  //   type: [Token],
+  // })
   @ApiResponse({
     status: 404,
     description: 'Chain ID not supported.',

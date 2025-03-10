@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { DexAggregator } from '@/thellex-sdk/src';
+// import { DexAggregator } from '@/thellex-sdk/src';
 import { RateDto } from './dto/rate.dto';
 import { getRpcUrls, rateCache } from '@/utils/constants';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
@@ -69,30 +69,30 @@ export class SwapService {
 
       // console.log(paths);
 
-      const dexAggregator = new DexAggregator(
-        getRpcUrls(queryParams.chainId),
-        queryParams.chainId,
-      );
+      // const dexAggregator = new DexAggregator(
+      //   getRpcUrls(queryParams.chainId),
+      //   queryParams.chainId,
+      // );
 
-      const v3Pool = await dexAggregator.getPoolAddressesFromUniswapV3Factory(
-        paths,
-        queryParams.chainId,
-        queryParams.fee,
-      );
+      // const v3Pool = await dexAggregator.getPoolAddressesFromUniswapV3Factory(
+      //   paths,
+      //   queryParams.chainId,
+      //   queryParams.fee,
+      // );
 
-      if (v3Pool?.poolAddress) {
-        const rate = await dexAggregator.getUniswapV3BestRateForSwap(
-          paths,
-          Number(queryParams.payAmount),
-          v3Pool.poolAddress,
-          queryParams.fee,
-        );
+      // if (v3Pool?.poolAddress) {
+      //   const rate = await dexAggregator.getUniswapV3BestRateForSwap(
+      //     paths,
+      //     Number(queryParams.payAmount),
+      //     v3Pool.poolAddress,
+      //     queryParams.fee,
+      //   );
 
-        if (rate) {
-          rateCache.set(cacheKey, rate);
-          return rate;
-        }
-      }
+      //   if (rate) {
+      //     rateCache.set(cacheKey, rate);
+      //     return rate;
+      //   }
+      // }
     } catch (err) {
       console.log(err);
       throw new CustomHttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
