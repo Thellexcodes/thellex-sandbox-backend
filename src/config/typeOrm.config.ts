@@ -8,6 +8,8 @@ import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 export const typeOrmConfig = async (
   configService: ConfigService,
 ): Promise<TypeOrmModuleOptions> => {
+  const isDev = configService.get<string>('NODE_ENV') === 'development';
+
   return {
     type: 'postgres',
     host: configService.get<string>('POSTGRES_HOST'),
@@ -25,10 +27,9 @@ export const typeOrmConfig = async (
     extra: {
       charset: 'utf8mb4_unicode_ci',
     },
-    synchronize:
-      configService.get<string>('NODE_ENV') === 'development' ? true : true,
+    synchronize: isDev,
     autoLoadEntities: true,
     logging: false,
-    ssl: configService.get<string>('NODE_ENV') === 'development' ? false : true,
+    ssl: isDev ? { rejectUnauthorized: false } : true,
   };
 };
