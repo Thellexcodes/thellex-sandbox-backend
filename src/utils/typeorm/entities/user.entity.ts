@@ -3,6 +3,7 @@ import { BaseEntity } from './base.entity';
 import { AuthnEntity } from './authn.entity';
 import { AuthVerificationCodesEntity } from './authVerificationCodes.entities';
 import { DeviceEntity } from './device.entity';
+import { CardManagementEntity } from '@/modules/card-management/entities/card-management.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -34,4 +35,7 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
+
+  @OneToMany(() => CardManagementEntity, (card) => card.user)
+  electronic_cards: CardManagementEntity[];
 }

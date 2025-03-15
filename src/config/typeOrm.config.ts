@@ -1,3 +1,4 @@
+import { CardManagementEntity } from '@/modules/card-management/entities/card-management.entity';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
@@ -8,7 +9,7 @@ import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 export const typeOrmConfig = async (
   configService: ConfigService,
 ): Promise<TypeOrmModuleOptions> => {
-  const isDev = configService.get<string>('NODE_ENV') === 'development';
+  const isTestNet = configService.get<string>('NODE_ENV') === 'testnet';
 
   return {
     type: 'postgres',
@@ -19,17 +20,18 @@ export const typeOrmConfig = async (
     password: configService.get<string>('POSTGRES_PASSWORD'),
     entities: [
       UserEntity,
-      AuthVerificationCodesEntity,
       AuthnEntity,
       DeviceEntity,
+      CardManagementEntity,
+      AuthVerificationCodesEntity,
     ],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     extra: {
       charset: 'utf8mb4_unicode_ci',
     },
-    synchronize: isDev,
+    synchronize: isTestNet,
     autoLoadEntities: true,
     logging: false,
-    ssl: isDev ? { rejectUnauthorized: false } : true,
+    // ssl: isDev ? { rejectUnauthorized: false } : true,
   };
 };

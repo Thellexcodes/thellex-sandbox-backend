@@ -5,7 +5,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
-import { AuthGuard } from '@/middleware/guards/local-auth-guard';
+import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifyUserDto } from './dto/verify-user.dto';
 
 @Controller('user')
@@ -42,6 +42,7 @@ export class UserController {
     @Res() res: CustomResponse,
   ): Promise<any> {
     const user = req.user;
+
     const authRecords = await this.userService.login({
       identifier: user.email,
     } as LoginUserDto);

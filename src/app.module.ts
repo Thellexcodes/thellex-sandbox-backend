@@ -24,6 +24,8 @@ import { SwapModule } from './modules/aggregators/swap/swap.module';
 import { BridgeModule } from './modules/aggregators/bridge/bridge.module';
 import { TokenModule } from './modules/token/token.module';
 import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
+import { CardManagementModule } from './modules/card-management/card-management.module';
+import { StellarModule } from './modules/stellar/stellar.module';
 
 @Module({
   imports: [
@@ -55,6 +57,8 @@ import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
     SwapModule,
     BridgeModule,
     TokenModule,
+    CardManagementModule,
+    StellarModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [

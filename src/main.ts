@@ -4,11 +4,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { ErrorInterceptor } from '@/middleware/error.interceptor';
 import { ValidationPipe } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
+// import * as fs from 'fs';
+// import * as path from 'path';
 import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
 
-const certFolder = path.join(__dirname, '../cert');
+// const certFolder = path.join(__dirname, '../cert');
 
 async function bootstrap() {
   // let httpsOptions: any;

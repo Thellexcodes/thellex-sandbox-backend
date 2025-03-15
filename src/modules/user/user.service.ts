@@ -84,6 +84,8 @@ export class UserService {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .where('user.email = :email', { email })
+      .leftJoinAndSelect('user.devices', 'device')
+      .leftJoinAndSelect('user.electronic_cards', 'electronic_cards')
       .getOne();
 
     return user;
@@ -129,6 +131,7 @@ export class UserService {
       const user = await this.userRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.devices', 'device')
+        .leftJoinAndSelect('user.electronic_cards', 'electronic_cards')
         .where('user.id = :id', { id })
         .getOne();
 
