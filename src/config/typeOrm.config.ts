@@ -32,6 +32,6 @@ export const typeOrmConfig = async (
     synchronize: isTestNet,
     autoLoadEntities: true,
     logging: false,
-    // ssl: isDev ? { rejectUnauthorized: false } : true,
+    ssl: isTestNet ? { rejectUnauthorized: true } : true,
   };
 };
