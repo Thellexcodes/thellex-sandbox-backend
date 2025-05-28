@@ -17,12 +17,12 @@ import { ConfigService } from '@nestjs/config';
           port: 465,
           secure: true,
           auth: {
-            user: 'hello@thellex.com',
-            pass: '!Sophia2024',
+            user: configService.get('MAIL_USER'),
+            pass: configService.get('MAIL_APP_PASSWORD'),
           },
         },
         defaults: {
-          from: `"${configService.get('APPLICATION_NAME')}" <${configService.get('GMAIL_USER')}>`, // Default sender
+          from: `"${configService.get('APPLICATION_NAME')}" <${configService.get('MAIL_USER')}>`,
         },
         template: {
           dir: join(__dirname, '../..', '../src/modules/mail/templates'),

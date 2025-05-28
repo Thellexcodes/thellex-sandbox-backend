@@ -1,3 +1,4 @@
+import { ENV_TESTNET } from '@/constants/env';
 import { CardManagementEntity } from '@/modules/card-management/entities/card-management.entity';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
@@ -9,7 +10,7 @@ import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 export const typeOrmConfig = async (
   configService: ConfigService,
 ): Promise<TypeOrmModuleOptions> => {
-  const isTestNet = configService.get<string>('NODE_ENV') === 'testnet';
+  const isTestNet = configService.get<string>('NODE_ENV') === ENV_TESTNET;
 
   return {
     type: 'postgres',
@@ -32,6 +33,6 @@ export const typeOrmConfig = async (
     synchronize: isTestNet,
     autoLoadEntities: true,
     logging: false,
-    ssl: isTestNet ? { rejectUnauthorized: false } : false,
+    // ssl: isTestNet ? { rejectUnauthorized: false } : false,
   };
 };
