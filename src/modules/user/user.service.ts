@@ -12,6 +12,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { ERRORS } from '@/utils/types';
 import { MailService } from '../mail/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
+import { generateUniqueUid } from '@/utils/helpers';
 
 @Injectable()
 export class UserService {
@@ -31,19 +32,29 @@ export class UserService {
     createUserDto: CreateUserDto,
   ): Promise<string | CustomHttpException> {
     try {
-      let user: UserEntity;
-      const userData = await this.findOneByEmail(createUserDto.email);
+      // Normalize email
       createUserDto.email = createUserDto.email.toLowerCase();
-      const newUser = new UserEntity();
-      newUser.email = createUserDto.email.toLowerCase();
 
-      if (!userData) {
+      // Check if user already exists
+      let user = await this.findOneByEmail(createUserDto.email);
+
+      if (!user) {
+        // Generate unique 8-digit UID
+        const uid = await generateUniqueUid(this.userRepository);
+
+        // Create new user instance
+        const newUser = new UserEntity();
+        newUser.email = createUserDto.email;
+        newUser.uid = uid;
+
+        // Save new user to DB
         user = await newUser.save();
-      } else {
-        user = userData;
       }
 
+      // Trigger email verification flow
       await this.emailVerificationComposer(user);
+
+      // Generate auth token for the user
       const token = await this.signToken({ id: user.id });
 
       return token;

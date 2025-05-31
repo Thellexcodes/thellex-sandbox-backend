@@ -11,7 +11,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
 import { StellarService } from '../stellar/stellar.service';
-import { CardManagementEntity } from './entities/card-management.entity';
+import { CardManagementEntity } from '../../utils/typeorm/entities/card-management.entity';
 
 @Module({
   imports: [

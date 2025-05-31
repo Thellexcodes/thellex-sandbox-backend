@@ -1,6 +1,8 @@
 import { RateDto } from '@/modules/aggregators/swap/dto/rate.dto';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { Token } from '@uniswap/sdk-core';
+import { Repository } from 'typeorm';
+import { UserEntity } from './typeorm/entities/user.entity';
 
 export function isNumber(n: string | number): boolean {
   const cleanedValue = String(n).replace(/\D/g, '');
@@ -55,4 +57,23 @@ export async function createTokensFromQueryParams(
   );
 
   return [payTokenInstance, receiveTokenInstance];
+}
+
+function generateRandomUid(): number {
+  return Math.floor(10000000 + Math.random() * 90000000);
+}
+
+export async function generateUniqueUid(
+  userRepository: Repository<UserEntity>,
+): Promise<number> {
+  let uid: number;
+  let exists = true;
+
+  while (exists) {
+    uid = generateRandomUid();
+    const existingUser = await userRepository.findOne({ where: { uid } });
+    exists = !!existingUser;
+  }
+
+  return uid;
 }

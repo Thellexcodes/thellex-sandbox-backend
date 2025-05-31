@@ -9,12 +9,14 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { MailService } from '../mail/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       AuthnEntity,
+      QwalletEntity,
       AuthVerificationCodesEntity,
     ]),
     JwtModule.registerAsync({

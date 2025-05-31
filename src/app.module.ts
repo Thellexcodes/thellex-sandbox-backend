@@ -26,6 +26,8 @@ import { TokenModule } from './modules/token/token.module';
 import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
 import { CardManagementModule } from './modules/card-management/card-management.module';
 import { StellarModule } from './modules/stellar/stellar.module';
+import { QwalletModule } from './modules/qwallet/qwallet.module';
+import { DkycModule } from './modules/dkyc/dkyc.module';
 
 @Module({
   imports: [
@@ -59,6 +61,8 @@ import { StellarModule } from './modules/stellar/stellar.module';
     TokenModule,
     CardManagementModule,
     StellarModule,
+    QwalletModule,
+    DkycModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [

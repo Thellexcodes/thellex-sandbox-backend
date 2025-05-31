@@ -1,12 +1,16 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { AuthnEntity } from './authn.entity';
 import { AuthVerificationCodesEntity } from './authVerificationCodes.entities';
 import { DeviceEntity } from './device.entity';
-import { CardManagementEntity } from '@/modules/card-management/entities/card-management.entity';
+import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
+import { QwalletEntity } from './qwallet.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
+  @Column({ unique: true })
+  uid: number;
+
   //[x] should be changed back to false
   @Column({ nullable: true })
   account: string;
@@ -38,4 +42,7 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => CardManagementEntity, (card) => card.user)
   electronic_cards: CardManagementEntity[];
+
+  @OneToMany(() => QwalletEntity, (qwallet) => qwallet.user)
+  qwallet: QwalletEntity;
 }

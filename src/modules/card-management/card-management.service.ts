@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCardManagementDto } from './dto/create-card-management.dto';
 import { UpdateCardManagementDto } from './dto/update-card-management.dto';
-import { CardManagementEntity } from './entities/card-management.entity';
+import { CardManagementEntity } from '../../utils/typeorm/entities/card-management.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 

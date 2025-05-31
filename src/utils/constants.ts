@@ -14,3 +14,5 @@ export const rateCache = new LRUCache<string, any>({
   max: 100000, // Max number of items in cache
   ttl: 20000, // Time-to-live in milliseconds (20 minutes)
 });
+
+export const QUIDAX_USERS_API_URL = 'https://www.quidax.com/api/v1/users';

@@ -1,5 +1,6 @@
 import { ENV_TESTNET } from '@/constants/env';
-import { CardManagementEntity } from '@/modules/card-management/entities/card-management.entity';
+import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
@@ -23,6 +24,7 @@ export const typeOrmConfig = async (
       UserEntity,
       AuthnEntity,
       DeviceEntity,
+      QwalletEntity,
       CardManagementEntity,
       AuthVerificationCodesEntity,
     ],
