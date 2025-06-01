@@ -5,6 +5,11 @@ import { DOJAH_KYC_API } from '@/constants/env';
 import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { KycErrorEnum } from '@/types/kyc-error.enum';
+import {
+  BvnLookupResponse,
+  NinLookupResponse,
+  PhoneNumberLookupResponse,
+} from '@/types/identifications.types';
 
 @Injectable()
 export class DkycService {
@@ -22,18 +27,21 @@ export class DkycService {
 
   async createNinKyc(createDkycDto: NinkycDto) {}
 
-  async lookupNIN(nin: string): Promise<any> {
-    console.log(nin, 'hitting here');
+  async lookupNIN(nin: number): Promise<NinLookupResponse> {
     try {
-      const ninCheckerResponse = await this.httpService.get(this.dojahUrl, {
-        headers: {
-          AppId: this.configService.get<string>('DOJAH_APPID'),
-          Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+      const ninCheckerResponse: NinLookupResponse = await this.httpService.get(
+        `${this.dojahUrl}/api/v1/kyc/nin`,
+        {
+          headers: {
+            AppId: this.configService.get<string>('DOJAH_APPID'),
+            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+          },
+          params: { nin },
         },
-        params: { nin },
-      });
+      );
+
+      return ninCheckerResponse;
     } catch (error) {
-      // Example of handling different error cases:
       if (error.response?.status === 404) {
         throw new CustomHttpException(
           KycErrorEnum.NIN_NOT_FOUND,
@@ -46,40 +54,64 @@ export class DkycService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      // fallback generic internal error
       throw new CustomHttpException(
-        KycErrorEnum.INTERNAL_ERROR,
+        `${KycErrorEnum.INTERNAL_ERROR}-${error.response.error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async lookupBVN(bvn: string): Promise<any> {
+  async lookupBVN(bvn: number): Promise<BvnLookupResponse> {
     try {
-      const bvnCheckerResponse = await this.httpService.get(this.dojahUrl, {
-        headers: {
-          AppId: this.configService.get<string>('DOJAH_APPID'),
-          Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+      const bvnCheckerResponse: BvnLookupResponse = await this.httpService.get(
+        `${this.dojahUrl}/api/v1/kyc/bvn/full`,
+        {
+          headers: {
+            AppId: this.configService.get<string>('DOJAH_APPID'),
+            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+          },
+          params: { bvn },
         },
-        params: { bvn },
-      });
+      );
+
+      return bvnCheckerResponse;
     } catch (error) {
+      if (error.response?.status === 404) {
+        throw new CustomHttpException(
+          KycErrorEnum.BVN_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (error.response?.status === 400) {
+        throw new CustomHttpException(
+          KycErrorEnum.INVALID_BVN,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       throw new CustomHttpException(
-        error.message,
+        `${KycErrorEnum.INTERNAL_ERROR}-${error.response.error}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async lookupPhoneNumber(phone_number: string): Promise<any> {
+  async lookupPhoneNumber(
+    phone_number: string,
+  ): Promise<PhoneNumberLookupResponse> {
     try {
-      const bvnCheckerResponse = await this.httpService.get(this.dojahUrl, {
-        headers: {
-          AppId: this.configService.get<string>('DOJAH_APPID'),
-          Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
-        },
-        params: { phone_number },
-      });
+      const phoneCheckerResponse: PhoneNumberLookupResponse =
+        await this.httpService.get(
+          `${this.dojahUrl}/api/v1/kyc/phone_number/basic`,
+          {
+            headers: {
+              AppId: this.configService.get<string>('DOJAH_APPID'),
+              Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+            },
+            params: { phone_number },
+          },
+        );
+
+      return phoneCheckerResponse;
     } catch (err) {}
   }
 

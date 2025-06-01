@@ -5,7 +5,11 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class CustomHttpException extends HttpException {
   constructor(
-    public readonly errorCode: KycErrorEnum | UserErrorEnum | AuthErrorEnum,
+    public readonly errorCode:
+      | KycErrorEnum
+      | UserErrorEnum
+      | AuthErrorEnum
+      | string,
     statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
   ) {
     super(errorCode, statusCode);

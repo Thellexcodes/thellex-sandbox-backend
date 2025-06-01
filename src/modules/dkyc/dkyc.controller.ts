@@ -30,14 +30,14 @@ export class DkycController {
   }
 
   @Get('nin')
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @ApiQuery({
     name: 'nin',
     description: 'NIN number',
     required: true,
     type: String,
   })
-  async lookupNIN(@Query('nin') nin: string) {
+  async lookupNIN(@Query('nin') nin: number) {
     if (!nin) {
     }
     return this.dkycService.lookupNIN(nin);
@@ -46,7 +46,7 @@ export class DkycController {
   @Get('bvn')
   @UseGuards(AuthGuard)
   @ApiQuery({ name: 'bvn', description: 'BVN number', required: true })
-  async lookupBVN(@Query('bvn') bvn: string) {
+  async lookupBVN(@Query('bvn') bvn: number) {
     if (!bvn) {
     }
     return this.dkycService.lookupBVN(bvn);
