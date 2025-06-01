@@ -19,6 +19,7 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { ConfigService } from '@nestjs/config';
 import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
 import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
+import { AuthErrorEnum } from '@/types/auth-error.enum';
 
 @Injectable()
 export class AuthnService {
@@ -70,7 +71,7 @@ export class AuthnService {
     } catch (err) {
       console.error(err);
       throw new CustomHttpException(
-        'Failed to create challenge',
+        AuthErrorEnum.CHALLENGE_CREATION_FAILED,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -94,7 +95,7 @@ export class AuthnService {
 
       if (!challenge) {
         throw new CustomHttpException(
-          'Invalid or expired challenge',
+          AuthErrorEnum.INVALID_OR_EXPIRED_CHALLENGE,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -102,7 +103,7 @@ export class AuthnService {
       const opts: VerifyRegistrationResponseOpts = {
         response: verifyRegistrationDto.attestationResponse,
         expectedChallenge: `${verifyRegistrationDto.challenge}`,
-        expectedOrigin: expectedOrigin,
+        expectedOrigin,
         expectedRPID: rpID,
         requireUserVerification: false,
       };
@@ -111,7 +112,7 @@ export class AuthnService {
 
       if (!verificationResult.verified) {
         throw new CustomHttpException(
-          'Registration verification failed',
+          AuthErrorEnum.REGISTRATION_VERIFICATION_FAILED,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -132,7 +133,7 @@ export class AuthnService {
         attestationResponse: verifyRegistrationDto.attestationResponse,
       });
 
-      //[x] delete challagen
+      // TODO: Delete challenge after successful registration
 
       await this.deviceRepository.save(device);
 
@@ -140,7 +141,7 @@ export class AuthnService {
     } catch (error) {
       console.error(error);
       throw new CustomHttpException(
-        'Verification failed',
+        AuthErrorEnum.VERIFICATION_FAILED,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -152,7 +153,7 @@ export class AuthnService {
     try {
       if (!user.devices.length) {
         throw new CustomHttpException(
-          'No devices found',
+          AuthErrorEnum.NO_DEVICES_FOUND,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -182,7 +183,10 @@ export class AuthnService {
       return options;
     } catch (err) {
       console.error(err);
-      throw new CustomHttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new CustomHttpException(
+        err.message || AuthErrorEnum.AUTHENTICATION_FAILED,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -201,7 +205,7 @@ export class AuthnService {
 
       if (!challenge) {
         throw new CustomHttpException(
-          'Invalid or expired challenge',
+          AuthErrorEnum.INVALID_OR_EXPIRED_CHALLENGE,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -213,7 +217,7 @@ export class AuthnService {
 
       if (!device) {
         throw new CustomHttpException(
-          'Device not found',
+          AuthErrorEnum.DEVICE_NOT_FOUND,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -236,13 +240,13 @@ export class AuthnService {
       device.count = verification.authenticationInfo.newCounter;
       await this.deviceRepository.save(device);
 
-      //[x] delete challagen
+      // TODO: Delete challenge after successful authentication
 
       return { message: 'Authentication successful' };
     } catch (err) {
       console.error(err);
       throw new CustomHttpException(
-        'Authentication failed',
+        AuthErrorEnum.AUTHENTICATION_FAILED,
         HttpStatus.UNAUTHORIZED,
       );
     }

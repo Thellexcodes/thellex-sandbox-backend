@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateDkycDto } from './create-dkyc.dto';
+// import { CreateDkycDto } from './create-tier1-dkyc.dto';
 
-export class UpdateDkycDto extends PartialType(CreateDkycDto) {}
+// export class UpdateDkycDto extends PartialType(CreateDkycDto) {}
+export class UpdateDkycDto {}

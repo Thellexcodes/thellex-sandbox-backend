@@ -9,10 +9,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
-import { ERRORS } from '@/utils/types';
 import { MailService } from '../mail/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
+import { UserErrorEnum } from '@/types/user-error.enum';
 
 @Injectable()
 export class UserService {
@@ -74,14 +74,14 @@ export class UserService {
 
     if (!user) {
       throw new CustomHttpException(
-        ERRORS.INVALID_CREDENTIAL,
+        UserErrorEnum.INVALID_CREDENTIAL,
         HttpStatus.BAD_REQUEST,
       );
     }
 
     if (!user.emailVerified) {
       throw new CustomHttpException(
-        ERRORS.EMAIL_NOT_VERIFIED,
+        UserErrorEnum.EMAIL_NOT_VERIFIED,
         HttpStatus.BAD_REQUEST,
       );
     }

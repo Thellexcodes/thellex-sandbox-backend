@@ -1,7 +1,13 @@
+import { AuthErrorEnum } from '@/types/auth-error.enum';
+import { KycErrorEnum } from '@/types/kyc-error.enum';
+import { UserErrorEnum } from '@/types/user-error.enum';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class CustomHttpException extends HttpException {
-  constructor(message: string, statusCode: HttpStatus) {
-    super(message, statusCode);
+  constructor(
+    public readonly errorCode: KycErrorEnum | UserErrorEnum | AuthErrorEnum,
+    statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+  ) {
+    super(errorCode, statusCode);
   }
 }

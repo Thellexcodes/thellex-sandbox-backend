@@ -38,7 +38,6 @@ export const thellexTiers: Record<string, Tier> = {
       { type: 'POS Payments', min: 0, max: 19999, feePercentage: 2 },
     ],
   },
-
   personal: {
     name: 'Personal Tier',
     target: 'Verified Individuals',
@@ -58,7 +57,6 @@ export const thellexTiers: Record<string, Tier> = {
       { type: 'POS Payments', min: 20000, max: 39999, feePercentage: 1.5 },
     ],
   },
-
   professional: {
     name: 'Professional Tier',
     target: 'High-Volume Users',
@@ -77,7 +75,6 @@ export const thellexTiers: Record<string, Tier> = {
       { type: 'POS Payments', min: 40000, feePercentage: 1.2 },
     ],
   },
-
   business: {
     name: 'Business Tier',
     target: 'SMEs & Startups',
@@ -99,7 +96,6 @@ export const thellexTiers: Record<string, Tier> = {
       { type: 'POS Payments', min: 50000, feePercentage: 1 },
     ],
   },
-
   enterprise: {
     name: 'Enterprise Tier',
     target: 'Corporates & Aggregators',

@@ -1,55 +1,89 @@
-import { Injectable } from '@nestjs/common';
-import { CreateDkycDto } from './dto/create-dkyc.dto';
-import { UpdateDkycDto } from './dto/update-dkyc.dto';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { BvnkycDto, NinkycDto } from './dto/create-tier1-dkyc.dto';
+import { HttpService } from '@/middleware/http.service';
+import { DOJAH_KYC_API } from '@/constants/env';
+import { ConfigService } from '@nestjs/config';
+import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { KycErrorEnum } from '@/types/kyc-error.enum';
 
 @Injectable()
 export class DkycService {
-  create(createDkycDto: CreateDkycDto) {
-    return 'This action adds a new dkyc';
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  private get dojahUrl(): string {
+    const env = this.configService.get<string>('NODE_ENV');
+    return env === 'testnet' ? DOJAH_KYC_API.sandbox : DOJAH_KYC_API.production;
+  }
+
+  async createBvnKyc(createDkycDto: BvnkycDto) {}
+
+  async createNinKyc(createDkycDto: NinkycDto) {}
+
+  async lookupNIN(nin: string): Promise<any> {
+    console.log(nin, 'hitting here');
+    try {
+      const ninCheckerResponse = await this.httpService.get(this.dojahUrl, {
+        headers: {
+          AppId: this.configService.get<string>('DOJAH_APPID'),
+          Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+        },
+        params: { nin },
+      });
+    } catch (error) {
+      // Example of handling different error cases:
+      if (error.response?.status === 404) {
+        throw new CustomHttpException(
+          KycErrorEnum.NIN_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (error.response?.status === 400) {
+        throw new CustomHttpException(
+          KycErrorEnum.INVALID_NIN,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      // fallback generic internal error
+      throw new CustomHttpException(
+        KycErrorEnum.INTERNAL_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async lookupBVN(bvn: string): Promise<any> {
-    // Implement API call or DB query to lookup BVN details
-    return {
-      bvn,
-      status: 'active',
-      name: 'John Doe',
-      dateOfBirth: '1990-01-01',
-      // other relevant BVN data
-    };
+    try {
+      const bvnCheckerResponse = await this.httpService.get(this.dojahUrl, {
+        headers: {
+          AppId: this.configService.get<string>('DOJAH_APPID'),
+          Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+        },
+        params: { bvn },
+      });
+    } catch (error) {
+      throw new CustomHttpException(
+        error.message,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  async lookupPhoneNumber(phoneNumber: string): Promise<any> {
-    // Implement API call or DB query to lookup phone number KYC info
-    return {
-      phoneNumber,
-      status: 'verified',
-      linkedBVN: '12345678901',
-      // other phone KYC data
-    };
+  async lookupPhoneNumber(phone_number: string): Promise<any> {
+    try {
+      const bvnCheckerResponse = await this.httpService.get(this.dojahUrl, {
+        headers: {
+          AppId: this.configService.get<string>('DOJAH_APPID'),
+          Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+        },
+        params: { phone_number },
+      });
+    } catch (err) {}
   }
 
-  async lookupNubanKycStatus(nuban: string): Promise<any> {
-    // Implement lookup for NUBAN (bank account number) KYC status
-    return {
-      nuban,
-      kycStatus: 'completed',
-      bankName: 'Sample Bank',
-      accountName: 'John Doe',
-      // other relevant account details
-    };
-  }
-
-  async lookupNIN(nin: string): Promise<any> {
-    // Implement API call or DB query to lookup NIN details
-    return {
-      nin,
-      status: 'active',
-      name: 'John Doe',
-      dateOfBirth: '1990-01-01',
-      // other relevant NIN data
-    };
-  }
+  async lookupNubanKycStatus(nuban: string): Promise<any> {}
 
   // Global Identity Verification
   async verifySelfiePhotoId(
