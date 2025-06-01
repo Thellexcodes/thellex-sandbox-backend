@@ -5,5 +5,3 @@ export const DOJAH_KYC_API = {
   production: 'https://api.dojah.io',
   sandbox: 'https://sandbox.dojah.io',
 };
-
-console.log(process.env.DOJAH_APPID);

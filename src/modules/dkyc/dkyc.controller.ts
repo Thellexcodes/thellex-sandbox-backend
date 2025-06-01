@@ -85,7 +85,7 @@ export class DkycController {
   }
 
   @Get('email-check')
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @ApiQuery({
     name: 'email',
     description: 'Email address to check',

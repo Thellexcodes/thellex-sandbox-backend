@@ -228,8 +228,39 @@ export class DkycService {
     }
   }
 
-  async phoneCheck(phoneNumber: string): Promise<boolean> {
-    // Validate and screen phone number
-    return true;
+  async phoneCheck(phone_number: string): Promise<boolean> {
+    try {
+      const phoneCheckerResponse: boolean = await this.httpService.get(
+        `${this.dojahUrl}/api/v1/fraud/phone`,
+        {
+          headers: {
+            AppId: this.configService.get<string>('DOJAH_APPID'),
+            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+          },
+          params: { phone_number },
+        },
+      );
+
+      //TODO: Ensure phone is among list of supported countries
+
+      return phoneCheckerResponse;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        throw new CustomHttpException(
+          KycErrorEnum.PHONE_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (error.response?.status === 400) {
+        throw new CustomHttpException(
+          KycErrorEnum.PHONE_CHECK_FAILED,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      throw new CustomHttpException(
+        `${KycErrorEnum.INTERNAL_ERROR}-${error.response.error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
