@@ -5,6 +5,7 @@ import { AuthVerificationCodesEntity } from './authVerificationCodes.entities';
 import { DeviceEntity } from './device.entity';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
 import { QwalletEntity } from './qwallet.entity';
+import { DKycEntity } from './dkyc.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -43,6 +44,9 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => CardManagementEntity, (card) => card.user)
   electronic_cards: CardManagementEntity[];
 
-  @OneToMany(() => QwalletEntity, (qwallet) => qwallet.user)
+  @OneToOne(() => QwalletEntity, (qwallet) => qwallet.user)
   qwallet: QwalletEntity;
+
+  @OneToOne(() => DKycEntity, (dkyc) => dkyc.user, { nullable: true })
+  dkyc: DKycEntity;
 }

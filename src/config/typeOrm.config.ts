@@ -7,6 +7,7 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
+import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -21,6 +22,7 @@ export const typeOrmConfig = async (
     database: configService.get<string>('POSTGRES_DATABASE'),
     password: configService.get<string>('POSTGRES_PASSWORD'),
     entities: [
+      DKycEntity,
       UserEntity,
       AuthnEntity,
       DeviceEntity,

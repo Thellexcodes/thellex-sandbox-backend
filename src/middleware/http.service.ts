@@ -1,3 +1,4 @@
+import { AnyObject } from '@/types/any.types';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
@@ -24,7 +25,7 @@ export class HttpService {
     return response.data;
   }
 
-  async post<T = any>(
+  async post<T = AnyObject>(
     url: string,
     data: any,
     config?: AxiosRequestConfig,

@@ -5,3 +5,7 @@ export const DOJAH_KYC_API = {
   production: 'https://api.dojah.io',
   sandbox: 'https://sandbox.dojah.io',
 };
+export const QWALLET_API = {
+  sandbox: 'https://app.quidax.io/api/v1',
+  production: 'https://app.quidax.io/api/v1',
+};

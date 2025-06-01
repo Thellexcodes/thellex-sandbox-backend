@@ -10,12 +10,18 @@ import {
   NinLookupResponse,
   PhoneNumberLookupResponse,
 } from '@/types/identifications.types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
+import { Repository } from 'typeorm';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 @Injectable()
 export class DkycService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    @InjectRepository(DKycEntity)
+    private readonly dkycRepo: Repository<DKycEntity>,
   ) {}
 
   private get dojahUrl(): string {
@@ -23,9 +29,31 @@ export class DkycService {
     return env === 'testnet' ? DOJAH_KYC_API.sandbox : DOJAH_KYC_API.production;
   }
 
-  async createBvnKyc(createDkycDto: BvnkycDto) {}
+  async createBvnKyc(createDkycDto: BvnkycDto, user: UserEntity) {
+    const record = await this.dkycRepo.findOne({
+      where: { user: { id: user.id } },
+    });
 
-  async createNinKyc(createDkycDto: NinkycDto) {}
+    if (!record) {
+      await this.dkycRepo.save({
+        user: { id: user.id },
+        ninVerified: true,
+      });
+    }
+  }
+
+  async createNinKyc(createDkycDto: NinkycDto, user: UserEntity) {
+    const record = await this.dkycRepo.findOne({
+      where: { user: { id: user.id } },
+    });
+
+    if (!record) {
+      await this.dkycRepo.save({
+        user: { id: user.id },
+        ninVerified: true,
+      });
+    }
+  }
 
   async lookupNIN(nin: number): Promise<NinLookupResponse> {
     try {

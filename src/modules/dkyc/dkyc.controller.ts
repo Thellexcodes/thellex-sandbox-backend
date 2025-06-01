@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { DkycService } from './dkyc.service';
 import { BvnkycDto, NinkycDto } from './dto/create-tier1-dkyc.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { CustomRequest, CustomResponse } from '@/types/request.types';
 
 @ApiTags('DKYC')
 @Controller('dkyc')
@@ -17,14 +27,19 @@ export class DkycController {
     required: true,
     type: String,
   })
-  async createBasicTierKyc(@Body() createDkycDto: BvnkycDto | NinkycDto) {
+  async createBasicTierKyc(
+    @Body() createDkycDto: BvnkycDto | NinkycDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
     if ('bvn' in createDkycDto && createDkycDto.bvn) {
-      const bvnRes = await this.dkycService.createBvnKyc(createDkycDto);
+      const bvnRes = await this.dkycService.createBvnKyc(createDkycDto, user);
       return bvnRes;
     }
 
     if ('nin' in createDkycDto && createDkycDto.nin) {
-      const ninRes = await this.dkycService.createNinKyc(createDkycDto);
+      const ninRes = await this.dkycService.createNinKyc(createDkycDto, user);
       return ninRes;
     }
   }
@@ -37,14 +52,23 @@ export class DkycController {
     required: true,
     type: String,
   })
-  async lookupNIN(@Query('nin') nin: number) {
+  async lookupNIN(
+    @Query('nin') nin: number,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
     return this.dkycService.lookupNIN(nin);
   }
 
   @Get('bvn')
   @UseGuards(AuthGuard)
   @ApiQuery({ name: 'bvn', description: 'BVN number', required: true })
-  async lookupBVN(@Query('bvn') bvn: number) {
+  async lookupBVN(
+    @Query('bvn') bvn: number,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
     return this.dkycService.lookupBVN(bvn);
   }
 

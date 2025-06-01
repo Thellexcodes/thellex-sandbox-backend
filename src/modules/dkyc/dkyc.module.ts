@@ -5,20 +5,18 @@ import { HttpService } from '@/middleware/http.service';
 import { UserService } from '../user/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
-import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
+import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
-      AuthnEntity,
-      DeviceEntity,
+      DKycEntity,
       AuthVerificationCodesEntity,
     ]),
     JwtModule.registerAsync({
@@ -31,6 +29,5 @@ import { MailService } from '../mail/mail.service';
   ],
   controllers: [DkycController],
   providers: [DkycService, HttpService, UserService, MailService],
-  exports: [HttpService],
 })
 export class DkycModule {}

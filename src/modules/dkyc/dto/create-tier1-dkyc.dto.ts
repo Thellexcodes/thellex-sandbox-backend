@@ -40,13 +40,13 @@ export class NinkycDto {
   @IsString({ message: 'lastName/not-string' })
   lastName: string;
 
-  @ApiProperty({ description: 'Bank Verification Number (BVN)' })
-  @IsNotEmpty({ message: 'bvn/empty' })
-  @IsNumberString({}, { message: 'bvn/not-numeric' })
-  nin: string;
+  // @ApiProperty({ description: 'Bank Verification Number (BVN)' })
+  // @IsNotEmpty({ message: 'bvn/empty' })
+  // @IsNumberString({}, { message: 'bvn/not-numeric' })
+  // nin: string;
 
-  @ApiProperty({ description: 'Date of birth of BVN holder (yyyy-mm-dd)' })
-  @IsOptional()
-  @IsDateString({}, { message: 'dob/invalid-format' })
-  dob: string;
+  // @ApiProperty({ description: 'Date of birth of BVN holder (yyyy-mm-dd)' })
+  // @IsOptional()
+  // @IsDateString({}, { message: 'dob/invalid-format' })
+  // dob: string;
 }
