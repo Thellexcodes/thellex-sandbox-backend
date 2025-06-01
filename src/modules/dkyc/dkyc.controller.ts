@@ -38,8 +38,6 @@ export class DkycController {
     type: String,
   })
   async lookupNIN(@Query('nin') nin: number) {
-    if (!nin) {
-    }
     return this.dkycService.lookupNIN(nin);
   }
 
@@ -47,8 +45,6 @@ export class DkycController {
   @UseGuards(AuthGuard)
   @ApiQuery({ name: 'bvn', description: 'BVN number', required: true })
   async lookupBVN(@Query('bvn') bvn: number) {
-    if (!bvn) {
-    }
     return this.dkycService.lookupBVN(bvn);
   }
 
@@ -61,8 +57,6 @@ export class DkycController {
     type: String,
   })
   async lookupPhoneNumber(@Query('phone') phone: string) {
-    if (!phone) {
-    }
     return this.dkycService.lookupPhoneNumber(phone);
   }
 
@@ -75,8 +69,6 @@ export class DkycController {
     type: String,
   })
   async userScreening(@Query('userId') userId: string) {
-    if (!userId) {
-    }
     return this.dkycService.userScreening(userId);
   }
 
@@ -89,13 +81,11 @@ export class DkycController {
     type: String,
   })
   async ipScreening(@Query('ip') ip: string) {
-    if (!ip) {
-    }
     return this.dkycService.ipScreening(ip);
   }
 
   @Get('email-check')
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @ApiQuery({
     name: 'email',
     description: 'Email address to check',
@@ -103,8 +93,6 @@ export class DkycController {
     type: String,
   })
   async emailCheck(@Query('email') email: string) {
-    if (!email) {
-    }
     return this.dkycService.emailCheck(email);
   }
 

@@ -195,9 +195,37 @@ export class DkycService {
     return true;
   }
 
-  async emailCheck(email: string): Promise<boolean> {
-    // Validate and screen email
-    return true;
+  async emailCheck(email_address: string): Promise<boolean> {
+    try {
+      const emailCheckerResponse: boolean = await this.httpService.get(
+        `${this.dojahUrl}/api/v1/fraud/email`,
+        {
+          headers: {
+            AppId: this.configService.get<string>('DOJAH_APPID'),
+            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+          },
+          params: { email_address },
+        },
+      );
+      return emailCheckerResponse;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        throw new CustomHttpException(
+          KycErrorEnum.EMAIL_CHECK_FAILED,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (error.response?.status === 400) {
+        throw new CustomHttpException(
+          KycErrorEnum.EMAIL_CHECK_FAILED,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      throw new CustomHttpException(
+        `${KycErrorEnum.INTERNAL_ERROR}-${error.response.error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async phoneCheck(phoneNumber: string): Promise<boolean> {

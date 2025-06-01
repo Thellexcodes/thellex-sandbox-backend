@@ -44,3 +44,45 @@ export interface BvnLookupResponse {
 export interface NinLookupResponse {
   entity: NinEntity;
 }
+
+export type EmailReputation = 'high' | 'medium' | 'low' | 'n/a';
+export type DomainReputation = 'high' | 'medium' | 'low' | 'n/a';
+
+export interface EmailCheckerDetails {
+  blacklisted: boolean;
+  malicious_activity: boolean;
+  malicious_activity_recent: boolean;
+  credentials_leaked: boolean;
+  credentials_leaked_recent: boolean;
+  data_breach: boolean;
+  first_seen: string;
+  last_seen: string;
+  domain_exists: boolean;
+  domain_reputation: DomainReputation;
+  new_domain: boolean;
+  days_since_domain_creation: number;
+  suspicious_tld: boolean;
+  spam: boolean;
+  free_provider: boolean;
+  disposable: boolean;
+  deliverable: boolean;
+  accept_all: boolean;
+  valid_mx: boolean;
+  primary_mx: string;
+  spoofable: boolean;
+  spf_strict: boolean;
+  dmarc_enforced: boolean;
+  profiles: string[];
+}
+
+export interface EmailCheckerEntity {
+  email: string;
+  reputation: EmailReputation;
+  suspicious: boolean;
+  references: number;
+  details: EmailCheckerDetails;
+}
+
+export interface EmailCheckerResponse {
+  entity: EmailCheckerEntity;
+}
