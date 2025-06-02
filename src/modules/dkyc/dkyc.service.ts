@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { BvnkycDto, NinkycDto } from './dto/create-tier1-dkyc.dto';
 import { HttpService } from '@/middleware/http.service';
 import { DOJAH_KYC_API } from '@/constants/env';
 import { ConfigService } from '@nestjs/config';
@@ -14,6 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { BasicTierKycDto } from './dto/create-tier1-dkyc.dto';
 
 @Injectable()
 export class DkycService {
@@ -29,23 +29,17 @@ export class DkycService {
     return env === 'testnet' ? DOJAH_KYC_API.sandbox : DOJAH_KYC_API.production;
   }
 
-  async createBvnKyc(createDkycDto: BvnkycDto, user: UserEntity) {
+  async createBasicKyc(basicTierKycDto: BasicTierKycDto, user: UserEntity) {
     const record = await this.dkycRepo.findOne({
-      where: { user: { id: user.id } },
+      where: { user: { id: user.id }, ninVerified: true },
     });
+    //[x] Properly queue later
 
-    if (!record) {
-      await this.dkycRepo.save({
-        user: { id: user.id },
-        ninVerified: true,
-      });
-    }
-  }
+    //Lookup Nin
+    const nin = await this.lookupNIN(basicTierKycDto.nin);
 
-  async createNinKyc(createDkycDto: NinkycDto, user: UserEntity) {
-    const record = await this.dkycRepo.findOne({
-      where: { user: { id: user.id } },
-    });
+    // Lookup Bvn
+    const bvn = await this.lookupBVN(basicTierKycDto.nin);
 
     if (!record) {
       await this.dkycRepo.save({

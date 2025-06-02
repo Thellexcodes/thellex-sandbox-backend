@@ -1,15 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  Query,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { DkycService } from './dkyc.service';
-import { BvnkycDto, NinkycDto } from './dto/create-tier1-dkyc.dto';
+import { BasicTierKycDto } from './dto/create-tier1-dkyc.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
@@ -28,109 +19,106 @@ export class DkycController {
     type: String,
   })
   async createBasicTierKyc(
-    @Body() createDkycDto: BvnkycDto | NinkycDto,
+    @Body() basicKycDto: BasicTierKycDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    if ('bvn' in createDkycDto && createDkycDto.bvn) {
-      const bvnRes = await this.dkycService.createBvnKyc(createDkycDto, user);
-      return bvnRes;
-    }
+    const basicKycRes = await this.dkycService.createBasicKyc(
+      basicKycDto,
+      user,
+    );
 
-    if ('nin' in createDkycDto && createDkycDto.nin) {
-      const ninRes = await this.dkycService.createNinKyc(createDkycDto, user);
-      return ninRes;
-    }
+    return basicKycRes;
   }
 
-  @Get('nin')
-  @UseGuards(AuthGuard)
-  @ApiQuery({
-    name: 'nin',
-    description: 'NIN number',
-    required: true,
-    type: String,
-  })
-  async lookupNIN(
-    @Query('nin') nin: number,
-    @Req() req: CustomRequest,
-    @Res() res: CustomResponse,
-  ) {
-    const user = req.user;
-    return this.dkycService.lookupNIN(nin);
-  }
+  // @Get('nin')
+  // @UseGuards(AuthGuard)
+  // @ApiQuery({
+  //   name: 'nin',
+  //   description: 'NIN number',
+  //   required: true,
+  //   type: String,
+  // })
+  // async lookupNIN(
+  //   @Query('nin') nin: number,
+  //   @Req() req: CustomRequest,
+  //   @Res() res: CustomResponse,
+  // ) {
+  //   const user = req.user;
+  //   return this.dkycService.lookupNIN(nin);
+  // }
 
-  @Get('bvn')
-  @UseGuards(AuthGuard)
-  @ApiQuery({ name: 'bvn', description: 'BVN number', required: true })
-  async lookupBVN(
-    @Query('bvn') bvn: number,
-    @Req() req: CustomRequest,
-    @Res() res: CustomResponse,
-  ) {
-    return this.dkycService.lookupBVN(bvn);
-  }
+  // @Get('bvn')
+  // @UseGuards(AuthGuard)
+  // @ApiQuery({ name: 'bvn', description: 'BVN number', required: true })
+  // async lookupBVN(
+  //   @Query('bvn') bvn: number,
+  //   @Req() req: CustomRequest,
+  //   @Res() res: CustomResponse,
+  // ) {
+  //   return this.dkycService.lookupBVN(bvn);
+  // }
 
-  @Get('phone')
-  @UseGuards(AuthGuard)
-  @ApiQuery({
-    name: 'phone',
-    description: 'Phone number',
-    required: true,
-    type: String,
-  })
-  async lookupPhoneNumber(@Query('phone') phone: string) {
-    return this.dkycService.lookupPhoneNumber(phone);
-  }
+  // @Get('phone')
+  // @UseGuards(AuthGuard)
+  // @ApiQuery({
+  //   name: 'phone',
+  //   description: 'Phone number',
+  //   required: true,
+  //   type: String,
+  // })
+  // async lookupPhoneNumber(@Query('phone') phone: string) {
+  //   return this.dkycService.lookupPhoneNumber(phone);
+  // }
 
-  @Get('user-screening')
-  @UseGuards(AuthGuard)
-  @ApiQuery({
-    name: 'userId',
-    description: 'User ID to screen',
-    required: true,
-    type: String,
-  })
-  async userScreening(@Query('userId') userId: string) {
-    return this.dkycService.userScreening(userId);
-  }
+  // @Get('user-screening')
+  // @UseGuards(AuthGuard)
+  // @ApiQuery({
+  //   name: 'userId',
+  //   description: 'User ID to screen',
+  //   required: true,
+  //   type: String,
+  // })
+  // async userScreening(@Query('userId') userId: string) {
+  //   return this.dkycService.userScreening(userId);
+  // }
 
-  @Get('ip-screening')
-  @UseGuards(AuthGuard)
-  @ApiQuery({
-    name: 'ip',
-    description: 'IP address to screen',
-    required: true,
-    type: String,
-  })
-  async ipScreening(@Query('ip') ip: string) {
-    return this.dkycService.ipScreening(ip);
-  }
+  // @Get('ip-screening')
+  // @UseGuards(AuthGuard)
+  // @ApiQuery({
+  //   name: 'ip',
+  //   description: 'IP address to screen',
+  //   required: true,
+  //   type: String,
+  // })
+  // async ipScreening(@Query('ip') ip: string) {
+  //   return this.dkycService.ipScreening(ip);
+  // }
 
-  @Get('email-check')
-  @UseGuards(AuthGuard)
-  @ApiQuery({
-    name: 'email',
-    description: 'Email address to check',
-    required: true,
-    type: String,
-  })
-  async emailCheck(@Query('email') email: string) {
-    return this.dkycService.emailCheck(email);
-  }
+  // @Get('email-check')
+  // @UseGuards(AuthGuard)
+  // @ApiQuery({
+  //   name: 'email',
+  //   description: 'Email address to check',
+  //   required: true,
+  //   type: String,
+  // })
+  // async emailCheck(@Query('email') email: string) {
+  //   return this.dkycService.emailCheck(email);
+  // }
 
-  @Get('phone-check')
-  @UseGuards(AuthGuard)
-  @ApiQuery({
-    name: 'phone',
-    description: 'Phone number to check',
-    required: true,
-    type: String,
-  })
-  async phoneCheck(@Query('phone') phone: string) {
-    if (!phone) {
-    }
-    return this.dkycService.phoneCheck(phone);
-  }
+  // @Get('phone-check')
+  // @UseGuards(AuthGuard)
+  // @ApiQuery({
+  //   name: 'phone',
+  //   description: 'Phone number to check',
+  //   required: true,
+  //   type: String,
+  // })
+  // async phoneCheck(@Query('phone') phone: string) {
+  //   if (!phone) {
+  //   }
+  //   return this.dkycService.phoneCheck(phone);
+  // }
 }
