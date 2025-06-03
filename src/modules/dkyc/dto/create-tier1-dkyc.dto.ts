@@ -5,7 +5,6 @@ import {
   IsNumberString,
   IsDateString,
   IsOptional,
-  IsNumber,
 } from 'class-validator';
 
 export class BasicTierKycDto {

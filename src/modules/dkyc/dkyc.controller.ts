@@ -2,7 +2,7 @@ import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { DkycService } from './dkyc.service';
 import { BasicTierKycDto } from './dto/create-tier1-dkyc.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 
 @ApiTags('DKYC')
@@ -10,14 +10,9 @@ import { CustomRequest, CustomResponse } from '@/types/request.types';
 export class DkycController {
   constructor(private readonly dkycService: DkycService) {}
 
-  @Post()
+  @Post('basic')
   @UseGuards(AuthGuard)
-  @ApiQuery({
-    name: 'bvn',
-    description: 'BVN number',
-    required: true,
-    type: String,
-  })
+  @ApiBody({ type: BasicTierKycDto, description: 'Basic KYC information' })
   async createBasicTierKyc(
     @Body() basicKycDto: BasicTierKycDto,
     @Req() req: CustomRequest,

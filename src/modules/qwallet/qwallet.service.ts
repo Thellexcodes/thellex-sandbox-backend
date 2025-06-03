@@ -215,6 +215,63 @@ export class QwalletService {
         `${this.qwalletUrl}/users/${uuid}/wallets/${currency}`,
         { headers: this.getAuthHeaders() },
       );
+
+      //   "networks": [
+      //   {
+      //     "id": "bep20",
+      //     "name": "Binance Smart Chain",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "erc20",
+      //     "name": "Ethereum Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "trc20",
+      //     "name": "Tron Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "polygon",
+      //     "name": "Polygon Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "solana",
+      //     "name": "Solana Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "celo",
+      //     "name": "Celo Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "optimism",
+      //     "name": "Optimism Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "ton",
+      //     "name": "Ton Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": true
+      //   },
+      //   {
+      //     "id": "arbitrum",
+      //     "name": "Arbitrum Network",
+      //     "deposits_enabled": true,
+      //     "withdraws_enabled": false
+      //   }
+      // ],
     } catch (error) {
       //TODO: properly handle errors for 404 / 400 / 500
       throw new CustomHttpException(

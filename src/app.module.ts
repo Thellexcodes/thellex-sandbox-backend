@@ -31,6 +31,7 @@ import { DkycModule } from './modules/dkyc/dkyc.module';
 import { QwalletService } from './modules/qwallet/qwallet.service';
 import { HttpService } from './middleware/http.service';
 import { QwalletEntity } from './utils/typeorm/entities/qwallet.entity';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { QwalletEntity } from './utils/typeorm/entities/qwallet.entity';
     StellarModule,
     QwalletModule,
     DkycModule,
+    PaymentsModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [
