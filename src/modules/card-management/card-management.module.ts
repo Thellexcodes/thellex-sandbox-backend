@@ -12,12 +12,16 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
 import { StellarService } from '../stellar/stellar.service';
 import { CardManagementEntity } from '../../utils/typeorm/entities/card-management.entity';
+import { QwalletService } from '../qwallet/qwallet.service';
+import { HttpService } from '@/middleware/http.service';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       AuthnEntity,
+      QwalletEntity,
       AuthVerificationCodesEntity,
       CardManagementEntity,
     ]),
@@ -30,6 +34,13 @@ import { CardManagementEntity } from '../../utils/typeorm/entities/card-manageme
     }),
   ],
   controllers: [CardManagementController],
-  providers: [CardManagementService, UserService, MailService, StellarService],
+  providers: [
+    CardManagementService,
+    UserService,
+    MailService,
+    StellarService,
+    QwalletService,
+    HttpService,
+  ],
 })
 export class CardManagementModule {}

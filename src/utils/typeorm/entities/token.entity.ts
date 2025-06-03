@@ -1,1 +1,1 @@
-export class Token {}
+export class TokenEntity {}

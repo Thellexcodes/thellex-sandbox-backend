@@ -1,4 +1,4 @@
-import { FEE, SUPPORTED_NETWORKS } from '@/config/settings';
+import { FEE, SupportedBlockchain } from '@/config/settings';
 
 export interface CreateSubAccountRequest {
   email: string;
@@ -34,9 +34,11 @@ export interface QWallet {
   reference: string | null;
   currency: string;
   address: string;
-  network: SUPPORTED_NETWORKS;
+  network: QwalletNetwork[];
+  is_crypto: boolean;
   user: SubAccountData;
   destination_tag: string | null;
+  deposit_address: string | null;
   total_payments: string | null;
   created_at: string;
   updated_at: string;
@@ -58,7 +60,6 @@ export interface QwalletBalance {
   blockchain_enabled: boolean;
   default_network: string | null;
   networks: QwalletNetwork[];
-  deposit_address: string | null;
   destination_tag: string | null;
 }
 
@@ -69,14 +70,17 @@ export class QWalletWithdrawalFeeResponse {
 
 // Responses
 export type CreateSubAccountResponse = ApiResponse<SubAccountData>;
+
+//Wallet
 export type CreateUserWalletResponse = ApiResponse<QWallet>;
-export type GetUserWalletResponse = ApiResponse<QwalletBalance>;
+export type GetUserWalletResponse = ApiResponse<QWallet>;
 export type GetUserWalletsResponse = ApiResponse<QwalletBalance[]>;
-// : Promise<GetPaymentAddressResponse>
+export type GetPaymentAddressResponse = ApiResponse<QWallet>;
 // : Promise<ValidateAddressResponse>
 //  Promise<CreateWithdrawalResponse> {
 // : Promise<GetWithdrawalResponse>
 
+//Swap
 interface SwapData {
   id: string;
   from_currency: string;
@@ -99,6 +103,7 @@ export type GetTemporarySwapQuoteResponse = ApiResponse<any>;
 export type GetSwapTransactionResponse = ApiResponse<any>;
 export type GetAllSwapsResponse = ApiResponse<any>;
 
+//Order
 interface OrderData {}
 export type CreateOrderResponse = ApiResponse<OrderData>;
 export type GetAllOrdersResponse = ApiResponse<any>;

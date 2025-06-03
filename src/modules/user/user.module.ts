@@ -10,6 +10,8 @@ import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { MailService } from '../mail/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
+import { QwalletService } from '../qwallet/qwallet.service';
+import { HttpService } from '@/middleware/http.service';
 
 @Module({
   imports: [
@@ -28,6 +30,6 @@ import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService, MailService],
+  providers: [UserService, MailService, QwalletService, HttpService],
 })
 export class UserModule {}

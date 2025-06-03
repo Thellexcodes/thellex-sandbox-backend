@@ -28,12 +28,16 @@ import { CardManagementModule } from './modules/card-management/card-management.
 import { StellarModule } from './modules/stellar/stellar.module';
 import { QwalletModule } from './modules/qwallet/qwallet.module';
 import { DkycModule } from './modules/dkyc/dkyc.module';
+import { QwalletService } from './modules/qwallet/qwallet.service';
+import { HttpService } from './middleware/http.service';
+import { QwalletEntity } from './utils/typeorm/entities/qwallet.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       AuthnEntity,
+      QwalletEntity,
       DeviceEntity,
       AuthVerificationCodesEntity,
     ]),
@@ -71,6 +75,8 @@ import { DkycModule } from './modules/dkyc/dkyc.module';
     AuthnService,
     UserService,
     MailService,
+    // QwalletService,
+    // HttpService,
   ],
 })
 export class AppModule implements NestModule {

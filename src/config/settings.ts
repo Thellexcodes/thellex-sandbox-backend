@@ -55,31 +55,24 @@ export type BlockchainNetworkMap = {
   [key in SupportedBlockchain]: string;
 };
 
-export type LiskToken = 'USDC' | 'USDT';
-export type BaseToken = 'USDC';
-export type StellarToken = 'USDC' | 'XLM';
-export type PolygonToken = 'USDC' | 'MATIC';
-export type TronToken = 'USDC' | 'USDT';
-export type SolanaToken = 'USDC' | 'USDT';
-
-export enum SUPPORTED_NETWORKS {
-  BEP20 = 'bep20',
-  ERC20 = 'erc20',
-  TRC20 = 'trc20',
-  SOL = 'sol',
-  BTC = 'btc',
-  LTC = 'ltc',
-  DOGE = 'doge',
+// --- Token Support ---
+export enum Token {
+  USDC = 'usdc',
+  USDT = 'usdt',
+  XLM = 'xlm',
+  btc = 'btc',
 }
 
-export type TokenMap = {
-  lisk: LiskToken[];
-  base: BaseToken[];
-  stellar: StellarToken[];
-  polygon: PolygonToken[];
-  tron: TronToken[];
-  solana: SolanaToken[];
-};
+// --- Chain Tokens Support ---
+export const ChainTokens = {
+  lisk: [Token.USDC, Token.USDT],
+  base: [Token.USDC],
+  stellar: [Token.USDC, Token.XLM],
+  polygon: [Token.USDC],
+  tron: [Token.USDC, Token.USDT],
+  solana: [Token.USDC, Token.USDT],
+  bep20: [Token.USDC, Token.USDT],
+} as const;
 
 // --- Blockchain Network Support ---
 export const SUPPORTED_BLOCKCHAINS: SupportedBlockchain[] = [
@@ -91,25 +84,6 @@ export const SUPPORTED_BLOCKCHAINS: SupportedBlockchain[] = [
   'solana',
 ];
 
-export const BLOCKCHAIN_NETWORKS: BlockchainNetworkMap = {
-  lisk: 'lisk-testnet',
-  base: 'base-goerli',
-  stellar: 'stellar-testnet',
-  polygon: 'polygon-mumbai',
-  tron: 'tron-shasta',
-  solana: 'solana-devnet',
-};
-
 export const USE_TESTNET: boolean = true;
-
-// --- Token Support ---
-export const SUPPORTED_TOKENS: TokenMap = {
-  lisk: ['USDC', 'USDT'],
-  base: ['USDC'],
-  stellar: ['USDC', 'XLM'],
-  polygon: ['USDC', 'MATIC'],
-  tron: ['USDC', 'USDT'],
-  solana: ['USDC', 'USDT'],
-};
 
 export type FEE = 'flat' | 'percentage';

@@ -11,12 +11,15 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
 import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
+import { QwalletService } from '../qwallet/qwallet.service';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       DKycEntity,
+      QwalletEntity,
       AuthVerificationCodesEntity,
     ]),
     JwtModule.registerAsync({
@@ -28,6 +31,13 @@ import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
     }),
   ],
   controllers: [DkycController],
-  providers: [DkycService, HttpService, UserService, MailService],
+  providers: [
+    DkycService,
+    HttpService,
+    UserService,
+    MailService,
+    QwalletService,
+    HttpService,
+  ],
 })
 export class DkycModule {}

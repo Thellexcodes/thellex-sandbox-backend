@@ -13,6 +13,8 @@ import { MailService } from '../mail/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
+import { QwalletService } from '../qwallet/qwallet.service';
+import { Token } from '@/config/settings';
 
 @Injectable()
 export class UserService {
@@ -26,6 +28,7 @@ export class UserService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly qWalletService: QwalletService,
   ) {}
 
   async create(
@@ -49,6 +52,39 @@ export class UserService {
 
         // Save new user to DB
         user = await newUser.save();
+
+        //creates user qwallet-subaccount
+        let qwalletSubAccount =
+          await this.qWalletService.lookupSubaccount(user);
+
+        if (!qwalletSubAccount) {
+          // Create sub-account if not exists
+          const subAccountResponse = await this.qWalletService.createSubAccount(
+            { email: createUserDto.email },
+            user,
+          );
+
+          // Create USDT wallet and save it inside createUserWallet method
+          await this.qWalletService.createUserWallet(
+            subAccountResponse.data.id,
+            Token.USDT,
+          );
+
+          // Refetch qwalletSubAccount to have updated wallets
+          qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
+        } else {
+          // If sub-account exists, ensure USDT wallet exists
+          const usdtWallet = await this.qWalletService.getUserWallet(
+            qwalletSubAccount.qid,
+            Token.USDT,
+          );
+          if (!usdtWallet) {
+            await this.qWalletService.createUserWallet(
+              qwalletSubAccount.qid,
+              Token.USDT,
+            );
+          }
+        }
       }
 
       // Trigger email verification flow
@@ -59,6 +95,7 @@ export class UserService {
 
       return token;
     } catch (error) {
+      console.log(error);
       throw new CustomHttpException(
         error.message,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -119,16 +156,23 @@ export class UserService {
   async generateAuthVerificationCode(
     type: 'email' | 'phone',
     user: UserEntity,
-  ) {
-    const code = Math.floor(100000 + Math.random() * 9000);
-    const newCode = new AuthVerificationCodesEntity();
-    newCode.user = user;
+  ): Promise<number> {
+    let code: number;
+    let exists: any = true;
 
-    if (type === 'email') {
-      newCode.code = code;
+    while (exists) {
+      code = Math.floor(100000 + Math.random() * 900000);
+
+      exists = await AuthVerificationCodesEntity.findOne({
+        where: { code },
+      });
     }
 
-    newCode.save();
+    const newCode = new AuthVerificationCodesEntity();
+    newCode.user = user;
+    newCode.code = code;
+
+    await newCode.save();
 
     return code;
   }

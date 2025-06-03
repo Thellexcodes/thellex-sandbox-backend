@@ -13,12 +13,14 @@ import {
   GetAllOrdersResponse,
   GetAllSwapsResponse,
   GetOrderDetailsResponse,
+  GetPaymentAddressResponse,
   GetSwapTransactionResponse,
   GetTemporarySwapQuoteResponse,
   GetUserWalletResponse,
   GetUserWalletsResponse,
   QWalletWithdrawalFeeResponse,
   RefreshSwapQuoteResponse,
+  SubAccountData,
 } from '@/types/qwallet.types';
 import { QwalletErrorEnum } from '@/types/qwallet-error.enum';
 import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
@@ -31,6 +33,8 @@ import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { CreateSwapDto } from './dto/create-swap.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { Token } from '@/config/settings';
+import { GetWalletBalanceResponse } from 'dojah-typescript-sdk';
 
 @Injectable()
 export class QwalletService {
@@ -41,11 +45,74 @@ export class QwalletService {
     private readonly qwalletRepo: Repository<QwalletEntity>,
   ) {}
 
-  /**
-   * Check if subaccount already exists for a user.
-   */
+  // >>>>>>>>>>>>>>> SubAcocunts <<<<<<<<<<<<<<<
+
   async lookupSubaccount(user: UserEntity): Promise<QwalletEntity | null> {
-    return this.qwalletRepo.findOne({ where: { user } });
+    // First, check local DB
+    const localSubaccount = await this.qwalletRepo.findOne({ where: { user } });
+    if (localSubaccount) {
+      return localSubaccount;
+    }
+
+    // If not found, optionally try to fetch from QWallet server
+    try {
+      const allSubaccountsResponse: ApiResponse<SubAccountData[]> =
+        await this.httpService.get(`${this.qwalletUrl}/users`, {
+          headers: this.getAuthHeaders(),
+        });
+
+      const subaccounts = allSubaccountsResponse.data;
+
+      const found = subaccounts.find(
+        (acc: SubAccountData) =>
+          acc.email?.toLowerCase() === user.email?.toLowerCase(),
+      );
+
+      if (found) {
+        const data = new QwalletEntity();
+        data.user = user;
+        data.qid = found.id;
+        data.qsn = found.sn;
+
+        // Ensure wallets is always an array (not null or undefined)
+        const existingQwallet = await this.qwalletRepo.findOne({
+          where: { qid: found.id },
+        });
+        data.wallets = existingQwallet?.wallets ?? [];
+
+        let usdtWalletResponse = await this.getPaymentAddress(
+          data.qid,
+          Token.USDT,
+        );
+
+        if (!usdtWalletResponse || !usdtWalletResponse.data) {
+          usdtWalletResponse = await this.createUserWallet(
+            found.id,
+            Token.USDT,
+          );
+        }
+
+        const walletIndex = data.wallets.findIndex(
+          (w) => w.currency === Token.USDT,
+        );
+
+        if (walletIndex >= 0) {
+          data.wallets[walletIndex] = usdtWalletResponse.data;
+        } else {
+          data.wallets.push(usdtWalletResponse.data);
+        }
+
+        const qwallet = await this.qwalletRepo.save(data);
+        return qwallet;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      throw new CustomHttpException(
+        QwalletErrorEnum.FETCH_SUBACCOUNTS_FAILED,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async createSubAccount(
@@ -61,9 +128,10 @@ export class QwalletService {
         );
 
       const newSubAccountRecord = new QwalletEntity();
-      newSubAccountRecord.quidaxId = subAccountRes.data.id;
       newSubAccountRecord.user = user;
-      newSubAccountRecord.quidaxSn = subAccountRes.data.sn;
+      newSubAccountRecord.qid = subAccountRes.data.id;
+      newSubAccountRecord.qsn = subAccountRes.data.sn;
+
       await this.qwalletRepo.save(newSubAccountRecord);
 
       return subAccountRes;
@@ -92,7 +160,7 @@ export class QwalletService {
 
   async fetchAllSubAccounts() {
     try {
-      return await this.httpService.get(`${this.qwalletUrl}/users`, {
+      return await this.httpService.get(`${this.qwalletUrl}/api/v1/users`, {
         headers: this.getAuthHeaders(),
       });
     } catch (error) {
@@ -118,6 +186,7 @@ export class QwalletService {
     }
   }
 
+  // >>>>>>>>>>>>>>> Wallets <<<<<<<<<<<<<<<
   async getUserWallets(uuid: string): Promise<GetUserWalletsResponse> {
     try {
       const userWallets: GetUserWalletsResponse = await this.httpService.get(
@@ -157,14 +226,37 @@ export class QwalletService {
 
   async createUserWallet(
     uuid: string,
-    currency: string,
+    currency: Token,
   ): Promise<CreateUserWalletResponse> {
     try {
-      return await this.httpService.get(
+      const response: CreateUserWalletResponse = await this.httpService.get(
         `${this.qwalletUrl}/users/${uuid}/wallets/${currency}`,
         { headers: this.getAuthHeaders() },
       );
+
+      // Find QwalletEntity
+      const qwallet = await this.qwalletRepo.findOne({ where: { qid: uuid } });
+
+      if (qwallet) {
+        // Initialize wallets array if null
+        if (!qwallet.wallets) {
+          qwallet.wallets = [];
+        }
+
+        // Avoid adding duplicates
+        const alreadyExists = qwallet.wallets.some(
+          (w) => w.currency === response.data.currency,
+        );
+
+        if (!alreadyExists) {
+          qwallet.wallets.push(response.data);
+          await this.qwalletRepo.save(qwallet);
+        }
+      }
+
+      return response;
     } catch (error) {
+      console.log(error);
       //TODO: properly handle errors for 404 / 400 / 500
       throw new CustomHttpException(
         QwalletErrorEnum.CREATE_USER_WALLET_FAILED,
@@ -173,7 +265,10 @@ export class QwalletService {
     }
   }
 
-  async getPaymentAddress(uuid: string, currency: string) {
+  async getPaymentAddress(
+    uuid: string,
+    currency: Token,
+  ): Promise<GetPaymentAddressResponse> {
     try {
       return await this.httpService.get(
         `${this.qwalletUrl}/users/${uuid}/wallets/${currency}/addresses`,
@@ -187,6 +282,7 @@ export class QwalletService {
       );
     }
   }
+
   // : Promise<ValidateAddressResponse>
   async validateAddress(address: string, currency: string) {
     try {
@@ -202,6 +298,8 @@ export class QwalletService {
       );
     }
   }
+
+  // >>>>>>>>>>>>>>> Withdrawals <<<<<<<<<<<<<<<
   //  Promise<CreateWithdrawalResponse> {
   async createWithdrawal(uuid: string, dto: any) {
     try {

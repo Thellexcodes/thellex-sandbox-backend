@@ -23,5 +23,6 @@ import { HttpService } from '@/middleware/http.service';
   ],
   controllers: [QwalletController],
   providers: [QwalletService, HttpService],
+  exports: [QwalletService, HttpService],
 })
 export class QwalletModule {}

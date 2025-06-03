@@ -11,6 +11,9 @@ import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { MailService } from '../mail/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { QwalletService } from '../qwallet/qwallet.service';
+import { HttpService } from '@/middleware/http.service';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
 
 @Module({
   imports: [
@@ -18,6 +21,7 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerifi
       UserEntity,
       AuthnEntity,
       DeviceEntity,
+      QwalletEntity,
       AuthVerificationCodesEntity,
     ]),
     JwtModule.registerAsync({
@@ -29,7 +33,13 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerifi
     }),
   ],
   controllers: [AuthnController],
-  providers: [AuthnService, UserService, MailService],
+  providers: [
+    AuthnService,
+    UserService,
+    MailService,
+    QwalletService,
+    HttpService,
+  ],
   exports: [AuthnService],
 })
 export class AuthModule {}
