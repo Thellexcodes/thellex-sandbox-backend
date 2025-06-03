@@ -4,6 +4,7 @@ import { BasicTierKycDto } from './dto/create-tier1-dkyc.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { responseHandler } from '@/utils/helpers';
 
 @ApiTags('DKYC')
 @Controller('dkyc')
@@ -24,7 +25,7 @@ export class DkycController {
       user,
     );
 
-    return basicKycRes;
+    responseHandler(basicKycRes, res, req);
   }
 
   // @Get('nin')

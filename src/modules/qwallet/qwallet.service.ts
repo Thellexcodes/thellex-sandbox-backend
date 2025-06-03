@@ -18,6 +18,7 @@ import {
   GetTemporarySwapQuoteResponse,
   GetUserWalletResponse,
   GetUserWalletsResponse,
+  HandleWithdrawPaymentResponse,
   QWalletWithdrawalFeeResponse,
   RefreshSwapQuoteResponse,
   SubAccountData,
@@ -358,10 +359,13 @@ export class QwalletService {
 
   // >>>>>>>>>>>>>>> Withdrawals <<<<<<<<<<<<<<<
   //  Promise<CreateWithdrawalResponse> {
-  async createWithdrawal(uuid: string, dto: any) {
+  async createWithdrawal(
+    uuid: string,
+    dto: any,
+  ): Promise<HandleWithdrawPaymentResponse> {
     try {
-      return await this.httpService.post(
-        `${this.qwalletUrl}/users/${uuid}/withdraw`,
+      return await this.httpService.post<HandleWithdrawPaymentResponse>(
+        `${this.qwalletUrl}/users/${uuid}/withdraws`,
         dto,
         { headers: this.getAuthHeaders() },
       );

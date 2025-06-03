@@ -109,3 +109,50 @@ export type CreateOrderResponse = ApiResponse<OrderData>;
 export type GetAllOrdersResponse = ApiResponse<any>;
 export type GetOrderDetailsResponse = ApiResponse<any>;
 export type CancelOrderResponse = ApiResponse<any>;
+
+//Withdraw
+export interface WithdrawRecipient {
+  type: string;
+  details: {
+    address: string;
+    destination_tag: string | null;
+    name: string | null;
+  };
+}
+
+export interface WithdrawWallet {
+  id: string;
+  currency: string;
+  balance: string;
+  locked: string;
+  staked: string;
+  converted_balance: string;
+  reference_currency: string;
+  is_crypto: boolean;
+  created_at: string;
+  updated_at: string;
+  deposit_address: string;
+  destination_tag: string | null;
+}
+
+export interface WithdrawData {
+  id: string;
+  reference: string | null;
+  type: string;
+  currency: string;
+  amount: string;
+  fee: string;
+  total: string;
+  txid: string | null;
+  transaction_note: string;
+  narration: string;
+  status: string;
+  reason: string | null;
+  created_at: string;
+  done_at: string | null;
+  recipient: WithdrawRecipient;
+  wallet: WithdrawWallet;
+  user: SubAccountData;
+}
+
+export type HandleWithdrawPaymentResponse = ApiResponse<WithdrawData>;

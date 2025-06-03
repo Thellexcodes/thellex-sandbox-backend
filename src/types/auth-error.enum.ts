@@ -7,4 +7,8 @@ export enum AuthErrorEnum {
   AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED',
   VERIFICATION_FAILED = 'VERIFICATION_FAILED',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  UNAUTHORIZED = 'auth/unauthorized',
+  INVALID_TOKEN = 'auth/invalid-token',
+  USER_NOT_FOUND = 'auth/user-not-found',
+  USER_SUSPENDED = 'auth/user-suspended',
 }
