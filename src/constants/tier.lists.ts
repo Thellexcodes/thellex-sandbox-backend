@@ -1,5 +1,14 @@
 import { UserRequirement } from './userKycRequirements';
 
+export enum TierEnum {
+  NONE = 'none',
+  BASIC = 'basic',
+  PERSONAL = 'personal',
+  PROFESSIONAL = 'professional',
+  BUSINESS = 'business',
+  ENTERPRISE = 'enterprise',
+}
+
 type FeeRange = {
   type: 'Crypto Off/On-Ramp' | 'POS Payments';
   min: number;
@@ -14,7 +23,7 @@ type TransactionLimits = {
 };
 
 type Tier = {
-  name: string;
+  name: TierEnum;
   target: string;
   description: string;
   requirements: UserRequirement[];
@@ -24,7 +33,7 @@ type Tier = {
 
 export const thellexTiers: Record<string, Tier> = {
   tier1: {
-    name: 'Basic Tier',
+    name: TierEnum.BASIC,
     target: 'First-time & Basic Users',
     description: 'Users verified with both NIN and BVN.',
     requirements: [UserRequirement.NIN, UserRequirement.BVN],
@@ -39,7 +48,7 @@ export const thellexTiers: Record<string, Tier> = {
     ],
   },
   personal: {
-    name: 'Personal Tier',
+    name: TierEnum.PERSONAL,
     target: 'Verified Individuals',
     description:
       'Users with verified face and address — regular POS/crypto users.',
@@ -58,7 +67,7 @@ export const thellexTiers: Record<string, Tier> = {
     ],
   },
   professional: {
-    name: 'Professional Tier',
+    name: TierEnum.PROFESSIONAL,
     target: 'High-Volume Users',
     description: 'Traders, investors, and crypto-savvy professionals.',
     requirements: [
@@ -76,7 +85,7 @@ export const thellexTiers: Record<string, Tier> = {
     ],
   },
   business: {
-    name: 'Business Tier',
+    name: TierEnum.BUSINESS,
     target: 'SMEs & Startups',
     description:
       'Registered CAC businesses with moderate-to-high transactions.',
@@ -97,7 +106,7 @@ export const thellexTiers: Record<string, Tier> = {
     ],
   },
   enterprise: {
-    name: 'Enterprise Tier',
+    name: TierEnum.ENTERPRISE,
     target: 'Corporates & Aggregators',
     description: 'Financial institutions and large partners.',
     requirements: [

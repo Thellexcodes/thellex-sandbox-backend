@@ -62,6 +62,16 @@ export type PolygonToken = 'USDC' | 'MATIC';
 export type TronToken = 'USDC' | 'USDT';
 export type SolanaToken = 'USDC' | 'USDT';
 
+export enum SUPPORTED_NETWORKS {
+  BEP20 = 'bep20',
+  ERC20 = 'erc20',
+  TRC20 = 'trc20',
+  SOL = 'sol',
+  BTC = 'btc',
+  LTC = 'ltc',
+  DOGE = 'doge',
+}
+
 export type TokenMap = {
   lisk: LiskToken[];
   base: BaseToken[];
@@ -101,3 +111,5 @@ export const SUPPORTED_TOKENS: TokenMap = {
   tron: ['USDC', 'USDT'],
   solana: ['USDC', 'USDT'],
 };
+
+export type FEE = 'flat' | 'percentage';

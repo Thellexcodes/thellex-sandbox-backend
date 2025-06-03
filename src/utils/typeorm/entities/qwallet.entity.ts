@@ -1,3 +1,4 @@
+import { QWallet } from '@/types/qwallet.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   Column,
@@ -46,6 +47,36 @@ export class QwalletEntity {
 
   @Column({ name: 'updated_at', type: 'timestamp', nullable: false })
   updatedAt: Date;
+
+  @Column({ type: 'jsonb', nullable: true })
+  walelts: QWallet[] | null;
 }
 
-// 31a6aa62-cbe8-4bc4-a37e-058e3e56c7d6
+// {
+//   "status": "success",
+//   "message": "Successful",
+//   "data": [
+//     {
+//       "id": "2ed922fe-a10d-405a-9745-c9eb2c92e6b6",
+//       "sn": "QDXRTFBY2I6",
+//       "email": "boltdsg@gmail.com",
+//       "reference": null,
+//       "first_name": "test",
+//       "last_name": "user",
+//       "display_name": null,
+//       "created_at": "2025-06-01T12:42:25.000+01:00",
+//       "updated_at": "2025-06-01T12:42:25.000+01:00"
+//     },
+//     {
+//       "id": "31a6aa62-cbe8-4bc4-a37e-058e3e56c7d6",
+//       "sn": "QDX54E4WEEK",
+//       "email": "thellejobs@gmail.com",
+//       "reference": null,
+//       "first_name": "test",
+//       "last_name": "user",
+//       "display_name": null,
+//       "created_at": "2025-06-01T12:45:12.000+01:00",
+//       "updated_at": "2025-06-01T12:45:12.000+01:00"
+//     }
+//   ]
+// }

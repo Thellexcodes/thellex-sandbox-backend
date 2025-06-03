@@ -6,6 +6,7 @@ import { DeviceEntity } from './device.entity';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
 import { QwalletEntity } from './qwallet.entity';
 import { DKycEntity } from './dkyc.entity';
+import { TierEnum } from '@/constants/tier.lists';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -18,6 +19,13 @@ export class UserEntity extends BaseEntity {
 
   @Column({ nullable: false, unique: true })
   email: string;
+
+  @Column({
+    type: 'enum',
+    enum: TierEnum,
+    default: TierEnum.NONE,
+  })
+  tier: TierEnum;
 
   @OneToMany(
     () => AuthVerificationCodesEntity,
