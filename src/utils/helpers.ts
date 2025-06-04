@@ -19,7 +19,7 @@ export function isSessionNotExpired(expiredAt: string) {
 }
 
 export function responseHandler(
-  result: unknown,
+  result: unknown | any,
   res: CustomResponse,
   req: CustomRequest,
 ) {

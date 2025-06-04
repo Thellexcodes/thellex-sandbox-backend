@@ -34,9 +34,8 @@ export interface QWallet {
   reference: string | null;
   currency: string;
   address: string;
-  network: QwalletNetwork[];
+  network: QwalletNetwork[] | string;
   is_crypto: boolean;
-  user: SubAccountData;
   destination_tag: string | null;
   deposit_address: string | null;
   total_payments: string | null;
@@ -75,7 +74,7 @@ export type CreateSubAccountResponse = ApiResponse<SubAccountData>;
 export type CreateUserWalletResponse = ApiResponse<QWallet>;
 export type GetUserWalletResponse = ApiResponse<QWallet>;
 export type GetUserWalletsResponse = ApiResponse<QwalletBalance[]>;
-export type GetPaymentAddressResponse = ApiResponse<QWallet>;
+export type GetPaymentAddressResponse = ApiResponse<QWallet[]>;
 // : Promise<ValidateAddressResponse>
 //  Promise<CreateWithdrawalResponse> {
 // : Promise<GetWithdrawalResponse>

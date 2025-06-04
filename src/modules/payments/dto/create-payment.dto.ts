@@ -1,21 +1,27 @@
-import { SUPPORTED_BLOCKCHAINS, SupportedBlockchain } from '@/config/settings';
+import {
+  SUPPORTED_BLOCKCHAINS,
+  SupportedBlockchain,
+  Token,
+} from '@/config/settings';
+import { PaymentType } from '@/types/request.types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsIn } from 'class-validator';
+import { IsString, IsOptional, IsIn, IsEnum } from 'class-validator';
 
 export class CreateRequestPaymentDto {
   @ApiProperty({
     description: 'Type of the payment request',
-    example: 'crypto',
+    enum: PaymentType,
+    example: PaymentType.REQUEST_CRYPTO,
   })
-  @IsString()
-  requestType: string;
+  @IsEnum(PaymentType)
+  paymentType: PaymentType;
 
   @ApiProperty({
     description: 'Asset code (e.g., USDC, BTC)',
     example: 'USDC',
   })
   @IsString()
-  assetCode: string;
+  assetCode: Token;
 
   @ApiPropertyOptional({
     description: 'Asset issuer (optional, if applicable)',

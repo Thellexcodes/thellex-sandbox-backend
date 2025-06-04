@@ -77,8 +77,6 @@ import { PaymentsModule } from './modules/payments/payments.module';
     AuthnService,
     UserService,
     MailService,
-    // QwalletService,
-    // HttpService,
   ],
 })
 export class AppModule implements NestModule {

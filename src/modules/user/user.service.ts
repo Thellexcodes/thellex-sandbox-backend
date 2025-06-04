@@ -78,6 +78,7 @@ export class UserService {
             qwalletSubAccount.qid,
             Token.USDT,
           );
+
           if (!usdtWallet) {
             await this.qWalletService.createUserWallet(
               qwalletSubAccount.qid,
@@ -95,7 +96,6 @@ export class UserService {
 
       return token;
     } catch (error) {
-      console.log(error);
       throw new CustomHttpException(
         error.message,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -129,14 +129,19 @@ export class UserService {
   }
 
   async findOneByEmail(email: string): Promise<UserEntity> {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.email = :email', { email })
-      .leftJoinAndSelect('user.devices', 'device')
-      .leftJoinAndSelect('user.electronic_cards', 'electronic_cards')
-      .getOne();
+    try {
+      const user = await this.userRepository
+        .createQueryBuilder('user')
+        .where('user.email = :email', { email })
+        .leftJoinAndSelect('user.electronic_cards', 'electronic_cards')
+        .leftJoinAndSelect('user.devices', 'devices')
+        .leftJoinAndSelect('user.qwallet', 'qwallet')
+        .getOne();
 
-    return user;
+      return user;
+    } catch (err) {
+      //TODO: HANDLE ERRORS
+    }
   }
 
   async emailVerificationComposer(user: UserEntity): Promise<void> {
@@ -185,8 +190,10 @@ export class UserService {
     try {
       const user = await this.userRepository
         .createQueryBuilder('user')
-        .leftJoinAndSelect('user.devices', 'device')
+        .leftJoinAndSelect('user.devices', 'devices')
+        .leftJoinAndSelect('user.qwallet', 'qwallet')
         .leftJoinAndSelect('user.electronic_cards', 'electronic_cards')
+        .leftJoinAndSelect('user.dkyc', 'dkyc')
         .where('user.id = :id', { id })
         .getOne();
 

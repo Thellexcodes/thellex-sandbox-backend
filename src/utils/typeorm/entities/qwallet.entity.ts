@@ -15,10 +15,9 @@ import {
 export class QwalletEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
   @OneToOne(() => UserEntity, (user) => user.qwallet, {
     nullable: false,
-    cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
@@ -44,12 +43,12 @@ export class QwalletEntity {
   @Column({ name: 'display_name', type: 'varchar', nullable: true })
   displayName: string | null;
 
+  @Column({ type: 'jsonb', nullable: true })
+  wallets: QWallet[] | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
-
-  @Column({ type: 'jsonb', nullable: true })
-  wallets: QWallet[] | null;
 }

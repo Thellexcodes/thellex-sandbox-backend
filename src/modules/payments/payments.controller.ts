@@ -7,12 +7,12 @@ import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { WithdrawPaymentDto } from './dto/create-withdrawal.dto';
 
-ApiTags('Payments');
+ApiTags('payments');
 @Controller('Payments')
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
 
-  @Post('request-crypto-payment')
+  @Post('request-crypto')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Request a crypto payment' })
   async requestCryptoPayment(
@@ -21,6 +21,7 @@ export class PaymentsController {
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
+
     const requestResponse = await this.paymentService.requestCryptoWallet(
       createRequestPaymentDto,
       user,
@@ -29,7 +30,7 @@ export class PaymentsController {
     responseHandler(requestResponse, res, req);
   }
 
-  @Post('request-fiat-payment')
+  @Post('request-fiat')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Request a fiat payment' })
   async requestFiatPayment(

@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
+import { TierEnum } from '@/constants/tier.lists';
 
 @Entity({ name: 'dkyc' })
 export class DKycEntity {
@@ -16,6 +17,13 @@ export class DKycEntity {
   @OneToOne(() => UserEntity, (user) => user.dkyc, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
+
+  @Column({
+    type: 'enum',
+    enum: TierEnum,
+    default: TierEnum.NONE,
+  })
+  tier: TierEnum;
 
   @Column({ type: 'boolean', default: false })
   ninVerified: boolean;

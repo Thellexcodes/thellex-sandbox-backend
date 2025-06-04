@@ -49,6 +49,7 @@ export type SupportedBlockchain =
   | 'stellar'
   | 'polygon'
   | 'tron'
+  | 'bep20'
   | 'solana';
 
 export type BlockchainNetworkMap = {
@@ -82,6 +83,7 @@ export const SUPPORTED_BLOCKCHAINS: SupportedBlockchain[] = [
   'polygon',
   'tron',
   'solana',
+  'bep20',
 ];
 
 export const USE_TESTNET: boolean = true;

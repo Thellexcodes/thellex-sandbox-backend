@@ -19,6 +19,7 @@ import {
   GetUserWalletResponse,
   GetUserWalletsResponse,
   HandleWithdrawPaymentResponse,
+  QWallet,
   QWalletWithdrawalFeeResponse,
   RefreshSwapQuoteResponse,
   SubAccountData,
@@ -34,7 +35,7 @@ import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { CreateSwapDto } from './dto/create-swap.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { Token } from '@/config/settings';
+import { SupportedBlockchain, Token } from '@/config/settings';
 import { GetWalletBalanceResponse } from 'dojah-typescript-sdk';
 
 @Injectable()
@@ -49,8 +50,11 @@ export class QwalletService {
   // >>>>>>>>>>>>>>> SubAcocunts <<<<<<<<<<<<<<<
 
   async lookupSubaccount(user: UserEntity): Promise<QwalletEntity | null> {
-    // First, check local DB
-    const localSubaccount = await this.qwalletRepo.findOne({ where: { user } });
+    const localSubaccount = await this.qwalletRepo.findOne({
+      where: { user: { id: user.id } },
+      relations: ['user'],
+    });
+
     if (localSubaccount) {
       return localSubaccount;
     }
@@ -75,37 +79,50 @@ export class QwalletService {
         data.qid = found.id;
         data.qsn = found.sn;
 
-        // Ensure wallets is always an array (not null or undefined)
+        // Reuse existing wallets if they exist
         const existingQwallet = await this.qwalletRepo.findOne({
           where: { qid: found.id },
         });
+
         data.wallets = existingQwallet?.wallets ?? [];
 
+        // Get USDT wallets
         let usdtWalletResponse = await this.getPaymentAddress(
           data.qid,
           Token.USDT,
         );
 
-        if (!usdtWalletResponse || !usdtWalletResponse.data) {
-          usdtWalletResponse = await this.createUserWallet(
+        let usdtWallets: QWallet[] = [];
+
+        if (usdtWalletResponse && Array.isArray(usdtWalletResponse.data)) {
+          usdtWallets = usdtWalletResponse.data;
+        } else {
+          // Create wallet if not found or invalid response
+          const newWalletResponse = await this.createUserWallet(
             found.id,
             Token.USDT,
           );
+          if (newWalletResponse?.data) {
+            usdtWallets = [newWalletResponse.data];
+          }
         }
 
-        const walletIndex = data.wallets.findIndex(
-          (w) => w.currency === Token.USDT,
-        );
-
-        if (walletIndex >= 0) {
-          data.wallets[walletIndex] = usdtWalletResponse.data;
-        } else {
-          data.wallets.push(usdtWalletResponse.data);
+        // Update or insert USDT wallet(s)
+        for (const wallet of usdtWallets) {
+          const index = data.wallets.findIndex(
+            (w) => w.currency === wallet.currency,
+          );
+          if (index >= 0) {
+            data.wallets[index] = wallet;
+          } else {
+            data.wallets.push(wallet);
+          }
         }
 
         const qwallet = await this.qwalletRepo.save(data);
         return qwallet;
       }
+
       return null;
     } catch (error) {
       console.log(error);
@@ -133,7 +150,9 @@ export class QwalletService {
       newSubAccountRecord.qid = subAccountRes.data.id;
       newSubAccountRecord.qsn = subAccountRes.data.sn;
 
-      await this.qwalletRepo.save(newSubAccountRecord);
+      console.log(newSubAccountRecord);
+
+      // await this.qwalletRepo.save(newSubAccountRecord);
 
       return subAccountRes;
     } catch (error) {
@@ -533,6 +552,24 @@ export class QwalletService {
         headers: this.getAuthHeaders(),
       }),
     );
+  }
+
+  // >>>>>>>>>>>>>>> Asset Request <<<<<<<<<<<<<<<
+  async findWalletByUserAndNetwork(
+    user: UserEntity,
+    network: SupportedBlockchain,
+    assetCode: Token,
+  ): Promise<QWallet | null> {
+    if (!user.qwallet || !user.qwallet.wallets) {
+      return null;
+    }
+
+    // Look for wallet matching the network and assetCode
+    const matchedWallet = user.qwallet.wallets.find(
+      (wallet) => wallet.network === network && wallet.currency === assetCode,
+    );
+
+    return matchedWallet || null;
   }
 
   private get qwalletUrl(): string {
