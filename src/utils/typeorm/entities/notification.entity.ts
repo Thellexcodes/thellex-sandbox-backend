@@ -34,9 +34,21 @@ export class NotificationEntity {
   @CreateDateColumn()
   createdAt: Date;
 
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @Column()
-  expiresAt: Date; // Time limit for self-destruct
+  currency: string;
+
+  @Column()
+  expiresAt: Date;
 
   @Column({ nullable: true })
-  alertedAt?: Date; // Timestamp when user was alerted
+  amount: string;
+
+  @Column({ nullable: false })
+  txID: string;
+
+  @Column({ nullable: true })
+  qwalletID: string;
 }

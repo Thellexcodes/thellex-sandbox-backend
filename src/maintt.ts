@@ -4,26 +4,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { ErrorInterceptor } from '@/middleware/error.interceptor';
 import { ValidationPipe } from '@nestjs/common';
-// import * as fs from 'fs';
-// import * as path from 'path';
 import { LogRequestMiddleware } from './middleware/log-request.middleware';
 
-// const certFolder = path.join(__dirname, '../cert');
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  // let httpsOptions: any;
-
-  // if (process.env.NODE_ENV === 'development') {
-  //   const keyFile = fs.readFileSync(path.join(certFolder, 'server.key'));
-  //   const certFile = fs.readFileSync(path.join(certFolder, 'server.cert'));
-
-  //   httpsOptions = {
-  //     key: keyFile,
-  //     cert: certFile,
-  //   };
-  // }
-
-  const app = await NestFactory.create(AppModule, {});
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   if (process.env.NODE_ENV === 'testnet') {
     const config = new DocumentBuilder()
@@ -58,9 +46,23 @@ async function bootstrap() {
     middleware.use(req, res, next);
   });
 
-  await app.listen(serverPort, serverIp);
+  const httpServer = createServer(app.getHttpAdapter().getInstance());
 
-  console.log(`Application is now running on: ${await app.getUrl()}`);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST'],
+    },
+  });
+
+  // ✅ This now works
+  app.set('io', io);
+
+  httpServer.listen(serverPort, serverIp, () => {
+    console.log(
+      `🚀 Application is running at http://${serverIp}:${serverPort}`,
+    );
+  });
 }
 
 bootstrap();

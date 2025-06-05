@@ -14,6 +14,8 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
+import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { HttpService } from '@/middleware/http.service';
       UserEntity,
       AuthVerificationCodesEntity,
       QwalletEntity,
+      TransactionHistoryEntity,
     ]),
   ],
   controllers: [QwalletHooksController],
@@ -35,6 +38,7 @@ import { HttpService } from '@/middleware/http.service';
     MailService,
     QwalletService,
     HttpService,
+    TransactionHistoryService,
   ],
 })
 export class QwalletHooksModule {}

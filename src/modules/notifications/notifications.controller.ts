@@ -11,9 +11,11 @@ import {
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('notifications')
 @UseGuards(AuthGuard)
+@ApiBearerAuth('access-token')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 

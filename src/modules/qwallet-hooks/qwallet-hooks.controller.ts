@@ -16,24 +16,25 @@ import {
 import { QwalletHooksService } from './qwallet-hooks.service';
 import { CreateQwalletHookDto } from './dto/create-qwallet-hook.dto';
 import { UpdateQwalletHookDto } from './dto/update-qwallet-hook.dto';
-import { QwalletWebhookEvent } from '@/enums/qwallet-webhook-event.enum';
-import { ApiBody, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RampHooksService } from './qwallet-ramp-hooks.service';
 import { QWalletHooksDepositOnHoldDto } from './dto/qwallet-hooks-deposit-on-hold.dto';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { QWalletDepositSuccessfulPayloadDto } from './dto/qwallet-hook-depositSuccessful.dto';
 import { responseHandler } from '@/utils/helpers';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import { QWALLET_ROUTES } from '@/types/routes/qwallet.enum';
 
 @ApiTags('Qwallet Webhooks')
 @Controller('qwallet-hooks')
+@ApiBearerAuth('access-token')
 export class QwalletHooksController {
   constructor(
     private readonly qwalletHooksService: QwalletHooksService,
     private readonly rampHooksService: RampHooksService,
   ) {}
 
-  // @Post(QwalletWebhookEvent.WALLET_UPDATED)
+  // @Post(QWalletWebhookEnum.WALLET_UPDATED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a wallet balance is updated',
@@ -64,7 +65,7 @@ export class QwalletHooksController {
   // })
   // handleDepositConfirmation(@Body() payload: any, @Headers() headers: any) {}
 
-  @Post(QwalletWebhookEvent.DEPOSIT_SUCCESSFUL)
+  @Post(QWALLET_ROUTES.DEPOSIT_SUCCESSFUL)
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Triggered when a deposit is successful' })
@@ -85,7 +86,7 @@ export class QwalletHooksController {
     responseHandler(handelDepositResponse, res, req);
   }
 
-  // @Post(QwalletWebhookEvent.DEPOSIT_ON_HOLD)
+  // @Post(QWalletWebhookEnum.DEPOSIT_ON_HOLD)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a deposit is on hold',
@@ -99,7 +100,7 @@ export class QwalletHooksController {
   //   console.log('hitting');
   // }
 
-  // @Post(QwalletWebhookEvent.DEPOSIT_FAILED_AML)
+  // @Post(QWalletWebhookEnum.DEPOSIT_FAILED_AML)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a deposit fails due to AML checks',
@@ -107,7 +108,7 @@ export class QwalletHooksController {
   // })
   // handleDepositFailedAml(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.DEPOSIT_REJECTED)
+  // @Post(QWalletWebhookEnum.DEPOSIT_REJECTED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a deposit is rejected',
@@ -115,7 +116,7 @@ export class QwalletHooksController {
   // })
   // handleDepositRejected(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.WITHDRAW_SUCCESSFUL)
+  // @Post(QWalletWebhookEnum.WITHDRAW_SUCCESSFUL)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a withdrawal is successful',
@@ -123,7 +124,7 @@ export class QwalletHooksController {
   // })
   // handleWithdrawSuccessful(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.WITHDRAW_REJECTED)
+  // @Post(QWalletWebhookEnum.WITHDRAW_REJECTED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a withdrawal is rejected',
@@ -131,7 +132,7 @@ export class QwalletHooksController {
   // })
   // handleWithdrawRejected(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.ORDER_DONE)
+  // @Post(QWalletWebhookEnum.ORDER_DONE)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when an order is completed',
@@ -139,7 +140,7 @@ export class QwalletHooksController {
   // })
   // handleOrderDone(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.ORDER_CANCELLED)
+  // @Post(QWalletWebhookEnum.ORDER_CANCELLED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when an order is cancelled',
@@ -147,7 +148,7 @@ export class QwalletHooksController {
   // })
   // handleOrderCancelled(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.SWAP_COMPLETED)
+  // @Post(QWalletWebhookEnum.SWAP_COMPLETED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a swap is completed',
@@ -155,7 +156,7 @@ export class QwalletHooksController {
   // })
   // handleSwapCompleted(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.SWAP_REVERSED)
+  // @Post(QWalletWebhookEnum.SWAP_REVERSED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a swap is reversed',
@@ -163,7 +164,7 @@ export class QwalletHooksController {
   // })
   // handleSwapReversed(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.SWAP_FAILED)
+  // @Post(QWalletWebhookEnum.SWAP_FAILED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({
   //   description: 'Triggered when a swap fails',
@@ -171,42 +172,42 @@ export class QwalletHooksController {
   // })
   // handleSwapFailed(@Body() payload: any, @Headers() headers: any) {}
 
-  // @Post(QwalletWebhookEvent.SELL_SUCCESSFUL)
+  // @Post(QWalletWebhookEnum.SELL_SUCCESSFUL)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({ description: 'Sell transaction successful payload' })
   // sellSuccessful(@Body() payload: any, @Headers() headers: any) {
   //   return this.rampHooksService.handleSellSuccessful(payload, headers);
   // }
 
-  // @Post(QwalletWebhookEvent.SELL_PROCESSING)
+  // @Post(QWalletWebhookEnum.SELL_PROCESSING)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({ description: 'Sell transaction processing payload' })
   // sellProcessing(@Body() payload: any, @Headers() headers: any) {
   //   return this.rampHooksService.handleSellProcessing(payload, headers);
   // }
 
-  // @Post(QwalletWebhookEvent.SELL_FAILED)
+  // @Post(QWalletWebhookEnum.SELL_FAILED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({ description: 'Sell transaction failed payload' })
   // sellFailed(@Body() payload: any, @Headers() headers: any) {
   //   return this.rampHooksService.handleSellFailed(payload, headers);
   // }
 
-  // @Post(QwalletWebhookEvent.BUY_SUCCESSFUL)
+  // @Post(QWalletWebhookEnum.BUY_SUCCESSFUL)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({ description: 'Buy transaction successful payload' })
   // buySuccessful(@Body() payload: any, @Headers() headers: any) {
   //   return this.rampHooksService.handleBuySuccessful(payload, headers);
   // }
 
-  // @Post(QwalletWebhookEvent.BUY_PROCESSING)
+  // @Post(QWalletWebhookEnum.BUY_PROCESSING)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({ description: 'Buy transaction processing payload' })
   // buyProcessing(@Body() payload: any, @Headers() headers: any) {
   //   return this.rampHooksService.handleBuyProcessing(payload, headers);
   // }
 
-  // @Post(QwalletWebhookEvent.BUY_FAILED)
+  // @Post(QWalletWebhookEnum.BUY_FAILED)
   // @HttpCode(HttpStatus.OK)
   // @ApiBody({ description: 'Buy transaction failed payload' })
   // buyFailed(@Body() payload: any, @Headers() headers: any) {

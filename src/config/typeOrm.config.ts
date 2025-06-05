@@ -9,6 +9,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -30,6 +31,7 @@ export const typeOrmConfig = async (
       QwalletEntity,
       NotificationEntity,
       CardManagementEntity,
+      TransactionHistoryEntity,
       AuthVerificationCodesEntity,
     ],
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],

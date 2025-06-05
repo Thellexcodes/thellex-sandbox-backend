@@ -1,11 +1,8 @@
-import {
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
+import { NOTIFICATION_SOCKETS } from '@/types/socket.enums';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true }) // Enable CORS as needed
+@WebSocketGateway({ cors: true })
 export class NotificationsGateway {
   @WebSocketServer()
   server: Server;
@@ -49,7 +46,9 @@ export class NotificationsGateway {
     const sockets = this.userSockets.get(alertID);
     if (sockets) {
       sockets.forEach((socketId) =>
-        this.server.to(socketId).emit('notification', payload),
+        this.server
+          .to(socketId)
+          .emit(NOTIFICATION_SOCKETS.DEPOSIT_SUCCESSFUL, payload),
       );
     }
   }

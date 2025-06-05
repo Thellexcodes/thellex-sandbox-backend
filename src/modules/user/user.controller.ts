@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -10,6 +10,7 @@ import { VerifyUserDto } from './dto/verify-user.dto';
 
 @ApiTags('User')
 @Controller('user')
+@ApiBearerAuth('access-token')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -20,40 +21,38 @@ export class UserController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
+    console.log(createUserDto);
     const newUserData = await this.userService.create(createUserDto);
     responseHandler(newUserData, res, req);
   }
 
-  @Post('login')
-  @ApiBody({ type: LoginUserDto, description: 'Data required to login user' })
-  async login(
-    @Body() loginUserDto: LoginUserDto,
-    @Req() req: CustomRequest,
-    @Res() res: CustomResponse,
-  ): Promise<any> {
-    const loginData = await this.userService.login(loginUserDto);
-    responseHandler(loginData, res, req);
-  }
+  // @Post('login')
+  // @ApiBody({ type: LoginUserDto, description: 'Data required to login user' })
+  // async login(
+  //   @Body() loginUserDto: LoginUserDto,
+  //   @Req() req: CustomRequest,
+  //   @Res() res: CustomResponse,
+  // ): Promise<any> {
+  //   const loginData = await this.userService.login(loginUserDto);
+  //   responseHandler(loginData, res, req);
+  // }
 
   @Post('authLogin')
   @UseGuards(AuthGuard)
-  @ApiBody({ description: 'Data required to login user' })
   async tokenLogin(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ): Promise<any> {
     const user = req.user;
-
     const authRecords = await this.userService.login({
       identifier: user.email,
     } as LoginUserDto);
-
     responseHandler({ ...authRecords, ...user }, res, req);
   }
 
   @Post('verify')
   @UseGuards(AuthGuard)
-  @ApiBody({ description: 'Verifies user' })
+  @ApiBody({ description: 'Verifies user', type: VerifyUserDto })
   async verify(
     @Body() verifyUserDto: VerifyUserDto,
     @Req() req: CustomRequest,
@@ -61,6 +60,7 @@ export class UserController {
   ) {
     const user = req.user;
     const result = await this.userService.verifyUser(verifyUserDto, user);
+    console.log({ result });
     responseHandler(result, res, req);
   }
 }

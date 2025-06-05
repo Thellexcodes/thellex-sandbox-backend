@@ -77,3 +77,23 @@ export async function generateUniqueUid(
 
   return uid;
 }
+
+/**
+ * Returns a UTC Date object that is `monthsToAdd` months ahead of the current UTC date/time.
+ * @param monthsToAdd Number of months to add
+ * @returns Date in UTC
+ */
+export function getUtcExpiryDateMonthsFromNow(monthsToAdd: number): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth() + monthsToAdd,
+      now.getUTCDate(),
+      now.getUTCHours(),
+      now.getUTCMinutes(),
+      now.getUTCSeconds(),
+      now.getUTCMilliseconds(),
+    ),
+  );
+}

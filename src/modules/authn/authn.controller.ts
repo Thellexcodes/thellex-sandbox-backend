@@ -8,12 +8,12 @@ import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
 import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
 
 @Controller('authn')
+@ApiBearerAuth('access-token')
 export class AuthnController {
   constructor(private readonly authNService: AuthnService) {}
 
   @Post('/register-options')
   @UseGuards(AuthGuard)
-  @ApiBearerAuth('Bearer')
   @ApiBody({ description: 'Create user challenge' })
   async create(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const publicKeyCredentialCreationOptionsJSON =

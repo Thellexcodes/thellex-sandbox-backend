@@ -15,6 +15,7 @@ import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { Token } from '@/config/settings';
+import { v7 as uuidV7 } from 'uuid';
 
 @Injectable()
 export class UserService {

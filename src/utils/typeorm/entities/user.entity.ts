@@ -14,6 +14,7 @@ import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.e
 import { QwalletEntity } from './qwallet.entity';
 import { DKycEntity } from './dkyc.entity';
 import { NotificationEntity } from './notification.entity';
+import { TransactionHistoryEntity } from './transaction-history.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -38,7 +39,12 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   suspended: boolean;
 
-  @Column({ nullable: true })
+  @Column({
+    type: 'uuid',
+    unique: true,
+    nullable: false,
+    default: () => 'uuid_generate_v4()',
+  })
   alertID: string;
 
   @OneToMany(
@@ -74,4 +80,10 @@ export class UserEntity extends BaseEntity {
   })
   @JoinColumn()
   dkyc: DKycEntity;
+
+  @OneToMany(
+    () => TransactionHistoryEntity,
+    (transactionHistory) => transactionHistory.user,
+  )
+  transactionHistory: TransactionHistoryEntity[];
 }

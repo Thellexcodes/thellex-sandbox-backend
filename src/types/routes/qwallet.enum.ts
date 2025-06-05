@@ -1,4 +1,4 @@
-export enum QwalletWebhookEvent {
+export enum QWALLET_ROUTES {
   WALLET_UPDATED = 'wallet-updated',
   WALLET_ADDRESS_GENERATED = 'wallet-address-generated',
   DEPOSIT_CONFIRMATION = 'deposit-confirmation',

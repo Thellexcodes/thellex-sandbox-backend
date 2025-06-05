@@ -33,6 +33,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
 import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module';
+import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module
     NotificationsModule,
     CronjobsModule,
     QwalletHooksModule,
+    TransactionHistoryModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [

@@ -2,12 +2,13 @@ import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { DkycService } from './dkyc.service';
 import { BasicTierKycDto } from './dto/create-tier1-dkyc.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
 
 @ApiTags('DKYC')
 @Controller('dkyc')
+@ApiBearerAuth('access-token')
 export class DkycController {
   constructor(private readonly dkycService: DkycService) {}
 
