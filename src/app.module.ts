@@ -23,15 +23,16 @@ import { HdwalletModule } from './modules/hdwallet/hdwallet.module';
 import { SwapModule } from './modules/aggregators/swap/swap.module';
 import { BridgeModule } from './modules/aggregators/bridge/bridge.module';
 import { TokenModule } from './modules/token/token.module';
-import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
+import { LogRequestMiddleware } from './middleware/log-request.middleware';
 import { CardManagementModule } from './modules/card-management/card-management.module';
 import { StellarModule } from './modules/stellar/stellar.module';
 import { QwalletModule } from './modules/qwallet/qwallet.module';
 import { DkycModule } from './modules/dkyc/dkyc.module';
-import { QwalletService } from './modules/qwallet/qwallet.service';
-import { HttpService } from './middleware/http.service';
 import { QwalletEntity } from './utils/typeorm/entities/qwallet.entity';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
+import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module';
 
 @Module({
   imports: [
@@ -69,6 +70,9 @@ import { PaymentsModule } from './modules/payments/payments.module';
     QwalletModule,
     DkycModule,
     PaymentsModule,
+    NotificationsModule,
+    CronjobsModule,
+    QwalletHooksModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [

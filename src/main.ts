@@ -6,7 +6,7 @@ import { ErrorInterceptor } from '@/middleware/error.interceptor';
 import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 // import * as path from 'path';
-import { LogRequestMiddleware } from './middleware/logRequestMiddleware';
+import { LogRequestMiddleware } from './middleware/log-request.middleware';
 
 // const certFolder = path.join(__dirname, '../cert');
 
@@ -25,25 +25,27 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {});
 
-  const config = new DocumentBuilder()
-    .setTitle('Thellex Sandbox Server')
-    .setDescription('Thellex Sandbox Server backend documentation')
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Enter Bearer token',
-        in: 'header',
-      },
-      'Bearer',
-    )
-    .build();
+  if (process.env.NODE_ENV === 'testnet') {
+    const config = new DocumentBuilder()
+      .setTitle('Thellex Sandbox Server')
+      .setDescription('Thellex Sandbox Server backend documentation')
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter Bearer token',
+          in: 'header',
+        },
+        'Bearer',
+      )
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('doc', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('doc', app, document);
+  }
 
   const configService = app.get(ConfigService);
   const serverPort = configService.get<number>('SERVER_PORT');

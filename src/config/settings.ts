@@ -48,7 +48,7 @@ export type SupportedBlockchain =
   | 'base'
   | 'stellar'
   | 'polygon'
-  | 'tron'
+  | 'trc20'
   | 'bep20'
   | 'solana';
 
@@ -81,7 +81,7 @@ export const SUPPORTED_BLOCKCHAINS: SupportedBlockchain[] = [
   'base',
   'stellar',
   'polygon',
-  'tron',
+  'trc20',
   'solana',
   'bep20',
 ];

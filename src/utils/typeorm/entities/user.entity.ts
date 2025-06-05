@@ -13,6 +13,7 @@ import { DeviceEntity } from './device.entity';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
 import { QwalletEntity } from './qwallet.entity';
 import { DKycEntity } from './dkyc.entity';
+import { NotificationEntity } from './notification.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -37,12 +38,20 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   suspended: boolean;
 
+  @Column({ nullable: true })
+  alertID: string;
+
   @OneToMany(
     () => AuthVerificationCodesEntity,
     (authVerificationCode) => authVerificationCode.user,
     { cascade: true },
   )
   verificationCodes: AuthVerificationCodesEntity[];
+
+  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
+    cascade: true,
+  })
+  notifications: NotificationEntity[];
 
   @OneToMany(() => AuthnEntity, (authn) => authn.user)
   authn: AuthnEntity[];

@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
+import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -27,6 +28,7 @@ export const typeOrmConfig = async (
       AuthnEntity,
       DeviceEntity,
       QwalletEntity,
+      NotificationEntity,
       CardManagementEntity,
       AuthVerificationCodesEntity,
     ],
