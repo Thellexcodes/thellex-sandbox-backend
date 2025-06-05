@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateQwalletHookDto } from './dto/create-qwallet-hook.dto';
 import { UpdateQwalletHookDto } from './dto/update-qwallet-hook.dto';
 import { QWalletDepositSuccessfulPayloadDto } from './dto/qwallet-hook-depositSuccessful.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
+import { QwalletNotificationsService } from '../notifications/qwallet-notifications.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class QwalletHooksService {
-  constructor() {}
+  constructor(
+    private readonly qwalletNotificationService: QwalletNotificationsService,
+    private readonly notificationsGateway: NotificationsGateway,
+  ) {}
 
   handleWalletUpdated(payload: any) {
     return { message: 'Wallet updated event received', payload };
@@ -24,9 +31,28 @@ export class QwalletHooksService {
     payload: QWalletDepositSuccessfulPayloadDto,
     user: UserEntity,
   ) {
-    //[x] validate user
-    //[x] create notifiaciton
-    //[x] alert on websocket
+    try {
+      const payloadUser = payload.data.user;
+      const qwallet = user.qwallet;
+
+      if (payloadUser.id != qwallet.qid) {
+        throw new CustomHttpException(
+          QWalletWebhookEnum.INVALID_USER,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      //[x] create notification
+      await this.qwalletNotificationService.createDepositSuccessfulNotification();
+
+      //[x] alert on websocket
+      await this.notificationsGateway.emitDepositSuccessfulToUser(
+        user.alertID,
+        {},
+      );
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   handleDepositOnHold(payload: any) {

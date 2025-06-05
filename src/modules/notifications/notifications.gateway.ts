@@ -39,4 +39,18 @@ export class NotificationsGateway {
       );
     }
   }
+
+  /**
+   *
+   * @param alertID user alert id
+   * @param payload
+   */
+  async emitDepositSuccessfulToUser(alertID: string, payload: any) {
+    const sockets = this.userSockets.get(alertID);
+    if (sockets) {
+      sockets.forEach((socketId) =>
+        this.server.to(socketId).emit('notification', payload),
+      );
+    }
+  }
 }

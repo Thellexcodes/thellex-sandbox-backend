@@ -11,6 +11,7 @@ import {
   Req,
   HttpCode,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { QwalletHooksService } from './qwallet-hooks.service';
 import { CreateQwalletHookDto } from './dto/create-qwallet-hook.dto';
@@ -22,6 +23,7 @@ import { QWalletHooksDepositOnHoldDto } from './dto/qwallet-hooks-deposit-on-hol
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { QWalletDepositSuccessfulPayloadDto } from './dto/qwallet-hook-depositSuccessful.dto';
 import { responseHandler } from '@/utils/helpers';
+import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 
 @ApiTags('Qwallet Webhooks')
 @Controller('qwallet-hooks')
@@ -64,6 +66,7 @@ export class QwalletHooksController {
 
   @Post(QwalletWebhookEvent.DEPOSIT_SUCCESSFUL)
   @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Triggered when a deposit is successful' })
   @ApiBody({
     description: 'Payload for deposit successful webhook',
