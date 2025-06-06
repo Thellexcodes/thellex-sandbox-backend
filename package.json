@@ -46,6 +46,7 @@
     "lru-cache": "^11.0.2",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.16",
+    "p-queue": "^8.1.0",
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.2",

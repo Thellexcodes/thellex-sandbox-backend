@@ -43,14 +43,7 @@ export const DEV_MODE_TOOLS = {
 };
 
 // --- Blockchain Types ---
-export type SupportedBlockchain =
-  | 'lisk'
-  | 'base'
-  | 'stellar'
-  | 'polygon'
-  | 'trc20'
-  | 'bep20'
-  | 'solana';
+export type SupportedBlockchain = 'bep20';
 
 export type BlockchainNetworkMap = {
   [key in SupportedBlockchain]: string;
@@ -64,27 +57,13 @@ export enum Token {
   btc = 'btc',
 }
 
-// --- Chain Tokens Support ---
-export const ChainTokens = {
-  lisk: [Token.USDC, Token.USDT],
-  base: [Token.USDC],
-  stellar: [Token.USDC, Token.XLM],
-  polygon: [Token.USDC],
-  tron: [Token.USDC, Token.USDT],
-  solana: [Token.USDC, Token.USDT],
-  bep20: [Token.USDC, Token.USDT],
-} as const;
-
 // --- Blockchain Network Support ---
-export const SUPPORTED_BLOCKCHAINS: SupportedBlockchain[] = [
-  'lisk',
-  'base',
-  'stellar',
-  'polygon',
-  'trc20',
-  'solana',
-  'bep20',
-];
+export const SUPPORTED_BLOCKCHAINS: SupportedBlockchain[] = ['bep20'];
+
+// --- Chain Tokens Support ---
+export const ChainTokens: Record<SupportedBlockchain, Token[]> = {
+  bep20: [Token.USDT],
+};
 
 export const USE_TESTNET: boolean = true;
 

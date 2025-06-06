@@ -19,7 +19,6 @@ import { DeviceEntity } from './utils/typeorm/entities/device.entity';
 import { MailModule } from './modules/mail/mail.module';
 import { MailService } from './modules/mail/mail.service';
 import { AuthVerificationCodesEntity } from './utils/typeorm/entities/authVerificationCodes.entities';
-import { HdwalletModule } from './modules/hdwallet/hdwallet.module';
 import { SwapModule } from './modules/aggregators/swap/swap.module';
 import { BridgeModule } from './modules/aggregators/bridge/bridge.module';
 import { TokenModule } from './modules/token/token.module';
@@ -34,6 +33,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
 import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module';
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
+import { WalletManagerModule } from './modules/wallet-manager/wallet-manager.module';
 
 @Module({
   imports: [
@@ -62,7 +62,6 @@ import { TransactionHistoryModule } from './modules/transaction-history/transact
     UserModule,
     AuthModule,
     MailModule,
-    HdwalletModule,
     SwapModule,
     BridgeModule,
     TokenModule,
@@ -75,6 +74,7 @@ import { TransactionHistoryModule } from './modules/transaction-history/transact
     CronjobsModule,
     QwalletHooksModule,
     TransactionHistoryModule,
+    WalletManagerModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [

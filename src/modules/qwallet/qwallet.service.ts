@@ -35,8 +35,7 @@ import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { CreateSwapDto } from './dto/create-swap.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { SupportedBlockchain, Token } from '@/config/settings';
-import { GetWalletBalanceResponse } from 'dojah-typescript-sdk';
+import { ChainTokens, SupportedBlockchain, Token } from '@/config/settings';
 
 @Injectable()
 export class QwalletService {
@@ -570,6 +569,13 @@ export class QwalletService {
     );
 
     return matchedWallet || null;
+  }
+
+  // misc
+
+  supports(network: SupportedBlockchain, token: Token): boolean {
+    const tokens = ChainTokens[network];
+    return tokens?.includes(token) ?? false;
   }
 
   private get qwalletUrl(): string {

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HdwalletService } from './hdwallet.service';
+import { WalletManagerService } from './wallet-manager.service';
 
-describe('HdwalletService', () => {
-  let service: HdwalletService;
+describe('WalletManagerService', () => {
+  let service: WalletManagerService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [HdwalletService],
+      providers: [WalletManagerService],
     }).compile();
 
-    service = module.get<HdwalletService>(HdwalletService);
+    service = module.get<WalletManagerService>(WalletManagerService);
   });
 
   it('should be defined', () => {

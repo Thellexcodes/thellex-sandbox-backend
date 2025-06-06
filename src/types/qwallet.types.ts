@@ -41,6 +41,8 @@ export interface QWallet {
   total_payments: string | null;
   created_at: string;
   updated_at: string;
+  balance: string;
+  default_network: string;
 }
 
 export interface QwalletBalance {
