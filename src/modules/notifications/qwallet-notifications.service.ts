@@ -23,7 +23,7 @@ export class QwalletNotificationsService {
   async createDepositSuccessfulNotification(
     data: QWalletDepositSuccessfulPayloadDto,
     user: UserEntity,
-  ): Promise<NotificationEntity | void> {
+  ): Promise<NotificationEntity> {
     try {
       const { amount, currency, txid, user: walletUser } = data.data;
       const upperCurrency = currency.toUpperCase();

@@ -35,7 +35,7 @@ export class QwalletHooksService {
   async handleDepositSuccessful(
     payload: QWalletDepositSuccessfulPayloadDto,
     user: UserEntity,
-  ): Promise<TransactionHistoryEntity | any> {
+  ): Promise<void> {
     try {
       const payloadUser = payload.data.user;
       const qwallet = user.qwallet;
@@ -52,50 +52,44 @@ export class QwalletHooksService {
           payload.data.id,
         );
 
-      // if (existingTxnHistory) {
-      //   return existingTxnHistory;
-      // }
+      if (!existingTxnHistory) {
+        const transactionHistoryDto: CreateTransactionHistoryDto = {
+          event: QWalletWebhookEnum.DEPOSIT_SUCCESSFUL,
+          transactionId: payload.data.id,
+          type: payload.data.type,
+          currency: payload.data.currency,
+          amount: payload.data.amount,
+          fee: payload.data.fee,
+          blockchainTxId: payload.data.txid,
+          status: payload.data.status,
+          reason: payload.data.reason,
+          createdAt: payload.data.created_at,
+          doneAt: payload.data.done_at,
+          walletId: payload.data.wallet.id,
+          walletName: payload.data.wallet.name,
+          walletCurrency: payload.data.wallet.currency,
+          paymentStatus: payload.data.payment_transaction.status,
+          paymentAddress: payload.data.payment_address.address,
+          paymentNetwork: payload.data.payment_address.network,
+        };
 
-      const transactionHistoryDto: CreateTransactionHistoryDto = {
-        event: QWalletWebhookEnum.DEPOSIT_SUCCESSFUL,
-        transactionId: payload.data.id,
-        type: payload.data.type,
-        currency: payload.data.currency,
-        amount: payload.data.amount,
-        fee: payload.data.fee,
-        blockchainTxId: payload.data.txid,
-        status: payload.data.status,
-        reason: payload.data.reason,
-        createdAt: payload.data.created_at,
-        doneAt: payload.data.done_at,
-        walletId: payload.data.wallet.id,
-        walletName: payload.data.wallet.name,
-        walletCurrency: payload.data.wallet.currency,
-        paymentStatus: payload.data.payment_transaction.status,
-        paymentAddress: payload.data.payment_address.address,
-        paymentNetwork: payload.data.payment_address.network,
-      };
+        const transaction =
+          await this.transactionHistoryService.createDepositTransactionRecord(
+            transactionHistoryDto,
+            user,
+          );
 
-      // const transaction =
-      //   await this.transactionHistoryService.createDepositTransactionRecord(
-      //     transactionHistoryDto,
-      //     user,
-      //   );
+        const notification =
+          await this.qwalletNotificationService.createDepositSuccessfulNotification(
+            payload,
+            user,
+          );
 
-      //TODO: ALLOW SAVE TRANSACTION
-
-      const notification =
-        await this.qwalletNotificationService.createDepositSuccessfulNotification(
-          payload,
-          user,
+        await this.notificationsGateway.emitDepositSuccessfulToUser(
+          user.alertID,
+          { transaction, notification },
         );
-
-      await this.notificationsGateway.emitDepositSuccessfulToUser(
-        user.alertID,
-        notification,
-      );
-
-      // return transaction;
+      }
     } catch (error) {
       console.error(error);
       // throw new CustomHttpException(

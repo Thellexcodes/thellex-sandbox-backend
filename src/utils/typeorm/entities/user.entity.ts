@@ -54,11 +54,6 @@ export class UserEntity extends BaseEntity {
   )
   verificationCodes: AuthVerificationCodesEntity[];
 
-  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
-    cascade: true,
-  })
-  notifications: NotificationEntity[];
-
   @OneToMany(() => AuthnEntity, (authn) => authn.user)
   authn: AuthnEntity[];
 
@@ -86,4 +81,9 @@ export class UserEntity extends BaseEntity {
     (transactionHistory) => transactionHistory.user,
   )
   transactionHistory: TransactionHistoryEntity[];
+
+  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
+    cascade: true,
+  })
+  notifications: NotificationEntity[];
 }

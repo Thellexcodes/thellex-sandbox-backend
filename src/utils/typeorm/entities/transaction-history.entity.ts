@@ -1,4 +1,3 @@
-export class TransactionHistory {}
 import {
   Entity,
   Column,

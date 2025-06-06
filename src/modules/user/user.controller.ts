@@ -21,7 +21,6 @@ export class UserController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    console.log(createUserDto);
     const newUserData = await this.userService.create(createUserDto);
     responseHandler(newUserData, res, req);
   }
@@ -60,7 +59,6 @@ export class UserController {
   ) {
     const user = req.user;
     const result = await this.userService.verifyUser(verifyUserDto, user);
-    console.log({ result });
     responseHandler(result, res, req);
   }
 }
