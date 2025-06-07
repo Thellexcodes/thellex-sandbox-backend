@@ -4,11 +4,19 @@ import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { getSupportedAssets } from '@/utils/helpers';
 import PQueue from 'p-queue';
-import { GetBalanceResponseDto } from './dto/get-balance-response.dto';
+import {
+  AssetBalanceDto,
+  GetBalanceResponseDto,
+} from './dto/get-balance-response.dto';
+import { QWallet } from '@/types/qwallet.types';
+import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 
 @Injectable()
 export class WalletManagerService {
-  constructor(private readonly qwalletService: QwalletService) {}
+  constructor(
+    private readonly qwalletService: QwalletService,
+    private readonly transactionHistoryService: TransactionHistoryService,
+  ) {}
 
   async getBalance(user: UserEntity): Promise<GetBalanceResponseDto> {
     try {
@@ -16,8 +24,8 @@ export class WalletManagerService {
       const qWalletId = user.qwallet?.qid;
       const supportedAssets = getSupportedAssets();
 
-      const curatedWallets = [];
-      let total = 0;
+      const curatedWallets: AssetBalanceDto[] = [];
+      let totalInUsd = 0;
 
       const queue = new PQueue({ concurrency: 3 });
 
@@ -31,35 +39,45 @@ export class WalletManagerService {
 
           if (!wallet) return;
 
-          let balance = 0;
+          let balanceInUsd = 0;
 
-          // Modular service-based balance fetchers
-          balance += await this.getQuidaxBalance(
+          balanceInUsd += await this.getQuidaxBalance(
             wallet,
             token,
             network,
             qWalletId,
           );
-          //[x] Future add
-          // balance += await this.getCircleBalance(wallet, token, network); // when ready
-          // balance += await this.getFireblocksBalance(...); // if you add fireblocks
+          // Future:
+          // balance += await this.getCircleBalance(wallet, token, network);
+          // balance += await this.getFireblocksBalance(...);
 
-          if (balance > 0) {
-            total += balance;
-            curatedWallets.push({
-              address: wallet.address,
-              network,
-              balance,
-              assetCode: token,
-            });
-          }
+          if (balanceInUsd <= 0) return;
+
+          // 🔁 Optional: Convert balance to USD and NGN
+          // const balanceInUsd = await this.convertToUsd(token, balance);
+          // const balanceInNgn = await this.convertToNgn(token, balance);
+          //[x] change to main rate using the api
+          const balanceInNgn = balanceInUsd * 1500;
+
+          totalInUsd += balanceInUsd;
+
+          //get transaction history for wallet
+
+          curatedWallets.push({
+            address: wallet.address,
+            network,
+            assetCode: token,
+            balanceInUsd,
+            balanceInNgn,
+            transactionHistory: [],
+          });
         }),
       );
 
       await Promise.all(tasks);
 
       return {
-        totalBalance: total.toFixed(2),
+        totalBalance: totalInUsd.toFixed(2),
         currency: 'USD',
         wallets: curatedWallets,
       };
@@ -170,7 +188,7 @@ export class WalletManagerService {
   }
 
   private async getQuidaxBalance(
-    wallet: any,
+    wallet: QWallet,
     token: Token,
     network: SupportedBlockchain,
     qWalletId: string,
