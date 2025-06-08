@@ -4,7 +4,6 @@ import { QwalletSubAccountDto } from '@/modules/qwallet/dto/qwallet-subaccount.d
 import { QwalletDto } from '@/modules/qwallet/dto/qwallet.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
-// Main Data DTO
 export class QwalletHookDepositSuccessfulDataDto {
   @ApiProperty() id: string;
   @ApiProperty() type: string;
@@ -24,9 +23,19 @@ export class QwalletHookDepositSuccessfulDataDto {
   payment_address: QWalletPaymentAddressDto;
 }
 
-// Main Payload DTO
-export class QWalletDepositSuccessfulPayloadDto {
-  @ApiProperty({ example: 'deposit.successful' }) event: string;
-  @ApiProperty({ type: () => QwalletHookDepositSuccessfulDataDto })
-  data: QwalletHookDepositSuccessfulDataDto;
+export interface IQwalletHookDepositSuccessfulData {
+  id: string;
+  type: string;
+  currency: string;
+  amount: string;
+  fee: string;
+  txid: string;
+  status: string;
+  reason: string | null;
+  created_at: string;
+  done_at: string | null;
+  wallet: QwalletDto;
+  user: QwalletSubAccountDto;
+  payment_transaction: QwalletPaymentTransactionDto;
+  payment_address: QWalletPaymentAddressDto;
 }

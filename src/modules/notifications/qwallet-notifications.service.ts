@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { NotificationsGateway } from './notifications.gateway';
 import { QwalletPaymentTransactionDto } from '../qwallet/dto/qwallet-payment.dto';
-import { QWalletDepositSuccessfulPayloadDto } from '../qwallet-hooks/dto/qwallet-hook-depositSuccessful.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   NotificationErrors,
@@ -12,6 +11,8 @@ import {
 } from '@/types/notifications.enum';
 import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { QWalletWebhookPayload } from '../qwallet-hooks/dto/qwallet-hook.dto';
+import { IQwalletHookDepositSuccessfulData } from '../qwallet-hooks/dto/qwallet-hook-depositSuccessful.dto';
 
 @Injectable()
 export class QwalletNotificationsService {
@@ -21,11 +22,11 @@ export class QwalletNotificationsService {
   ) {}
 
   async createDepositSuccessfulNotification(
-    data: QWalletDepositSuccessfulPayloadDto,
+    data: IQwalletHookDepositSuccessfulData,
     user: UserEntity,
   ): Promise<NotificationEntity> {
     try {
-      const { amount, currency, txid, user: walletUser } = data.data;
+      const { amount, currency, txid, user: walletUser } = data;
       const upperCurrency = currency.toUpperCase();
       const expiresAt = getUtcExpiryDateMonthsFromNow(3);
 

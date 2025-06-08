@@ -157,3 +157,42 @@ export interface WithdrawData {
 }
 
 export type HandleWithdrawPaymentResponse = ApiResponse<WithdrawData>;
+
+export enum QWalletWebhookEventType {
+  DepositTransactionConfirmation = 'deposit.transaction.confirmation',
+  DepositSuccessful = 'deposit.successful',
+  DepositFailed = 'deposit.failed',
+  DepositOnHold = 'deposit.on_hold',
+  DepositFailedAML = 'deposit.failed_aml',
+  DepositRejected = 'deposit.rejected',
+  WithdrawalSuccessful = 'withdrawal.successful',
+  WithdrawalFailed = 'withdrawal.failed',
+  WithdrawRejected = 'withdraw.rejected',
+  WalletUpdated = 'wallet.updated',
+  WalletAddressGenerated = 'wallet.address.generated',
+  WalletRejected = 'wallet.rejected',
+  OrderDone = 'order.done',
+  OrderCancelled = 'order.cancelled',
+  SwapTransactionCompleted = 'swap_transaction.completed',
+  SwapTransactionReversed = 'swap_transaction.reversed',
+  SwapTransactionFailed = 'swap_transaction.failed',
+}
+
+// export type QWalletWebhookEventType =
+//   | 'deposit.transaction.confirmation'
+//   | 'deposit.successful'
+//   | 'deposit.failed'
+//   | 'deposit.on_hold'
+//   | 'deposit.failed_aml'
+//   | 'deposit.rejected'
+//   | 'withdrawal.successful'
+//   | 'withdrawal.failed'
+//   | 'withdraw.rejected'
+//   | 'wallet.updated'
+//   | 'wallet.address.generated'
+//   | 'wallet.rejected'
+//   | 'order.done'
+//   | 'order.cancelled'
+//   | 'swap_transaction.completed'
+//   | 'swap_transaction.reversed'
+//   | 'swap_transaction.failed';

@@ -376,7 +376,6 @@ export class QwalletService {
   }
 
   // >>>>>>>>>>>>>>> Withdrawals <<<<<<<<<<<<<<<
-  //  Promise<CreateWithdrawalResponse> {
   async createWithdrawal(
     uuid: string,
     dto: any,

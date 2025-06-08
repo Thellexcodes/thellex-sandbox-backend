@@ -1,8 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import {
-  QWalletDepositSuccessfulPayloadDto,
-  QwalletHookDepositSuccessfulDataDto,
-} from './dto/qwallet-hook-depositSuccessful.dto';
+import { QwalletHookDepositSuccessfulDataDto } from './dto/qwallet-hook-depositSuccessful.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
@@ -10,7 +7,7 @@ import { QwalletNotificationsService } from '../notifications/qwallet-notificati
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { CreateTransactionHistoryDto } from '../transaction-history/dto/create-transaction-history.dto';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
 
 @Injectable()
 export class QwalletHooksService {
@@ -33,11 +30,12 @@ export class QwalletHooksService {
   }
 
   async handleDepositSuccessful(
-    payload: QWalletDepositSuccessfulPayloadDto,
+    payload: QWalletWebhookPayloadDto,
     user: UserEntity,
   ): Promise<void> {
     try {
-      const payloadUser = payload.data.user;
+      const data: QwalletHookDepositSuccessfulDataDto = payload.data;
+      const payloadUser = data.user;
       const qwallet = user.qwallet;
 
       if (payloadUser.sn !== qwallet.qsn) {
@@ -86,7 +84,7 @@ export class QwalletHooksService {
 
       const notification =
         await this.qwalletNotificationService.createDepositSuccessfulNotification(
-          payload,
+          payload.data,
           user,
         );
 
@@ -115,7 +113,10 @@ export class QwalletHooksService {
     return { message: 'Deposit rejected', payload };
   }
 
-  handleWithdrawSuccessful(payload: any) {
+  handleWithdrawSuccessful(
+    payload: QWalletWebhookPayloadDto,
+    user: UserEntity,
+  ) {
     return { message: 'Withdraw successful', payload };
   }
 
