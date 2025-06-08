@@ -2,16 +2,18 @@ import { QWalletWebhookEventType } from '@/types/qwallet.types';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
   IQwalletHookDepositSuccessfulData,
-  QwalletHookDepositSuccessfulDataDto,
+  QwalletHookDepositSuccessfulEventDto,
 } from './qwallet-hook-depositSuccessful.dto';
+import {
+  IQWalletHookWithdrawSuccessfulEvent,
+  QWalletHookWithdrawSuccessfulEventDto,
+} from './qwallet-hook-withdrawSuccessful.dto';
 
-// 3. Map event to data type
 export type QWalletWebhookEventMap = {
   [QWalletWebhookEventType.DepositSuccessful]: IQwalletHookDepositSuccessfulData;
-  // [QWalletWebhookEventType.WithdrawalSuccessful]: IQwalletHookWithdrawalSuccessfulData;
+  [QWalletWebhookEventType.WithdrawalSuccessful]: IQWalletHookWithdrawSuccessfulEvent;
 };
 
-// 4. Union type for internal use
 export type QWalletWebhookPayload = {
   [K in keyof QWalletWebhookEventMap]: {
     event: K;
@@ -19,13 +21,19 @@ export type QWalletWebhookPayload = {
   };
 }[keyof QWalletWebhookEventMap];
 
-@ApiExtraModels(QwalletHookDepositSuccessfulDataDto)
+@ApiExtraModels(
+  QwalletHookDepositSuccessfulEventDto,
+  QWalletHookWithdrawSuccessfulEventDto,
+)
 export class QWalletWebhookPayloadDto {
   @ApiProperty({ enum: Object.values(QWalletWebhookEventType) })
   event: QWalletWebhookEventType;
 
   @ApiProperty({
-    oneOf: [{ $ref: getSchemaPath(QwalletHookDepositSuccessfulDataDto) }],
+    oneOf: [
+      { $ref: getSchemaPath(QwalletHookDepositSuccessfulEventDto) },
+      { $ref: getSchemaPath(QWalletHookWithdrawSuccessfulEventDto) },
+    ],
   })
-  data: IQwalletHookDepositSuccessfulData;
+  data: IQwalletHookDepositSuccessfulData | IQWalletHookWithdrawSuccessfulEvent;
 }

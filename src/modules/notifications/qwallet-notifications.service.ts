@@ -2,8 +2,6 @@ import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
-import { NotificationsGateway } from './notifications.gateway';
-import { QwalletPaymentTransactionDto } from '../qwallet/dto/qwallet-payment.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   NotificationErrors,
@@ -11,7 +9,6 @@ import {
 } from '@/types/notifications.enum';
 import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { QWalletWebhookPayload } from '../qwallet-hooks/dto/qwallet-hook.dto';
 import { IQwalletHookDepositSuccessfulData } from '../qwallet-hooks/dto/qwallet-hook-depositSuccessful.dto';
 
 @Injectable()
@@ -21,25 +18,37 @@ export class QwalletNotificationsService {
     private readonly notificationRepo: Repository<NotificationEntity>,
   ) {}
 
-  async createDepositSuccessfulNotification(
-    data: IQwalletHookDepositSuccessfulData,
-    user: UserEntity,
-  ): Promise<NotificationEntity> {
+  async createDepositSuccessfulNotification({
+    user,
+    title,
+    data,
+    message,
+  }: {
+    user: UserEntity;
+    title: NotificationsEnum;
+    message: string;
+    data: {
+      amount: string;
+      currency: string;
+      txid?: string;
+      qwalletID?: string;
+    };
+  }): Promise<NotificationEntity> {
     try {
-      const { amount, currency, txid, user: walletUser } = data;
+      const { amount, currency, txid } = data;
       const upperCurrency = currency.toUpperCase();
       const expiresAt = getUtcExpiryDateMonthsFromNow(3);
 
       const notification = this.notificationRepo.create({
         user,
-        title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL.replace(/_/g, ' '),
-        message: `You've successfully deposited ${amount} ${upperCurrency}`,
+        title: title.replace(/_/g, ' '),
+        message: `${message} ${amount} ${upperCurrency}`,
         expiresAt,
         consumed: false,
         txID: txid,
         amount,
         currency: upperCurrency,
-        qwalletID: walletUser.id,
+        qwalletID: user.qwallet.id,
       });
 
       return await this.notificationRepo.save(notification);

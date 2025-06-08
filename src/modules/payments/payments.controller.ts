@@ -5,7 +5,7 @@ import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { PaymentsService } from './payments.service';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { WithdrawPaymentDto } from './dto/create-withdrawal.dto';
+import { CreateWithdrawPaymentDto } from './dto/create-withdrawal.dto';
 
 ApiTags('payments');
 @Controller('Payments')
@@ -44,7 +44,7 @@ export class PaymentsController {
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
   async withdrawPayment(
-    @Body() withdrawPaymentDto: WithdrawPaymentDto,
+    @Body() withdrawPaymentDto: CreateWithdrawPaymentDto,
     @Req() req: CustomRequest,
   ) {
     const user = req.user;

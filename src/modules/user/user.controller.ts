@@ -8,6 +8,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifyUserDto } from './dto/verify-user.dto';
 
+//TODO: middleware for outstandinv verifications
 @ApiTags('User')
 @Controller('user')
 @ApiBearerAuth('access-token')

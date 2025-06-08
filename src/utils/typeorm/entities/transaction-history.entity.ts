@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
+import { PaymentStatus } from '@/types/payment.types';
 
 @Entity('transaction_history')
 export class TransactionHistoryEntity {
@@ -39,9 +40,6 @@ export class TransactionHistoryEntity {
   @Column({ nullable: false })
   blockchainTxId: string;
 
-  @Column({ nullable: false })
-  status: string;
-
   @Column({ nullable: true })
   reason?: string;
 
@@ -50,6 +48,9 @@ export class TransactionHistoryEntity {
 
   @Column({ type: 'timestamp', nullable: true, name: 'done_at' })
   doneAt?: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'updated_at' })
+  updatedAt?: Date | null;
 
   @Column({ nullable: false, name: 'wallet_id' })
   walletId: string;
@@ -60,7 +61,12 @@ export class TransactionHistoryEntity {
   @Column({ nullable: false, name: 'wallet_currency' })
   walletCurrency: string;
 
-  @Column({ nullable: false, name: 'payment_status' })
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.None,
+    nullable: false,
+  })
   paymentStatus: string;
 
   @Column({ nullable: false, name: 'payment_address' })

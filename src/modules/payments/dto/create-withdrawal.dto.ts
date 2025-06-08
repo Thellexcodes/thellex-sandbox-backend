@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class WithdrawPaymentDto {
+export class CreateWithdrawPaymentDto {
   @ApiProperty({
     description: 'Value to be sent to the recipient',
     example: '150.00',

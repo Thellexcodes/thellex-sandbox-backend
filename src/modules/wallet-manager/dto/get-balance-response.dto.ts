@@ -1,6 +1,6 @@
+import { CreateTransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
-import { TransactionHistoryDto } from './transaction-history.dto';
 
 export class AssetBalanceDto {
   @ApiProperty()
@@ -24,8 +24,8 @@ export class AssetBalanceDto {
   @IsOptional()
   balanceInNgn?: number;
 
-  @ApiProperty({ type: [TransactionHistoryDto] })
-  transactionHistory: TransactionHistoryDto[];
+  @ApiProperty({ type: [CreateTransactionHistoryDto] })
+  transactionHistory: CreateTransactionHistoryDto[];
 }
 
 export class GetBalanceResponseDto {

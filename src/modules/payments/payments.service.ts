@@ -3,8 +3,8 @@ import { CreateRequestPaymentDto } from '../qwallet/dto/create-request.dto';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { HandleWithdrawPaymentResponse, QWallet } from '@/types/qwallet.types';
-import { WithdrawPaymentDto } from './dto/create-withdrawal.dto';
 import { RequestCryptoPaymentResponse } from '@/types/request.types';
+import { CreateWithdrawPaymentDto } from './dto/create-withdrawal.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -26,7 +26,7 @@ export class PaymentsService {
 
   async handleWithdrawPayment(
     user: UserEntity,
-    withdrawPaymentDto: WithdrawPaymentDto,
+    withdrawPaymentDto: CreateWithdrawPaymentDto,
   ): Promise<HandleWithdrawPaymentResponse> {
     const withdrawResponse = await this.qwalletService.createWithdrawal(
       user.qwallet.id,

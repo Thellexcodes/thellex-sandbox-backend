@@ -1,9 +1,8 @@
+import { PaymentStatus } from '@/types/payment.types';
 import { ApiProperty } from '@nestjs/swagger';
+import { Column } from 'typeorm';
 
-export class TransactionHistoryDto {
-  @ApiProperty()
-  id: string;
-
+export class CreateTransactionHistoryDto {
   @ApiProperty()
   event: string;
 
@@ -25,8 +24,13 @@ export class TransactionHistoryDto {
   @ApiProperty()
   blockchainTxId: string;
 
-  @ApiProperty()
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.None,
+    nullable: false,
+  })
+  status: PaymentStatus;
 
   @ApiProperty({ required: false })
   reason?: string;
