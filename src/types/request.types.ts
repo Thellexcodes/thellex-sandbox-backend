@@ -2,6 +2,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Response } from 'express';
 import { QWallet } from './qwallet.types';
 import { Token } from '@/config/settings';
+import { WalletType } from './wallet-manager.types';
 
 interface UserSession {
   id: string;
@@ -19,6 +20,7 @@ export interface CustomRequest extends Request {
   user?: UserEntity;
   sessionId?: string;
   session?: UserSession;
+  walletType?: WalletType;
 }
 
 export interface CustomResponse extends Response {}

@@ -15,29 +15,22 @@ import { VerifyUserDto } from './dto/verify-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
+  @Post('access')
   @ApiBody({ type: CreateUserDto, description: 'Data required to create user' })
   async create(
     @Body() createUserDto: CreateUserDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    const newUserData = await this.userService.create(createUserDto);
+    const walletType = req.walletType;
+    const newUserData = await this.userService.create(
+      createUserDto,
+      walletType,
+    );
     responseHandler(newUserData, res, req);
   }
 
-  // @Post('login')
-  // @ApiBody({ type: LoginUserDto, description: 'Data required to login user' })
-  // async login(
-  //   @Body() loginUserDto: LoginUserDto,
-  //   @Req() req: CustomRequest,
-  //   @Res() res: CustomResponse,
-  // ): Promise<any> {
-  //   const loginData = await this.userService.login(loginUserDto);
-  //   responseHandler(loginData, res, req);
-  // }
-
-  @Post('authLogin')
+  @Post('authenticate')
   @UseGuards(AuthGuard)
   async tokenLogin(
     @Req() req: CustomRequest,

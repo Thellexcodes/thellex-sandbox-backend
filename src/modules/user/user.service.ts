@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -15,7 +15,7 @@ import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { Token } from '@/config/settings';
-import { v7 as uuidV7 } from 'uuid';
+import { WalletType } from '@/types/wallet-manager.types';
 
 @Injectable()
 export class UserService {
@@ -34,6 +34,7 @@ export class UserService {
 
   async create(
     createUserDto: CreateUserDto,
+    walletType: WalletType,
   ): Promise<string | CustomHttpException> {
     try {
       // Normalize email
@@ -54,38 +55,45 @@ export class UserService {
         // Save new user to DB
         user = await newUser.save();
 
-        //creates user qwallet-subaccount
-        let qwalletSubAccount =
-          await this.qWalletService.lookupSubaccount(user);
+        // Only do qwallet subaccount/wallet creation if walletType is qwallet
+        if (walletType === WalletType.QWALLET) {
+          //creates user qwallet-subaccount
+          let qwalletSubAccount =
+            await this.qWalletService.lookupSubaccount(user);
 
-        if (!qwalletSubAccount) {
-          // Create sub-account if not exists
-          const subAccountResponse = await this.qWalletService.createSubAccount(
-            { email: createUserDto.email },
-            user,
-          );
+          if (!qwalletSubAccount) {
+            // Create sub-account if not exists
+            const subAccountResponse =
+              await this.qWalletService.createSubAccount(
+                { email: createUserDto.email },
+                user,
+              );
 
-          // Create USDT wallet and save it inside createUserWallet method
-          await this.qWalletService.createUserWallet(
-            subAccountResponse.data.id,
-            Token.USDT,
-          );
-
-          // Refetch qwalletSubAccount to have updated wallets
-          qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
-        } else {
-          // If sub-account exists, ensure USDT wallet exists
-          const usdtWallet = await this.qWalletService.getUserWallet(
-            qwalletSubAccount.qid,
-            Token.USDT,
-          );
-
-          if (!usdtWallet) {
+            // Create USDT wallet and save it inside createUserWallet method
             await this.qWalletService.createUserWallet(
+              subAccountResponse.data.id,
+              Token.USDT,
+            );
+
+            // Refetch qwalletSubAccount to have updated wallets
+            qwalletSubAccount =
+              await this.qWalletService.lookupSubaccount(user);
+          } else {
+            // If sub-account exists, ensure USDT wallet exists
+            const usdtWallet = await this.qWalletService.getUserWallet(
               qwalletSubAccount.qid,
               Token.USDT,
             );
+
+            if (!usdtWallet) {
+              await this.qWalletService.createUserWallet(
+                qwalletSubAccount.qid,
+                Token.USDT,
+              );
+            }
           }
+        } else if (walletType === WalletType.CWALLET) {
+          //[x] work on cwallet integration for user
         }
       }
 

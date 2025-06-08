@@ -34,6 +34,7 @@ import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
 import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module';
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
 import { WalletManagerModule } from './modules/wallet-manager/wallet-manager.module';
+import { GeoWalletMiddleware } from './middleware/geo-wallet.middleware';
 
 @Module({
   imports: [
@@ -87,6 +88,6 @@ import { WalletManagerModule } from './modules/wallet-manager/wallet-manager.mod
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LogRequestMiddleware).forRoutes('*');
+    consumer.apply(LogRequestMiddleware, GeoWalletMiddleware).forRoutes('*');
   }
 }

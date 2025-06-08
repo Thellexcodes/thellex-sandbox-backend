@@ -65,7 +65,8 @@ export class TransactionHistoryService {
       );
     }
 
-    existing.doneAt = new Date(updates.done_at);
+    existing.doneAt = updates.done_at;
+    existing.updatedAt = new Date();
     existing.blockchainTxId = updates.txid;
     existing.reason = updates.reason;
     existing.paymentStatus = updates.status;
