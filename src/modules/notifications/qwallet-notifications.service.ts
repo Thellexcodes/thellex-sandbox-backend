@@ -48,7 +48,7 @@ export class QwalletNotificationsService {
         txID: txid,
         amount,
         currency: upperCurrency,
-        qwalletID: user.qwallet.id,
+        // qwalletID: user.qwallet.id,
       });
 
       return await this.notificationRepo.save(notification);

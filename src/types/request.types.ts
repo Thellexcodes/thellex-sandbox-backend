@@ -1,8 +1,8 @@
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Response } from 'express';
-import { QWallet } from './qwallet.types';
-import { Token } from '@/config/settings';
 import { WalletType } from './wallet-manager.types';
+import { IQWallet } from './qwallet.types';
+import { TokenEnum } from '@/config/settings';
 
 interface UserSession {
   id: string;
@@ -44,6 +44,6 @@ export enum PaymentType {
 }
 
 export type RequestCryptoPaymentResponse = {
-  wallet: QWallet | null;
-  assetCode: Token;
+  wallet: IQWallet | null;
+  assetCode: TokenEnum;
 };

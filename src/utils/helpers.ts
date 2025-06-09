@@ -3,7 +3,7 @@ import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { UserEntity } from './typeorm/entities/user.entity';
-import { ChainTokens, Token as AppToken } from '@/config/settings';
+import { ChainTokens, TokenEnum } from '@/config/settings';
 
 export function isNumber(n: string | number): boolean {
   const cleanedValue = String(n).replace(/\D/g, '');
@@ -100,7 +100,7 @@ export function getUtcExpiryDateMonthsFromNow(monthsToAdd: number): Date {
 }
 
 export function getSupportedAssets() {
-  const assets: { token: AppToken; network: keyof typeof ChainTokens }[] = [];
+  const assets: { token: TokenEnum; network: keyof typeof ChainTokens }[] = [];
 
   for (const network in ChainTokens) {
     const tokens = ChainTokens[network as keyof typeof ChainTokens];

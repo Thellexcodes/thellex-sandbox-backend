@@ -11,10 +11,10 @@ import { AuthnEntity } from './authn.entity';
 import { AuthVerificationCodesEntity } from './authVerificationCodes.entities';
 import { DeviceEntity } from './device.entity';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
-import { QwalletEntity } from './qwallet/qwallet.entity';
 import { DKycEntity } from './dkyc.entity';
 import { NotificationEntity } from './notification.entity';
 import { TransactionHistoryEntity } from './transaction-history.entity';
+import { QWalletProfileEntity } from './qwallet/qwallet-profile.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -50,40 +50,51 @@ export class UserEntity extends BaseEntity {
   @OneToMany(
     () => AuthVerificationCodesEntity,
     (authVerificationCode) => authVerificationCode.user,
-    { cascade: true },
+    {
+      cascade: true,
+      eager: false,
+    },
   )
   verificationCodes: AuthVerificationCodesEntity[];
 
-  @OneToMany(() => AuthnEntity, (authn) => authn.user)
+  @OneToMany(() => AuthnEntity, (authn) => authn.user, {
+    eager: false,
+  })
   authn: AuthnEntity[];
 
-  @OneToMany(() => DeviceEntity, (device) => device.user)
+  @OneToMany(() => DeviceEntity, (device) => device.user, {
+    eager: false,
+  })
   devices: DeviceEntity[];
 
-  @OneToMany(() => CardManagementEntity, (card) => card.user)
+  @OneToMany(() => CardManagementEntity, (card) => card.user, {
+    eager: true,
+  })
   electronic_cards: CardManagementEntity[];
 
-  @OneToOne(() => QwalletEntity, (qwallet) => qwallet.user, {
+  @OneToOne(() => QWalletProfileEntity, (qwallet) => qwallet.user, {
     cascade: true,
+    eager: true,
   })
-  qwallet: QwalletEntity;
+  qprofile: QWalletProfileEntity;
 
   @OneToOne(() => DKycEntity, (dkyc) => dkyc.user, {
     nullable: true,
     cascade: true,
-    eager: false,
+    eager: true,
   })
-  @JoinColumn()
   dkyc: DKycEntity;
 
   @OneToMany(
     () => TransactionHistoryEntity,
     (transactionHistory) => transactionHistory.user,
+    { eager: true },
   )
   transactionHistory: TransactionHistoryEntity[];
 
   @OneToMany(() => NotificationEntity, (notification) => notification.user, {
     cascade: true,
+    eager: true,
   })
   notifications: NotificationEntity[];
 }

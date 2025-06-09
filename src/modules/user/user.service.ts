@@ -13,9 +13,9 @@ import { MailService } from '../mail/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
-import { QwalletService } from '../qwallet/qwallet.service';
-import { Token } from '@/config/settings';
+import { QwalletService } from '../qwallet/qwalletProfile.service';
 import { WalletType } from '@/types/wallet-manager.types';
+import { TokenEnum } from '@/config/settings';
 
 @Injectable()
 export class UserService {
@@ -34,7 +34,6 @@ export class UserService {
 
   async create(
     createUserDto: CreateUserDto,
-    walletType: WalletType,
   ): Promise<string | CustomHttpException> {
     try {
       // Normalize email
@@ -56,44 +55,38 @@ export class UserService {
         user = await newUser.save();
 
         // Only do qwallet subaccount/wallet creation if walletType is qwallet
-        if (walletType === WalletType.QWALLET) {
-          //creates user qwallet-subaccount
-          let qwalletSubAccount =
-            await this.qWalletService.lookupSubaccount(user);
+        //creates user qwallet-subaccount
+        let qwalletSubAccount =
+          await this.qWalletService.lookupSubaccount(user);
 
-          if (!qwalletSubAccount) {
-            // Create sub-account if not exists
-            const subAccountResponse =
-              await this.qWalletService.createSubAccount(
-                { email: createUserDto.email },
-                user,
-              );
+        if (!qwalletSubAccount) {
+          // Create sub-account if not exists
+          const subAccountResponse = await this.qWalletService.createSubAccount(
+            { email: createUserDto.email },
+            user,
+          );
 
-            // Create USDT wallet and save it inside createUserWallet method
+          // Create USDT wallet and save it inside createUserWallet method
+          await this.qWalletService.createUserWallet(
+            subAccountResponse.data.id,
+            TokenEnum.USDT,
+          );
+
+          // Refetch qwalletSubAccount to have updated wallets
+          qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
+        } else {
+          // If sub-account exists, ensure USDT wallet exists
+          const usdtWallet = await this.qWalletService.getUserWallet(
+            qwalletSubAccount.qid,
+            TokenEnum.USDT,
+          );
+
+          if (!usdtWallet) {
             await this.qWalletService.createUserWallet(
-              subAccountResponse.data.id,
-              Token.USDT,
-            );
-
-            // Refetch qwalletSubAccount to have updated wallets
-            qwalletSubAccount =
-              await this.qWalletService.lookupSubaccount(user);
-          } else {
-            // If sub-account exists, ensure USDT wallet exists
-            const usdtWallet = await this.qWalletService.getUserWallet(
               qwalletSubAccount.qid,
-              Token.USDT,
+              TokenEnum.USDT,
             );
-
-            if (!usdtWallet) {
-              await this.qWalletService.createUserWallet(
-                qwalletSubAccount.qid,
-                Token.USDT,
-              );
-            }
           }
-        } else if (walletType === WalletType.CWALLET) {
-          //[x] work on cwallet integration for user
         }
       }
 
@@ -140,16 +133,9 @@ export class UserService {
 
   async findOneByEmail(email: string): Promise<UserEntity> {
     try {
-      const user = await this.userRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('user.devices', 'devices')
-        .leftJoinAndSelect('user.qwallet', 'qwallet')
-        .leftJoinAndSelect('user.electronic_cards', 'electronic_cards')
-        .leftJoinAndSelect('user.dkyc', 'dkyc')
-        .leftJoinAndSelect('user.notifications', 'notifications')
-        .leftJoinAndSelect('user.transactionHistory', 'transactionHistory')
-        .getOne();
-
+      const user = await this.userRepository.findOne({
+        where: { email },
+      });
       return user;
     } catch (err) {
       //TODO: HANDLE ERRORS
@@ -200,16 +186,9 @@ export class UserService {
 
   async findOneById(id: string): Promise<UserEntity> {
     try {
-      const user = await this.userRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('user.devices', 'devices')
-        .leftJoinAndSelect('user.qwallet', 'qwallet')
-        .leftJoinAndSelect('user.electronic_cards', 'electronic_cards')
-        .leftJoinAndSelect('user.dkyc', 'dkyc')
-        .leftJoinAndSelect('user.notifications', 'notifications')
-        .leftJoinAndSelect('user.transactionHistory', 'transactionHistory')
-        .where('user.id = :id', { id })
-        .getOne();
+      const user = await this.userRepository.findOne({
+        where: { id },
+      });
 
       return user;
     } catch (err) {
@@ -220,7 +199,7 @@ export class UserService {
   async verifyUser(
     verifyUserDto: VerifyUserDto,
     user: UserEntity,
-  ): Promise<boolean> {
+  ): Promise<UserEntity> {
     const auth = await this.authenticationRepository.findOne({
       where: {
         code: verifyUserDto.code,
@@ -228,20 +207,29 @@ export class UserService {
       },
     });
 
-    if (!auth || auth.expired)
+    if (!auth || auth.expired) {
       throw new Error('Authentication code not found or expired');
-
-    if (auth.code == verifyUserDto.code) {
-      auth.expired = true;
-
-      user.emailVerified = true;
-
-      await this.authenticationRepository.save(auth);
-      await this.userRepository.save(user);
-
-      return true;
     }
 
-    return false;
+    if (auth.code !== verifyUserDto.code) {
+      throw new CustomHttpException(
+        UserErrorEnum.REJECTED_AGREEMENT,
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    // Mark the authentication code as expired to prevent reuse
+    auth.expired = true;
+
+    // Mark the user's email as verified
+    user.emailVerified = true;
+
+    // Save changes in parallel to optimize performance
+    await Promise.all([
+      this.authenticationRepository.save(auth),
+      this.userRepository.save(user),
+    ]);
+
+    return user;
   }
 }

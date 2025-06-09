@@ -6,15 +6,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
-import { QwalletService } from '../qwallet/qwallet.service';
+import { QwalletService } from '../qwallet/qwalletProfile.service';
 import { HttpService } from '@/middleware/http.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 
 @Module({
   imports: [
@@ -22,8 +22,8 @@ import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-h
       NotificationEntity,
       UserEntity,
       AuthVerificationCodesEntity,
-      QwalletEntity,
       TransactionHistoryEntity,
+      QWalletProfileEntity,
     ]),
   ],
   controllers: [QwalletHooksController],

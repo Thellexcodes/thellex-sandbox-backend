@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { SupportedBlockchain, Token } from '@/config/settings';
-import { QwalletService } from '../qwallet/qwallet.service';
+import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
+import { QwalletService } from '../qwallet/qwalletProfile.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { getSupportedAssets } from '@/utils/helpers';
 import PQueue from 'p-queue';
@@ -8,8 +8,8 @@ import {
   AssetBalanceDto,
   GetBalanceResponseDto,
 } from './dto/get-balance-response.dto';
-import { QWallet } from '@/types/qwallet.types';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { IQWallet } from '@/types/qwallet.types';
 
 @Injectable()
 export class WalletManagerService {
@@ -20,8 +20,8 @@ export class WalletManagerService {
 
   async getBalance(user: UserEntity): Promise<GetBalanceResponseDto> {
     try {
-      const wallets = user.qwallet?.wallets ?? [];
-      const qWalletId = user.qwallet?.qid;
+      const wallets = user.qprofile?.wallets ?? [];
+      const qWalletId = user.qprofile?.qid;
       const supportedAssets = getSupportedAssets();
 
       const curatedWallets: AssetBalanceDto[] = [];
@@ -33,7 +33,7 @@ export class WalletManagerService {
         queue.add(async () => {
           const wallet = wallets.find(
             (w) =>
-              w.network === network.toLowerCase() &&
+              w.defaultNetwork === network.toLowerCase() &&
               w.currency.toLowerCase() === token.toLowerCase(),
           );
 
@@ -41,12 +41,12 @@ export class WalletManagerService {
 
           let balanceInUsd = 0;
 
-          balanceInUsd += await this.getQuidaxBalance(
-            wallet,
-            token,
-            network,
-            qWalletId,
-          );
+          // balanceInUsd += await this.getQuidaxBalance(
+          //   wallet,
+          //   token,
+          //   network,
+          //   qWalletId,
+          // );
           // Future:
           // balance += await this.getCircleBalance(wallet, token, network);
           // balance += await this.getFireblocksBalance(...);
@@ -188,9 +188,9 @@ export class WalletManagerService {
   }
 
   private async getQuidaxBalance(
-    wallet: QWallet,
-    token: Token,
-    network: SupportedBlockchain,
+    wallet: IQWallet,
+    token: TokenEnum,
+    network: SupportedBlockchainType,
     qWalletId: string,
   ): Promise<number> {
     if (!this.qwalletService.supports(network, token)) return 0;
@@ -203,11 +203,11 @@ export class WalletManagerService {
     );
   }
 
-  // // Placeholder for Circle — implement when integrated
+  // Placeholder for Circle — implement when integrated
   // private async getCircleBalance(
   //   wallet: any,
-  //   token: Token,
-  //   network: SupportedBlockchain,
+  //   token: TokenEnum,
+  //   network: SupportedBlockchainType,
   // ): Promise<number> {
   //   if (!this.circleService?.supports(network, token)) return 0;
 

@@ -19,13 +19,13 @@ import {
   GetUserWalletResponse,
   GetUserWalletsResponse,
   HandleWithdrawPaymentResponse,
-  QWallet,
+  IQWallet,
+  ISubAccountData,
   QWalletWithdrawalFeeResponse,
   RefreshSwapQuoteResponse,
-  SubAccountData,
 } from '@/types/qwallet.types';
 import { QwalletErrorEnum } from '@/types/qwallet-error.enum';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -35,96 +35,109 @@ import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { CreateSwapDto } from './dto/create-swap.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { ChainTokens, SupportedBlockchain, Token } from '@/config/settings';
+import {
+  ChainTokens,
+  SupportedBlockchainType,
+  TokenEnum,
+} from '@/config/settings';
+import { QWalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 
 @Injectable()
 export class QwalletService {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
-    @InjectRepository(QwalletEntity)
-    private readonly qwalletRepo: Repository<QwalletEntity>,
+    @InjectRepository(QWalletProfileEntity)
+    private readonly qwalletProfilesRepo: Repository<QWalletProfileEntity>,
   ) {}
 
   // >>>>>>>>>>>>>>> SubAcocunts <<<<<<<<<<<<<<<
 
-  async lookupSubaccount(user: UserEntity): Promise<QwalletEntity | null> {
-    const localSubaccount = await this.qwalletRepo.findOne({
+  async lookupSubaccount(
+    user: UserEntity,
+  ): Promise<QWalletProfileEntity | null> {
+    const localSubaccount = await this.qwalletProfilesRepo.findOne({
       where: { user: { id: user.id } },
       relations: ['user'],
     });
 
-    if (localSubaccount) {
-      return localSubaccount;
-    }
+    if (localSubaccount) return localSubaccount;
 
-    // If not found, optionally try to fetch from QWallet server
     try {
-      const allSubaccountsResponse: ApiResponse<SubAccountData[]> =
+      const allSubaccountsResponse: ApiResponse<ISubAccountData[]> =
         await this.httpService.get(`${this.qwalletUrl}/users`, {
           headers: this.getAuthHeaders(),
         });
 
-      const subaccounts = allSubaccountsResponse.data;
-
-      const found = subaccounts.find(
-        (acc: SubAccountData) =>
-          acc.email?.toLowerCase() === user.email?.toLowerCase(),
+      const found = allSubaccountsResponse.data.find(
+        (acc) => acc.email?.toLowerCase() === user.email?.toLowerCase(),
       );
 
-      if (found) {
-        const data = new QwalletEntity();
-        data.user = user;
-        data.qid = found.id;
-        data.qsn = found.sn;
+      if (!found) return null;
 
-        // Reuse existing wallets if they exist
-        const existingQwallet = await this.qwalletRepo.findOne({
-          where: { qid: found.id },
-        });
+      const profile = new QWalletProfileEntity();
+      profile.user = user;
+      profile.qid = found.id;
+      profile.qsn = found.sn;
 
-        data.wallets = existingQwallet?.wallets ?? [];
+      // Reuse existing wallets if they exist
+      const existingQwallet = await this.qwalletProfilesRepo.findOne({
+        where: { qid: found.id },
+        relations: ['wallets'],
+      });
 
-        // Get USDT wallets
-        let usdtWalletResponse = await this.getPaymentAddress(
-          data.qid,
-          Token.USDT,
+      profile.wallets = existingQwallet?.wallets ?? [];
+
+      // Fetch USDT wallets from external service
+      let usdtWalletResponse = await this.getPaymentAddress(
+        profile.qid,
+        TokenEnum.USDT,
+      );
+
+      let usdtWallets: IQWallet[] = [];
+
+      if (Array.isArray(usdtWalletResponse?.data)) {
+        usdtWallets = usdtWalletResponse.data;
+      } else {
+        const newWalletResponse = await this.createUserWallet(
+          profile.qid,
+          TokenEnum.USDT,
         );
-
-        let usdtWallets: QWallet[] = [];
-
-        if (usdtWalletResponse && Array.isArray(usdtWalletResponse.data)) {
-          usdtWallets = usdtWalletResponse.data;
-        } else {
-          // Create wallet if not found or invalid response
-          const newWalletResponse = await this.createUserWallet(
-            found.id,
-            Token.USDT,
-          );
-          if (newWalletResponse?.data) {
-            usdtWallets = [newWalletResponse.data];
-          }
+        if (newWalletResponse?.data) {
+          usdtWallets = [newWalletResponse.data];
         }
-
-        // Update or insert USDT wallet(s)
-        for (const wallet of usdtWallets) {
-          const index = data.wallets.findIndex(
-            (w) => w.currency === wallet.currency,
-          );
-          if (index >= 0) {
-            data.wallets[index] = wallet;
-          } else {
-            data.wallets.push(wallet);
-          }
-        }
-
-        const qwallet = await this.qwalletRepo.save(data);
-        return qwallet;
       }
 
-      return null;
+      console.log({ usdtWallets });
+
+      // Merge USDT wallets as entities
+      const walletEntities: QWalletEntity[] = usdtWallets.map(
+        (walletData: any) => {
+          const entity = new QWalletEntity();
+          entity.currency = walletData.currency;
+          entity.address = walletData.address;
+          entity.profile = profile;
+          entity.defaultNetwork = walletData.network;
+          entity.createdAt = walletData.created_at;
+          entity.updatedAt = walletData.updated_at;
+          return entity;
+        },
+      );
+
+      // Avoid duplicate currencies
+      const existingCurrencies = new Set(
+        profile.wallets.map((w) => w.currency),
+      );
+      const newWallets = walletEntities.filter(
+        (w) => !existingCurrencies.has(w.currency),
+      );
+
+      profile.wallets = [...profile.wallets, ...newWallets];
+
+      const savedProfile = await this.qwalletProfilesRepo.save(profile);
+      return savedProfile;
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new CustomHttpException(
         QwalletErrorEnum.FETCH_SUBACCOUNTS_FAILED,
         HttpStatus.BAD_REQUEST,
@@ -144,14 +157,12 @@ export class QwalletService {
           { headers: this.getAuthHeaders() },
         );
 
-      const newSubAccountRecord = new QwalletEntity();
+      const newSubAccountRecord = new QWalletProfileEntity();
       newSubAccountRecord.user = user;
       newSubAccountRecord.qid = subAccountRes.data.id;
       newSubAccountRecord.qsn = subAccountRes.data.sn;
 
-      console.log(newSubAccountRecord);
-
-      // await this.qwalletRepo.save(newSubAccountRecord);
+      await this.qwalletProfilesRepo.save(newSubAccountRecord);
 
       return subAccountRes;
     } catch (error) {
@@ -302,7 +313,7 @@ export class QwalletService {
 
   async createUserWallet(
     uuid: string,
-    currency: Token,
+    currency: TokenEnum,
   ): Promise<CreateUserWalletResponse> {
     try {
       const response: CreateUserWalletResponse = await this.httpService.get(
@@ -310,23 +321,26 @@ export class QwalletService {
         { headers: this.getAuthHeaders() },
       );
 
-      // Find QwalletEntity
-      const qwallet = await this.qwalletRepo.findOne({ where: { qid: uuid } });
+      // FindQWalletProfileEntity
+      const qwalletProfile = await this.qwalletProfilesRepo.findOne({
+        where: { qid: uuid },
+      });
 
-      if (qwallet) {
+      if (qwalletProfile) {
         // Initialize wallets array if null
-        if (!qwallet.wallets) {
-          qwallet.wallets = [];
+        if (!qwalletProfile.wallets) {
+          qwalletProfile.wallets = [];
         }
 
         // Avoid adding duplicates
-        const alreadyExists = qwallet.wallets.some(
-          (w) => w.currency === response.data.currency,
+        const alreadyExists = qwalletProfile.wallets.some(
+          (w) => w.defaultNetwork === response.data.defaultNetwork,
         );
 
         if (!alreadyExists) {
-          qwallet.wallets.push(response.data);
-          await this.qwalletRepo.save(qwallet);
+          qwalletProfile.wallets.push(response.data);
+          await this.qwalletProfilesRepo.save(qwalletProfile);
+          this.qwalletProfilesRepo;
         }
       }
 
@@ -343,7 +357,7 @@ export class QwalletService {
 
   async getPaymentAddress(
     uuid: string,
-    currency: Token,
+    currency: TokenEnum,
   ): Promise<GetPaymentAddressResponse> {
     try {
       return await this.httpService.get(
@@ -555,16 +569,17 @@ export class QwalletService {
   // >>>>>>>>>>>>>>> Asset Request <<<<<<<<<<<<<<<
   async findWalletByUserAndNetwork(
     user: UserEntity,
-    network: SupportedBlockchain,
-    assetCode: Token,
-  ): Promise<QWallet | null> {
-    if (!user.qwallet || !user.qwallet.wallets) {
+    network: SupportedBlockchainType,
+    assetCode: TokenEnum,
+  ): Promise<IQWallet | null> {
+    if (!user.qprofile || !user.qprofile.wallets) {
       return null;
     }
 
     // Look for wallet matching the network and assetCode
-    const matchedWallet = user.qwallet.wallets.find(
-      (wallet) => wallet.network === network && wallet.currency === assetCode,
+    const matchedWallet = user.qprofile.wallets.find(
+      (wallet) =>
+        wallet.defaultNetwork === network && wallet.currency === assetCode,
     );
 
     return matchedWallet || null;
@@ -572,7 +587,7 @@ export class QwalletService {
 
   // misc
 
-  supports(network: SupportedBlockchain, token: Token): boolean {
+  supports(network: SupportedBlockchainType, token: TokenEnum): boolean {
     const tokens = ChainTokens[network];
     return tokens?.includes(token) ?? false;
   }

@@ -9,8 +9,8 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { MailService } from '../mail/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
-import { QwalletService } from '../qwallet/qwallet.service';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { QwalletService } from '../qwallet/qwalletProfile.service';
 import { HttpService } from '@/middleware/http.service';
 
 @Module({
@@ -18,7 +18,7 @@ import { HttpService } from '@/middleware/http.service';
     TypeOrmModule.forFeature([
       UserEntity,
       AuthnEntity,
-      QwalletEntity,
+      QWalletProfileEntity,
       AuthVerificationCodesEntity,
     ]),
     JwtModule.registerAsync({

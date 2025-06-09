@@ -43,14 +43,14 @@ export const DEV_MODE_TOOLS = {
 };
 
 // --- Blockchain Types ---
-export type SupportedBlockchain = 'bep20';
+export type SupportedBlockchainType = 'bep20';
 
 export type BlockchainNetworkMap = {
-  [key in SupportedBlockchain]: string;
+  [key in SupportedBlockchainType]: string;
 };
 
 // --- Token Support ---
-export enum Token {
+export enum TokenEnum {
   USDC = 'usdc',
   USDT = 'usdt',
   XLM = 'xlm',
@@ -58,13 +58,13 @@ export enum Token {
 }
 
 // --- Blockchain Network Support ---
-export const SUPPORTED_BLOCKCHAINS: SupportedBlockchain[] = ['bep20'];
+export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainType[] = ['bep20'];
 
 // --- Chain Tokens Support ---
-export const ChainTokens: Record<SupportedBlockchain, Token[]> = {
-  bep20: [Token.USDT],
+export const ChainTokens: Record<SupportedBlockchainType, TokenEnum[]> = {
+  bep20: [TokenEnum.USDT],
 };
 
 export const USE_TESTNET: boolean = true;
 
-export type FEE = 'flat' | 'percentage';
+export type FEEType = 'flat' | 'percentage';

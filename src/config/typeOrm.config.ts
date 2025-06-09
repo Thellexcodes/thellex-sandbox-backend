@@ -1,6 +1,5 @@
 import { ENV_TESTNET } from '@/constants/env';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
@@ -10,6 +9,7 @@ import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import { QWalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -28,8 +28,8 @@ export const typeOrmConfig = async (
       UserEntity,
       AuthnEntity,
       DeviceEntity,
-      QwalletEntity,
       NotificationEntity,
+      QWalletEntity,
       CardManagementEntity,
       TransactionHistoryEntity,
       AuthVerificationCodesEntity,

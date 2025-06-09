@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QwalletController } from './qwallet.controller';
-import { QwalletService } from './qwallet.service';
+import { QwalletController } from './qwalletProfile.controller';
+import { QwalletService } from './qwalletProfile.service';
 
 describe('QwalletController', () => {
   let controller: QwalletController;

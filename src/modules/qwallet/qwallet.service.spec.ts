@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QwalletService } from './qwallet.service';
+import { QwalletService } from './qwalletProfile.service';
 
 describe('QwalletService', () => {
   let service: QwalletService;

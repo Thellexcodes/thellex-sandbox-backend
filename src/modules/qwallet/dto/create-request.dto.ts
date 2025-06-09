@@ -1,7 +1,7 @@
 import {
   SUPPORTED_BLOCKCHAINS,
-  SupportedBlockchain,
-  Token,
+  SupportedBlockchainType,
+  TokenEnum,
 } from '@/config/settings';
 import { PaymentType } from '@/types/request.types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -20,7 +20,7 @@ export class CreateRequestPaymentDto {
     example: 'USDT',
   })
   @IsString()
-  assetCode: Token;
+  assetCode: TokenEnum;
 
   @ApiPropertyOptional({
     description: 'Asset issuer (optional, if applicable)',
@@ -44,5 +44,5 @@ export class CreateRequestPaymentDto {
     example: 'polygon',
   })
   @IsIn(SUPPORTED_BLOCKCHAINS, { message: 'network/invalid' })
-  network: SupportedBlockchain;
+  network: SupportedBlockchainType;
 }

@@ -25,9 +25,7 @@ import { TokenModule } from './modules/token/token.module';
 import { LogRequestMiddleware } from './middleware/log-request.middleware';
 import { CardManagementModule } from './modules/card-management/card-management.module';
 import { StellarModule } from './modules/stellar/stellar.module';
-import { QwalletModule } from './modules/qwallet/qwallet.module';
 import { DkycModule } from './modules/dkyc/dkyc.module';
-import { QwalletEntity } from './utils/typeorm/entities/qwallet/qwallet.entity';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
@@ -35,13 +33,13 @@ import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
 import { WalletManagerModule } from './modules/wallet-manager/wallet-manager.module';
 import { GeoWalletMiddleware } from './middleware/geo-wallet.middleware';
+import { QwalletProfileModule } from './modules/qwallet/qwalletProfile.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       AuthnEntity,
-      QwalletEntity,
       DeviceEntity,
       AuthVerificationCodesEntity,
     ]),
@@ -68,7 +66,7 @@ import { GeoWalletMiddleware } from './middleware/geo-wallet.middleware';
     TokenModule,
     CardManagementModule,
     StellarModule,
-    QwalletModule,
+    QwalletProfileModule,
     DkycModule,
     PaymentsModule,
     NotificationsModule,

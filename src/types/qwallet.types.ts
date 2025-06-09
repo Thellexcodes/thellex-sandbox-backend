@@ -1,10 +1,11 @@
-import { FEE, SupportedBlockchain } from '@/config/settings';
+import { FEEType } from '@/config/settings';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 
 export interface CreateSubAccountRequest {
   email: string;
 }
 
-export interface SubAccountData {
+export interface ISubAccountData {
   id: string;
   sn: string;
   email: string;
@@ -22,37 +23,37 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export interface QwalletNetwork {
+export interface IQwalletNetwork {
   id: string;
   name: string;
   deposits_enabled: boolean;
   withdraws_enabled: boolean;
 }
 
-export interface QWallet {
+export interface IQWallet {
   id: string;
-  reference: string | null;
+  profile: QWalletProfileEntity;
+  reference: string;
   currency: string;
   address: string;
-  network: QwalletNetwork[] | string;
-  is_crypto: boolean;
-  destination_tag: string | null;
-  deposit_address: string | null;
-  total_payments: string | null;
-  created_at: string;
-  updated_at: string;
+  isCrypto: boolean;
+  destinationTag: string | null;
+  totalPayments: string | null;
   balance: string;
-  default_network: string;
+  defaultNetwork: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface QwalletBalance {
+export interface IQwalletBalance {
   id: string;
   name: string;
   currency: string;
   balance: string;
   locked: string;
   staked: string;
-  user: SubAccountData;
+  user: ISubAccountData;
   converted_balance: string;
   reference_currency: string;
   is_crypto: boolean;
@@ -60,23 +61,23 @@ export interface QwalletBalance {
   updated_at: string;
   blockchain_enabled: boolean;
   default_network: string | null;
-  networks: QwalletNetwork[];
+  networks: IQwalletNetwork[];
   destination_tag: string | null;
 }
 
 export class QWalletWithdrawalFeeResponse {
   fee: number;
-  type: FEE;
+  type: FEEType;
 }
 
 // Responses
-export type CreateSubAccountResponse = ApiResponse<SubAccountData>;
+export type CreateSubAccountResponse = ApiResponse<ISubAccountData>;
 
 //Wallet
-export type CreateUserWalletResponse = ApiResponse<QWallet>;
-export type GetUserWalletResponse = ApiResponse<QWallet>;
-export type GetUserWalletsResponse = ApiResponse<QwalletBalance[]>;
-export type GetPaymentAddressResponse = ApiResponse<QWallet[]>;
+export type CreateUserWalletResponse = ApiResponse<IQWallet>;
+export type GetUserWalletResponse = ApiResponse<IQWallet>;
+export type GetUserWalletsResponse = ApiResponse<IQwalletBalance[]>;
+export type GetPaymentAddressResponse = ApiResponse<IQWallet[]>;
 // : Promise<ValidateAddressResponse>
 //  Promise<CreateWithdrawalResponse> {
 // : Promise<GetWithdrawalResponse>
@@ -94,7 +95,7 @@ interface SwapData {
   expires_at: string; // ISO date string
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
-  user: SubAccountData;
+  user: ISubAccountData;
 }
 
 export type CreateSwapResponse = ApiResponse<SwapData>;
@@ -121,7 +122,7 @@ export interface WithdrawRecipient {
   };
 }
 
-export interface WithdrawWallet {
+export interface IWithdrawWallet {
   id: string;
   currency: string;
   balance: string;
@@ -136,7 +137,7 @@ export interface WithdrawWallet {
   destination_tag: string | null;
 }
 
-export interface WithdrawData {
+export interface IWithdrawData {
   id: string;
   reference: string | null;
   type: string;
@@ -152,11 +153,11 @@ export interface WithdrawData {
   created_at: string;
   done_at: string | null;
   recipient: WithdrawRecipient;
-  wallet: WithdrawWallet;
-  user: SubAccountData;
+  wallet: IWithdrawWallet;
+  user: ISubAccountData;
 }
 
-export type HandleWithdrawPaymentResponse = ApiResponse<WithdrawData>;
+export type HandleWithdrawPaymentResponse = ApiResponse<IWithdrawData>;
 
 export enum QWalletWebhookEventType {
   DepositTransactionConfirmation = 'deposit.transaction.confirmation',

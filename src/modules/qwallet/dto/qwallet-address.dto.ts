@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { QwalletPaymentTransactionDto } from './qwallet-payment.dto';
 import { QwalletSubAccountDto } from './qwallet-subaccount.dto';
-import { SupportedBlockchain } from '@/config/settings';
+import { SupportedBlockchainType } from '@/config/settings';
 
 export class QWalletPaymentAddressDto {
   @ApiProperty()
@@ -17,7 +17,7 @@ export class QWalletPaymentAddressDto {
   address: string;
 
   @ApiProperty()
-  network: SupportedBlockchain;
+  network: SupportedBlockchainType;
 
   @ApiProperty({ type: () => QwalletSubAccountDto })
   user: QwalletSubAccountDto;

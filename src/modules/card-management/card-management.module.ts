@@ -12,18 +12,18 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
 import { StellarService } from '../stellar/stellar.service';
 import { CardManagementEntity } from '../../utils/typeorm/entities/card-management.entity';
-import { QwalletService } from '../qwallet/qwallet.service';
+import { QwalletService } from '../qwallet/qwalletProfile.service';
 import { HttpService } from '@/middleware/http.service';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       AuthnEntity,
-      QwalletEntity,
       AuthVerificationCodesEntity,
       CardManagementEntity,
+      QWalletProfileEntity,
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

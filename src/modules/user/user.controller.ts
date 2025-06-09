@@ -22,11 +22,7 @@ export class UserController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    const walletType = req.walletType;
-    const newUserData = await this.userService.create(
-      createUserDto,
-      walletType,
-    );
+    const newUserData = await this.userService.create(createUserDto);
     responseHandler(newUserData, res, req);
   }
 
@@ -40,7 +36,7 @@ export class UserController {
     const authRecords = await this.userService.login({
       identifier: user.email,
     } as LoginUserDto);
-    responseHandler({ ...authRecords, ...user }, res, req);
+    responseHandler({ ...authRecords, user }, res, req);
   }
 
   @Post('verify')
