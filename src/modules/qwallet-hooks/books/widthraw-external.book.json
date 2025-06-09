@@ -1,0 +1,48 @@
+{
+  "event": "withdraw.successful",
+  "data": {
+    "id": "xofy3d26",
+    "reference": null,
+    "type": "internal",
+    "currency": "ngn",
+    "amount": "1.0",
+    "fee": "0.0",
+    "total": "1.0",
+    "txid": "2112190829919858",
+    "transaction_note": "Stay safe",
+    "narration": "Payout",
+    "status": "Done",
+    "reason": null,
+    "created_at": "2021-12-19T08:29:10.000Z",
+    "done_at": null,
+    "recipient": {
+      "type": "internal",
+      "details": {
+        "user_id": "23azi7bj"
+      }
+    },
+    "wallet": {
+      "id": "dvs6ada6",
+      "currency": "ngn",
+      "balance": "10.187",
+      "locked": "0.0",
+      "staked": "0.0",
+      "converted_balance": "10.18699999999999999986424664594645",
+      "reference_currency": "ngn",
+      "is_crypto": false,
+      "created_at": "2021-12-15T20:19:52.000Z",
+      "updated_at": "2021-12-19T08:29:14.000Z"
+    },
+    "user": {
+      "id": "ptvpvtso",
+      "sn": "QDXRTFBY2I6",
+      "email": "tenst@gmail.com",
+      "reference": null,
+      "first_name": "testnnn",
+      "last_name": "usernnnn",
+      "display_name": null,
+      "created_at": "2021-12-15T20:19:50.000Z",
+      "updated_at": "2021-12-15T20:19:52.000Z"
+    }
+  }
+}

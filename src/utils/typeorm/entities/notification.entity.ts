@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 
-@Entity()
+@Entity({ name: 'notifications' })
 export class NotificationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

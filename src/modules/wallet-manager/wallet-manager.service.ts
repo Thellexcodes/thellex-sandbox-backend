@@ -5,8 +5,8 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { getSupportedAssets } from '@/utils/helpers';
 import PQueue from 'p-queue';
 import {
-  AssetBalanceDto,
-  GetBalanceResponseDto,
+  IAssetBalance,
+  IGetBalanceResponse,
 } from './dto/get-balance-response.dto';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { IQWallet } from '@/types/qwallet.types';
@@ -18,13 +18,13 @@ export class WalletManagerService {
     private readonly transactionHistoryService: TransactionHistoryService,
   ) {}
 
-  async getBalance(user: UserEntity): Promise<GetBalanceResponseDto> {
+  async getBalance(user: UserEntity): Promise<IGetBalanceResponse> {
     try {
       const wallets = user.qprofile?.wallets ?? [];
       const qWalletId = user.qprofile?.qid;
       const supportedAssets = getSupportedAssets();
 
-      const curatedWallets: AssetBalanceDto[] = [];
+      const curatedWallets: IAssetBalance[] = [];
       let totalInUsd = 0;
 
       const queue = new PQueue({ concurrency: 3 });
@@ -41,12 +41,12 @@ export class WalletManagerService {
 
           let balanceInUsd = 0;
 
-          // balanceInUsd += await this.getQuidaxBalance(
-          //   wallet,
-          //   token,
-          //   network,
-          //   qWalletId,
-          // );
+          balanceInUsd += await this.getQWalletBalance(
+            wallet,
+            token,
+            network,
+            qWalletId,
+          );
           // Future:
           // balance += await this.getCircleBalance(wallet, token, network);
           // balance += await this.getFireblocksBalance(...);
@@ -187,7 +187,7 @@ export class WalletManagerService {
     // };
   }
 
-  private async getQuidaxBalance(
+  private async getQWalletBalance(
     wallet: IQWallet,
     token: TokenEnum,
     network: SupportedBlockchainType,

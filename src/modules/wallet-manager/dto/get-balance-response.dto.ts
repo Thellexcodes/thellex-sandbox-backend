@@ -38,3 +38,19 @@ export class GetBalanceResponseDto {
   @ApiProperty({ type: [AssetBalanceDto] })
   wallets: AssetBalanceDto[];
 }
+
+export interface IAssetBalance {
+  address: string;
+  network: string;
+  assetCode: string;
+  assetIssure?: string;
+  balanceInUsd?: number;
+  balanceInNgn?: number;
+  transactionHistory: CreateTransactionHistoryDto[];
+}
+
+export interface IGetBalanceResponse {
+  totalBalance: string;
+  currency: string;
+  wallets: IAssetBalance[];
+}

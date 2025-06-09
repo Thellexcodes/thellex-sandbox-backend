@@ -22,22 +22,7 @@ export class TransactionHistoryService {
   ): Promise<TransactionHistoryEntity> {
     const transactionRecord = this.transactionRepo.create({
       user,
-      event: QWalletWebhookEnum.DEPOSIT_SUCCESSFUL,
-      transactionId: txData.transactionId,
-      type: txData.type,
-      currency: txData.currency,
-      amount: txData.amount,
-      fee: txData.fee,
-      blockchainTxId: txData.blockchainTxId,
-      reason: txData.reason,
-      createdAt: new Date(txData.createdAt),
-      doneAt: txData.doneAt ? new Date(txData.doneAt) : null,
-      walletId: txData.walletId,
-      walletName: txData.walletName,
-      walletCurrency: txData.walletCurrency,
-      paymentStatus: txData.status,
-      paymentAddress: txData.paymentAddress,
-      paymentNetwork: txData.paymentNetwork,
+      ...txData,
     });
 
     return this.transactionRepo.save(transactionRecord);

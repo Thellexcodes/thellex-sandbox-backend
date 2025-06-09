@@ -585,8 +585,6 @@ export class QwalletService {
     return matchedWallet || null;
   }
 
-  // misc
-
   supports(network: SupportedBlockchainType, token: TokenEnum): boolean {
     const tokens = ChainTokens[network];
     return tokens?.includes(token) ?? false;

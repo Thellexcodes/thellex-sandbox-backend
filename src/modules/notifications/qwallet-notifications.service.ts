@@ -48,11 +48,12 @@ export class QwalletNotificationsService {
         txID: txid,
         amount,
         currency: upperCurrency,
-        // qwalletID: user.qwallet.id,
+        qwalletID: user.qprofile.id,
       });
 
       return await this.notificationRepo.save(notification);
     } catch (error) {
+      console.log(error);
       throw new CustomHttpException(
         NotificationErrors.CREATE_FAILED,
         HttpStatus.BAD_REQUEST,

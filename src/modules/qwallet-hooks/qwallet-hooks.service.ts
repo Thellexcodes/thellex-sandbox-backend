@@ -75,7 +75,7 @@ export class QwalletHooksService {
         createdAt: data.created_at,
         doneAt: data.done_at,
         walletId: data.wallet.id,
-        walletName: existingTxnHistory.walletName,
+        walletName: data.wallet.name ?? existingTxnHistory.walletName,
         walletCurrency: data.wallet.currency,
         paymentStatus: data.payment_transaction.status,
         paymentAddress: data.payment_address.address,
