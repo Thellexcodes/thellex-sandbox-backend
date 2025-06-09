@@ -11,7 +11,7 @@ import { AuthnEntity } from './authn.entity';
 import { AuthVerificationCodesEntity } from './authVerificationCodes.entities';
 import { DeviceEntity } from './device.entity';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
-import { QwalletEntity } from './qwallet.entity';
+import { QwalletEntity } from './qwallet/qwallet.entity';
 import { DKycEntity } from './dkyc.entity';
 import { NotificationEntity } from './notification.entity';
 import { TransactionHistoryEntity } from './transaction-history.entity';

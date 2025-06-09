@@ -14,7 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 
 @Module({
   imports: [

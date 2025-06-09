@@ -27,7 +27,7 @@ import { CardManagementModule } from './modules/card-management/card-management.
 import { StellarModule } from './modules/stellar/stellar.module';
 import { QwalletModule } from './modules/qwallet/qwallet.module';
 import { DkycModule } from './modules/dkyc/dkyc.module';
-import { QwalletEntity } from './utils/typeorm/entities/qwallet.entity';
+import { QwalletEntity } from './utils/typeorm/entities/qwallet/qwallet.entity';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CronjobsModule } from './modules/cronjobs/cronjobs.module';

@@ -9,7 +9,7 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { MailService } from '../mail/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 

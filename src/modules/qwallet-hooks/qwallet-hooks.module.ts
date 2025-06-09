@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';

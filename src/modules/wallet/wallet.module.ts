@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { QwalletService } from './qwallet.service';
-import { QwalletController } from './qwallet.controller';
+import { QwalletService } from './wallet.service';
+import { QwalletController } from './wallet.controller';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';

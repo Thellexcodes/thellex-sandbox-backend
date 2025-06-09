@@ -12,7 +12,7 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
 import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { QwalletService } from '../qwallet/qwallet.service';
-import { QwalletEntity } from '@/utils/typeorm/entities/qwallet.entity';
+import { QwalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 
 @Module({
   imports: [

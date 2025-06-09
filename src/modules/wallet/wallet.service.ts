@@ -30,7 +30,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { CreateSubAccountDto } from './dto/create-qwallet.dto';
+import { CreateSubAccountDto } from './dto/create-wallet.dto';
 import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { CreateSwapDto } from './dto/create-swap.dto';
@@ -38,7 +38,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { ChainTokens, SupportedBlockchain, Token } from '@/config/settings';
 
 @Injectable()
-export class QwalletService {
+export class WalletService {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
