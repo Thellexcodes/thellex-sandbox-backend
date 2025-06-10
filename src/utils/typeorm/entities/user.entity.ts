@@ -1,7 +1,6 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -15,6 +14,7 @@ import { DKycEntity } from './dkyc.entity';
 import { NotificationEntity } from './notification.entity';
 import { TransactionHistoryEntity } from './transaction-history.entity';
 import { QWalletProfileEntity } from './qwallet/qwallet-profile.entity';
+import { CwalletProfilesEntity } from './cwallet/cwallet-profiles.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -38,6 +38,14 @@ export class UserEntity extends BaseEntity {
 
   @Column({ nullable: true })
   suspended: boolean;
+
+  @Column({
+    type: 'uuid',
+    unique: true,
+    nullable: false,
+    default: () => 'uuid_generate_v4()',
+  })
+  idempotencyKey: string;
 
   @Column({
     type: 'uuid',
@@ -72,12 +80,6 @@ export class UserEntity extends BaseEntity {
   })
   electronic_cards: CardManagementEntity[];
 
-  @OneToOne(() => QWalletProfileEntity, (qwallet) => qwallet.user, {
-    cascade: true,
-    eager: true,
-  })
-  qprofile: QWalletProfileEntity;
-
   @OneToOne(() => DKycEntity, (dkyc) => dkyc.user, {
     nullable: true,
     cascade: true,
@@ -97,4 +99,16 @@ export class UserEntity extends BaseEntity {
     eager: true,
   })
   notifications: NotificationEntity[];
+
+  @OneToOne(() => QWalletProfileEntity, (qwallet) => qwallet.user, {
+    cascade: true,
+    eager: true,
+  })
+  qWalletProfile: QWalletProfileEntity;
+
+  @OneToOne(() => CwalletProfilesEntity, (cwallet) => cwallet.user, {
+    cascade: true,
+    eager: true,
+  })
+  cWalletProfile: CwalletProfilesEntity;
 }

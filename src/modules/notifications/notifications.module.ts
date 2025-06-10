@@ -12,9 +12,10 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { CwalletService } from '../cwallet/cwallet.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
     JwtService,
     MailService,
     HttpService,
+    CwalletService,
   ],
 })
 export class NotificationsModule {}

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QwalletService } from './qwallet.service';
+import { CwalletService } from './cwallet.service';
 
-describe('QwalletService', () => {
-  let service: QwalletService;
+describe('CwalletService', () => {
+  let service: CwalletService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [QwalletService],
+      providers: [CwalletService],
     }).compile();
 
-    service = module.get<QwalletService>(QwalletService);
+    service = module.get<CwalletService>(CwalletService);
   });
 
   it('should be defined', () => {

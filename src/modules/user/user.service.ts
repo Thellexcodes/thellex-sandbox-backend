@@ -13,9 +13,14 @@ import { MailService } from '../mail/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
-import { WalletType } from '@/types/wallet-manager.types';
-import { TokenEnum } from '@/config/settings';
+import { QwalletService } from '../qwallet/qwallet.service';
+import {
+  ChainTokens,
+  QWALLET_TOKENS,
+  SUPPORTED_BLOCKCHAINS,
+  SUPPORTED_CIRCLE_BLOCKCHAINS,
+} from '@/config/settings';
+import { CwalletService } from '../cwallet/cwallet.service';
 
 @Injectable()
 export class UserService {
@@ -30,77 +35,99 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly qWalletService: QwalletService,
+    private readonly cWalletService: CwalletService,
   ) {}
 
   async create(
     createUserDto: CreateUserDto,
   ): Promise<string | CustomHttpException> {
     try {
-      // Normalize email
-      createUserDto.email = createUserDto.email.toLowerCase();
+      const email = createUserDto.email.toLowerCase();
+      let user = await this.findOneByEmail(email);
 
-      // Check if user already exists
-      let user = await this.findOneByEmail(createUserDto.email);
-
-      if (!user) {
-        // Generate unique 8-digit UID
-        const uid = await generateUniqueUid(this.userRepository);
-
-        // Create new user instance
-        const newUser = new UserEntity();
-        newUser.email = createUserDto.email;
-        newUser.uid = uid;
-
-        // Save new user to DB
-        user = await newUser.save();
-
-        // Only do qwallet subaccount/wallet creation if walletType is qwallet
-        //creates user qwallet-subaccount
-        let qwalletSubAccount =
-          await this.qWalletService.lookupSubaccount(user);
-
-        if (!qwalletSubAccount) {
-          // Create sub-account if not exists
-          const subAccountResponse = await this.qWalletService.createSubAccount(
-            { email: createUserDto.email },
-            user,
-          );
-
-          // Create USDT wallet and save it inside createUserWallet method
-          await this.qWalletService.createUserWallet(
-            subAccountResponse.data.id,
-            TokenEnum.USDT,
-          );
-
-          // Refetch qwalletSubAccount to have updated wallets
-          qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
-        } else {
-          // If sub-account exists, ensure USDT wallet exists
-          const usdtWallet = await this.qWalletService.getUserWallet(
-            qwalletSubAccount.qid,
-            TokenEnum.USDT,
-          );
-
-          if (!usdtWallet) {
-            await this.qWalletService.createUserWallet(
-              qwalletSubAccount.qid,
-              TokenEnum.USDT,
-            );
-          }
-        }
+      if (user) {
+        // Existing user — return token only
+        const token = await this.signToken({ id: user.id });
+        return token;
       }
 
-      // Trigger email verification flow
+      const uid = await generateUniqueUid(this.userRepository);
+      const newUser = new UserEntity();
+      newUser.email = email;
+      newUser.uid = uid;
+      user = await newUser.save();
+
+      // ---- QWALLET SETUP ----
+      let qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
+
+      if (!qwalletSubAccount) {
+        const subAccountResponse = await this.qWalletService.createSubAccount(
+          { email },
+          user,
+        );
+        const subAccountId = subAccountResponse.data.id;
+
+        await Promise.all(
+          SUPPORTED_BLOCKCHAINS.flatMap((chain) =>
+            ChainTokens[chain]
+              .filter((token) => QWALLET_TOKENS.includes(token))
+              .map((token) =>
+                this.qWalletService.createUserWallet(subAccountId, token),
+              ),
+          ),
+        );
+
+        qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
+      } else {
+        const subAccountId = qwalletSubAccount.qid;
+
+        await Promise.all(
+          SUPPORTED_BLOCKCHAINS.flatMap((chain) =>
+            ChainTokens[chain]
+              .filter((token) => QWALLET_TOKENS.includes(token))
+              .map(async (token) => {
+                const existingWallet = await this.qWalletService.getUserWallet(
+                  subAccountId,
+                  token,
+                );
+                if (!existingWallet) {
+                  await this.qWalletService.createUserWallet(
+                    subAccountId,
+                    token,
+                  );
+                }
+              }),
+          ),
+        );
+      }
+
+      // ---- CWALLET SETUP ----
+      const cwalletAccount = await this.cWalletService.lookupUser(user);
+
+      if (!cwalletAccount) {
+        const cwalletSets = await this.cWalletService.createWalletSet(user);
+
+        await Promise.all(
+          SUPPORTED_CIRCLE_BLOCKCHAINS.map((chain) =>
+            this.cWalletService.createWallet(
+              cwalletSets.walletSet.id,
+              [chain],
+              user,
+            ),
+          ),
+        );
+      }
+
+      // Send verification email once
       await this.emailVerificationComposer(user);
 
-      // Generate auth token for the user
+      // Return token
       const token = await this.signToken({ id: user.id });
-
       return token;
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.error('User creation failed:', error);
       throw new CustomHttpException(
-        error.message,
+        error.message || 'Internal server error',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

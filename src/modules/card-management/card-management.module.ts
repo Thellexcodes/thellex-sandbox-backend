@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { CardManagementService } from './card-management.service';
 import { CardManagementController } from './card-management.controller';
 import { UserService } from '../user/user.service';
@@ -12,10 +12,11 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
 import { StellarService } from '../stellar/stellar.service';
 import { CardManagementEntity } from '../../utils/typeorm/entities/card-management.entity';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -36,11 +37,11 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
   controllers: [CardManagementController],
   providers: [
     CardManagementService,
-    UserService,
     MailService,
     StellarService,
     QwalletService,
     HttpService,
   ],
+  exports: [CardManagementService],
 })
 export class CardManagementModule {}

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRequestPaymentDto } from '../qwallet/dto/create-request.dto';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { HandleWithdrawPaymentResponse } from '@/types/qwallet.types';
 import { RequestCryptoPaymentResponse } from '@/types/request.types';
@@ -29,7 +29,7 @@ export class PaymentsService {
     withdrawPaymentDto: CreateWithdrawPaymentDto,
   ): Promise<HandleWithdrawPaymentResponse> {
     const withdrawResponse = await this.qwalletService.createWithdrawal(
-      user.qprofile.id,
+      user.qWalletProfile.id,
       withdrawPaymentDto,
     );
     return withdrawResponse;

@@ -108,8 +108,6 @@ export class QwalletService {
         }
       }
 
-      console.log({ usdtWallets });
-
       // Merge USDT wallets as entities
       const walletEntities: QWalletEntity[] = usdtWallets.map(
         (walletData: any) => {
@@ -245,63 +243,6 @@ export class QwalletService {
         `${this.qwalletUrl}/users/${uuid}/wallets/${currency}`,
         { headers: this.getAuthHeaders() },
       );
-
-      //   "networks": [
-      //   {
-      //     "id": "bep20",
-      //     "name": "Binance Smart Chain",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "erc20",
-      //     "name": "Ethereum Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "trc20",
-      //     "name": "Tron Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "polygon",
-      //     "name": "Polygon Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "solana",
-      //     "name": "Solana Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "celo",
-      //     "name": "Celo Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "optimism",
-      //     "name": "Optimism Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "ton",
-      //     "name": "Ton Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": true
-      //   },
-      //   {
-      //     "id": "arbitrum",
-      //     "name": "Arbitrum Network",
-      //     "deposits_enabled": true,
-      //     "withdraws_enabled": false
-      //   }
-      // ],
     } catch (error) {
       //TODO: properly handle errors for 404 / 400 / 500
       throw new CustomHttpException(
@@ -314,10 +255,11 @@ export class QwalletService {
   async createUserWallet(
     uuid: string,
     currency: TokenEnum,
+    network: SupportedBlockchainType = 'bep20',
   ): Promise<CreateUserWalletResponse> {
     try {
       const response: CreateUserWalletResponse = await this.httpService.get(
-        `${this.qwalletUrl}/users/${uuid}/wallets/${currency}`,
+        `${this.qwalletUrl}/users/${uuid}/wallets/${currency}/addresses?network=${network}`,
         { headers: this.getAuthHeaders() },
       );
 
@@ -572,12 +514,12 @@ export class QwalletService {
     network: SupportedBlockchainType,
     assetCode: TokenEnum,
   ): Promise<IQWallet | null> {
-    if (!user.qprofile || !user.qprofile.wallets) {
+    if (!user.qWalletProfile || !user.qWalletProfile.wallets) {
       return null;
     }
 
     // Look for wallet matching the network and assetCode
-    const matchedWallet = user.qprofile.wallets.find(
+    const matchedWallet = user.qWalletProfile.wallets.find(
       (wallet) =>
         wallet.defaultNetwork === network && wallet.currency === assetCode,
     );

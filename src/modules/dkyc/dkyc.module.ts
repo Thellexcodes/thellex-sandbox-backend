@@ -11,7 +11,7 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
 import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 
 @Module({

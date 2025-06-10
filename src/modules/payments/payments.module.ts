@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { PaymentsController } from './payments.controller';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -10,6 +10,7 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerifi
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { CwalletService } from '../cwallet/cwallet.service';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
     UserService,
     JwtService,
     MailService,
+    CwalletService,
   ],
 })
 export class PaymentsModule {}

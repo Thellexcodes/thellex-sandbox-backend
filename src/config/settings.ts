@@ -1,3 +1,5 @@
+import { Blockchain } from '@circle-fin/developer-controlled-wallets';
+
 // --- Basic Settings ---
 export const ENVIRONMENT = 'beta';
 export const DEBUG_MODE = true;
@@ -43,7 +45,11 @@ export const DEV_MODE_TOOLS = {
 };
 
 // --- Blockchain Types ---
-export type SupportedBlockchainType = 'bep20';
+export type SupportedBlockchainType =
+  | 'bep20'
+  | 'trc20'
+  | 'matic'
+  | 'MATIC-AMOY';
 
 export type BlockchainNetworkMap = {
   [key in SupportedBlockchainType]: string;
@@ -53,18 +59,27 @@ export type BlockchainNetworkMap = {
 export enum TokenEnum {
   USDC = 'usdc',
   USDT = 'usdt',
-  XLM = 'xlm',
-  btc = 'btc',
 }
 
 // --- Blockchain Network Support ---
-export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainType[] = ['bep20'];
+export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainType[] = [
+  'bep20',
+  'trc20',
+];
+
+export const SUPPORTED_CIRCLE_BLOCKCHAINS: Blockchain[] = ['MATIC-AMOY'];
 
 // --- Chain Tokens Support ---
 export const ChainTokens: Record<SupportedBlockchainType, TokenEnum[]> = {
   bep20: [TokenEnum.USDT],
+  trc20: [TokenEnum.USDT],
+  matic: [TokenEnum.USDC],
+  'MATIC-AMOY': [TokenEnum.USDC],
 };
 
 export const USE_TESTNET: boolean = true;
-
 export type FEEType = 'flat' | 'percentage';
+
+// Define wallet responsibilities
+export const QWALLET_TOKENS: TokenEnum[] = [TokenEnum.USDT];
+export const CWALLET_TOKENS: TokenEnum[] = [TokenEnum.USDC];

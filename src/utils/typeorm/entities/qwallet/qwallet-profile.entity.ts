@@ -4,7 +4,6 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -17,7 +16,7 @@ export class QWalletProfileEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => UserEntity, (user) => user.qprofile, {
+  @OneToOne(() => UserEntity, (user) => user.qWalletProfile, {
     nullable: false,
     onDelete: 'CASCADE',
   })

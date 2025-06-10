@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { getSupportedAssets } from '@/utils/helpers';
 import PQueue from 'p-queue';
@@ -20,8 +20,8 @@ export class WalletManagerService {
 
   async getBalance(user: UserEntity): Promise<IGetBalanceResponse> {
     try {
-      const wallets = user.qprofile?.wallets ?? [];
-      const qWalletId = user.qprofile?.qid;
+      const wallets = user.qWalletProfile?.wallets ?? [];
+      const qWalletId = user.qWalletProfile?.qid;
       const supportedAssets = getSupportedAssets();
 
       const curatedWallets: IAssetBalance[] = [];

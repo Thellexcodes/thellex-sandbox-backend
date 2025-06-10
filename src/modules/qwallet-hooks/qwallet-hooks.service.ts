@@ -42,7 +42,7 @@ export class QwalletHooksService {
     try {
       const data = payload.data as IQwalletHookDepositSuccessfulData;
       const payloadUser = data.user;
-      const qwallet = user.qprofile;
+      const qwallet = user.qWalletProfile;
 
       if (payloadUser.sn !== qwallet.qsn) {
         throw new CustomHttpException(
@@ -124,7 +124,7 @@ export class QwalletHooksService {
   ): Promise<void> {
     const data = payload.data as IQWalletHookWithdrawSuccessfulEvent;
     const payloadUser = data.user;
-    const qwallet = user.qprofile;
+    const qwallet = user.qWalletProfile;
 
     if (payloadUser.sn !== qwallet.qsn) {
       throw new CustomHttpException(

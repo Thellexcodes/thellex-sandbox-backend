@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
@@ -11,10 +11,12 @@ import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { MailService } from '../mail/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { CwalletService } from '../cwallet/cwallet.service';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -39,6 +41,7 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
     MailService,
     QwalletService,
     HttpService,
+    CwalletService,
   ],
   exports: [AuthnService],
 })

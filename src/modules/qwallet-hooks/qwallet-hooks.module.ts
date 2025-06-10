@@ -10,11 +10,12 @@ import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
-import { QwalletService } from '../qwallet/qwalletProfile.service';
+import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { CwalletService } from '../cwallet/cwallet.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
     QwalletService,
     HttpService,
     TransactionHistoryService,
+    CwalletService,
   ],
 })
 export class QwalletHooksModule {}

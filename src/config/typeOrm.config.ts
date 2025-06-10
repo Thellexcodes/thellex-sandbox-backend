@@ -10,6 +10,8 @@ import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { QWalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
+import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
+import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -30,6 +32,8 @@ export const typeOrmConfig = async (
       DeviceEntity,
       NotificationEntity,
       QWalletEntity,
+      CwalletProfilesEntity,
+      CwalletsEntity,
       CardManagementEntity,
       TransactionHistoryEntity,
       AuthVerificationCodesEntity,

@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { QwalletService } from './qwalletProfile.service';
+import { QwalletService } from './qwallet.service';
 
 @Controller('qwallet')
 export class QwalletController {

@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
 
-@Entity({ name: 'AuthVerificationCodes' })
+@Entity({ name: 'auth_verification_codes' })
 export class AuthVerificationCodesEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, (user) => user.verificationCodes, {
     nullable: false,

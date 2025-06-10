@@ -33,7 +33,9 @@ import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
 import { WalletManagerModule } from './modules/wallet-manager/wallet-manager.module';
 import { GeoWalletMiddleware } from './middleware/geo-wallet.middleware';
-import { QwalletProfileModule } from './modules/qwallet/qwalletProfile.module';
+import { QwalletModule } from './modules/qwallet/qwallet.module';
+import { CwalletModule } from './modules/cwallet/cwallet.module';
+import { SharedModule } from './modules/shared.module';
 
 @Module({
   imports: [
@@ -58,6 +60,7 @@ import { QwalletProfileModule } from './modules/qwallet/qwalletProfile.module';
       }),
       inject: [ConfigService],
     }),
+    SharedModule,
     UserModule,
     AuthModule,
     MailModule,
@@ -66,7 +69,7 @@ import { QwalletProfileModule } from './modules/qwallet/qwalletProfile.module';
     TokenModule,
     CardManagementModule,
     StellarModule,
-    QwalletProfileModule,
+    QwalletModule,
     DkycModule,
     PaymentsModule,
     NotificationsModule,
@@ -74,6 +77,7 @@ import { QwalletProfileModule } from './modules/qwallet/qwalletProfile.module';
     QwalletHooksModule,
     TransactionHistoryModule,
     WalletManagerModule,
+    CwalletModule,
   ],
   controllers: [AppController, AuthnController],
   providers: [
