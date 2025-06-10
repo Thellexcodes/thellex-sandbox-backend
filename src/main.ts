@@ -9,6 +9,7 @@ import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 // import * as path from 'path';
 import { LogRequestMiddleware } from './middleware/log-request.middleware';
+import { writeFileSync } from 'fs';
 
 // const certFolder = path.join(__dirname, '../cert');
 
@@ -45,6 +46,8 @@ async function bootstrap() {
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('doc', app, document);
+
+    writeFileSync('./openapi.json', JSON.stringify(document));
   }
 
   const configService = app.get(ConfigService);

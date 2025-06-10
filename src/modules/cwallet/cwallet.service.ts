@@ -6,7 +6,6 @@ import {
   GetWalletInput,
   initiateDeveloperControlledWalletsClient,
   Wallet,
-  WalletsData,
   WalletSet,
   WalletSetResponseData,
 } from '@circle-fin/developer-controlled-wallets';
@@ -16,7 +15,6 @@ import {
   CwalletTransactionResponse,
 } from '@/types/cwallet.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { v4 as uuidv4 } from 'uuid';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -57,9 +55,7 @@ export class CwalletService {
       };
 
       if (user.cWalletProfile) {
-        console.log(
-          'Cwallet profile already exists for user or wallet set ID.',
-        );
+        //TODO: THROW ERROS with custom error handler
         return response.data;
       }
 
@@ -70,8 +66,6 @@ export class CwalletService {
       newProfile.walletSetId = walletSetRes.id;
       newProfile.createdAt = new Date(walletSetRes.createDate);
       newProfile.updatedAt = new Date(walletSetRes.updateDate);
-
-      console.log('created new profile for user');
 
       await this.cWalletProfilesRepo.save(newProfile);
 
