@@ -114,7 +114,6 @@ npm run dev
 ## 📚 Documentation
 
 - **API Docs**: [https://thellex.readme.io/reference/](https://thellex.readme.io/reference)
-- **Circle Wallet Docs**: _Thellex POS API - Bridge Controller_
 - **Circle README**: [CIRCLE_README.md](CIRCLE_README.md)
 
 ## Summary
