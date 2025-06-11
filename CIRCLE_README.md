@@ -346,9 +346,9 @@ The Circle grant will speed up development completion and GTM execution to drive
 
 ### Primary Audience
 
-- Small-to-medium merchants (retail, hospitality, e-commerce) in Yellow Card-supported regions (Nigeria, Ghana, South Africa)
+- Small-to-medium merchants (retail, hospitality,logistics, e-commerce) in Yellow Card-supported regions (Nigeria, Ghana, South Africa)
 - Business owners aged 25–50, tech-savvy, annual revenues under $1M
-- Goals: reduce transaction fees, access Web3 customers
+- Goals: reduce transaction fees, access Web3 customers + additional fiat customers
 
 **Pain Points:**
 
@@ -359,6 +359,8 @@ The Circle grant will speed up development completion and GTM execution to drive
 ### Secondary Audience
 
 - Individual users (freelancers, consumers) in supported regions for peer-to-peer USDC/USDT payments
+- Freelancers and crypto-native individuals making P2P transactions
+- Users on the 2,000-person waitlist, early adopters, and stablecoin holders [waitlist](https://drive.google.com/drive/folders/1LGu8uJyiZvhysX68oJUE1M0jyZYS_b_L?usp=sharing)
 
 ---
 
@@ -371,6 +373,7 @@ Thellex POS enables merchants to:
 - Ensure compliance with Dojah KYC for secure onboarding
 - Benefit from gas-free USDC transactions via Circle’s Gas Station
 - Access a user-friendly Android app and web dashboard for transaction management
+- POS App + Web dashboard for all transaction management
 
 ---
 
@@ -385,19 +388,18 @@ Thellex POS enables merchants to:
 - Optimize NestJS backend for scalability, integrate Circle’s Payments/Payouts APIs and Quidax APIs
 - Enhance Android app with Dojah KYC SDK and Circle SDK
 - Complete merchant web dashboard for transaction analytics and fiat payouts
-- Conduct sandbox testing for USDC (Stellar Testnet, Polygon Amoy) and USDT (Tron Testnet, BEP20 Testnet)
+- Conduct sandbox testing for USDC (Stellar, Polygon) and USDT (Tron, BEP20)
 
 **Partnerships:**
 
-- Formalize agreements with Yellow Card for fiat on/off-ramping in Nigeria, Ghana, South Africa
-- Formalize agreements with Quidax for compliance
-- Secured Dojah API access for KYC
-- Engage Circle’s Payment Partner Network for additional fiat rails
+- ✅ Partnered with **Yellow Card** for fiat on/off-ramping in **Nigeria**, **Ghana**, and **South Africa** — [View Document](https://drive.google.com/drive/folders/1koMVpnicmXIcOxWUqBc-ZVtAPmwifWjb?usp=sharing)
+- ✅ Partnered with **Quidax** for regulatory **compliance** — [View Document](https://drive.google.com/drive/folders/17wMXNu8dfahqobPybIpqHCDQDMWtc8EY?usp=sharing)
+- ✅ Partnered with **Dojah API** for **KYC** and user verification — [View Document](https://drive.google.com/drive/folders/17wMXNu8dfahqobPybIpqHCDQDMWtc8EY?usp=sharing)
 
 **Pilot Recruitment:**
 
 - Convert 100 of 140+ businesses in talks into pilot participants
-- Offer incentives: waived transaction fees for 3 months, free setup support
+- Offer incentives
 - Conduct webinars and demos showcasing USDC/USDT payments and fiat conversion
 
 **Marketing Preparation:**
@@ -405,11 +407,11 @@ Thellex POS enables merchants to:
 - Launch Thellex Beta Testing New Homepage
 - Create promotional social media videos (Instagram, Twitter) targeting merchants
 - Prepare email campaigns emphasizing low fees and fast settlements
-- Go to markets in Lagos, Aba, Onitsha to campaign
+- Go to markets in Lagos, Aba, Onitsha, Enugu, Abuja with our agents to campaign and onboard more business
 
 **Metrics:**
 
-- 100 pilot businesses confirmed
+- 100+ pilot businesses confirmed
 - Backend uptime: 99.9%
 - KYC completion time: <5 minutes
 
@@ -432,13 +434,13 @@ Thellex POS enables merchants to:
 
 **Marketing Execution:**
 
-- Launch email campaign: “Accept USDC/USDT with Thellex POS – Start Today!”
+- Launch email campaign: “Accept USDC/USDT/Fiat with Thellex POS – Start Today!”
 - Run targeted ads on Twitter and Instagram in Nigeria, Ghana, South Africa
-- Partner with local business associations for referrals
+- Partner with local business associations (Agency Bankers) for referrals
 
 **Support:**
 
-- 24/7 chat (Zendesk) and email support for pilot businesses
+- 24/7 chat and email support for pilot businesses
 - Monitor transaction success and KYC approval rates
 
 **Feedback Collection:**
@@ -451,7 +453,6 @@ Thellex POS enables merchants to:
 - 100 businesses onboarded by August 31
 - 80% KYC approval rate
 - 1,000 transactions processed (USDC/USDT)
-- Average transaction value: $50
 
 ---
 
@@ -462,7 +463,7 @@ Thellex POS enables merchants to:
 **Scaling:**
 
 - Onboard 400 additional merchants from leads
-- Expand to new Yellow Card-supported regions (Kenya, Uganda)
+- Expand to new Yellow Card-supported regions (Ghana, Kenya, Uganda, South Africa)
 - Improve Automation of onboarding with self-service KYC and wallet setup
 
 **Marketing:**
@@ -493,6 +494,7 @@ Thellex POS enables merchants to:
 
 - Multi-currency support (EUR, GBP) for fiat payouts
 - Develop iOS app
+- Support visa debit cards
 
 **Marketing:**
 
@@ -514,14 +516,6 @@ Thellex POS enables merchants to:
 - Partnerships: Yellow Card, Dojah, local business associations, Circle’s Payment Partner Network
 - Events: Trade shows, webinars, business meetups
 - Referrals: Merchant referral program with USDC incentives
-
----
-
-## Sales Model
-
-- Freemium for Pilot: Free setup and 0% transaction fees for 3 months
-- Subscription Post-Pilot: $10/month per merchant for premium features
-- Transaction Fees: 0.5% per USDC/USDT transaction post-pilot (competitive with cards)
 
 ---
 
@@ -547,11 +541,13 @@ Thellex POS enables merchants to:
 
 | Category           | Amount  |
 | ------------------ | ------- |
-| Development        | $20,000 |
-| Marketing          | $15,000 |
+| Development        | $25,000 |
+| Marketing          | $20,000 |
 | Onboarding/Support | $10,000 |
 | Partnerships       | $5,000  |
-| **Total**          | $50,000 |
+| **Total**          | $60,000 |
+
+> We're open to Circle offer, support is mainly to accelarate enhancements and market penetration
 
 ---
 

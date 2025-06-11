@@ -23,11 +23,11 @@ For Circle-specific details, see our [Circle README](CIRCLE_README.md).
 
 ## Components
 
-| Component           | Description                                                                   |
-| ------------------- | ----------------------------------------------------------------------------- |
-| **Backend API**     | Built with NestJS, handles authentication, wallet creation, and transactions. |
-| **Mobile App**      | Android app (Kotlin, Jetpack Compose) for merchants/users to manage payments. |
-| **Merchant Portal** | React/Next.js dashboard to view orders, process payments, and track wallets.  |
+| Component           | Description                                                                       |
+| ------------------- | --------------------------------------------------------------------------------- |
+| **Backend API**     | Built with NestJS, handles authentication, wallet creation, and transactions.     |
+| **Mobile App**      | Android/IOS app (Kotlin, Jetpack Compose) for merchants/users to manage payments. |
+| **Merchant Portal** | React/Next.js dashboard to view orders, process payments, and track wallets.      |
 
 ## System Architecture
 
@@ -39,8 +39,9 @@ For Circle-specific details, see our [Circle README](CIRCLE_README.md).
 
 ### Quidax Integration
 
-- USDT Wallets: Manage USDT wallets and off-chain operations on Tron and BEP20 via Quidax APIs.
-- Transaction Processing: Handle USDT deposits and transfers for merchants.
+- **Wallet Creation**: Provision USDT wallets during user onboarding using Quidax API.
+- **USDT Wallets**: Manage USDT wallets and off-chain operations on Tron and BEP20 via Quidax APIs.
+- **Transaction Processing**: Handle USDT deposits and transfers for merchants.
 
 ### KYC
 
