@@ -10,12 +10,18 @@ import {
 } from './dto/get-balance-response.dto';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { IQWallet } from '@/types/qwallet.types';
+import { CwalletService } from '../cwallet/cwallet.service';
+import {
+  Blockchain,
+  GetWalletInput,
+} from '@circle-fin/developer-controlled-wallets';
 
 @Injectable()
 export class WalletManagerService {
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly transactionHistoryService: TransactionHistoryService,
+    private readonly cwalletService: CwalletService,
   ) {}
 
   async getBalance(user: UserEntity): Promise<IGetBalanceResponse> {
@@ -199,6 +205,21 @@ export class WalletManagerService {
       await this.qwalletService
         .getUserWallet(qWalletId, token)
         .then((d) => d.data.balance)
+        .catch(() => '0'),
+    );
+  }
+
+  private async getCWalletBalance(
+    wallet: GetWalletInput,
+    token: TokenEnum,
+    network: Blockchain,
+  ): Promise<number> {
+    if (!this.cwalletService.supports(network, token)) return 0;
+
+    return Number(
+      await this.cwalletService
+        .getUserWallet(wallet)
+        .then((d) => d.data)
         .catch(() => '0'),
     );
   }

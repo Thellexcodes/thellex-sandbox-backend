@@ -44,6 +44,7 @@ export class WalletManagerController {
       user,
       assetId,
     );
+
     responseHandler(result, res, req);
   }
 

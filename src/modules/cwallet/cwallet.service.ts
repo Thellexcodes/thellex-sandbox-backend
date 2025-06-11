@@ -22,6 +22,7 @@ import {
   CwalletsEntity,
   ICwallet,
 } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
+import { ChainTokens, TokenEnum } from '@/config/settings';
 
 @Injectable()
 export class CwalletService {
@@ -122,7 +123,7 @@ export class CwalletService {
     return await this.cWalletsRepo.save(newWallet);
   }
 
-  async getWallet(walletId: GetWalletInput): Promise<CwalletResponse> {
+  async getUserWallet(walletId: GetWalletInput): Promise<CwalletResponse> {
     try {
       const response = await this.circleClient.getWallet(walletId);
       return response;
@@ -170,5 +171,10 @@ export class CwalletService {
       console.error('Failed to create transaction:', error);
       throw error;
     }
+  }
+
+  supports(network: Blockchain, token: TokenEnum): boolean {
+    const tokens = ChainTokens[network];
+    return tokens?.includes(token) ?? false;
   }
 }
