@@ -4,8 +4,8 @@
 
 Thellex POS is a modern merchant payment platform that enables seamless USDC and USDT transactions across multiple blockchains, with fiat on/off-ramping for real-world usability. Built with a **NestJS backend**, **PostgreSQL database**, **Android mobile app** (Kotlin), and **merchant web dashboard** (React/Next.js), Thellex POS integrates:
 
-- **Circle’s Developer-Controlled Wallets (DCW)** for secure USDC payments on Stellar (Testnet) and Polygon (Amoy).
-- **Quidax APIs** for USDT support on Tron and BEP20 (Binance Smart Chain Testnet).
+- **Circle’s Developer-Controlled Wallets (DCW)** for secure USDC payments on Stellar and Polygon.
+- **Quidax APIs** for USDT support on Tron and BEP20 (Binance Smart Chain).
 - **Dojah API** for robust KYC verification during onboarding.
 
 Thellex POS is designed for flexibility, allowing merchants to accept both crypto and fiat while we handle wallet management, transaction security, and local bank withdrawals.
