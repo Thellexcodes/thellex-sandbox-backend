@@ -108,7 +108,6 @@ export class CwalletService {
     newWallet.address = walletData.address;
     newWallet.defaultNetwork = walletData.blockchain;
     newWallet.custodyType = walletData.custodyType;
-    newWallet.blockchain = walletData.blockchain;
     newWallet.accountType = walletData.accountType;
     newWallet.state = walletData.state;
     newWallet.scaCore = walletData.scaCore;

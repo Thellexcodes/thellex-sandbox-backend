@@ -52,9 +52,6 @@ export class CwalletsEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   custodyType: string;
 
-  @Column({ name: 'blockchain', type: 'varchar' })
-  blockchain: string;
-
   @Column({ name: 'account_type', type: 'varchar' })
   accountType: string;
 
@@ -78,7 +75,6 @@ export interface ICwallet {
   updatedAt: Date;
   walletID: string;
   custodyType: string;
-  blockchain: string;
   accountType: string;
   state: string | null;
   scaCore: string | null;

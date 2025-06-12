@@ -47,7 +47,8 @@ export class WalletManagerService {
 
           const cWallet = cWallets.find(
             (w) =>
-              w.blockchain.toLocaleLowerCase() === network.toLocaleLowerCase(),
+              w.defaultNetwork.toLocaleLowerCase() ===
+              network.toLocaleLowerCase(),
           );
 
           if (!qWallet && !cWallet) return;
@@ -232,23 +233,17 @@ export class WalletManagerService {
     wallet: CwalletsEntity,
     token: TokenEnum,
     network: Blockchain,
-  ): Promise<{ assetCode: 'usdc'; balance: number }> {
+  ): Promise<{ assetCode: TokenEnum; balance: number }> {
     if (!this.cwalletService.supports(network, token))
       return {
-        assetCode: 'usdc',
+        assetCode: token,
         balance: 0,
       };
 
-    // load onchain wallet viem and load usdc balance
-
-    // console.log(ab);
-
-    // const {
-    //   assetCode: 'usdc'
-    // }
+    //TODO: load onchain wallet with viem and load token balance
 
     return {
-      assetCode: 'usdc',
+      assetCode: token,
       balance: 1,
     };
   }
