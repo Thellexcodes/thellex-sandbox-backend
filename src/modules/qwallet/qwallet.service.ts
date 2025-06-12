@@ -255,7 +255,7 @@ export class QwalletService {
   async createUserWallet(
     uuid: string,
     currency: TokenEnum,
-    network: SupportedBlockchainType = 'bep20',
+    network?: SupportedBlockchainType.BEP20,
   ): Promise<CreateUserWalletResponse> {
     try {
       const response: CreateUserWalletResponse = await this.httpService.get(

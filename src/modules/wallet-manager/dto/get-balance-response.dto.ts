@@ -1,31 +1,30 @@
 import { CreateTransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import {
+  ITransactionHistory,
+  TransactionHistoryDto,
+} from './transaction-history.dto';
 
-export class AssetBalanceDto {
+class NetworkInfoDto {
+  @ApiProperty()
+  name: string;
+
   @ApiProperty()
   address: string;
 
-  @ApiProperty()
-  network: string;
+  @ApiProperty({ type: [TransactionHistoryDto] })
+  transactionHistory: TransactionHistoryDto[];
+}
 
+export class AssetBalanceDto {
   @ApiProperty()
   assetCode: string;
 
   @ApiProperty()
-  @IsOptional()
-  assetIssure?: string;
+  totalBalance: string;
 
-  @ApiProperty({ description: 'Balance converted to USD' })
-  @IsOptional()
-  balanceInUsd?: number;
-
-  @ApiProperty({ description: 'Balance converted to NGN' })
-  @IsOptional()
-  balanceInNgn?: number;
-
-  @ApiProperty({ type: [CreateTransactionHistoryDto] })
-  transactionHistory: CreateTransactionHistoryDto[];
+  @ApiProperty({ type: [NetworkInfoDto] })
+  networks: NetworkInfoDto[];
 }
 
 export class GetBalanceResponseDto {
@@ -39,18 +38,20 @@ export class GetBalanceResponseDto {
   wallets: AssetBalanceDto[];
 }
 
-export interface IAssetBalance {
+export interface INetworkInfo {
+  name: string;
   address: string;
-  network: string;
-  assetCode: string;
-  assetIssure?: string;
-  balanceInUsd?: number;
-  balanceInNgn?: number;
-  transactionHistory: CreateTransactionHistoryDto[];
 }
 
-export interface IGetBalanceResponse {
+export interface IWalletInfo {
+  assetCode: string;
+  totalBalance: string;
+  networks: INetworkInfo[];
+  transactionHistory?: ITransactionHistory[];
+}
+
+export interface IWalletSummary {
   totalBalance: string;
   currency: string;
-  wallets: IAssetBalance[];
+  wallets: IWalletInfo[];
 }
