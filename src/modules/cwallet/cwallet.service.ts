@@ -123,9 +123,9 @@ export class CwalletService {
     return await this.cWalletsRepo.save(newWallet);
   }
 
-  async getUserWallet(walletId: GetWalletInput): Promise<CwalletResponse> {
+  async getUserWallet(id: string): Promise<CwalletResponse> {
     try {
-      const response = await this.circleClient.getWallet(walletId);
+      const response = await this.circleClient.getWallet({ id });
       return response;
     } catch (error) {
       console.error('Failed to fetch wallet:', error);

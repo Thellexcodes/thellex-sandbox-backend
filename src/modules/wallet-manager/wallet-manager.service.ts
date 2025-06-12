@@ -15,6 +15,7 @@ import {
   Blockchain,
   GetWalletInput,
 } from '@circle-fin/developer-controlled-wallets';
+import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 
 @Injectable()
 export class WalletManagerService {
@@ -26,7 +27,8 @@ export class WalletManagerService {
 
   async getBalance(user: UserEntity): Promise<IGetBalanceResponse> {
     try {
-      const wallets = user.qWalletProfile?.wallets ?? [];
+      const qWallets = user.qWalletProfile?.wallets ?? [];
+      const cWallets = user.cWalletProfile?.wallets ?? [];
       const qWalletId = user.qWalletProfile?.qid;
       const supportedAssets = getSupportedAssets();
 
@@ -37,46 +39,63 @@ export class WalletManagerService {
 
       const tasks = supportedAssets.map(({ token, network }) =>
         queue.add(async () => {
-          const wallet = wallets.find(
+          const qWallet = qWallets.find(
             (w) =>
               w.defaultNetwork === network.toLowerCase() &&
               w.currency.toLowerCase() === token.toLowerCase(),
           );
 
-          if (!wallet) return;
-
-          let balanceInUsd = 0;
-
-          balanceInUsd += await this.getQWalletBalance(
-            wallet,
-            token,
-            network,
-            qWalletId,
+          const cWallet = cWallets.find(
+            (w) =>
+              w.blockchain.toLocaleLowerCase() === network.toLocaleLowerCase(),
           );
-          // Future:
-          // balance += await this.getCircleBalance(wallet, token, network);
-          // balance += await this.getFireblocksBalance(...);
 
-          if (balanceInUsd <= 0) return;
+          if (!qWallet && !cWallet) return;
 
-          // 🔁 Optional: Convert balance to USD and NGN
-          // const balanceInUsd = await this.convertToUsd(token, balance);
-          // const balanceInNgn = await this.convertToNgn(token, balance);
-          //[x] change to main rate using the api
-          const balanceInNgn = balanceInUsd * 1500;
+          // Fetch QWallet balance (if exists)
+          if (qWallet) {
+            const qBalanceUsd = await this.getQWalletBalance(
+              qWallet,
+              token,
+              network,
+              qWalletId,
+            );
 
-          totalInUsd += balanceInUsd;
+            if (qBalanceUsd > 0) {
+              totalInUsd += qBalanceUsd;
 
-          //get transaction history for wallet
+              curatedWallets.push({
+                address: qWallet.address,
+                network,
+                assetCode: token,
+                balanceInUsd: qBalanceUsd,
+                balanceInNgn: qBalanceUsd * 1500,
+                transactionHistory: [],
+              });
+            }
+          }
 
-          curatedWallets.push({
-            address: wallet.address,
-            network,
-            assetCode: token,
-            balanceInUsd,
-            balanceInNgn,
-            transactionHistory: [],
-          });
+          // Fetch CWallet balance (if exists)
+          if (cWallet) {
+            const cBalanceUsd = await this.getCircleBalance(
+              cWallet,
+              token,
+              network as Blockchain,
+            );
+
+            if (cBalanceUsd.balance > 0) {
+              totalInUsd += cBalanceUsd.balance;
+
+              curatedWallets.push({
+                address: cWallet.address,
+                network,
+                assetCode: cBalanceUsd.assetCode,
+                balanceInUsd: cBalanceUsd.balance,
+                balanceInNgn: cBalanceUsd.balance * 1500,
+                transactionHistory: [],
+              });
+            }
+          }
         }),
       );
 
@@ -209,19 +228,29 @@ export class WalletManagerService {
     );
   }
 
-  private async getCWalletBalance(
-    wallet: GetWalletInput,
+  private async getCircleBalance(
+    wallet: CwalletsEntity,
     token: TokenEnum,
     network: Blockchain,
-  ): Promise<number> {
-    if (!this.cwalletService.supports(network, token)) return 0;
+  ): Promise<{ assetCode: 'usdc'; balance: number }> {
+    if (!this.cwalletService.supports(network, token))
+      return {
+        assetCode: 'usdc',
+        balance: 0,
+      };
 
-    return Number(
-      await this.cwalletService
-        .getUserWallet(wallet)
-        .then((d) => d.data)
-        .catch(() => '0'),
-    );
+    // load onchain wallet viem and load usdc balance
+
+    // console.log(ab);
+
+    // const {
+    //   assetCode: 'usdc'
+    // }
+
+    return {
+      assetCode: 'usdc',
+      balance: 1,
+    };
   }
 
   // Placeholder for Circle — implement when integrated
