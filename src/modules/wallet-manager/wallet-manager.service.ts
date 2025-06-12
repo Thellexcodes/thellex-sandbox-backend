@@ -4,82 +4,119 @@ import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { getSupportedAssets } from '@/utils/helpers';
 import PQueue from 'p-queue';
-import {
-  IAssetBalance,
-  IGetBalanceResponse,
-} from './dto/get-balance-response.dto';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { IQWallet } from '@/types/qwallet.types';
+import { CwalletService } from '../cwallet/cwallet.service';
+import {
+  Blockchain,
+  GetWalletInput,
+} from '@circle-fin/developer-controlled-wallets';
+import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
+import { IWalletInfo, IWalletSummary } from './dto/get-balance-response.dto';
+import { Web3Service } from '@/utils/services/web3.service';
+import { net } from 'web3';
 
 @Injectable()
 export class WalletManagerService {
   constructor(
     private readonly qwalletService: QwalletService,
-    private readonly transactionHistoryService: TransactionHistoryService,
+    private readonly cwalletService: CwalletService,
+    private readonly web3Service: Web3Service,
   ) {}
 
-  async getBalance(user: UserEntity): Promise<IGetBalanceResponse> {
+  async getBalance(user: UserEntity): Promise<IWalletSummary> {
     try {
-      const wallets = user.qWalletProfile?.wallets ?? [];
+      const qWallets = user.qWalletProfile?.wallets ?? [];
+      const cWallets = user.cWalletProfile?.wallets ?? [];
       const qWalletId = user.qWalletProfile?.qid;
       const supportedAssets = getSupportedAssets();
 
-      const curatedWallets: IAssetBalance[] = [];
+      const walletMap: Record<string, IWalletInfo> = {};
       let totalInUsd = 0;
 
       const queue = new PQueue({ concurrency: 3 });
 
       const tasks = supportedAssets.map(({ token, network }) =>
         queue.add(async () => {
-          const wallet = wallets.find(
+          const qWallet = qWallets.find(
             (w) =>
               w.defaultNetwork === network.toLowerCase() &&
               w.currency.toLowerCase() === token.toLowerCase(),
           );
 
-          if (!wallet) return;
-
-          let balanceInUsd = 0;
-
-          balanceInUsd += await this.getQWalletBalance(
-            wallet,
-            token,
-            network,
-            qWalletId,
+          const cWallet = cWallets.find(
+            (w) => w.defaultNetwork.toLowerCase() === network.toLowerCase(),
           );
-          // Future:
-          // balance += await this.getCircleBalance(wallet, token, network);
-          // balance += await this.getFireblocksBalance(...);
 
-          if (balanceInUsd <= 0) return;
+          if (!qWallet && !cWallet) return;
 
-          // 🔁 Optional: Convert balance to USD and NGN
-          // const balanceInUsd = await this.convertToUsd(token, balance);
-          // const balanceInNgn = await this.convertToNgn(token, balance);
-          //[x] change to main rate using the api
-          const balanceInNgn = balanceInUsd * 1500;
+          const assetKey = token.toLowerCase();
 
-          totalInUsd += balanceInUsd;
+          if (!walletMap[assetKey]) {
+            walletMap[assetKey] = {
+              assetCode: token,
+              totalBalance: '0',
+              networks: [],
+            };
+          }
 
-          //get transaction history for wallet
+          // Fetch QWallet balance (if exists)
+          if (qWallet) {
+            const qBalanceUsd = await this.getQWalletBalance(
+              qWallet,
+              token,
+              network,
+              qWalletId,
+            );
 
-          curatedWallets.push({
-            address: wallet.address,
-            network,
-            assetCode: token,
-            balanceInUsd,
-            balanceInNgn,
-            transactionHistory: [],
-          });
+            if (qBalanceUsd > 0) {
+              totalInUsd += qBalanceUsd;
+              walletMap[assetKey].networks.push({
+                name: network.toLowerCase(),
+                address: qWallet.address,
+              });
+
+              const newTotal =
+                parseFloat(walletMap[assetKey].totalBalance) + qBalanceUsd;
+              walletMap[assetKey].totalBalance = newTotal.toFixed(2);
+            }
+          }
+
+          // Fetch CWallet balance (if exists)
+          if (cWallet) {
+            const cBalanceUsd = await this.getCWalletBalance(
+              cWallet,
+              token,
+              network,
+            );
+
+            if (cBalanceUsd > 0) {
+              totalInUsd += cBalanceUsd;
+              walletMap[assetKey].networks.push({
+                name: network.toLowerCase(),
+                address: cWallet.address,
+              });
+
+              const newTotal =
+                parseFloat(walletMap[assetKey].totalBalance) + cBalanceUsd;
+              walletMap[assetKey].totalBalance = newTotal.toFixed(2);
+            }
+          }
         }),
       );
 
       await Promise.all(tasks);
 
+      console.log({
+        totalBalance: totalInUsd.toFixed(2),
+        currency: 'USD',
+        wallets: Object.values(walletMap),
+      });
+
       return {
         totalBalance: totalInUsd.toFixed(2),
         currency: 'USD',
-        wallets: curatedWallets,
+        wallets: Object.values(walletMap),
       };
     } catch (error) {
       console.error('Error fetching balances:', error);
@@ -203,18 +240,15 @@ export class WalletManagerService {
     );
   }
 
-  // Placeholder for Circle — implement when integrated
-  // private async getCircleBalance(
-  //   wallet: any,
-  //   token: TokenEnum,
-  //   network: SupportedBlockchainType,
-  // ): Promise<number> {
-  //   if (!this.circleService?.supports(network, token)) return 0;
+  private async getCWalletBalance(
+    wallet: CwalletsEntity,
+    token: TokenEnum,
+    network: SupportedBlockchainType,
+  ): Promise<number> {
+    if (!this.cwalletService.supports(network, token)) return 0;
 
-  //   return Number(
-  //     await this.circleService
-  //       .getBalanceByAddress(wallet.address, token, network)
-  //       .catch(() => '0'),
-  //   );
-  // }
+    return Number(
+      await this.cwalletService.getBalanceByAddress(wallet.id, token, network),
+    );
+  }
 }

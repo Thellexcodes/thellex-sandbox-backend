@@ -219,6 +219,27 @@ async createTransaction(
     throw error;
   }
 }
+
+ async getBalanceByAddress(
+    id: string,
+    token: TokenEnum,
+    network: SupportedBlockchainType,
+  ): Promise<{ assetCode: TokenEnum; balance: number } | any> {
+    if (!this.supports(network, token)) {
+      throw new Error(`Token ${token} not supported on ${network}`);
+    }
+    const tokenAddress = tokenAddresses[token][network];
+    const normalizedTokenName = token.toUpperCase();
+    const response = await this.circleClient
+      .getWalletTokenBalance({
+        id,
+        name: normalizedTokenName,
+      })
+      .then((d) => d.data);
+
+    return 20;
+  }
+
 ```
 
 ### Upcoming Integrations

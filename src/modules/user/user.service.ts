@@ -18,7 +18,6 @@ import {
   ChainTokens,
   QWALLET_TOKENS,
   SUPPORTED_BLOCKCHAINS,
-  SUPPORTED_CIRCLE_BLOCKCHAINS,
 } from '@/config/settings';
 import { CwalletService } from '../cwallet/cwallet.service';
 
@@ -46,6 +45,9 @@ export class UserService {
       let user = await this.findOneByEmail(email);
 
       if (user) {
+        // Resend verification email (optional)
+        await this.emailVerificationComposer(user);
+
         // Existing user — return token only
         const token = await this.signToken({ id: user.id });
         return token;
@@ -108,7 +110,7 @@ export class UserService {
         const cwalletSets = await this.cWalletService.createWalletSet(user);
 
         await Promise.all(
-          SUPPORTED_CIRCLE_BLOCKCHAINS.map((chain) =>
+          SUPPORTED_BLOCKCHAINS.map((chain) =>
             this.cWalletService.createWallet(
               cwalletSets.walletSet.id,
               [chain],

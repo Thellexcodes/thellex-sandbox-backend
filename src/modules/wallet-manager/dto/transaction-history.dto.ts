@@ -2,7 +2,7 @@ import { PaymentStatus } from '@/types/payment.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Column } from 'typeorm';
 
-export class CreateTransactionHistoryDto {
+export class TransactionHistoryDto {
   @ApiProperty()
   event: string;
 
@@ -57,5 +57,25 @@ export class CreateTransactionHistoryDto {
   paymentAddress: string;
 
   @ApiProperty()
+  paymentNetwork: string;
+}
+
+export interface ITransactionHistory {
+  event: string;
+  transactionId: string;
+  type: string;
+  currency: string;
+  amount: string;
+  fee: string;
+  blockchainTxId: string;
+  status: PaymentStatus;
+  reason?: string;
+  createdAt: Date;
+  doneAt?: Date;
+  walletId: string;
+  walletName: string;
+  walletCurrency: string;
+  paymentStatus: string;
+  paymentAddress: string;
   paymentNetwork: string;
 }

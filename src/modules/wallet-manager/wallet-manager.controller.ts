@@ -9,7 +9,12 @@ import {
   Res,
 } from '@nestjs/common';
 import { WalletManagerService } from './wallet-manager.service';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
@@ -44,6 +49,7 @@ export class WalletManagerController {
       user,
       assetId,
     );
+
     responseHandler(result, res, req);
   }
 

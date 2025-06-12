@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import {
   Blockchain,
   CircleDeveloperControlledWalletsClient,
-  GetWalletInput,
   initiateDeveloperControlledWalletsClient,
   Wallet,
   WalletSet,
@@ -22,6 +21,13 @@ import {
   CwalletsEntity,
   ICwallet,
 } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
+import {
+  ChainTokens,
+  SupportedBlockchainType,
+  tokenAddresses,
+  TokenEnum,
+} from '@/config/settings';
+import { Web3Service } from '@/utils/services/web3.service';
 
 @Injectable()
 export class CwalletService {
@@ -33,6 +39,7 @@ export class CwalletService {
     private readonly cWalletProfilesRepo: Repository<CwalletProfilesEntity>,
     @InjectRepository(CwalletsEntity)
     private readonly cWalletsRepo: Repository<CwalletsEntity>,
+    private readonly web3Service: Web3Service,
   ) {
     this.circleClient = initiateDeveloperControlledWalletsClient({
       apiKey: this.configService.get<string>('CWALLET_API_KEY'),
@@ -78,12 +85,13 @@ export class CwalletService {
 
   async createWallet(
     walletSetId: string,
-    blockchains: Blockchain[],
+    blockchains: SupportedBlockchainType[],
     user: UserEntity,
   ): Promise<ICwallet> {
+    const normalizedBlockchains = this.normalizeBlockchains(blockchains);
     const response = await this.circleClient.createWallets({
       walletSetId,
-      blockchains,
+      blockchains: normalizedBlockchains,
       count: 1,
       accountType: 'SCA',
     });
@@ -107,7 +115,6 @@ export class CwalletService {
     newWallet.address = walletData.address;
     newWallet.defaultNetwork = walletData.blockchain;
     newWallet.custodyType = walletData.custodyType;
-    newWallet.blockchain = walletData.blockchain;
     newWallet.accountType = walletData.accountType;
     newWallet.state = walletData.state;
     newWallet.scaCore = walletData.scaCore;
@@ -122,9 +129,9 @@ export class CwalletService {
     return await this.cWalletsRepo.save(newWallet);
   }
 
-  async getWallet(walletId: GetWalletInput): Promise<CwalletResponse> {
+  async getUserWallet(id: string): Promise<CwalletResponse> {
     try {
-      const response = await this.circleClient.getWallet(walletId);
+      const response = await this.circleClient.getWallet({ id });
       return response;
     } catch (error) {
       console.error('Failed to fetch wallet:', error);
@@ -160,7 +167,7 @@ export class CwalletService {
         fee: {
           type: 'level',
           config: {
-            feeLevel: 'HIGH', // Options: LOW, MEDIUM, HIGH
+            feeLevel: 'HIGH',
           },
         },
         amount,
@@ -170,5 +177,41 @@ export class CwalletService {
       console.error('Failed to create transaction:', error);
       throw error;
     }
+  }
+
+  async getBalanceByAddress(
+    id: string,
+    token: TokenEnum,
+    network: SupportedBlockchainType,
+  ): Promise<{ assetCode: TokenEnum; balance: number } | any> {
+    if (!this.supports(network, token)) {
+      throw new Error(`Token ${token} not supported on ${network}`);
+    }
+    const tokenAddress = tokenAddresses[token][network];
+    const normalizedTokenName = token.toUpperCase();
+    const response = await this.circleClient
+      .getWalletTokenBalance({
+        id,
+        name: normalizedTokenName,
+      })
+      .then((d) => d.data);
+
+    return 20;
+  }
+
+  supports(network: SupportedBlockchainType, token: TokenEnum): boolean {
+    const tokens = ChainTokens[network];
+    return tokens?.includes(token) ?? false;
+  }
+
+  normalizeBlockchains(blockchains: SupportedBlockchainType[]): Blockchain[] {
+    return blockchains.map((bc) => {
+      switch (bc.toLowerCase()) {
+        case 'matic':
+          return Blockchain.Matic;
+        default:
+          throw new Error(`Unsupported blockchain type: ${bc}`);
+      }
+    });
   }
 }
