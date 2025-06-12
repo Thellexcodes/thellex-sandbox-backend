@@ -3,7 +3,14 @@ import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { UserEntity } from './typeorm/entities/user.entity';
-import { ChainTokens, TokenEnum } from '@/config/settings';
+import {
+  ChainTokens,
+  SupportedBlockchainType,
+  TokenEnum,
+} from '@/config/settings';
+import { ENV_TESTNET } from '@/constants/env';
+
+//TODO: handle errors with enums
 
 export function isNumber(n: string | number): boolean {
   const cleanedValue = String(n).replace(/\D/g, '');
@@ -111,3 +118,32 @@ export function getSupportedAssets() {
 
   return assets;
 }
+
+export function getSupportedNetwork(
+  network: SupportedBlockchainType,
+  token: TokenEnum,
+): boolean {
+  const tokens = ChainTokens[network];
+  return tokens?.includes(token) ?? false;
+}
+
+export function normalizeBlockchains(
+  blockchains: SupportedBlockchainType[],
+): any[] {
+  return blockchains.map((bc) => {
+    switch (bc.toLowerCase()) {
+      case SupportedBlockchainType.MATIC:
+        return process.env.NODE_ENV === ENV_TESTNET ? 'MATIC-AMOY' : 'MATIC';
+      default:
+        throw new Error(`Unsupported blockchain type: ${bc}`);
+    }
+  });
+}
+
+export const cWalletNetworkNameGetter = (
+  network: SupportedBlockchainType,
+): string =>
+  network === SupportedBlockchainType.MATIC &&
+  process.env.NODE_ENV === ENV_TESTNET
+    ? 'MATIC-AMOY'
+    : 'MATIC';

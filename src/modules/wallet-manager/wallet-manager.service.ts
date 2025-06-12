@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { getSupportedAssets } from '@/utils/helpers';
+import {
+  cWalletNetworkNameGetter,
+  getSupportedAssets,
+  getSupportedNetwork,
+} from '@/utils/helpers';
 import PQueue from 'p-queue';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { IQWallet } from '@/types/qwallet.types';
@@ -14,7 +18,6 @@ import {
 import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { IWalletInfo, IWalletSummary } from './dto/get-balance-response.dto';
 import { Web3Service } from '@/utils/services/web3.service';
-import { net } from 'web3';
 
 @Injectable()
 export class WalletManagerService {
@@ -45,7 +48,9 @@ export class WalletManagerService {
           );
 
           const cWallet = cWallets.find(
-            (w) => w.defaultNetwork.toLowerCase() === network.toLowerCase(),
+            (c) =>
+              c.defaultNetwork.toLocaleLowerCase() ==
+              cWalletNetworkNameGetter(network).toLocaleLowerCase(),
           );
 
           if (!qWallet && !cWallet) return;
@@ -82,7 +87,6 @@ export class WalletManagerService {
             }
           }
 
-          // Fetch CWallet balance (if exists)
           if (cWallet) {
             const cBalanceUsd = await this.getCWalletBalance(
               cWallet,
@@ -106,12 +110,6 @@ export class WalletManagerService {
       );
 
       await Promise.all(tasks);
-
-      console.log({
-        totalBalance: totalInUsd.toFixed(2),
-        currency: 'USD',
-        wallets: Object.values(walletMap),
-      });
 
       return {
         totalBalance: totalInUsd.toFixed(2),
@@ -230,7 +228,7 @@ export class WalletManagerService {
     network: SupportedBlockchainType,
     qWalletId: string,
   ): Promise<number> {
-    if (!this.qwalletService.supports(network, token)) return 0;
+    if (!getSupportedNetwork(network, token)) return 0;
 
     return Number(
       await this.qwalletService
@@ -245,10 +243,14 @@ export class WalletManagerService {
     token: TokenEnum,
     network: SupportedBlockchainType,
   ): Promise<number> {
-    if (!this.cwalletService.supports(network, token)) return 0;
+    if (!getSupportedNetwork(network, token)) return 0;
 
     return Number(
-      await this.cwalletService.getBalanceByAddress(wallet.id, token, network),
+      await this.cwalletService.getBalanceByAddress(
+        wallet.walletID,
+        token,
+        network,
+      ),
     );
   }
 }

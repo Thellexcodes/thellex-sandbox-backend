@@ -35,11 +35,7 @@ import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { CreateSwapDto } from './dto/create-swap.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import {
-  ChainTokens,
-  SupportedBlockchainType,
-  TokenEnum,
-} from '@/config/settings';
+import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
 import { QWalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 
 @Injectable()
@@ -525,11 +521,6 @@ export class QwalletService {
     );
 
     return matchedWallet || null;
-  }
-
-  supports(network: SupportedBlockchainType, token: TokenEnum): boolean {
-    const tokens = ChainTokens[network];
-    return tokens?.includes(token) ?? false;
   }
 
   private get qwalletUrl(): string {
