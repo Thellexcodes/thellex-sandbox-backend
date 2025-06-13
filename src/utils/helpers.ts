@@ -8,7 +8,7 @@ import {
   SupportedBlockchainType,
   TokenEnum,
 } from '@/config/settings';
-import { ENV_TESTNET } from '@/constants/env';
+import { ENV_TESTNET, YELLOWCARD_API } from '@/constants/env';
 
 //TODO: handle errors with enums
 
@@ -147,3 +147,15 @@ export const cWalletNetworkNameGetter = (
   process.env.NODE_ENV === ENV_TESTNET
     ? 'MATIC-AMOY'
     : 'MATIC';
+
+export function yellowCardUrl(): string {
+  const env = process.env.NODE_ENV;
+  return env === 'testnet' ? YELLOWCARD_API.sandbox : YELLOWCARD_API.production;
+}
+
+export function yellowCardAuthHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.YELLOWCARD_AUTH_KEY}`,
+  };
+}

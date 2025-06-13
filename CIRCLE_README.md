@@ -425,9 +425,9 @@ Thellex POS enables merchants to:
 
 **Partnerships:**
 
-- ✅ Partnered with **Yellow Card** for fiat on/off-ramping in **Nigeria**, **Ghana**, and **South Africa** — [View Document](https://drive.google.com/drive/folders/1koMVpnicmXIcOxWUqBc-ZVtAPmwifWjb?usp=sharing)
-- ✅ Partnered with **Quidax** for regulatory **compliance** — [View Document](https://drive.google.com/drive/folders/17wMXNu8dfahqobPybIpqHCDQDMWtc8EY?usp=sharing)
-- ✅ Partnered with **Dojah API** for **KYC** and user verification — [View Document](https://drive.google.com/drive/folders/17wMXNu8dfahqobPybIpqHCDQDMWtc8EY?usp=sharing)
+- ✅ Partnered with **Yellow Card** for fiat on/off-ramping in **Nigeria**, **Ghana**, and **South Africa** — [View Document](https://drive.google.com/drive/folders/1QLkrRQm9OFeobZfNSjgMjP8UyXKRLcWt?usp=sharing)
+- ✅ Partnered with **Quidax** for regulatory **compliance** — [View Document](https://drive.google.com/drive/folders/1QLkrRQm9OFeobZfNSjgMjP8UyXKRLcWt?usp=sharing)
+- ✅ Partnered with **Dojah API** for **KYC** and user verification — [View Document](https://drive.google.com/drive/folders/1QLkrRQm9OFeobZfNSjgMjP8UyXKRLcWt?usp=sharing)
 
 **Pilot Recruitment:**
 
