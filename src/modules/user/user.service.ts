@@ -11,13 +11,15 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from '../mail/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
-import { generateUniqueUid } from '@/utils/helpers';
+import { generateUniqueUid, normalizeBlockchains } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
 import { QwalletService } from '../qwallet/qwallet.service';
 import {
   ChainTokens,
   QWALLET_TOKENS,
   SUPPORTED_BLOCKCHAINS,
+  SupportedBlockchainType,
+  TokenEnum,
 } from '@/config/settings';
 import { CwalletService } from '../cwallet/cwallet.service';
 
@@ -72,8 +74,8 @@ export class UserService {
         await Promise.all(
           SUPPORTED_BLOCKCHAINS.flatMap((chain) =>
             ChainTokens[chain]
-              .filter((token) => QWALLET_TOKENS.includes(token))
-              .map((token) =>
+              .filter((token: TokenEnum) => QWALLET_TOKENS.includes(token))
+              .map((token: TokenEnum) =>
                 this.qWalletService.createUserWallet(subAccountId, token),
               ),
           ),
@@ -86,8 +88,8 @@ export class UserService {
         await Promise.all(
           SUPPORTED_BLOCKCHAINS.flatMap((chain) =>
             ChainTokens[chain]
-              .filter((token) => QWALLET_TOKENS.includes(token))
-              .map(async (token) => {
+              .filter((token: TokenEnum) => QWALLET_TOKENS.includes(token))
+              .map(async (token: TokenEnum) => {
                 const existingWallet = await this.qWalletService.getUserWallet(
                   subAccountId,
                   token,
@@ -110,10 +112,10 @@ export class UserService {
         const cwalletSets = await this.cWalletService.createWalletSet(user);
 
         await Promise.all(
-          SUPPORTED_BLOCKCHAINS.map((chain) =>
+          [SupportedBlockchainType.MATIC].map((chain) =>
             this.cWalletService.createWallet(
               cwalletSets.walletSet.id,
-              [chain],
+              [chain as SupportedBlockchainType],
               user,
             ),
           ),

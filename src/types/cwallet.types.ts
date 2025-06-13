@@ -1,7 +1,10 @@
 import {
   Balances,
+  Blockchain,
   CreateTransferTransactionForDeveloperResponse,
+  EstimateTransactionFeeData,
   TrimDataResponse,
+  ValidateAddressData,
   WalletResponse,
   Wallets,
   WalletSetResponse,
@@ -18,7 +21,12 @@ export type CwalletBalanceResponse = TrimDataResponse<Balances>;
 export type CwalletTransactionResponse =
   TrimDataResponse<CreateTransferTransactionForDeveloperResponse>;
 
-export interface WalletSet {
+export type ValidateAddressDataResponse = Promise<ValidateAddressData>;
+
+export type EstimateTransactionFeeDataResponse =
+  Promise<EstimateTransactionFeeData>;
+
+export interface IWalletSet {
   id: string;
   custodyType: 'DEVELOPER';
   name: string;
@@ -27,5 +35,16 @@ export interface WalletSet {
 }
 
 export type CreateWalletSetResponse = {
-  walletSet: WalletSet;
+  walletSet: IWalletSet;
 };
+
+export interface IValidateAddress {
+  address: string;
+  blockchain: Blockchain;
+}
+
+export interface IEstimateTransferFee {
+  tokenAddress: string;
+  destinationAddress: string;
+  amount: string[];
+}

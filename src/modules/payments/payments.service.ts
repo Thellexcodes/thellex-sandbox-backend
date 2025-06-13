@@ -4,11 +4,16 @@ import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { HandleWithdrawPaymentResponse } from '@/types/qwallet.types';
 import { RequestCryptoPaymentResponse } from '@/types/request.types';
-import { CreateWithdrawPaymentDto } from './dto/create-withdrawal.dto';
+import { CwalletService } from '../cwallet/cwallet.service';
+import { SupportedBlockchainType } from '@/config/settings';
+import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly qwalletService: QwalletService) {}
+  constructor(
+    private readonly qwalletService: QwalletService,
+    private readonly cwalletService: CwalletService,
+  ) {}
 
   async requestCryptoWallet(
     createRequestPaymentDto: CreateRequestPaymentDto,
@@ -24,14 +29,22 @@ export class PaymentsService {
     return { wallet: wallet, assetCode: createRequestPaymentDto.assetCode };
   }
 
-  async handleWithdrawPayment(
+  async handleWithdrawCryptoPayment(
     user: UserEntity,
-    withdrawPaymentDto: CreateWithdrawPaymentDto,
-  ): Promise<HandleWithdrawPaymentResponse> {
-    const withdrawResponse = await this.qwalletService.createWithdrawal(
-      user.qWalletProfile.id,
-      withdrawPaymentDto,
-    );
-    return withdrawResponse;
+    withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
+  ): Promise<HandleWithdrawPaymentResponse | any> {
+    // Use qwallet for BEP20 or TRC20
+    if (
+      withdrawCryptoPaymentDto.network === SupportedBlockchainType.BEP20 ||
+      withdrawCryptoPaymentDto.network === SupportedBlockchainType.TRC20
+    ) {
+      return this.qwalletService.createCryptoWithdrawal(
+        user.qWalletProfile.id,
+        withdrawCryptoPaymentDto,
+      );
+    }
+
+    // Use cwallet for others (e.g., MATIC)
+    return this.cwalletService.createCryptoWithdrawal(withdrawCryptoPaymentDto);
   }
 }
