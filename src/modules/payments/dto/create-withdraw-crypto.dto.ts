@@ -1,7 +1,17 @@
+import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class CreateWithdrawPaymentDto {
+export class CreateCryptoWithdrawPaymentDto {
+  @ApiProperty({
+    description: 'Token to be withdrawn (usdc or usdt)',
+    enum: TokenEnum,
+    example: TokenEnum.USDC,
+  })
+  @IsNotEmpty()
+  @IsEnum(TokenEnum)
+  currency: TokenEnum;
+
   @ApiProperty({
     description: 'Value to be sent to the recipient',
     example: '150.00',
@@ -9,6 +19,23 @@ export class CreateWithdrawPaymentDto {
   @IsNotEmpty()
   @IsString()
   amount: string;
+
+  @ApiProperty({
+    description: 'Blockchain network for the withdrawal',
+    enum: SupportedBlockchainType,
+    example: SupportedBlockchainType.MATIC,
+  })
+  @IsNotEmpty()
+  @IsEnum(SupportedBlockchainType)
+  network: SupportedBlockchainType;
+
+  @ApiProperty({
+    description: 'sender crypto address',
+    example: '0xAbc123...',
+  })
+  @IsNotEmpty()
+  @IsString()
+  sendAddress: string;
 
   @ApiProperty({
     description: 'ID of your sub-user or crypto address',

@@ -11,6 +11,10 @@ import {
   CwalletBalanceResponse,
   CwalletResponse,
   CwalletTransactionResponse,
+  EstimateTransactionFeeDataResponse,
+  IEstimateTransferFee,
+  IValidateAddress,
+  ValidateAddressDataResponse,
 } from '@/types/cwallet.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
@@ -21,9 +25,10 @@ import {
   ICwallet,
 } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
-import { Web3Service } from '@/utils/services/web3.service';
 import { getSupportedNetwork, normalizeBlockchains } from '@/utils/helpers';
+import { CreateCryptoWithdrawPaymentDto } from '../payments/dto/create-withdraw-crypto.dto';
 
+//TODO: Properly handle errors with enum
 @Injectable()
 export class CwalletService {
   private circleClient: CircleDeveloperControlledWalletsClient;
@@ -34,7 +39,6 @@ export class CwalletService {
     private readonly cWalletProfilesRepo: Repository<CwalletProfilesEntity>,
     @InjectRepository(CwalletsEntity)
     private readonly cWalletsRepo: Repository<CwalletsEntity>,
-    private readonly web3Service: Web3Service,
   ) {
     this.circleClient = initiateDeveloperControlledWalletsClient({
       apiKey: this.configService.get<string>('CWALLET_API_KEY'),
@@ -125,6 +129,26 @@ export class CwalletService {
     return await this.cWalletsRepo.save(newWallet);
   }
 
+  async createCryptoWithdrawal(
+    withdrawCryptoPayment: CreateCryptoWithdrawPaymentDto,
+  ) {
+    const wallet = await this.cWalletsRepo.findOne({
+      where: { address: withdrawCryptoPayment.sendAddress },
+    });
+
+    const tokenId = withdrawCryptoPayment.currency.toUpperCase();
+
+    const transaction = await this.createTransaction(
+      wallet.walletID,
+      tokenId,
+      withdrawCryptoPayment.fund_uid,
+      [withdrawCryptoPayment.amount],
+    );
+
+    //TODO: Create transaction history with payment status
+    //TODO: create notifications
+  }
+
   async getUserWallet(id: string): Promise<CwalletResponse> {
     try {
       const response = await this.circleClient.getWallet({ id });
@@ -193,5 +217,17 @@ export class CwalletService {
       .then((d) => d.data);
 
     return Number(response.tokenBalances[0].amount || 20);
+  }
+
+  async validateAddress(data: IValidateAddress): ValidateAddressDataResponse {
+    const response = await this.circleClient.validateAddress(data);
+    return response.data;
+  }
+
+  async estimateTransferFee(
+    data: IEstimateTransferFee,
+  ): EstimateTransactionFeeDataResponse {
+    const response = await this.circleClient.estimateTransferFee(data);
+    return response.data;
   }
 }

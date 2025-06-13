@@ -5,7 +5,7 @@ import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { PaymentsService } from './payments.service';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { CreateWithdrawPaymentDto } from './dto/create-withdrawal.dto';
+import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
 
 ApiTags('payments');
 @Controller('Payments')
@@ -34,20 +34,28 @@ export class PaymentsController {
   @Post('request-fiat')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Request a fiat payment' })
-  async requestFiatPayment(
-    @Body() createRequestPaymentDto: CreateRequestPaymentDto,
-  ) {
-    //TODO: complete for this
+  async requestFiatPayment(@Body() createRequestPaymentDto: any) {
+    //TODO: implement on-ramp
   }
 
-  @Post('withdraw-payment')
+  @Post('withdraw-fiat')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Request a fiat payment' })
+  async withdrawFiatPayment(@Body() createRequestPaymentDto: any) {
+    //TODO: implement on-ramp
+  }
+
+  @Post('withdraw-crypto')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
   async withdrawPayment(
-    @Body() withdrawPaymentDto: CreateWithdrawPaymentDto,
+    @Body() withdrawPaymentDto: CreateCryptoWithdrawPaymentDto,
     @Req() req: CustomRequest,
   ) {
     const user = req.user;
-    return this.paymentService.handleWithdrawPayment(user, withdrawPaymentDto);
+    return this.paymentService.handleWithdrawCryptoPayment(
+      user,
+      withdrawPaymentDto,
+    );
   }
 }

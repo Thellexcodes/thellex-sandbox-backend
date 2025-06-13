@@ -58,7 +58,7 @@ Thellex POS integrates Circle’s DCW to manage USDC wallets and transactions. B
 
 ## Create Wallet Set
 
-This method creates a wallet set for a user, associating it with their idempotency key and storing the profile in PostgreSQL.
+This method creates a wallet set for a user, associating it with their unique idempotency key created when creating the user and storing the profile in PostgreSQL.
 
 ```javascript
 async createWalletSet(user: UserEntity): Promise<WalletSetResponseData> {
@@ -220,24 +220,36 @@ async createTransaction(
   }
 }
 
- async getBalanceByAddress(
-    id: string,
-    token: TokenEnum,
-    network: SupportedBlockchainType,
-  ): Promise<{ assetCode: TokenEnum; balance: number } | any> {
-    if (!this.supports(network, token)) {
-      throw new Error(`Token ${token} not supported on ${network}`);
-    }
-    const tokenAddress = tokenAddresses[token][network];
-    const normalizedTokenName = token.toUpperCase();
-    const response = await this.circleClient
-      .getWalletTokenBalance({
-        id,
-        name: normalizedTokenName,
-      })
-      .then((d) => d.data);
+async getBalanceByAddress(
+  id: string,
+  token: TokenEnum,
+  network: SupportedBlockchainType,
+): Promise<number> {
+  if (!getSupportedNetwork(network, token)) {
+    throw new Error(`Token ${token} not supported on ${network}`);
+  }
+  const normalizedTokenName = token.toUpperCase();
 
-    return 20;
+  const response = await this.circleClient
+    .getWalletTokenBalance({
+      id,
+      name: normalizedTokenName,
+    })
+    .then((d) => d.data);
+
+  return Number(response.tokenBalances[0].amount || 20);
+}
+
+  async validateAddress(data: IValidateAddress): ValidateAddressDataResponse {
+    const response = await this.circleClient.validateAddress(data);
+    return response.data;
+  }
+
+  async estimateTransferFee(
+    data: IEstimateTransferFee,
+  ): EstimateTransactionFeeDataResponse {
+    const response = await this.circleClient.estimateTransferFee(data);
+    return response.data;
   }
 
 ```
