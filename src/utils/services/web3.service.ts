@@ -26,6 +26,11 @@ export class Web3Service {
     [SupportedBlockchainType.TRC20]: '',
     [SupportedBlockchainType.BEP20]: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API}`,
     [SupportedBlockchainType.MATIC]: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API}`,
+    [SupportedBlockchainType.MATIC_AMOY]: '',
+    [SupportedBlockchainType.AVAX]: '',
+    [SupportedBlockchainType.AVAX_FUJI]: '',
+    [SupportedBlockchainType.SOL]: '',
+    [SupportedBlockchainType.SOL_DEVNET]: '',
   };
 
   getWeb3(network: SupportedBlockchainType): Web3 {

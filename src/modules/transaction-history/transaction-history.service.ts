@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { CreateTransactionHistoryDto } from './dto/create-transaction-history.dto';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { IQWalletHookWithdrawSuccessfulEvent } from '../qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
+import { TransactionHistoryDto } from './dto/create-transaction-history.dto';
 
 //TODO: add try catch block for error handling
 @Injectable()
@@ -17,7 +17,7 @@ export class TransactionHistoryService {
   ) {}
 
   async create(
-    txData: CreateTransactionHistoryDto,
+    txData: TransactionHistoryDto,
     user: UserEntity,
   ): Promise<TransactionHistoryEntity> {
     const transactionRecord = this.transactionRepo.create({
@@ -50,7 +50,7 @@ export class TransactionHistoryService {
       );
     }
 
-    existing.doneAt = updates.done_at;
+    existing.updatedAt = updates.done_at;
     existing.updatedAt = new Date();
     existing.blockchainTxId = updates.txid;
     existing.reason = updates.reason;

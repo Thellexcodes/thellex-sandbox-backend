@@ -3,6 +3,7 @@ import {
   Blockchain,
   CreateTransferTransactionForDeveloperResponse,
   EstimateTransactionFeeData,
+  TransactionResponseData,
   TrimDataResponse,
   ValidateAddressData,
   WalletResponse,
@@ -25,6 +26,10 @@ export type ValidateAddressDataResponse = Promise<ValidateAddressData>;
 
 export type EstimateTransactionFeeDataResponse =
   Promise<EstimateTransactionFeeData>;
+
+export type GetTransactionResponse = Promise<
+  TransactionResponseData['transaction']
+>;
 
 export interface IWalletSet {
   id: string;

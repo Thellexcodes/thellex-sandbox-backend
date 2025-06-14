@@ -38,19 +38,21 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
 import { QWalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
 import { CreateCryptoWithdrawPaymentDto } from '../payments/dto/create-withdraw-crypto.dto';
+import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 
 @Injectable()
 export class QwalletService {
   constructor(
-    private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
     @InjectRepository(QWalletProfileEntity)
     private readonly qwalletProfilesRepo: Repository<QWalletProfileEntity>,
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+    private readonly transactionHistoryService: TransactionHistoryService,
   ) {}
 
   // >>>>>>>>>>>>>>> SubAcocunts <<<<<<<<<<<<<<<
 
-  async lookupSubaccount(
+  async lookupSubAccount(
     user: UserEntity,
   ): Promise<QWalletProfileEntity | null> {
     const localSubaccount = await this.qwalletProfilesRepo.findOne({
@@ -330,16 +332,46 @@ export class QwalletService {
 
   // >>>>>>>>>>>>>>> Withdrawals <<<<<<<<<<<<<<<
   async createCryptoWithdrawal(
-    uuid: string,
+    user: UserEntity,
     createCryptoWithdralPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ): Promise<HandleWithdrawPaymentResponse> {
+  ): Promise<any> {
+    const uuid = user.qWalletProfile.qid;
     try {
-      return await this.httpService.post<HandleWithdrawPaymentResponse>(
-        `${this.qwalletUrl}/users/${uuid}/withdraws`,
-        createCryptoWithdralPaymentDto,
-        { headers: this.getAuthHeaders() },
-      );
+      const withDrawTransactionResponse =
+        await this.httpService.post<HandleWithdrawPaymentResponse>(
+          `${this.qwalletUrl}/users/${uuid}/withdraws`,
+          createCryptoWithdralPaymentDto,
+          { headers: this.getAuthHeaders() },
+        );
+
+      // const transactionData: CreateWalletWebhookEventType = {
+      //   event: WalletWebhookEventType.WithdrawPending,
+      //   transactionId: '',
+      //   type: '',
+      //   currency: '',
+      //   amount: '',
+      //   fee: '',
+      //   blockchainTxId: '',
+      //   reason: '',
+      //   createdAt: undefined,
+      //   doneAt: undefined,
+      //   walletId: '',
+      //   walletName: '',
+      //   walletCurrency: '',
+      //   status: PaymentStatus.None,
+      //   paymentAddress: '',
+      //   paymentNetwork: '',
+      // };
+
+      // const transactionHistory = await this.transactionHistoryService.create(
+      //   transactionData,
+      //   user,
+      // );
+
+      //TODO: Create transaction history with payment status
+      //TODO: create notifications
     } catch (error) {
+      console.log(error);
       //TODO: properly handle errors for 404 / 400 / 500
       throw new CustomHttpException(
         QwalletErrorEnum.CREATE_WITHDRAWAL_FAILED,

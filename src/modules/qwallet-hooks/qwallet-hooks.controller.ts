@@ -11,8 +11,8 @@ import { QwalletHooksService } from './qwallet-hooks.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CustomRequest } from '@/types/request.types';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { QWalletWebhookEventType } from '@/types/qwallet.types';
 import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 //TODO: add qwallet security middleware
 @ApiTags('WebHooks')
@@ -47,12 +47,12 @@ export class QwalletHooksController {
     const user = req.user;
 
     switch (payload.event) {
-      case QWalletWebhookEventType.DepositSuccessful:
+      case WalletWebhookEventType.DepositSuccessful:
         return await this.qwalletHooksService.handleDepositSuccessful(
           payload,
           user,
         );
-      case QWalletWebhookEventType.WithdrawalSuccessful:
+      case WalletWebhookEventType.WithdrawalSuccessful:
         return await this.qwalletHooksService.handleWithdrawSuccessful(
           payload,
           user,

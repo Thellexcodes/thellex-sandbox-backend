@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateRequestPaymentDto } from '../qwallet/dto/create-request.dto';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { HandleWithdrawPaymentResponse } from '@/types/qwallet.types';
 import { RequestCryptoPaymentResponse } from '@/types/request.types';
 import { CwalletService } from '../cwallet/cwallet.service';
 import { SupportedBlockchainType } from '@/config/settings';
@@ -30,21 +29,29 @@ export class PaymentsService {
   }
 
   async handleWithdrawCryptoPayment(
-    user: UserEntity,
     withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ): Promise<HandleWithdrawPaymentResponse | any> {
-    // Use qwallet for BEP20 or TRC20
+  ) {
     if (
-      withdrawCryptoPaymentDto.network === SupportedBlockchainType.BEP20 ||
-      withdrawCryptoPaymentDto.network === SupportedBlockchainType.TRC20
+      [SupportedBlockchainType.BEP20, SupportedBlockchainType.TRC20].includes(
+        withdrawCryptoPaymentDto.network,
+      )
     ) {
-      return this.qwalletService.createCryptoWithdrawal(
-        user.qWalletProfile.id,
-        withdrawCryptoPaymentDto,
-      );
+      // const az = this.qwalletService.createCryptoWithdrawal(
+      //   withdrawCryptoPaymentDto,
+      // );
     }
 
-    // Use cwallet for others (e.g., MATIC)
-    return this.cwalletService.createCryptoWithdrawal(withdrawCryptoPaymentDto);
+    const wallet = await this.cwalletService.lookupSubWallet(
+      withdrawCryptoPaymentDto.sendAddress,
+    );
+
+    console.log(wallet);
+
+    return await this.cwalletService.createCryptoWithdrawal(
+      withdrawCryptoPaymentDto,
+      wallet,
+    );
   }
+
+  async handleCryptoFeeEstimator() {}
 }

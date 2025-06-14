@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateRequestPaymentDto } from './dto/create-payment.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
@@ -42,7 +50,7 @@ export class PaymentsController {
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Request a fiat payment' })
   async withdrawFiatPayment(@Body() createRequestPaymentDto: any) {
-    //TODO: implement on-ramp
+    //TODO: implement off-ramp
   }
 
   @Post('withdraw-crypto')
@@ -53,9 +61,9 @@ export class PaymentsController {
     @Req() req: CustomRequest,
   ) {
     const user = req.user;
-    return this.paymentService.handleWithdrawCryptoPayment(
-      user,
-      withdrawPaymentDto,
-    );
+    return this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
   }
+
+  @Get()
+  async feeEstimator() {}
 }

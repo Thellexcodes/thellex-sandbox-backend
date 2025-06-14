@@ -1,4 +1,3 @@
-import { QWalletWebhookEventType } from '@/types/qwallet.types';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
   IQwalletHookDepositSuccessfulData,
@@ -8,10 +7,11 @@ import {
   IQWalletHookWithdrawSuccessfulEvent,
   QWalletHookWithdrawSuccessfulEventDto,
 } from './qwallet-hook-withdrawSuccessful.dto';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 export type QWalletWebhookEventMap = {
-  [QWalletWebhookEventType.DepositSuccessful]: IQwalletHookDepositSuccessfulData;
-  [QWalletWebhookEventType.WithdrawalSuccessful]: IQWalletHookWithdrawSuccessfulEvent;
+  [WalletWebhookEventType.DepositSuccessful]: IQwalletHookDepositSuccessfulData;
+  [WalletWebhookEventType.WithdrawalSuccessful]: IQWalletHookWithdrawSuccessfulEvent;
 };
 
 export type QWalletWebhookPayload = {
@@ -26,8 +26,8 @@ export type QWalletWebhookPayload = {
   QWalletHookWithdrawSuccessfulEventDto,
 )
 export class QWalletWebhookPayloadDto {
-  @ApiProperty({ enum: Object.values(QWalletWebhookEventType) })
-  event: QWalletWebhookEventType;
+  @ApiProperty({ enum: Object.values(WalletWebhookEventType) })
+  event: WalletWebhookEventType;
 
   @ApiProperty({
     oneOf: [

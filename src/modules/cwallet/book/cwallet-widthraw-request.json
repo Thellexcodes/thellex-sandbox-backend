@@ -1,0 +1,10 @@
+{
+  "currency": "usdc",
+  "amount": 1,
+  "network": "matic",
+  "sendAddress": "0x1b7a716d5d890231f4acdc0068a6ddb21c2eb72f",
+  "fund_uid": "0x1FCb25Fb286d9Fa084c09988b64b40571446Cde7",
+  "transaction_note": "Payment for service X",
+  "narration": "Freelance project payout",
+  "fund_uid2": ""
+}

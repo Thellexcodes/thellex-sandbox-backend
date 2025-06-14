@@ -1,6 +1,13 @@
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 
 export class CreateCryptoWithdrawPaymentDto {
   @ApiProperty({
@@ -17,7 +24,9 @@ export class CreateCryptoWithdrawPaymentDto {
     example: '150.00',
   })
   @IsNotEmpty()
-  @IsString()
+  @Matches(/^\d+(\.\d{1,18})?$/, {
+    message: 'Amount must be a valid decimal number',
+  })
   amount: string;
 
   @ApiProperty({

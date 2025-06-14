@@ -4,9 +4,14 @@ import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { UserEntity } from './typeorm/entities/user.entity';
 import {
+  ALL_KNOWN_BLOCKCHAINS,
   ChainTokens,
+  MAINNET_CHAINS,
+  OPTIONAL_BLOCKCHAINS,
   SupportedBlockchainType,
+  TESTNET_CHAINS,
   TokenEnum,
+  tokenIds,
 } from '@/config/settings';
 import { ENV_TESTNET, YELLOWCARD_API } from '@/constants/env';
 
@@ -159,3 +164,41 @@ export function yellowCardAuthHeaders() {
     Authorization: `Bearer ${process.env.YELLOWCARD_AUTH_KEY}`,
   };
 }
+
+type GetTokenIdOptions = {
+  token: TokenEnum | string;
+  chain: SupportedBlockchainType;
+};
+
+export function getTokenId({
+  token,
+  chain,
+  isTestnet = false,
+}: {
+  token: TokenEnum;
+  chain?: SupportedBlockchainType;
+  isTestnet?: boolean;
+}): string | undefined {
+  // If chain provided, use it directly
+  if (chain) {
+    return tokenIds[token]?.[chain];
+  }
+
+  // Otherwise pick first chain from mainnet or testnet arrays
+  const chains = isTestnet ? TESTNET_CHAINS[token] : MAINNET_CHAINS[token];
+  if (!chains || chains.length === 0) return undefined;
+
+  for (const c of chains) {
+    const id = tokenIds[token]?.[c];
+    if (id) return id;
+  }
+
+  return undefined;
+}
+
+// --- Utility functions ---
+export const isChainSupported = (chain: SupportedBlockchainType): boolean =>
+  ALL_KNOWN_BLOCKCHAINS.includes(chain);
+
+export const isChainOptional = (chain: SupportedBlockchainType): boolean =>
+  OPTIONAL_BLOCKCHAINS.includes(chain);

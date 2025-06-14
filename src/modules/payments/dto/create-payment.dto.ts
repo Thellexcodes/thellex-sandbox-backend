@@ -3,7 +3,7 @@ import {
   SupportedBlockchainType,
   TokenEnum,
 } from '@/config/settings';
-import { PaymentType } from '@/types/request.types';
+import { PaymentType } from '@/types/payment.types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional, IsIn, IsEnum } from 'class-validator';
 
@@ -11,7 +11,7 @@ export class CreateRequestPaymentDto {
   @ApiProperty({
     description: 'Type of the payment request',
     enum: PaymentType,
-    example: PaymentType.REQUEST_CRYPTO,
+    example: PaymentType.INBOUND,
   })
   @IsEnum(PaymentType)
   paymentType: PaymentType;
