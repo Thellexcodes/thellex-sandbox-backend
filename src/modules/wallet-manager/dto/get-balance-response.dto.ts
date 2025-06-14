@@ -1,9 +1,8 @@
-import { CreateTransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   ITransactionHistory,
   TransactionHistoryDto,
-} from './transaction-history.dto';
+} from '@/modules/transaction-history/dto/create-transaction-history.dto';
 
 class NetworkInfoDto {
   @ApiProperty()

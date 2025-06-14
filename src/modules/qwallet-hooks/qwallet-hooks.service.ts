@@ -1,11 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
+import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
 import { QwalletNotificationsService } from '../notifications/qwallet-notifications.service';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
-import { CreateTransactionHistoryDto } from '../transaction-history/dto/create-transaction-history.dto';
+import { TransactionHistoryDto } from '../transaction-history/dto/create-transaction-history.dto';
 import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
 import { IQwalletHookDepositSuccessfulData } from './dto/qwallet-hook-depositSuccessful.dto';
 import { IQWalletHookWithdrawSuccessfulEvent } from './dto/qwallet-hook-withdrawSuccessful.dto';
@@ -13,6 +13,7 @@ import {
   NotificationMessageEnum,
   NotificationsEnum,
 } from '@/types/notifications.enum';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 //TODO: handle errors with enum
 @Injectable()
@@ -46,7 +47,7 @@ export class QwalletHooksService {
 
       if (payloadUser.sn !== qwallet.qsn) {
         throw new CustomHttpException(
-          QWalletWebhookEnum.INVALID_USER,
+          QWalletStatus.INVALID_USER,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -58,44 +59,44 @@ export class QwalletHooksService {
 
       if (existingTxnHistory)
         throw new CustomHttpException(
-          QWalletWebhookEnum.TRANSACTION_FOUND,
+          QWalletStatus.TRANSACTION_FOUND,
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
 
-      const transactionHistoryDto: CreateTransactionHistoryDto = {
-        event: QWalletWebhookEnum.DEPOSIT_SUCCESSFUL,
+      //[x] Update source and destination address
+      const txnData: TransactionHistoryDto = {
+        event: WalletWebhookEventType.DepositSuccessful,
         transactionId: data.id,
         type: data.type,
         currency: data.currency,
         amount: data.amount,
         fee: data.fee,
         blockchainTxId: data.txid,
-        status: data.status,
         reason: data.reason,
         createdAt: data.created_at,
-        doneAt: data.done_at,
+        updatedAt: data.done_at,
         walletId: data.wallet.id,
         walletName: data.wallet.name ?? existingTxnHistory.walletName,
-        walletCurrency: data.wallet.currency,
         paymentStatus: data.payment_transaction.status,
-        paymentAddress: data.payment_address.address,
+        destinationAddress: data.payment_address.address,
         paymentNetwork: data.payment_address.network,
+        sourceAddress: data.payment_address.address,
+        feeLevel: 'HIGH',
+        user,
       };
 
       const transaction = await this.transactionHistoryService.create(
-        transactionHistoryDto,
+        txnData,
         user,
       );
 
       const notification =
-        await this.qwalletNotificationService.createDepositSuccessfulNotification(
-          {
-            user,
-            data,
-            title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-            message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-          },
-        );
+        await this.qwalletNotificationService.createNotification({
+          user,
+          data,
+          title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+          message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+        });
 
       await this.notificationsGateway.emitDepositSuccessfulToUser(
         user.alertID,
@@ -128,7 +129,7 @@ export class QwalletHooksService {
 
     if (payloadUser.sn !== qwallet.qsn) {
       throw new CustomHttpException(
-        QWalletWebhookEnum.INVALID_USER,
+        QWalletStatus.INVALID_USER,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -139,14 +140,12 @@ export class QwalletHooksService {
       );
 
     const notification =
-      await this.qwalletNotificationService.createDepositSuccessfulNotification(
-        {
-          user,
-          data,
-          title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
-          message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
-        },
-      );
+      await this.qwalletNotificationService.createNotification({
+        user,
+        data,
+        title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
+        message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
+      });
 
     await this.notificationsGateway.emitDepositSuccessfulToUser(user.alertID, {
       transaction,

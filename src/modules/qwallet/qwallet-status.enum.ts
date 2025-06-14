@@ -1,4 +1,4 @@
-export enum QWalletWebhookEnum {
+export enum QWalletStatus {
   // Errors
   INVALID_USER = 'INVALID_USER',
   INVALID_CURRENCY = 'INVALID_CURRENCY',

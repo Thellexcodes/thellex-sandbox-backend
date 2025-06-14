@@ -1,0 +1,10 @@
+{
+  "currency": "usdt",
+  "amount": "1.00",
+  "network": "bep20",
+  "sourceAddress": "0x2179EA580dF5b25b3Cb369f13397C5a6730a48d9",
+  "fund_uid": "0x865d00444c3ce0063298624cf7fda80ed828ec72",
+  "transaction_note": "Payment for service X",
+  "narration": "Freelance project payout",
+  "fund_uid2": ""
+}

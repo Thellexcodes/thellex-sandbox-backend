@@ -36,13 +36,6 @@ export interface CryptoQueryParams {
   image?: string;
 }
 
-// --- Payment Types ---
-export enum PaymentType {
-  REQUEST_FIAT,
-  WITHDRAW_FIAT,
-  REQUEST_CRYPTO,
-}
-
 export type RequestCryptoPaymentResponse = {
   wallet: IQWallet | null;
   assetCode: TokenEnum;

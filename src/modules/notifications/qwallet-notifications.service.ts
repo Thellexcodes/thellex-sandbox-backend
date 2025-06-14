@@ -18,7 +18,7 @@ export class QwalletNotificationsService {
     private readonly notificationRepo: Repository<NotificationEntity>,
   ) {}
 
-  async createDepositSuccessfulNotification({
+  async createNotification({
     user,
     title,
     data,

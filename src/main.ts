@@ -58,11 +58,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new ErrorInterceptor());
 
-  app.use((req, res, next) => {
-    const middleware = new LogRequestMiddleware();
-    middleware.use(req, res, next);
-  });
-
   await app.listen(serverPort, serverIp);
 
   console.log(`Application is now running on: ${await app.getUrl()}`);

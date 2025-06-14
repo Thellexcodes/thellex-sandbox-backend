@@ -7,8 +7,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
 import { PaymentStatus } from '@/types/payment.types';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 @Entity('transaction_history')
 export class TransactionHistoryEntity {
@@ -19,10 +19,10 @@ export class TransactionHistoryEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column({ type: 'enum', enum: QWalletWebhookEnum, nullable: false })
-  event: QWalletWebhookEnum;
+  @Column({ type: 'enum', enum: WalletWebhookEventType, nullable: false })
+  event: WalletWebhookEventType;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, name: 'transaction_id' })
   transactionId: string;
 
   @Column({ nullable: false })
@@ -46,9 +46,6 @@ export class TransactionHistoryEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true, name: 'done_at' })
-  doneAt?: Date | null;
-
   @Column({ type: 'timestamp', nullable: true, name: 'updated_at' })
   updatedAt?: Date | null;
 
@@ -58,9 +55,6 @@ export class TransactionHistoryEntity {
   @Column({ nullable: false, name: 'wallet_name' })
   walletName: string;
 
-  @Column({ nullable: false, name: 'wallet_currency' })
-  walletCurrency: string;
-
   @Column({
     type: 'enum',
     enum: PaymentStatus,
@@ -69,8 +63,11 @@ export class TransactionHistoryEntity {
   })
   paymentStatus: string;
 
-  @Column({ nullable: false, name: 'payment_address' })
-  paymentAddress: string;
+  @Column({ nullable: false, name: 'source_address' })
+  sourceAddress: string;
+
+  @Column({ nullable: false, name: 'destination_address' })
+  destinationAddress: string;
 
   @Column({ nullable: false, name: 'payment_network' })
   paymentNetwork: string;

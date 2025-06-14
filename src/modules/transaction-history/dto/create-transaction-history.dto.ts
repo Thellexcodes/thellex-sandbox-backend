@@ -1,42 +1,49 @@
-import { PaymentStatus } from '@/types/payment.types';
-import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
+import { PaymentStatus, PaymentType } from '@/types/payment.types';
+import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { FeeLevel } from '@circle-fin/developer-controlled-wallets';
 
-export class CreateTransactionHistoryDto {
-  event: QWalletWebhookEnum;
+export class TransactionHistoryDto {
+  event?: WalletWebhookEventType;
   transactionId: string;
-  type: string;
+  type: PaymentType;
   currency: string;
   amount: string;
   fee: string;
+  feeLevel: FeeLevel;
   blockchainTxId: string;
   reason: string | null;
   createdAt: Date;
-  doneAt: Date | null;
+  updatedAt: Date;
   walletId: string;
-  walletName: string;
-  walletCurrency: string;
-  status: PaymentStatus;
+  walletName?: string;
   paymentStatus?: PaymentStatus;
-  paymentAddress: string;
+  sourceAddress: string;
+  destinationAddress: string;
   paymentNetwork: string;
+  tokenId?: string;
+  user: UserEntity;
 }
 
-export interface ICreateTransactionHistory {
-  event: QWalletWebhookEnum;
+export interface ITransactionHistory {
+  event?: WalletWebhookEventType;
   transactionId: string;
-  type: string;
+  type: PaymentType;
   currency: string;
   amount: string;
   fee: string;
+  feeLevel: FeeLevel;
   blockchainTxId: string;
-  status: PaymentStatus;
   reason: string | null;
-  createdAt: string;
-  doneAt: string | null;
+  createdAt: Date;
+  updatedAt: Date;
   walletId: string;
-  walletName: string;
-  walletCurrency: string;
-  paymentStatus: PaymentStatus | string;
-  paymentAddress: string;
+  walletName?: string;
+  paymentStatus?: PaymentStatus;
+  sourceAddress: string;
+  destinationAddress: string;
   paymentNetwork: string;
+  tokenId?: string;
+  user: UserEntity;
 }

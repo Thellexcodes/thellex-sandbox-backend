@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   CircleDeveloperControlledWalletsClient,
+  GetTransactionInput,
   initiateDeveloperControlledWalletsClient,
   Wallet,
   WalletSet,
@@ -12,6 +13,7 @@ import {
   CwalletResponse,
   CwalletTransactionResponse,
   EstimateTransactionFeeDataResponse,
+  GetTransactionResponse,
   IEstimateTransferFee,
   IValidateAddress,
   ValidateAddressDataResponse,
@@ -25,8 +27,22 @@ import {
   ICwallet,
 } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
-import { getSupportedNetwork, normalizeBlockchains } from '@/utils/helpers';
+import {
+  cWalletNetworkNameGetter,
+  getSupportedNetwork,
+  getTokenId,
+  normalizeBlockchains,
+} from '@/utils/helpers';
 import { CreateCryptoWithdrawPaymentDto } from '../payments/dto/create-withdraw-crypto.dto';
+import { ENV_TESTNET } from '@/constants/env';
+import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { PaymentStatus, PaymentType } from '@/types/payment.types';
+import {
+  ITransactionHistory,
+  TransactionHistoryDto,
+} from '../transaction-history/dto/create-transaction-history.dto';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 //TODO: Properly handle errors with enum
 @Injectable()
@@ -39,6 +55,9 @@ export class CwalletService {
     private readonly cWalletProfilesRepo: Repository<CwalletProfilesEntity>,
     @InjectRepository(CwalletsEntity)
     private readonly cWalletsRepo: Repository<CwalletsEntity>,
+    @InjectRepository(CwalletProfilesEntity)
+    private readonly cWalletsProfileRepo: Repository<CwalletsEntity>,
+    private readonly transactionHistoryService: TransactionHistoryService,
   ) {
     this.circleClient = initiateDeveloperControlledWalletsClient({
       apiKey: this.configService.get<string>('CWALLET_API_KEY'),
@@ -46,7 +65,25 @@ export class CwalletService {
     });
   }
 
-  async lookupUser(user: UserEntity) {
+  async lookupSubAccount(
+    user: UserEntity,
+  ): Promise<CwalletProfilesEntity | null> {
+    const localSubaccount = await this.cWalletProfilesRepo.findOne({
+      where: { user },
+    });
+
+    if (localSubaccount) return localSubaccount;
+    return null;
+  }
+
+  async lookupSubWallet(address: string): Promise<CwalletsEntity | null> {
+    const localSubWallet = await this.cWalletsRepo.findOne({
+      where: { address },
+      relations: ['profile', 'profile.user'],
+    });
+
+    if (localSubWallet) return localSubWallet;
+
     return null;
   }
 
@@ -130,23 +167,63 @@ export class CwalletService {
   }
 
   async createCryptoWithdrawal(
-    withdrawCryptoPayment: CreateCryptoWithdrawPaymentDto,
-  ) {
-    const wallet = await this.cWalletsRepo.findOne({
-      where: { address: withdrawCryptoPayment.sendAddress },
-    });
+    withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
+    wallet: CwalletsEntity,
+  ): Promise<TransactionHistoryEntity> {
+    try {
+      const tokenId = getTokenId({
+        token: withdrawCryptoPaymentDto.currency,
+        isTestnet: this.configService.get('NODE_ENV') === ENV_TESTNET,
+      });
 
-    const tokenId = withdrawCryptoPayment.currency.toUpperCase();
+      const paymentNetwork = cWalletNetworkNameGetter(
+        withdrawCryptoPaymentDto.network,
+      );
 
-    const transaction = await this.createTransaction(
-      wallet.walletID,
-      tokenId,
-      withdrawCryptoPayment.fund_uid,
-      [withdrawCryptoPayment.amount],
-    );
+      const transferTransaction = await this.createTransaction(
+        wallet.walletID,
+        tokenId,
+        withdrawCryptoPaymentDto.fund_uid,
+        [`${withdrawCryptoPaymentDto.amount}`],
+      );
 
-    //TODO: Create transaction history with payment status
-    //TODO: create notifications
+      const transaction = await this.getTransaction({
+        id: transferTransaction.data.id,
+        txType: PaymentType.OUTBOUND,
+      });
+
+      const txnHistory: ITransactionHistory = {
+        tokenId: transaction.tokenId,
+        event: WalletWebhookEventType.WithdrawPending,
+        transactionId: transferTransaction.data.id,
+        type: PaymentType.OUTBOUND,
+        currency: withdrawCryptoPaymentDto.currency,
+        amount: withdrawCryptoPaymentDto.amount,
+        fee: transaction.networkFee,
+        blockchainTxId: transaction.txHash,
+        walletId: wallet.walletID,
+        paymentStatus: PaymentStatus.Processing,
+        sourceAddress: wallet.address,
+        destinationAddress: transaction.destinationAddress,
+        paymentNetwork,
+        reason: withdrawCryptoPaymentDto.transaction_note,
+        updatedAt: new Date(transaction.updateDate),
+        feeLevel: 'HIGH',
+        createdAt: new Date(transaction.createDate),
+        walletName: paymentNetwork,
+        user: wallet.profile.user,
+      };
+
+      const txn = await this.transactionHistoryService.create(
+        txnHistory,
+        wallet.profile.user,
+      );
+
+      return txn;
+    } catch (error) {
+      console.error('Error creating crypto withdrawal:', error);
+      throw new Error('Failed to create crypto withdrawal');
+    }
   }
 
   async getUserWallet(id: string): Promise<CwalletResponse> {
@@ -184,12 +261,7 @@ export class CwalletService {
         walletId,
         tokenId,
         destinationAddress,
-        fee: {
-          type: 'level',
-          config: {
-            feeLevel: 'HIGH',
-          },
-        },
+        fee: { type: 'level', config: { feeLevel: 'HIGH' } },
         amount,
       });
       return response;
@@ -197,6 +269,11 @@ export class CwalletService {
       console.error('Failed to create transaction:', error);
       throw error;
     }
+  }
+
+  async getTransaction(data: GetTransactionInput): GetTransactionResponse {
+    const response = await this.circleClient.getTransaction(data);
+    return response.data.transaction;
   }
 
   async getBalanceByAddress(

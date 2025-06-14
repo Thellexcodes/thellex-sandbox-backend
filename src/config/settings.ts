@@ -44,11 +44,20 @@ export const DEV_MODE_TOOLS = {
   enableWebhookLogging: true,
 };
 
+// ==============================
+// ENUMS & TYPES
+// ==============================
+
 // --- Supported blockchain types in the system ---
 export enum SupportedBlockchainType {
   BEP20 = 'bep20', // Binance Smart Chain BEP20 tokens
   TRC20 = 'trc20', // Tron TRC20 tokens
-  MATIC = 'matic', // Polygon (Matic) tokens
+  MATIC = 'matic', // Polygon (Matic) mainnet
+  MATIC_AMOY = 'MATIC_AMOY', // Polygon Amoy testnet (optional)
+  AVAX = 'avax',
+  AVAX_FUJI = 'avax-fuji',
+  SOL = 'sol',
+  SOL_DEVNET = 'sol-devnet',
 }
 
 // --- Supported token types handled by the platform ---
@@ -57,22 +66,58 @@ export enum TokenEnum {
   USDT = 'usdt',
 }
 
-// --- Alias for blockchain type used across the app (currently just SupportedBlockchainType) ---
+// --- Alias for blockchain type used across the app ---
 export type BLOCKCHAIN_TYPE = SupportedBlockchainType;
 
-// -- List of blockchains currently supported by the platform or client libraries ---
-export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainType[] | Blockchain[] = [
+// --- Types of fee calculation supported in the system ---
+export type FEEType = 'flat' | 'percentage';
+
+// ==============================
+// ENVIRONMENT-BASED CHAIN MAPPINGS
+// ==============================
+
+// --- Mainnet/Production-supported chains for each token ---
+export const MAINNET_CHAINS: Record<TokenEnum, SupportedBlockchainType[]> = {
+  [TokenEnum.USDC]: [
+    SupportedBlockchainType.MATIC,
+    SupportedBlockchainType.AVAX,
+  ],
+  [TokenEnum.USDT]: [SupportedBlockchainType.BEP20],
+};
+
+export const TESTNET_CHAINS: Record<TokenEnum, SupportedBlockchainType[]> = {
+  [TokenEnum.USDC]: [SupportedBlockchainType.MATIC_AMOY],
+  [TokenEnum.USDT]: [SupportedBlockchainType.TRC20],
+};
+
+// ==============================
+// RUNTIME BLOCKCHAIN SUPPORT CONFIGS
+// ==============================
+
+// --- Blockchains currently used in production environments ---
+export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainType[] = [
   SupportedBlockchainType.BEP20,
   SupportedBlockchainType.TRC20,
-  SupportedBlockchainType.MATIC,
 ];
 
-//  --- Mapping of each supported blockchain to its list of supported tokens ---
-export const ChainTokens: Record<BLOCKCHAIN_TYPE, TokenEnum[]> = {
-  [SupportedBlockchainType.BEP20]: [TokenEnum.USDT],
-  [SupportedBlockchainType.TRC20]: [TokenEnum.USDT],
-  [SupportedBlockchainType.MATIC]: [TokenEnum.USDC],
-};
+// --- Blockchains used in test/dev environments ---
+export const OPTIONAL_BLOCKCHAINS: SupportedBlockchainType[] = [
+  SupportedBlockchainType.MATIC_AMOY,
+  SupportedBlockchainType.AVAX_FUJI,
+  SupportedBlockchainType.SOL_DEVNET,
+];
+
+// --- All chains known to the system (including testnets and extras) ---
+export const ALL_KNOWN_BLOCKCHAINS: SupportedBlockchainType[] = [
+  ...SUPPORTED_BLOCKCHAINS,
+  ...OPTIONAL_BLOCKCHAINS,
+  SupportedBlockchainType.AVAX,
+  SupportedBlockchainType.SOL,
+];
+
+// ==============================
+// TOKEN MAPPINGS
+// ==============================
 
 // --- Tokens assigned to C-wallets (e.g., USDC tokens) ---
 export const CWALLET_TOKENS: TokenEnum[] = [TokenEnum.USDC];
@@ -80,23 +125,55 @@ export const CWALLET_TOKENS: TokenEnum[] = [TokenEnum.USDC];
 // --- Tokens assigned to Q-wallets (e.g., USDT tokens) ---
 export const QWALLET_TOKENS: TokenEnum[] = [TokenEnum.USDT];
 
-// --- Mapping of token addresses per blockchain for on-chain interaction ---
+// --- Supported tokens per blockchain ---
+export const ChainTokens: Record<BLOCKCHAIN_TYPE, TokenEnum[]> = {
+  [SupportedBlockchainType.BEP20]: [TokenEnum.USDT],
+  [SupportedBlockchainType.TRC20]: [TokenEnum.USDT],
+  [SupportedBlockchainType.MATIC]: [TokenEnum.USDC],
+  [SupportedBlockchainType.MATIC_AMOY]: [TokenEnum.USDC],
+  [SupportedBlockchainType.AVAX]: [TokenEnum.USDC],
+  [SupportedBlockchainType.AVAX_FUJI]: [TokenEnum.USDC],
+  [SupportedBlockchainType.SOL]: [TokenEnum.USDC],
+  [SupportedBlockchainType.SOL_DEVNET]: [TokenEnum.USDC],
+};
+
+// --- Token contract addresses per blockchain ---
 export const tokenAddresses: Record<
   TokenEnum,
   Partial<Record<SupportedBlockchainType, string>>
 > = {
   [TokenEnum.USDC]: {
-    [SupportedBlockchainType.BEP20]:
-      '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
-    [SupportedBlockchainType.MATIC]:
-      '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
+    [SupportedBlockchainType.BEP20]: '',
+    [SupportedBlockchainType.MATIC]: '',
+    [SupportedBlockchainType.MATIC_AMOY]: '',
+    [SupportedBlockchainType.AVAX]: '',
+    [SupportedBlockchainType.AVAX_FUJI]: '',
+    [SupportedBlockchainType.SOL]: '',
+    [SupportedBlockchainType.SOL_DEVNET]: '',
   },
   [TokenEnum.USDT]: {
-    [SupportedBlockchainType.BEP20]:
-      '0x55d398326f99059fF775485246999027B3197955',
-    [SupportedBlockchainType.TRC20]: 'TXYZ1234567890abcde',
+    [SupportedBlockchainType.BEP20]: '',
+    [SupportedBlockchainType.TRC20]: '',
   },
 };
 
-// Types of fee calculation supported in the system
-export type FEEType = 'flat' | 'percentage';
+// --- Token IDs used in external APIs like Circle ---
+export const tokenIds: Record<
+  TokenEnum,
+  Partial<Record<SupportedBlockchainType, string>>
+> = {
+  [TokenEnum.USDC]: {
+    [SupportedBlockchainType.MATIC]: 'db6905b9-8bcd-5537-8b08-f5548bdf7925',
+    [SupportedBlockchainType.MATIC_AMOY]:
+      '36b6931a-873a-56a8-8a27-b706b17104ee',
+    [SupportedBlockchainType.AVAX]: '7efdfdbf-1799-5089-a588-31beb97ba755',
+    [SupportedBlockchainType.AVAX_FUJI]: 'ff47a560-9795-5b7c-adfc-8f47dad9e06a',
+    [SupportedBlockchainType.SOL]: '33ca4ef6-2500-5d79-82bf-e3036139cc29',
+    [SupportedBlockchainType.SOL_DEVNET]:
+      '8fb3cadb-0ef4-573d-8fcd-e194f961c728',
+  },
+  [TokenEnum.USDT]: {
+    [SupportedBlockchainType.BEP20]: 'usdt-token-id-bep20',
+    [SupportedBlockchainType.TRC20]: 'usdt-token-id-trc20',
+  },
+};

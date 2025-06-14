@@ -62,7 +62,7 @@ export class UserService {
       user = await newUser.save();
 
       // ---- QWALLET SETUP ----
-      let qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
+      let qwalletSubAccount = await this.qWalletService.lookupSubAccount(user);
 
       if (!qwalletSubAccount) {
         const subAccountResponse = await this.qWalletService.createSubAccount(
@@ -81,7 +81,7 @@ export class UserService {
           ),
         );
 
-        qwalletSubAccount = await this.qWalletService.lookupSubaccount(user);
+        qwalletSubAccount = await this.qWalletService.lookupSubAccount(user);
       } else {
         const subAccountId = qwalletSubAccount.qid;
 
@@ -106,7 +106,7 @@ export class UserService {
       }
 
       // ---- CWALLET SETUP ----
-      const cwalletAccount = await this.cWalletService.lookupUser(user);
+      const cwalletAccount = await this.cWalletService.lookupSubAccount(user);
 
       if (!cwalletAccount) {
         const cwalletSets = await this.cWalletService.createWalletSet(user);

@@ -10,7 +10,7 @@ import {
 import { QWalletProfileEntity } from './qwallet-profile.entity';
 
 @Entity({ name: 'qwallets' })
-export class QWalletEntity {
+export class QWalletsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

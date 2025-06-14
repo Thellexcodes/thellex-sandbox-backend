@@ -9,7 +9,6 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from './config/jwt.config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ErrorInterceptor } from './middleware/error.interceptor';
-import { AuthnController } from './modules/authn/authn.controller';
 import { AuthnService } from './modules/authn/authn.service';
 import { AuthModule } from './modules/authn/authn.module';
 import { UserService } from './modules/user/user.service';
@@ -79,7 +78,7 @@ import { SharedModule } from './modules/shared.module';
     WalletManagerModule,
     CwalletModule,
   ],
-  controllers: [AppController, AuthnController],
+  controllers: [AppController],
   providers: [
     AppService,
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
