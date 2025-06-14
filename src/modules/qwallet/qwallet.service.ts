@@ -36,15 +36,22 @@ import { firstValueFrom } from 'rxjs';
 import { CreateSwapDto } from './dto/create-swap.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
-import { QWalletEntity } from '@/utils/typeorm/entities/qwallet/qwallet.entity';
+import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity';
 import { CreateCryptoWithdrawPaymentDto } from '../payments/dto/create-withdraw-crypto.dto';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { ITransactionHistory } from '../transaction-history/dto/create-transaction-history.dto';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { PaymentStatus, PaymentType } from '@/types/payment.types';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 
+//TODO: handle errors with enum
 @Injectable()
 export class QwalletService {
   constructor(
     @InjectRepository(QWalletProfileEntity)
     private readonly qwalletProfilesRepo: Repository<QWalletProfileEntity>,
+    @InjectRepository(QWalletsEntity)
+    private readonly qwalletsRepo: Repository<QWalletsEntity>,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly transactionHistoryService: TransactionHistoryService,
@@ -108,9 +115,9 @@ export class QwalletService {
       }
 
       // Merge USDT wallets as entities
-      const walletEntities: QWalletEntity[] = usdtWallets.map(
+      const walletEntities: QWalletsEntity[] = usdtWallets.map(
         (walletData: any) => {
-          const entity = new QWalletEntity();
+          const entity = new QWalletsEntity();
           entity.currency = walletData.currency;
           entity.address = walletData.address;
           entity.profile = profile;
@@ -140,6 +147,14 @@ export class QwalletService {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  async lookupSubWallet(address: string): Promise<QWalletsEntity> {
+    const wallet = await this.qwalletsRepo.findOne({
+      where: { address },
+      relations: ['profile', 'profile.user'],
+    });
+    return wallet;
   }
 
   async createSubAccount(
@@ -332,44 +347,49 @@ export class QwalletService {
 
   // >>>>>>>>>>>>>>> Withdrawals <<<<<<<<<<<<<<<
   async createCryptoWithdrawal(
-    user: UserEntity,
     createCryptoWithdralPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ): Promise<any> {
+    wallet: QWalletsEntity,
+  ): Promise<TransactionHistoryEntity | any> {
+    const user = wallet.profile.user;
     const uuid = user.qWalletProfile.qid;
+
     try {
-      const withDrawTransactionResponse =
+      const response =
         await this.httpService.post<HandleWithdrawPaymentResponse>(
           `${this.qwalletUrl}/users/${uuid}/withdraws`,
           createCryptoWithdralPaymentDto,
           { headers: this.getAuthHeaders() },
         );
 
-      // const transactionData: CreateWalletWebhookEventType = {
-      //   event: WalletWebhookEventType.WithdrawPending,
-      //   transactionId: '',
-      //   type: '',
-      //   currency: '',
-      //   amount: '',
-      //   fee: '',
-      //   blockchainTxId: '',
-      //   reason: '',
-      //   createdAt: undefined,
-      //   doneAt: undefined,
-      //   walletId: '',
-      //   walletName: '',
-      //   walletCurrency: '',
-      //   status: PaymentStatus.None,
-      //   paymentAddress: '',
-      //   paymentNetwork: '',
-      // };
+      const txnData = response.data;
 
-      // const transactionHistory = await this.transactionHistoryService.create(
-      //   transactionData,
-      //   user,
-      // );
+      const transactionData: ITransactionHistory = {
+        event: WalletWebhookEventType.WithdrawPending,
+        transactionId: txnData.id,
+        currency: txnData.currency,
+        amount: txnData.amount,
+        fee: txnData.fee,
+        blockchainTxId: txnData.txid,
+        reason: txnData.reason,
+        createdAt: new Date(txnData.created_at),
+        walletId: txnData.wallet.id,
+        walletName: '',
+        paymentStatus: PaymentStatus.Processing,
+        sourceAddress: '',
+        destinationAddress: '',
+        type: PaymentType.OUTBOUND,
+        feeLevel: 'LOW',
+        updatedAt: new Date(txnData.created_at),
+        paymentNetwork: '',
+        user,
+      };
 
-      //TODO: Create transaction history with payment status
-      //TODO: create notifications
+      const transactionHistory = await this.transactionHistoryService.create(
+        transactionData,
+        user,
+      );
+
+      return transactionHistory;
     } catch (error) {
       console.log(error);
       //TODO: properly handle errors for 404 / 400 / 500

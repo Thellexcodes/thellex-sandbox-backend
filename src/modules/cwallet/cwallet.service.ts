@@ -180,19 +180,12 @@ export class CwalletService {
         withdrawCryptoPaymentDto.network,
       );
 
-      // const transferTransaction = await this.createTransaction(
-      //   wallet.walletID,
-      //   tokenId,
-      //   withdrawCryptoPaymentDto.fund_uid,
-      //   [`${withdrawCryptoPaymentDto.amount}`],
-      // );
-
-      const transferTransaction = {
-        data: {
-          id: 'dfb9045a-1101-5fe7-b569-3a0ad1457311',
-          state: 'INITIATED',
-        },
-      };
+      const transferTransaction = await this.createTransaction(
+        wallet.walletID,
+        tokenId,
+        withdrawCryptoPaymentDto.fund_uid,
+        [`${withdrawCryptoPaymentDto.amount}`],
+      );
 
       const transaction = await this.getTransaction({
         id: transferTransaction.data.id,

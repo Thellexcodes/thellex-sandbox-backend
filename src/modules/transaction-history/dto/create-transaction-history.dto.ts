@@ -1,5 +1,5 @@
 import { PaymentStatus, PaymentType } from '@/types/payment.types';
-import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
+import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
 import { WalletWebhookEventType } from '@/types/wallet-manager.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { FeeLevel } from '@circle-fin/developer-controlled-wallets';

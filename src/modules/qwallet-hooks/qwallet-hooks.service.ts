@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { QWalletWebhookEnum } from '@/types/qwallet-webhook.enum';
+import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
 import { QwalletNotificationsService } from '../notifications/qwallet-notifications.service';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
@@ -47,7 +47,7 @@ export class QwalletHooksService {
 
       if (payloadUser.sn !== qwallet.qsn) {
         throw new CustomHttpException(
-          QWalletWebhookEnum.INVALID_USER,
+          QWalletStatus.INVALID_USER,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -59,7 +59,7 @@ export class QwalletHooksService {
 
       if (existingTxnHistory)
         throw new CustomHttpException(
-          QWalletWebhookEnum.TRANSACTION_FOUND,
+          QWalletStatus.TRANSACTION_FOUND,
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
 
@@ -129,7 +129,7 @@ export class QwalletHooksService {
 
     if (payloadUser.sn !== qwallet.qsn) {
       throw new CustomHttpException(
-        QWalletWebhookEnum.INVALID_USER,
+        QWalletStatus.INVALID_USER,
         HttpStatus.BAD_REQUEST,
       );
     }

@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { QWalletEntity } from './qwallet.entity';
+import { QWalletsEntity } from './qwallets.entity';
 
 @Entity({ name: 'qwallet_profiles' })
 export class QWalletProfileEntity {
@@ -44,11 +44,11 @@ export class QWalletProfileEntity {
   @Column({ name: 'display_name', type: 'varchar', nullable: true })
   displayName: string | null;
 
-  @OneToMany(() => QWalletEntity, (wallet) => wallet.profile, {
+  @OneToMany(() => QWalletsEntity, (wallet) => wallet.profile, {
     cascade: true,
     eager: true,
   })
-  wallets: QWalletEntity[];
+  wallets: QWalletsEntity[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

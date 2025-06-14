@@ -59,9 +59,13 @@ export class PaymentsController {
   async withdrawPayment(
     @Body() withdrawPaymentDto: CreateCryptoWithdrawPaymentDto,
     @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    return this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
+    const response =
+      this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
+
+    responseHandler(response, res, req);
   }
 
   @Get()

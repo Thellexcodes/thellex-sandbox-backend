@@ -6,6 +6,7 @@ import { RequestCryptoPaymentResponse } from '@/types/request.types';
 import { CwalletService } from '../cwallet/cwallet.service';
 import { SupportedBlockchainType } from '@/config/settings';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -14,11 +15,17 @@ export class PaymentsService {
     private readonly cwalletService: CwalletService,
   ) {}
 
+  /**
+   * Creates a request for a crypto wallet payment from a user.
+   *
+   * @param {CreateRequestPaymentDto} createRequestPaymentDto - The payment request details (amount, currency, network, etc.).
+   * @param {UserEntity} user - The user who is making the request.
+   * @returns {Promise<RequestCryptoPaymentResponse>} A promise that resolves to the crypto payment request response.
+   */
   async requestCryptoWallet(
     createRequestPaymentDto: CreateRequestPaymentDto,
     user: UserEntity,
   ): Promise<RequestCryptoPaymentResponse> {
-    // Check if wallet already exists for the user and blockchain/network
     const wallet = await this.qwalletService.findWalletByUserAndNetwork(
       user,
       createRequestPaymentDto.network,
@@ -28,24 +35,32 @@ export class PaymentsService {
     return { wallet: wallet, assetCode: createRequestPaymentDto.assetCode };
   }
 
+  /**
+   * Handles a cryptocurrency withdrawal request.
+   * @param {CreateCryptoWithdrawPaymentDto} withdrawCryptoPaymentDto - The withdrawal request details, including amount, currency, and blockchain network.
+   * @returns {Promise<TransactionHistoryEntity>} A promise that resolves to the withdrawal handling response.
+   */
   async handleWithdrawCryptoPayment(
     withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ) {
+  ): Promise<TransactionHistoryEntity> {
     if (
       [SupportedBlockchainType.BEP20, SupportedBlockchainType.TRC20].includes(
         withdrawCryptoPaymentDto.network,
       )
     ) {
-      // const az = this.qwalletService.createCryptoWithdrawal(
-      //   withdrawCryptoPaymentDto,
-      // );
+      const wallet = await this.qwalletService.lookupSubWallet(
+        withdrawCryptoPaymentDto.sourceAddress,
+      );
+
+      await this.qwalletService.createCryptoWithdrawal(
+        withdrawCryptoPaymentDto,
+        wallet,
+      );
     }
 
     const wallet = await this.cwalletService.lookupSubWallet(
-      withdrawCryptoPaymentDto.sendAddress,
+      withdrawCryptoPaymentDto.sourceAddress,
     );
-
-    console.log(wallet);
 
     return await this.cwalletService.createCryptoWithdrawal(
       withdrawCryptoPaymentDto,

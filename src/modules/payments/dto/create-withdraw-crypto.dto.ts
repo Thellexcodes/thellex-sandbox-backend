@@ -44,7 +44,7 @@ export class CreateCryptoWithdrawPaymentDto {
   })
   @IsNotEmpty()
   @IsString()
-  sendAddress: string;
+  sourceAddress: string;
 
   @ApiProperty({
     description: 'ID of your sub-user or crypto address',
