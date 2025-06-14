@@ -24,7 +24,7 @@ import { TokenModule } from './modules/token/token.module';
 import { LogRequestMiddleware } from './middleware/log-request.middleware';
 import { CardManagementModule } from './modules/card-management/card-management.module';
 import { StellarModule } from './modules/stellar/stellar.module';
-import { DkycModule } from './modules/dkyc/dkyc.module';
+import { KycModule } from './modules/kyc/kyc.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CronjobsModule } from './modules/cronjobs/cronjobs.module';
@@ -69,7 +69,7 @@ import { SharedModule } from './modules/shared.module';
     CardManagementModule,
     StellarModule,
     QwalletModule,
-    DkycModule,
+    KycModule,
     PaymentsModule,
     NotificationsModule,
     CronjobsModule,

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { DkycService } from './dkyc.service';
-import { DkycController } from './dkyc.controller';
+import { KycService } from './kyc.service';
+import { DkycController } from './kyc.controller';
 import { HttpService } from '@/middleware/http.service';
 import { UserService } from '../user/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,15 +10,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../mail/mail.service';
-import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { KycEntity } from '@/utils/typeorm/entities/kyc.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
-      DKycEntity,
+      KycEntity,
       QWalletProfileEntity,
       AuthVerificationCodesEntity,
     ]),
@@ -32,7 +32,7 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
   ],
   controllers: [DkycController],
   providers: [
-    DkycService,
+    KycService,
     HttpService,
     UserService,
     MailService,
@@ -40,4 +40,4 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
     HttpService,
   ],
 })
-export class DkycModule {}
+export class KycModule {}
