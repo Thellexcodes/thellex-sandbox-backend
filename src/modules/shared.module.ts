@@ -10,6 +10,7 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
 import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { FiatYellowcardModule } from './fiat-yellowcard/fiat-yellowcard.module';
 
 @Global()
 @Module({
@@ -24,6 +25,7 @@ import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-p
       QWalletsEntity,
       QWalletProfileEntity,
     ]),
+    FiatYellowcardModule,
   ],
   providers: [Web3Service, TransactionHistoryService],
   exports: [TypeOrmModule, Web3Service, TransactionHistoryService],
