@@ -10,11 +10,13 @@ import { AuthnEntity } from './authn.entity';
 import { AuthVerificationCodesEntity } from './authVerificationCodes.entities';
 import { DeviceEntity } from './device.entity';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
-import { DKycEntity } from './dkyc.entity';
 import { NotificationEntity } from './notification.entity';
 import { TransactionHistoryEntity } from './transaction-history.entity';
 import { QWalletProfileEntity } from './qwallet/qwallet-profile.entity';
 import { CwalletProfilesEntity } from './cwallet/cwallet-profiles.entity';
+import { IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { KycEntity } from './kyc.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -30,6 +32,16 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: false, unique: true })
   email: string;
 
+  @IsOptional()
+  @IsString({ message: 'firstName/not-string' })
+  @ApiProperty({ description: 'First name of the user' })
+  firstName: string;
+
+  @ApiProperty({ description: 'Last name of the user' })
+  @IsOptional()
+  @IsString({ message: 'middleName/not-string' })
+  middlename: string;
+
   @Column({ nullable: true, default: false })
   emailVerified: boolean;
 
@@ -38,6 +50,11 @@ export class UserEntity extends BaseEntity {
 
   @Column({ nullable: true })
   suspended: boolean;
+
+  @ApiProperty({ description: 'Last name of the user' })
+  @IsOptional()
+  @IsString({ message: 'lastName/not-string' })
+  lastName: string;
 
   @Column({
     type: 'uuid',
@@ -80,12 +97,12 @@ export class UserEntity extends BaseEntity {
   })
   electronic_cards: CardManagementEntity[];
 
-  @OneToOne(() => DKycEntity, (dkyc) => dkyc.user, {
+  @OneToOne(() => KycEntity, (kyc) => kyc.user, {
     nullable: true,
     cascade: true,
     eager: true,
   })
-  dkyc: DKycEntity;
+  kyc: KycEntity;
 
   @OneToMany(
     () => TransactionHistoryEntity,

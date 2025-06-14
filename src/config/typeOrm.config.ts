@@ -6,7 +6,6 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
-import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity';
@@ -26,7 +25,6 @@ export const typeOrmConfig = async (
     database: configService.get<string>('POSTGRES_DATABASE'),
     password: configService.get<string>('POSTGRES_PASSWORD'),
     entities: [
-      DKycEntity,
       UserEntity,
       AuthnEntity,
       DeviceEntity,

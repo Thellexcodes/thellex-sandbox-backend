@@ -10,18 +10,18 @@ import {
   PhoneNumberLookupResponse,
 } from '@/types/identifications.types';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DKycEntity } from '@/utils/typeorm/entities/dkyc.entity';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { BasicTierKycDto } from './dto/create-tier1-dkyc.dto';
+import { BasicTierKycDto } from './dto/kyc-data.dto';
+import { KycEntity } from '@/utils/typeorm/entities/kyc.entity';
 
 @Injectable()
-export class DkycService {
+export class KycService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
-    @InjectRepository(DKycEntity)
-    private readonly dkycRepo: Repository<DKycEntity>,
+    @InjectRepository(KycEntity)
+    private readonly dkycRepo: Repository<KycEntity>,
   ) {}
 
   private get dojahUrl(): string {
@@ -29,17 +29,17 @@ export class DkycService {
     return env === 'testnet' ? DOJAH_KYC_API.sandbox : DOJAH_KYC_API.production;
   }
 
-  async createBasicKyc(basicTierKycDto: BasicTierKycDto, user: UserEntity) {
+  async createBasicKyc(kydataDto: BasicTierKycDto, user: UserEntity) {
     const record = await this.dkycRepo.findOne({
-      where: { user: { id: user.id }, ninVerified: true },
+      where: { user: { id: user.id } },
     });
     //[x] Properly queue later
 
     //Lookup Nin
-    const nin = await this.lookupNIN(basicTierKycDto.nin);
+    const nin = await this.lookupNIN(kydataDto.nin);
 
     // Lookup Bvn
-    const bvn = await this.lookupBVN(basicTierKycDto.nin);
+    const bvn = await this.lookupBVN(kydataDto.nin);
 
     if (!record) {
       await this.dkycRepo.save({
@@ -284,5 +284,57 @@ export class DkycService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async validateOrFetchKyc(user: UserEntity) {
+    const now = new Date();
+    const expiry = user.kyc?.kycExpiresAt;
+
+    // if (user.kyc?.isVerified && (!expiry || expiry > now)) {
+    //   return user.kyc;
+    // }
+
+    // if (user.customerType === 'institution' && user.isTrustedInstitution) {
+    //   return user.kyc;
+    // }
+
+    // const payload = this.buildKycPayload(user);
+    // await this.callYellowCardKyc(payload); // Assume you abstracted YellowCard call
+
+    // const newKyc = this.kycRepo.create({
+    //   ...payload,
+    //   customerType: user.customerType,
+    //   user,
+    //   isVerified: true,
+    //   kycExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year expiry
+    // });
+
+    // return await this.kycRepo.save(newKyc);
+  }
+
+  async buildKycPayload(user: UserEntity) {
+    // return user.customerType === 'retail'
+    //   ? {
+    //       name: 'User Full Name',
+    //       dob: '01/01/1990',
+    //       email: user.email,
+    //       phone: '+234...',
+    //       idNumber: '123...',
+    //       idType: 'NIN',
+    //       country: 'NG',
+    //       address: 'User address',
+    //       additionalIdNumber: '456...',
+    //       additionalIdType: 'BVN',
+    //     }
+    //   : {
+    //       businessId: 'BUS-12345',
+    //       businessName: 'Business Ltd.',
+    //     };
+  }
+
+  async callYellowCardKyc(payload) {
+    // Call external YellowCard API
+    // If fails, throw ForbiddenException
+    return true;
   }
 }
