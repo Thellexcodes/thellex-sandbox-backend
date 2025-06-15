@@ -6,7 +6,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
-import { MailService } from '../mail/mail.service';
+import { MailService } from '../email/mail.service';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { CwalletService } from '../cwallet/cwallet.service';

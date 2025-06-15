@@ -1,26 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCwalletHookDto } from './dto/create-cwallet-hook.dto';
-import { UpdateCwalletHookDto } from './dto/update-cwallet-hook.dto';
+import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
+import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { PaymentStatus } from '@/types/payment.types';
+import { toUTCDate } from '@/utils/helpers';
 
+//TODO: handle errors with enums
+//TODO: update all date in system to UTC
 @Injectable()
 export class CwalletHooksService {
-  create(createCwalletHookDto: CreateCwalletHookDto) {
-    return 'This action adds a new cwalletHook';
-  }
+  constructor(private transactionHistoryServie: TransactionHistoryService) {}
 
-  findAll() {
-    return `This action returns all cwalletHooks`;
-  }
+  async handleDepositSuccessful(payload: CwalletHookDto) {}
 
-  findOne(id: number) {
-    return `This action returns a #${id} cwalletHook`;
-  }
+  async handleWithdrawSuccessful(payload: CwalletHookDto) {
+    const id = payload.notification.id;
+    const txnState = payload.notification.state;
+    const notification = payload.notification;
 
-  update(id: number, updateCwalletHookDto: UpdateCwalletHookDto) {
-    return `This action updates a #${id} cwalletHook`;
-  }
+    if (txnState === PaymentStatus.Confirmed.toLocaleUpperCase()) {
+      const transaction =
+        await this.transactionHistoryServie.findTransactionByTransactionId(id);
 
-  remove(id: number) {
-    return `This action removes a #${id} cwalletHook`;
+      if (
+        !transaction ||
+        transaction.type !== PaymentStatus.Outbound ||
+        transaction.event === WalletWebhookEventType.DepositSuccessful
+      )
+        return;
+
+      await this.transactionHistoryServie.updateCwalletTransaction({
+        transactionId: id,
+        updates: {
+          paymentStatus: PaymentStatus.Confirmed,
+          event: WalletWebhookEventType.DepositSuccessful,
+          blockchainTxId: notification.txHash,
+          updatedAt: toUTCDate(notification.updateDate),
+        },
+      });
+    }
   }
 }

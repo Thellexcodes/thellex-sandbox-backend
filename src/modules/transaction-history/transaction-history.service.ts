@@ -7,6 +7,9 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { IQWalletHookWithdrawSuccessfulEvent } from '../qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
 import { TransactionHistoryDto } from './dto/create-transaction-history.dto';
+import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { PaymentStatus } from '@/types/payment.types';
+import { IUpdateCwalletTransactionDto } from '../cwallet-hooks/dto/update-cwallet-hook.dto';
 
 //TODO: add try catch block for error handling
 @Injectable()
@@ -33,10 +36,11 @@ export class TransactionHistoryService {
   ): Promise<TransactionHistoryEntity | null> {
     return this.transactionRepo.findOne({
       where: { transactionId },
+      relations: ['user'],
     });
   }
 
-  async updateTransactionByTransactionId(
+  async updateQWalletTransactionByTransactionId(
     updates: IQWalletHookWithdrawSuccessfulEvent,
   ): Promise<TransactionHistoryEntity> {
     const existing = await this.findTransactionByTransactionId(
@@ -50,11 +54,31 @@ export class TransactionHistoryService {
       );
     }
 
+    existing.paymentStatus = updates.status;
     existing.updatedAt = updates.done_at;
-    existing.updatedAt = new Date();
     existing.blockchainTxId = updates.txid;
     existing.reason = updates.reason;
-    existing.paymentStatus = updates.status;
+
+    return this.transactionRepo.save(existing);
+  }
+
+  async updateCwalletTransaction(
+    params: IUpdateCwalletTransactionDto,
+  ): Promise<TransactionHistoryEntity | null> {
+    const existing = await this.findTransactionByTransactionId(
+      params.transactionId,
+    );
+
+    console.log(params.updates);
+
+    if (!existing) {
+      throw new CustomHttpException(
+        'Transaction not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    Object.assign(existing, params.updates);
 
     return this.transactionRepo.save(existing);
   }

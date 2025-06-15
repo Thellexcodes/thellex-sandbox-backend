@@ -202,3 +202,15 @@ export const isChainSupported = (chain: SupportedBlockchainType): boolean =>
 
 export const isChainOptional = (chain: SupportedBlockchainType): boolean =>
   OPTIONAL_BLOCKCHAINS.includes(chain);
+
+export function toUTCDate(dateString: string): Date {
+  if (!dateString) {
+    // Return current UTC date/time
+    return new Date(new Date().toISOString());
+  }
+  if (!dateString.endsWith('Z')) {
+    dateString += 'Z';
+  }
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? new Date(new Date().toISOString()) : date;
+}

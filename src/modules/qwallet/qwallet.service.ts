@@ -40,7 +40,7 @@ import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity
 import { CreateCryptoWithdrawPaymentDto } from '../payments/dto/create-withdraw-crypto.dto';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { ITransactionHistory } from '../transaction-history/dto/create-transaction-history.dto';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
 import { PaymentStatus, PaymentType } from '@/types/payment.types';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 
@@ -373,12 +373,11 @@ export class QwalletService {
         reason: txnData.reason,
         createdAt: new Date(txnData.created_at),
         walletId: txnData.wallet.id,
-        walletName: '',
         paymentStatus: PaymentStatus.Processing,
         sourceAddress: '',
         destinationAddress: '',
         type: PaymentType.OUTBOUND,
-        feeLevel: 'LOW',
+        feeLevel: FeeLevel.HIGH,
         updatedAt: new Date(txnData.created_at),
         paymentNetwork: '',
         user,

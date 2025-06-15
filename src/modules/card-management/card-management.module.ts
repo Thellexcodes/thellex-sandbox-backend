@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { CardManagementService } from './card-management.service';
 import { CardManagementController } from './card-management.controller';
-import { UserService } from '../user/user.service';
+import { UserService } from '../users/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
@@ -9,7 +9,7 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerifi
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
-import { MailService } from '../mail/mail.service';
+import { MailService } from '../email/mail.service';
 import { StellarService } from '../stellar/stellar.service';
 import { CardManagementEntity } from '../../utils/typeorm/entities/card-management.entity';
 import { QwalletService } from '../qwallet/qwallet.service';

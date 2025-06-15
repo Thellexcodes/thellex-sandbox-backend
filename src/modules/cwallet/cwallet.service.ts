@@ -42,7 +42,7 @@ import {
   TransactionHistoryDto,
 } from '../transaction-history/dto/create-transaction-history.dto';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 //TODO: Properly handle errors with enum
 @Injectable()
@@ -169,7 +169,7 @@ export class CwalletService {
   async createCryptoWithdrawal(
     withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
     wallet: CwalletsEntity,
-  ): Promise<TransactionHistoryEntity> {
+  ): Promise<TransactionHistoryEntity | any> {
     try {
       const tokenId = getTokenId({
         token: withdrawCryptoPaymentDto.currency,
@@ -199,7 +199,7 @@ export class CwalletService {
         type: PaymentType.OUTBOUND,
         currency: withdrawCryptoPaymentDto.currency,
         amount: withdrawCryptoPaymentDto.amount,
-        fee: transaction.networkFee,
+        fee: transaction.networkFee ?? '0.00',
         blockchainTxId: transaction.txHash,
         walletId: wallet.walletID,
         paymentStatus: PaymentStatus.Processing,
@@ -208,7 +208,7 @@ export class CwalletService {
         paymentNetwork,
         reason: withdrawCryptoPaymentDto.transaction_note,
         updatedAt: new Date(transaction.updateDate),
-        feeLevel: 'HIGH',
+        feeLevel: FeeLevel.HIGH,
         createdAt: new Date(transaction.createDate),
         walletName: paymentNetwork,
         user: wallet.profile.user,
