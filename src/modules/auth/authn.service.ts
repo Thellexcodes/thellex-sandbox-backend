@@ -1,4 +1,4 @@
-import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
+import { AuthnEntity } from '@/utils/typeorm/entities/auth.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';

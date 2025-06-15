@@ -9,7 +9,7 @@ import { QWalletWidthrawPaymentsCronService } from '../crons/qwallet/qWalletWith
 import { NotificationsGateway } from './notifications.gateway';
 import { UserService } from '../users/user.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../email/mail.service';
 import { QwalletService } from '../qwallet/qwallet.service';

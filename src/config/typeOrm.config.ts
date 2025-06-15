@@ -1,7 +1,7 @@
 import { ENV_TESTNET } from '@/constants/env';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
-import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
-import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { AuthnEntity } from '@/utils/typeorm/entities/auth.entity';
+import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
@@ -11,6 +11,7 @@ import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-h
 import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
+import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -26,13 +27,14 @@ export const typeOrmConfig = async (
     password: configService.get<string>('POSTGRES_PASSWORD'),
     entities: [
       UserEntity,
+      TokenEntity,
       AuthnEntity,
       DeviceEntity,
-      NotificationEntity,
-      QWalletsEntity,
-      CwalletProfilesEntity,
       CwalletsEntity,
+      QWalletsEntity,
+      NotificationEntity,
       CardManagementEntity,
+      CwalletProfilesEntity,
       TransactionHistoryEntity,
       AuthVerificationCodesEntity,
     ],

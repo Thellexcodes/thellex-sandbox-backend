@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { AuthnEntity } from './authn.entity';
-import { AuthVerificationCodesEntity } from './authVerificationCodes.entities';
+import { AuthnEntity } from './auth.entity';
+import { AuthVerificationCodesEntity } from './auth-verification-codes.entity';
 import { DeviceEntity } from './device.entity';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
 import { NotificationEntity } from './notification.entity';
@@ -16,7 +16,7 @@ import { QWalletProfileEntity } from './qwallet/qwallet-profile.entity';
 import { CwalletProfilesEntity } from './cwallet/cwallet-profiles.entity';
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { KycEntity } from './kyc.entity';
+import { KycEntity } from './kyc/kyc.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {

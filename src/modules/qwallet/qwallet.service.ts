@@ -293,11 +293,11 @@ export class QwalletService {
           (w) => w.defaultNetwork === response.data.defaultNetwork,
         );
 
-        if (!alreadyExists) {
-          qwalletProfile.wallets.push(response.data);
-          await this.qwalletProfilesRepo.save(qwalletProfile);
-          this.qwalletProfilesRepo;
-        }
+        // if (!alreadyExists) {
+        //   qwalletProfile.wallets.push(response.data);
+        //   await this.qwalletProfilesRepo.save(qwalletProfile);
+        //   this.qwalletProfilesRepo;
+        // }
       }
 
       return response;
@@ -572,7 +572,8 @@ export class QwalletService {
         wallet.defaultNetwork === network && wallet.currency === assetCode,
     );
 
-    return matchedWallet || null;
+    // return matchedWallet || null;
+    return null;
   }
 
   private get qwalletUrl(): string {

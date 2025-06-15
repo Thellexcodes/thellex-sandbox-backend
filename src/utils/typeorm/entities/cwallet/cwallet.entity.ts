@@ -1,14 +1,16 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { CwalletProfilesEntity } from './cwallet-profiles.entity';
+import { TokenEntity } from '../token/token.entity';
+import { BaseEntity } from '../base.entity';
 
 @Entity({ name: 'cwallets' })
 export class CwalletsEntity extends BaseEntity {
@@ -34,9 +36,6 @@ export class CwalletsEntity extends BaseEntity {
   @Column({ name: 'total_payments', type: 'varchar', nullable: true })
   totalPayments: string | null;
 
-  @Column({ type: 'varchar', nullable: true })
-  balance: string | null;
-
   @Column({ name: 'default_network', type: 'varchar' })
   defaultNetwork: string;
 
@@ -60,6 +59,9 @@ export class CwalletsEntity extends BaseEntity {
 
   @Column({ name: 'sca_core', type: 'varchar', nullable: true })
   scaCore: string | null;
+
+  @OneToMany(() => TokenEntity, (token) => token.cwallet)
+  tokens: TokenEntity[];
 }
 
 export interface ICwallet {
@@ -69,7 +71,6 @@ export interface ICwallet {
   currency: string;
   address: string;
   totalPayments: string | null;
-  balance: string | null;
   defaultNetwork: string;
   createdAt: Date;
   updatedAt: Date;

@@ -3,9 +3,9 @@ import { CwalletService } from './cwallet.service';
 import { CwalletController } from './cwallet.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
+import { AuthnEntity } from '@/utils/typeorm/entities/auth.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
-import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 
 @Global()
 @Module({

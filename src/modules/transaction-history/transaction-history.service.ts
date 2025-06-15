@@ -7,8 +7,6 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { IQWalletHookWithdrawSuccessfulEvent } from '../qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
 import { TransactionHistoryDto } from './dto/create-transaction-history.dto';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
-import { PaymentStatus } from '@/types/payment.types';
 import { IUpdateCwalletTransactionDto } from '../cwallet-hooks/dto/update-cwallet-hook.dto';
 
 //TODO: add try catch block for error handling

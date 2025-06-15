@@ -23,6 +23,7 @@ export class NotificationDto {
   updateDate: string;
   errorDetails: string | null;
   network?: string;
+  networkFee?: string;
 }
 
 export class CwalletHookDto {

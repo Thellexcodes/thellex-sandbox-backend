@@ -161,7 +161,6 @@ export class CwalletService {
     newWallet.reference = null;
     newWallet.currency = 'USD';
     newWallet.totalPayments = null;
-    newWallet.balance = null;
 
     return await this.cWalletsRepo.save(newWallet);
   }
