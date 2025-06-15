@@ -5,15 +5,19 @@ export enum WalletWebhookEventType {
   DepositOnHold = 'deposit.on_hold',
   DepositFailedAML = 'deposit.failed_aml',
   DepositRejected = 'deposit.rejected',
+
   WithdrawalSuccessful = 'withdraw.successful',
   WithdrawalFailed = 'withdrawal.failed',
   WithdrawRejected = 'withdraw.rejected',
   WithdrawPending = 'withdraw.pending',
+
   WalletUpdated = 'wallet.updated',
   WalletAddressGenerated = 'wallet.address.generated',
   WalletRejected = 'wallet.rejected',
+
   OrderDone = 'order.done',
   OrderCancelled = 'order.cancelled',
+
   SwapTransactionCompleted = 'swap_transaction.completed',
   SwapTransactionReversed = 'swap_transaction.reversed',
   SwapTransactionFailed = 'swap_transaction.failed',
@@ -22,4 +26,20 @@ export enum WalletWebhookEventType {
 export enum WalletType {
   QWALLET = 'qwallet',
   CWALLET = 'cwallet',
+}
+
+export enum CircleNotificationType {
+  TransactionsOutbound = 'transactions.outbound',
+  TransactionsInbound = 'transactions.inbound',
+}
+
+export enum CircleTransactionType {
+  Outbound = 'OUTBOUND',
+  Inbound = 'INBOUND',
+}
+
+export enum FeeLevel {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW',
 }

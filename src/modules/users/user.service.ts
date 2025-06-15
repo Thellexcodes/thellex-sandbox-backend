@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
-import { MailService } from '../mail/mail.service';
+import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid, normalizeBlockchains } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';

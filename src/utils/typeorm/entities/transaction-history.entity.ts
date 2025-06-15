@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { PaymentStatus } from '@/types/payment.types';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 @Entity('transaction_history')
 export class TransactionHistoryEntity {
@@ -34,19 +34,32 @@ export class TransactionHistoryEntity {
   @Column('decimal', { precision: 18, scale: 8, nullable: false })
   amount: string;
 
-  @Column('decimal', { precision: 18, scale: 8, default: '0', nullable: false })
+  @Column('decimal', {
+    precision: 65,
+    scale: 30,
+    default: '0.00',
+    nullable: false,
+  })
   fee: string;
 
-  @Column({ nullable: false })
+  @Column({
+    type: 'enum',
+    enum: FeeLevel,
+    default: FeeLevel.MEDIUM,
+    nullable: true,
+  })
+  feeLevel?: FeeLevel;
+
+  @Column({ nullable: true })
   blockchainTxId: string;
 
   @Column({ nullable: true })
   reason?: string;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @Column({ type: 'timestamptz', nullable: true, name: 'created_at' })
   createdAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true, name: 'updated_at' })
+  @Column({ type: 'timestamptz', nullable: true, name: 'updated_at' })
   updatedAt?: Date | null;
 
   @Column({ nullable: false, name: 'wallet_id' })

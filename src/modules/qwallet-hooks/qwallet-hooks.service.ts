@@ -13,7 +13,7 @@ import {
   NotificationMessageEnum,
   NotificationsEnum,
 } from '@/types/notifications.enum';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
 
 //TODO: handle errors with enum
 @Injectable()
@@ -81,7 +81,7 @@ export class QwalletHooksService {
         destinationAddress: data.payment_address.address,
         paymentNetwork: data.payment_address.network,
         sourceAddress: data.payment_address.address,
-        feeLevel: 'HIGH',
+        feeLevel: FeeLevel.HIGH,
         user,
       };
 
@@ -135,7 +135,7 @@ export class QwalletHooksService {
     }
 
     const transaction =
-      await this.transactionHistoryService.updateTransactionByTransactionId(
+      await this.transactionHistoryService.updateQWalletTransactionByTransactionId(
         data,
       );
 

@@ -1,8 +1,7 @@
 import { PaymentStatus, PaymentType } from '@/types/payment.types';
 import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { FeeLevel } from '@circle-fin/developer-controlled-wallets';
 
 export class TransactionHistoryDto {
   event?: WalletWebhookEventType;
@@ -11,7 +10,7 @@ export class TransactionHistoryDto {
   currency: string;
   amount: string;
   fee: string;
-  feeLevel: FeeLevel;
+  feeLevel?: FeeLevel;
   blockchainTxId: string;
   reason: string | null;
   createdAt: Date;
@@ -33,7 +32,7 @@ export interface ITransactionHistory {
   currency: string;
   amount: string;
   fee: string;
-  feeLevel: FeeLevel;
+  feeLevel?: FeeLevel;
   blockchainTxId: string;
   reason: string | null;
   createdAt: Date;

@@ -31,7 +31,7 @@ export class QwalletHooksController {
   - \`deposit.successful\`: Triggered when a user deposit is successfully processed.
   - \`withdrawal.successful\`: Triggered when a user withdrawal is successfully processed.
 
-  The payload contains the event type and event-specific data.  
+The payload contains the event type and event-specific data.  
   The request is authenticated to ensure only authorized sources can post data.
   `,
   })
