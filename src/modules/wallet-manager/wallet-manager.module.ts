@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 import { UserService } from '../users/user.service';
-import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../email/mail.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';

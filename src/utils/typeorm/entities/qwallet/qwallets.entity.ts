@@ -1,19 +1,10 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { QWalletProfileEntity } from './qwallet-profile.entity';
+import { BaseEntity } from '../base.entity';
+import { TokenEntity } from '../token/token.entity';
 
 @Entity({ name: 'qwallets' })
-export class QWalletsEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class QWalletsEntity extends BaseEntity {
   @ManyToOne(() => QWalletProfileEntity, (profile) => profile.wallets, {
     onDelete: 'CASCADE',
   })
@@ -38,15 +29,9 @@ export class QWalletsEntity {
   @Column({ name: 'total_payments', type: 'varchar', nullable: true })
   totalPayments: string | null;
 
-  @Column({ type: 'varchar', nullable: true })
-  balance: string | null;
-
   @Column({ name: 'default_network', type: 'varchar' })
   defaultNetwork: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
-  updatedAt: Date;
+  @OneToMany(() => TokenEntity, (token) => token.qwallet)
+  tokens: TokenEntity[];
 }

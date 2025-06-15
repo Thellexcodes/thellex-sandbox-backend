@@ -66,26 +66,26 @@ export class WalletManagerService {
           }
 
           // Fetch QWallet balance (if exists)
-          if (qWallet) {
-            const qBalanceUsd = await this.getQWalletBalance(
-              qWallet,
-              token,
-              network,
-              qWalletId,
-            );
+          // if (qWallet) {
+          //   const qBalanceUsd = await this.getQWalletBalance(
+          //     qWallet,
+          //     token,
+          //     network,
+          //     qWalletId,
+          //   );
 
-            if (qBalanceUsd > 0) {
-              totalInUsd += qBalanceUsd;
-              walletMap[assetKey].networks.push({
-                name: network.toLowerCase(),
-                address: qWallet.address,
-              });
+          //   if (qBalanceUsd > 0) {
+          //     totalInUsd += qBalanceUsd;
+          //     walletMap[assetKey].networks.push({
+          //       name: network.toLowerCase(),
+          //       address: qWallet.address,
+          //     });
 
-              const newTotal =
-                parseFloat(walletMap[assetKey].totalBalance) + qBalanceUsd;
-              walletMap[assetKey].totalBalance = newTotal.toFixed(2);
-            }
-          }
+          //     const newTotal =
+          //       parseFloat(walletMap[assetKey].totalBalance) + qBalanceUsd;
+          //     walletMap[assetKey].totalBalance = newTotal.toFixed(2);
+          //   }
+          // }
 
           if (cWallet) {
             const cBalanceUsd = await this.getCWalletBalance(

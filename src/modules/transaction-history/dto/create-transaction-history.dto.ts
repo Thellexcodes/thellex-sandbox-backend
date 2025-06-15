@@ -12,7 +12,7 @@ export class TransactionHistoryDto {
   fee: string;
   feeLevel?: FeeLevel;
   blockchainTxId: string;
-  reason: string | null;
+  reason?: string | null;
   createdAt: Date;
   updatedAt: Date;
   walletId: string;

@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { AuthnEntity } from '@/utils/typeorm/entities/authn.entity';
+import { AuthnEntity } from '@/utils/typeorm/entities/auth.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 import { HttpService } from '@/middleware/http.service';
 

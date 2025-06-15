@@ -5,7 +5,6 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
@@ -16,16 +15,15 @@ import {
 } from 'class-validator';
 import { EncryptionTransformer } from 'typeorm-encrypted';
 import { KycProvider } from '@/types/kyc.types';
+import { UserEntity } from '../user.entity';
+import { BaseEntity } from '../base.entity';
 
 const encryptionKey =
   process.env.ENCRYPTION_KEY || 'your_32_characters_long_key';
 
 //TODO: Handle errors with enum
 @Entity({ name: 'dkyc' })
-export class KycEntity {
-  @PrimaryGeneratedColumn({ name: 'id' })
-  id: number;
-
+export class KycEntity extends BaseEntity {
   @OneToOne(() => UserEntity, (user) => user.kyc)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;

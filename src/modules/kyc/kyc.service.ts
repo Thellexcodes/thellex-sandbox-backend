@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { BasicTierKycDto } from './dto/kyc-data.dto';
-import { KycEntity } from '@/utils/typeorm/entities/kyc.entity';
+import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 
 @Injectable()
 export class KycService {

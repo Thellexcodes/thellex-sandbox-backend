@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/authVerificationCodes.entities';
+import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { JwtPayload } from '@/config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';

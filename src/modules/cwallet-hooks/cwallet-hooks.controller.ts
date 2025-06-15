@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Req } from '@nestjs/common';
 import { CwalletHooksService } from './cwallet-hooks.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
