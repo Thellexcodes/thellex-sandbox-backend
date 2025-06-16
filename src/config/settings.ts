@@ -177,3 +177,39 @@ export const tokenIds: Record<
     [SupportedBlockchainType.TRC20]: 'usdt-token-id-trc20',
   },
 };
+
+export enum SupportedWalletTypes {
+  EVM = 'evm',
+  STELLAR = 'stellar',
+}
+
+export enum WalletProviderEnum {
+  QUIDAX = 'quidax',
+  CIRCLE = 'circle',
+}
+
+export function mapNetworkToWalletType(
+  network: SupportedBlockchainType,
+): SupportedWalletTypes {
+  switch (network) {
+    case SupportedBlockchainType.BEP20:
+      return SupportedWalletTypes.EVM;
+    // case SupportedBlockchainType.ERC20:
+    // case SupportedBlockchainType.POLYGON:
+    // case SupportedBlockchainType.ARBITRUM:
+    // case SupportedBlockchainType.OPTIMISM:
+    //   return SupportedWalletTypes.EVM;
+
+    // case SupportedBlockchainType.SOLANA:
+    //   return SupportedWalletTypes.SOLANA;
+
+    // case SupportedBlockchainType.TRON:
+    //   return SupportedWalletTypes.TRON;
+
+    // case SupportedBlockchainType.STELLAR:
+    //   return SupportedWalletTypes.STELLAR;
+
+    default:
+      return SupportedWalletTypes.EVM;
+  }
+}

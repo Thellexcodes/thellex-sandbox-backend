@@ -11,7 +11,7 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
-import { generateUniqueUid, normalizeBlockchains } from '@/utils/helpers';
+import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
 import { QwalletService } from '../qwallet/qwallet.service';
 import {
@@ -22,6 +22,9 @@ import {
   TokenEnum,
 } from '@/config/settings';
 import { CwalletService } from '../cwallet/cwallet.service';
+import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
+import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
+import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity';
 
 @Injectable()
 export class UserService {
@@ -32,6 +35,8 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(AuthVerificationCodesEntity)
     private readonly authenticationRepository: Repository<AuthVerificationCodesEntity>,
+    @InjectRepository(TokenEntity)
+    private readonly tokenRepo: Repository<TokenEntity>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
@@ -75,52 +80,60 @@ export class UserService {
           SUPPORTED_BLOCKCHAINS.flatMap((chain) =>
             ChainTokens[chain]
               .filter((token: TokenEnum) => QWALLET_TOKENS.includes(token))
-              .map((token: TokenEnum) =>
-                this.qWalletService.createUserWallet(subAccountId, token),
-              ),
-          ),
-        );
-
-        qwalletSubAccount = await this.qWalletService.lookupSubAccount(user);
-      } else {
-        const subAccountId = qwalletSubAccount.qid;
-
-        await Promise.all(
-          SUPPORTED_BLOCKCHAINS.flatMap((chain) =>
-            ChainTokens[chain]
-              .filter((token: TokenEnum) => QWALLET_TOKENS.includes(token))
               .map(async (token: TokenEnum) => {
-                const existingWallet = await this.qWalletService.getUserWallet(
+                const wallet = await this.qWalletService.createUserWallet(
                   subAccountId,
                   token,
                 );
-                if (!existingWallet) {
-                  await this.qWalletService.createUserWallet(
-                    subAccountId,
-                    token,
-                  );
-                }
+                await this.qWalletService.storeTokensForWallet(wallet);
               }),
           ),
         );
       }
 
+      // } else {
+      //   const subAccountId = qwalletSubAccount.qid;
+
+      //   await Promise.all(
+      //     SUPPORTED_BLOCKCHAINS.flatMap((chain) =>
+      //       ChainTokens[chain]
+      //         .filter((token: TokenEnum) => QWALLET_TOKENS.includes(token))
+      //         .map(async (token: TokenEnum) => {
+      //           const existingWallet = await this.qWalletService.getUserWallet(
+      //             subAccountId,
+      //             token,
+      //           );
+      //           console.log('creating a user wallet and token');
+      //           const wallet = await this.qWalletService.createUserWallet(
+      //             subAccountId,
+      //             token,
+      //           );
+      //           await this.qWalletService.storeTokensForWallet(wallet);
+      //         }),
+      //     ),
+      //   );
+      // }
+
       // ---- CWALLET SETUP ----
-      const cwalletAccount = await this.cWalletService.lookupSubAccount(user);
+      // const cwalletAccount = await this.cWalletService.lookupSubAccount(user);
 
-      if (!cwalletAccount) {
-        const cwalletSets = await this.cWalletService.createWalletSet(user);
+      // if (!cwalletAccount) {
+      //   const cwalletSets = await this.cWalletService.createWalletSet(user);
 
-        await Promise.all(
-          [SupportedBlockchainType.MATIC].map((chain) =>
-            this.cWalletService.createWallet(
-              cwalletSets.walletSet.id,
-              [chain as SupportedBlockchainType],
-              user,
-            ),
-          ),
-        );
-      }
+      //   const [wallet] = await Promise.all(
+      //     [SupportedBlockchainType.MATIC].map((chain) =>
+      //       this.cWalletService.createWallet(
+      //         cwalletSets.walletSet.id,
+      //         [chain as SupportedBlockchainType],
+      //         user,
+      //       ),
+      //     ),
+      //   );
+
+      //   await this.cWalletService.storeTokensForWallet(
+      //     wallet as CwalletsEntity,
+      //   );
+      // }
 
       // Send verification email once
       await this.emailVerificationComposer(user);
@@ -262,5 +275,20 @@ export class UserService {
     ]);
 
     return user;
+  }
+
+  async storeTokensForWallet(wallet: CwalletsEntity): Promise<void> {
+    const tokenSymbols =
+      ChainTokens[wallet.defaultNetwork as SupportedBlockchainType] || [];
+
+    const tokenEntities = tokenSymbols.map((symbol) => {
+      const token = new TokenEntity();
+      token.assetCode = symbol;
+      token.name = symbol;
+      token.cwallet = wallet;
+      return token;
+    });
+
+    await this.tokenRepo.save(tokenEntities);
   }
 }

@@ -1,5 +1,4 @@
 import { FEEType } from '@/config/settings';
-import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 
 export interface CreateSubAccountRequest {
   email: string;
@@ -30,22 +29,6 @@ export interface IQwalletNetwork {
   withdraws_enabled: boolean;
 }
 
-export interface IQWallet {
-  id: string;
-  profile: QWalletProfileEntity;
-  reference: string;
-  currency: string;
-  address: string;
-  isCrypto: boolean;
-  destinationTag: string | null;
-  totalPayments: string | null;
-  balance: string;
-  defaultNetwork: string;
-
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface IQwalletBalance {
   id: string;
   name: string;
@@ -74,16 +57,16 @@ export class QWalletWithdrawalFeeResponse {
 export type CreateSubAccountResponse = ApiResponse<ISubAccountData>;
 
 //Wallet
-export type CreateUserWalletResponse = ApiResponse<IQWallet>;
-export type GetUserWalletResponse = ApiResponse<IQWallet>;
-export type GetUserWalletsResponse = ApiResponse<IQwalletBalance[]>;
-export type GetPaymentAddressResponse = ApiResponse<IQWallet[]>;
+// export type CreateUserWalletResponse = ApiResponse<IQWallet>;
+// export type GetUserWalletResponse = ApiResponse<IQWallet>;
+// export type GetUserWalletsResponse = ApiResponse<IQwalletBalance[]>;
+// export type GetPaymentAddressResponse = ApiResponse<IQWallet[]>;
 // : Promise<ValidateAddressResponse>
 //  Promise<CreateWithdrawalResponse> {
 // : Promise<GetWithdrawalResponse>
 
 //Swap
-interface SwapData {
+interface ISwapData {
   id: string;
   from_currency: string;
   to_currency: string;
@@ -98,7 +81,7 @@ interface SwapData {
   user: ISubAccountData;
 }
 
-export type CreateSwapResponse = ApiResponse<SwapData>;
+export type CreateSwapResponse = ApiResponse<ISwapData>;
 export type ConfirmSwapResponse = ApiResponse<any>;
 export type RefreshSwapQuoteResponse = ApiResponse<any>;
 export type GetTemporarySwapQuoteResponse = ApiResponse<any>;

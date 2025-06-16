@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
+import {
+  ChainTokens,
+  SupportedBlockchainType,
+  TokenEnum,
+} from '@/config/settings';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
@@ -9,7 +13,6 @@ import {
 } from '@/utils/helpers';
 import PQueue from 'p-queue';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
-import { IQWallet } from '@/types/qwallet.types';
 import { CwalletService } from '../cwallet/cwallet.service';
 import {
   Blockchain,
@@ -18,6 +21,7 @@ import {
 import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { IWalletInfo, IWalletSummary } from './dto/get-balance-response.dto';
 import { Web3Service } from '@/utils/services/web3.service';
+import { IQWallet } from '@/utils/typeorm/entities/qwallet/qwallets.entity';
 
 @Injectable()
 export class WalletManagerService {
@@ -27,95 +31,80 @@ export class WalletManagerService {
     private readonly web3Service: Web3Service,
   ) {}
 
-  async getBalance(user: UserEntity): Promise<IWalletSummary> {
+  async getBalance(user: UserEntity): Promise<IWalletSummary | any> {
     try {
-      const qWallets = user.qWalletProfile?.wallets ?? [];
-      const cWallets = user.cWalletProfile?.wallets ?? [];
-      const qWalletId = user.qWalletProfile?.qid;
-      const supportedAssets = getSupportedAssets();
-
-      const walletMap: Record<string, IWalletInfo> = {};
-      let totalInUsd = 0;
-
-      const queue = new PQueue({ concurrency: 3 });
-
-      const tasks = supportedAssets.map(({ token, network }) =>
-        queue.add(async () => {
-          const qWallet = qWallets.find(
-            (w) =>
-              w.defaultNetwork === network.toLowerCase() &&
-              w.currency.toLowerCase() === token.toLowerCase(),
-          );
-
-          const cWallet = cWallets.find(
-            (c) =>
-              c.defaultNetwork.toLocaleLowerCase() ==
-              cWalletNetworkNameGetter(network).toLocaleLowerCase(),
-          );
-
-          if (!qWallet && !cWallet) return;
-
-          const assetKey = token.toLowerCase();
-
-          if (!walletMap[assetKey]) {
-            walletMap[assetKey] = {
-              assetCode: token,
-              totalBalance: '0',
-              networks: [],
-            };
-          }
-
-          // Fetch QWallet balance (if exists)
-          // if (qWallet) {
-          //   const qBalanceUsd = await this.getQWalletBalance(
-          //     qWallet,
-          //     token,
-          //     network,
-          //     qWalletId,
-          //   );
-
-          //   if (qBalanceUsd > 0) {
-          //     totalInUsd += qBalanceUsd;
-          //     walletMap[assetKey].networks.push({
-          //       name: network.toLowerCase(),
-          //       address: qWallet.address,
-          //     });
-
-          //     const newTotal =
-          //       parseFloat(walletMap[assetKey].totalBalance) + qBalanceUsd;
-          //     walletMap[assetKey].totalBalance = newTotal.toFixed(2);
-          //   }
-          // }
-
-          if (cWallet) {
-            const cBalanceUsd = await this.getCWalletBalance(
-              cWallet,
-              token,
-              network,
-            );
-
-            if (cBalanceUsd > 0) {
-              totalInUsd += cBalanceUsd;
-              walletMap[assetKey].networks.push({
-                name: network.toLowerCase(),
-                address: cWallet.address,
-              });
-
-              const newTotal =
-                parseFloat(walletMap[assetKey].totalBalance) + cBalanceUsd;
-              walletMap[assetKey].totalBalance = newTotal.toFixed(2);
-            }
-          }
-        }),
-      );
-
-      await Promise.all(tasks);
-
-      return {
-        totalBalance: totalInUsd.toFixed(2),
-        currency: 'USD',
-        wallets: Object.values(walletMap),
-      };
+      // const qWallets = user.qWalletProfile?.wallets ?? [];
+      // const cWallets = user.cWalletProfile?.wallets ?? [];
+      // const qWalletId = user.qWalletProfile?.qid;
+      // const supportedAssets = getSupportedAssets();
+      // const walletMap: Record<string, IWalletInfo> = {};
+      // let totalInUsd = 0;
+      // const queue = new PQueue({ concurrency: 3 });
+      // const tasks = supportedAssets.map(({ token, network }) =>
+      //   queue.add(async () => {
+      //     const qWallet = qWallets.find(
+      //       (w) =>
+      //         w.defaultNetwork === network.toLowerCase() &&
+      //         w..toLowerCase() === token.toLowerCase(),
+      //     );
+      //     const cWallet = cWallets.find(
+      //       (c) =>
+      //         c.defaultNetwork.toLocaleLowerCase() ==
+      //         cWalletNetworkNameGetter(network).toLocaleLowerCase(),
+      //     );
+      //     if (!qWallet && !cWallet) return;
+      //     const assetKey = token.toLowerCase();
+      //     if (!walletMap[assetKey]) {
+      //       walletMap[assetKey] = {
+      //         assetCode: token,
+      //         totalBalance: '0',
+      //         networks: [],
+      //       };
+      //     }
+      //     // Fetch QWallet balance (if exists)
+      //     // if (qWallet) {
+      //     //   const qBalanceUsd = await this.getQWalletBalance(
+      //     //     qWallet,
+      //     //     token,
+      //     //     network,
+      //     //     qWalletId,
+      //     //   );
+      //     //   if (qBalanceUsd > 0) {
+      //     //     totalInUsd += qBalanceUsd;
+      //     //     walletMap[assetKey].networks.push({
+      //     //       name: network.toLowerCase(),
+      //     //       address: qWallet.address,
+      //     //     });
+      //     //     const newTotal =
+      //     //       parseFloat(walletMap[assetKey].totalBalance) + qBalanceUsd;
+      //     //     walletMap[assetKey].totalBalance = newTotal.toFixed(2);
+      //     //   }
+      //     // }
+      //     if (cWallet) {
+      //       const cBalanceUsd = await this.getCWalletBalance(
+      //         cWallet,
+      //         token,
+      //         network,
+      //       );
+      //       if (cBalanceUsd > 0) {
+      //         totalInUsd += cBalanceUsd;
+      //         walletMap[assetKey].networks.push({
+      //           name: network.toLowerCase(),
+      //           address: cWallet.address,
+      //         });
+      //         const newTotal =
+      //           parseFloat(walletMap[assetKey].totalBalance) + cBalanceUsd;
+      //         walletMap[assetKey].totalBalance = newTotal.toFixed(2);
+      //       }
+      //     }
+      //   }),
+      // );
+      // await Promise.all(tasks);
+      // return {
+      //   totalBalance: totalInUsd.toFixed(2),
+      //   currency: 'USD',
+      //   wallets: Object.values(walletMap),
+      // };
     } catch (error) {
       console.error('Error fetching balances:', error);
       throw new Error('Unable to retrieve balances');
@@ -230,12 +219,12 @@ export class WalletManagerService {
   ): Promise<number> {
     if (!getSupportedNetwork(network, token)) return 0;
 
-    return Number(
-      await this.qwalletService
-        .getUserWallet(qWalletId, token)
-        .then((d) => d.data.balance)
-        .catch(() => '0'),
-    );
+    // return Number(
+    //   await this.qwalletService
+    //     .getUserWallet(qWalletId, token)
+    //     .then((d) => d.data.balance)
+    //     .catch(() => '0'),
+    // );
   }
 
   private async getCWalletBalance(

@@ -26,7 +26,11 @@ import {
   CwalletsEntity,
   ICwallet,
 } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
-import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
+import {
+  ChainTokens,
+  SupportedBlockchainType,
+  TokenEnum,
+} from '@/config/settings';
 import {
   cWalletNetworkNameGetter,
   getSupportedNetwork,
@@ -43,6 +47,7 @@ import {
 } from '../transaction-history/dto/create-transaction-history.dto';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 
 //TODO: Properly handle errors with enum
 @Injectable()
@@ -57,6 +62,8 @@ export class CwalletService {
     private readonly cWalletsRepo: Repository<CwalletsEntity>,
     @InjectRepository(CwalletProfilesEntity)
     private readonly cWalletsProfileRepo: Repository<CwalletsEntity>,
+    @InjectRepository(TokenEntity)
+    private readonly tokenRepo: Repository<TokenEntity>,
     private readonly transactionHistoryService: TransactionHistoryService,
   ) {
     this.circleClient = initiateDeveloperControlledWalletsClient({
@@ -150,14 +157,13 @@ export class CwalletService {
     newWallet.walletID = walletData.id;
     newWallet.profile = profile;
     newWallet.address = walletData.address;
-    newWallet.defaultNetwork = walletData.blockchain;
+    newWallet.defaultNetwork = walletData.blockchain as SupportedBlockchainType;
     newWallet.custodyType = walletData.custodyType;
     newWallet.accountType = walletData.accountType;
     newWallet.state = walletData.state;
     newWallet.scaCore = walletData.scaCore;
     newWallet.createdAt = new Date(walletData.createDate);
     newWallet.updatedAt = new Date(walletData.updateDate);
-
     newWallet.reference = null;
     newWallet.currency = 'USD';
     newWallet.totalPayments = null;
@@ -305,5 +311,21 @@ export class CwalletService {
   ): EstimateTransactionFeeDataResponse {
     const response = await this.circleClient.estimateTransferFee(data);
     return response.data;
+  }
+
+  async storeTokensForWallet(wallet: CwalletsEntity): Promise<void> {
+    const tokenSymbols =
+      ChainTokens[wallet.defaultNetwork as SupportedBlockchainType] || [];
+
+    const tokenEntities = tokenSymbols.map((symbol) => {
+      const token = new TokenEntity();
+      token.assetCode = symbol;
+      token.name = symbol;
+      token.balance = '0';
+      token.cwallet = wallet;
+      return token;
+    });
+
+    await this.tokenRepo.save(tokenEntities);
   }
 }

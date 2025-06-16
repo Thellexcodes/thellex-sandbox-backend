@@ -12,6 +12,7 @@ import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 import { FiatYellowcardModule } from './fiat-yellowcard/fiat-yellowcard.module';
 import { CwalletHooksModule } from './cwallet-hooks/cwallet-hooks.module';
+import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { CwalletHooksModule } from './cwallet-hooks/cwallet-hooks.module';
       AuthVerificationCodesEntity,
       QWalletsEntity,
       QWalletProfileEntity,
+      TokenEntity,
     ]),
     FiatYellowcardModule,
     CwalletHooksModule,

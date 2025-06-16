@@ -11,6 +11,8 @@ import {
 import { CwalletProfilesEntity } from './cwallet-profiles.entity';
 import { TokenEntity } from '../token/token.entity';
 import { BaseEntity } from '../base.entity';
+import { SupportedBlockchainType } from '@/config/settings';
+import { ENV_TESTNET } from '@/constants/env';
 
 @Entity({ name: 'cwallets' })
 export class CwalletsEntity extends BaseEntity {
@@ -36,8 +38,16 @@ export class CwalletsEntity extends BaseEntity {
   @Column({ name: 'total_payments', type: 'varchar', nullable: true })
   totalPayments: string | null;
 
-  @Column({ name: 'default_network', type: 'varchar' })
-  defaultNetwork: string;
+  @Column({
+    name: 'default_network',
+    type: 'enum',
+    enum: SupportedBlockchainType,
+    default:
+      process.env.NODE_ENV === ENV_TESTNET
+        ? SupportedBlockchainType.MATIC_AMOY
+        : SupportedBlockchainType.MATIC,
+  })
+  defaultNetwork: SupportedBlockchainType;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
@@ -64,7 +74,7 @@ export class CwalletsEntity extends BaseEntity {
   tokens: TokenEntity[];
 }
 
-export interface ICwallet {
+export interface ICwalletEntity {
   id: string;
   profile: any;
   reference: string | null;

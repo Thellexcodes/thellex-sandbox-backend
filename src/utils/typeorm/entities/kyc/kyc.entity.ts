@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
@@ -15,14 +9,14 @@ import {
 } from 'class-validator';
 import { EncryptionTransformer } from 'typeorm-encrypted';
 import { KycProvider } from '@/types/kyc.types';
-import { UserEntity } from '../user.entity';
-import { BaseEntity } from '../base.entity';
+import { IUserEntity, UserEntity } from '../user.entity';
+import { BaseEntity, IBaseEntity } from '../base.entity';
 
 const encryptionKey =
   process.env.ENCRYPTION_KEY || 'your_32_characters_long_key';
 
 //TODO: Handle errors with enum
-@Entity({ name: 'dkyc' })
+@Entity({ name: 'kyc' })
 export class KycEntity extends BaseEntity {
   @OneToOne(() => UserEntity, (user) => user.kyc)
   @JoinColumn({ name: 'user_id' })
@@ -113,4 +107,34 @@ export class KycEntity extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   kycExpiresAt: Date;
+}
+
+export interface IKyc extends IBaseEntity {
+  user: IUserEntity;
+
+  dob?: string;
+  bvn: string;
+  nin: string;
+
+  provider: KycProvider;
+  customerType: 'retail' | 'institution';
+
+  // Retail fields
+  name?: string;
+  phone?: string;
+  email?: string;
+  country?: string;
+  address?: string;
+  idType?: string;
+  idNumber?: string;
+  additionalIdType?: string;
+  additionalIdNumber?: string;
+
+  // Institution fields
+  businessId?: string;
+  businessName?: string;
+
+  isVerified: boolean;
+  createdAt: Date;
+  kycExpiresAt?: Date;
 }

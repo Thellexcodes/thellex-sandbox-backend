@@ -129,3 +129,142 @@ export class UserEntity extends BaseEntity {
   })
   cWalletProfile: CwalletProfilesEntity;
 }
+
+export class UserEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  uid: number;
+
+  @Column({ nullable: true })
+  account: string;
+
+  @Column({ nullable: false, unique: true })
+  email: string;
+
+  @IsOptional()
+  @IsString({ message: 'firstName/not-string' })
+  @ApiProperty({ description: 'First name of the user' })
+  firstName: string;
+
+  @ApiProperty({ description: 'Last name of the user' })
+  @IsOptional()
+  @IsString({ message: 'middleName/not-string' })
+  middlename: string;
+
+  @Column({ nullable: true, default: false })
+  emailVerified: boolean;
+
+  @Column({ nullable: true })
+  password: string;
+
+  @Column({ nullable: true })
+  suspended: boolean;
+
+  @ApiProperty({ description: 'Last name of the user' })
+  @IsOptional()
+  @IsString({ message: 'lastName/not-string' })
+  lastName: string;
+
+  @Column({
+    type: 'uuid',
+    unique: true,
+    nullable: false,
+    default: () => 'uuid_generate_v4()',
+  })
+  idempotencyKey: string;
+
+  @Column({
+    type: 'uuid',
+    unique: true,
+    nullable: false,
+    default: () => 'uuid_generate_v4()',
+  })
+  alertID: string;
+
+  @OneToMany(
+    () => AuthVerificationCodesEntity,
+    (authVerificationCode) => authVerificationCode.user,
+    {
+      cascade: true,
+      eager: false,
+    },
+  )
+  verificationCodes: AuthVerificationCodesEntity[];
+
+  @OneToMany(() => AuthnEntity, (authn) => authn.user, {
+    eager: false,
+  })
+  authn: AuthnEntity[];
+
+  @OneToMany(() => DeviceEntity, (device) => device.user, {
+    eager: false,
+  })
+  devices: DeviceEntity[];
+
+  @OneToMany(() => CardManagementEntity, (card) => card.user, {
+    eager: true,
+  })
+  electronic_cards: CardManagementEntity[];
+
+  @OneToOne(() => KycEntity, (kyc) => kyc.user, {
+    nullable: true,
+    cascade: true,
+    eager: true,
+  })
+  kyc: KycEntity;
+
+  @OneToMany(
+    () => TransactionHistoryEntity,
+    (transactionHistory) => transactionHistory.user,
+    { eager: true },
+  )
+  transactionHistory: TransactionHistoryEntity[];
+
+  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
+    cascade: true,
+    eager: true,
+  })
+  notifications: NotificationEntity[];
+
+  @OneToOne(() => QWalletProfileEntity, (qwallet) => qwallet.user, {
+    cascade: true,
+    eager: true,
+  })
+  qWalletProfile: QWalletProfileEntity;
+
+  @OneToOne(() => CwalletProfilesEntity, (cwallet) => cwallet.user, {
+    cascade: true,
+    eager: true,
+  })
+  cWalletProfile: CwalletProfilesEntity;
+}
+
+export interface IUser {
+  id: string;
+  uid: number;
+  account?: string;
+  email: string;
+  firstName: string;
+  middlename?: string;
+  lastName?: string;
+  emailVerified?: boolean;
+  password?: string;
+  suspended?: boolean;
+  idempotencyKey: string;
+  alertID: string;
+
+  verificationCodes?: IAuthVerificationCode[];
+  authn?: IAuthn[];
+  devices?: IDevice[];
+  electronic_cards?: ICardManagement[];
+  kyc?: IKyc;
+  transactionHistory?: ITransactionHistory[];
+  notifications?: INotification[];
+  qWalletProfile?: IQWalletProfile;
+  cWalletProfile?: ICwalletProfile;
+
+  createdAt: Date;
+  updatedAt: Date;
+}

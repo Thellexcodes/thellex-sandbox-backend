@@ -1,21 +1,11 @@
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { QWalletsEntity } from './qwallets.entity';
+import { BaseEntity } from '../base.entity';
+import { WalletProviderEnum } from '@/config/settings';
 
 @Entity({ name: 'qwallet_profiles' })
-export class QWalletProfileEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class QWalletProfileEntity extends BaseEntity {
   @OneToOne(() => UserEntity, (user) => user.qWalletProfile, {
     nullable: false,
     onDelete: 'CASCADE',
@@ -44,15 +34,12 @@ export class QWalletProfileEntity {
   @Column({ name: 'display_name', type: 'varchar', nullable: true })
   displayName: string | null;
 
+  @Column({ type: 'enum', enum: WalletProviderEnum })
+  walletProvider: WalletProviderEnum;
+
   @OneToMany(() => QWalletsEntity, (wallet) => wallet.profile, {
     cascade: true,
     eager: true,
   })
   wallets: QWalletsEntity[];
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
-  updatedAt: Date;
 }
