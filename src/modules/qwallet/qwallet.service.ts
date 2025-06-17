@@ -3,11 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { QWALLET_API } from '@/constants/env';
 import { HttpService } from '@/middleware/http.service';
 import {
+  IQCreatePaymentAddressResponse,
   IQCreateSubAccountResponse,
   IQGetSubAccountResponse,
   IQGetUserWalletResponse,
   IQSubAccountData,
   IQValidateAddressResponse,
+  IQWallet,
   IQWithdrawPaymentResponse,
 } from '@/types/qwallet.types';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
@@ -110,13 +112,32 @@ export class QwalletService {
   }
 
   async lookupUserWallets(qid: string): Promise<IQWalletEntity[]> {
-    const response = await this.getPaymentAddress(qid, TokenEnum.USDT);
+    const response = await this.getPaymentAddresses(qid, TokenEnum.USDT);
     return Array.isArray(response.data) ? response.data : [];
   }
 
-  private async getPaymentAddress(uuid: string, currency: TokenEnum) {
+  private async getPaymentAddresses(uuid: string, currency: TokenEnum) {
     return this.httpService.get(
       `${this.qwalletUrl}/users/${uuid}/wallets/${currency}/addresses`,
+      { headers: this.getAuthHeaders() },
+    );
+  }
+
+  async fetchPaymentAddress(uuid: string, currency: TokenEnum) {
+    return this.httpService.get(
+      `${this.qwalletUrl}/users/${uuid}/wallets/${currency}/address`,
+      { headers: this.getAuthHeaders() },
+    );
+  }
+
+  async createPaymentAddress(
+    qid: string,
+    network: SupportedBlockchainType,
+  ): IQCreatePaymentAddressResponse {
+    const currency = ChainTokens[network];
+    return await this.httpService.post(
+      `${this.qwalletUrl}/users/${qid}/wallets/${currency}/addresses`,
+      {},
       { headers: this.getAuthHeaders() },
     );
   }
@@ -139,10 +160,52 @@ export class QwalletService {
     profile: QWalletProfileEntity,
     networks: SupportedBlockchainType[] = [SupportedBlockchainType.BEP20],
   ) {
-    const walletResponses = await this.lookupUserWallets(qid);
+    let walletResponses = await this.lookupUserWallets(qid);
+
+    if (!walletResponses || walletResponses.length === 0) {
+      const responses = [];
+
+      for (const network of networks) {
+        // Step 1: Create wallet
+        const creationRes = await this.createPaymentAddress(qid, network);
+
+        if (creationRes?.data?.id) {
+          const walletId = creationRes.data.id;
+
+          // Step 2: Fetch wallet details once (no retry, no delay)
+          const walletDetails = await this.fetchPaymentAddress(
+            qid,
+            TokenEnum.USDT,
+          );
+
+          const address = walletDetails?.data?.address ?? 'no-address';
+
+          if (address) {
+            responses.push({
+              address,
+              defaultNetwork: walletDetails.data.network,
+              networks: [walletDetails.data.network],
+              walletId,
+            });
+          } else {
+            console.warn(`Wallet for ${network} created but address is null`);
+          }
+        } else {
+          console.warn(
+            `Failed to create wallet for ${qid} on network ${network}`,
+            creationRes,
+          );
+        }
+      }
+
+      walletResponses = responses;
+    }
+
     const newWallets: QWalletsEntity[] = [];
+
     for (const walletData of walletResponses) {
       const walletType = mapNetworkToWalletType(walletData.defaultNetwork);
+
       const existing = await this.qwalletsRepo.findOne({
         where: {
           address: walletData.address,
@@ -151,7 +214,9 @@ export class QwalletService {
         },
         relations: ['tokens'],
       });
+
       if (existing) continue;
+
       const newWallet = this.qwalletsRepo.create({
         address: walletData.address,
         walletType,
@@ -161,14 +226,18 @@ export class QwalletService {
         profile,
         tokens: [],
       });
+
       newWallets.push(newWallet);
     }
+
     const savedWallets = await this.qwalletsRepo.save(newWallets);
+
     await this.tokenRepo.save(
       savedWallets.flatMap((wallet) =>
         this.buildTokensForWallet(wallet, networks),
       ),
     );
+
     return savedWallets;
   }
 
@@ -229,39 +298,43 @@ export class QwalletService {
   async ensureUserHasProfileAndWallets(
     user: UserEntity,
   ): Promise<QWalletProfileEntity> {
-    let profile = await this.lookupSubAccount(user);
+    try {
+      let profile = await this.lookupSubAccount(user);
 
-    // If profile exists but wasn't saved yet (no ID), save it
-    if (profile && !profile.id) {
-      profile = await this.qwalletProfilesRepo.save(profile);
-    }
-
-    // If profile doesn't exist even after lookup
-    if (!profile) {
-      const remote = await this.fetchSubAccountFromRemote(user.email);
-
-      if (remote) {
-        profile = await this.saveSubAccount(user, remote);
-      } else {
-        const created = await this.createSubAccount(
-          { email: user.email },
-          user,
-        );
-        profile = await this.qwalletProfilesRepo.save(created);
+      // If profile exists but wasn't saved yet (no ID), save it
+      if (profile && !profile.id) {
+        profile = await this.qwalletProfilesRepo.save(profile);
       }
+
+      // If profile doesn't exist even after lookup
+      if (!profile) {
+        const remote = await this.fetchSubAccountFromRemote(user.email);
+
+        if (remote) {
+          profile = await this.saveSubAccount(user, remote);
+        } else {
+          const created = await this.createSubAccount(
+            { email: user.email },
+            user,
+          );
+          profile = await this.qwalletProfilesRepo.save(created);
+        }
+      }
+
+      // Check if wallets already exist
+      const walletsExist = await this.qwalletsRepo.findOne({
+        where: { profile: { id: profile.id } },
+      });
+
+      // Create wallets + tokens only if none exist
+      if (!walletsExist) {
+        await this.createAndStoreWalletsWithTokens(profile.qid, profile);
+      }
+
+      return profile;
+    } catch (error) {
+      console.log(error);
     }
-
-    // Check if wallets already exist
-    const walletsExist = await this.qwalletsRepo.findOne({
-      where: { profile: { id: profile.id } },
-    });
-
-    // Create wallets + tokens only if none exist
-    if (!walletsExist) {
-      await this.createAndStoreWalletsWithTokens(profile.qid, profile);
-    }
-
-    return profile;
   }
 
   async findOne(walletID: string): Promise<QWalletsEntity> {

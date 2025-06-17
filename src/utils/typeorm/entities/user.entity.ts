@@ -122,7 +122,7 @@ export class UserEntity extends BaseEntity {
   @OneToMany(
     () => TransactionHistoryEntity,
     (transactionHistory) => transactionHistory.user,
-    { eager: true },
+    { eager: true, cascade: true },
   )
   transactionHistory: TransactionHistoryEntity[];
 
