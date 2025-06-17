@@ -6,21 +6,19 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
+import { IUserEntity, UserEntity } from './user.entity';
 import { PaymentStatus } from '@/types/payment.types';
-import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { BaseEntity, IBaseEntity } from './base.entity';
 
 @Entity('transaction_history')
-export class TransactionHistoryEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class TransactionHistoryEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column({ type: 'enum', enum: WalletWebhookEventType, nullable: false })
-  event: WalletWebhookEventType;
+  @Column({ type: 'enum', enum: WalletWebhookEventEnum, nullable: false })
+  event: WalletWebhookEventEnum;
 
   @Column({ nullable: false, name: 'transaction_id' })
   transactionId: string;
@@ -29,7 +27,7 @@ export class TransactionHistoryEntity {
   type: string;
 
   @Column({ nullable: false })
-  currency: string;
+  assetCode: string;
 
   @Column('decimal', { precision: 18, scale: 8, nullable: false })
   amount: string;
@@ -56,16 +54,10 @@ export class TransactionHistoryEntity {
   @Column({ nullable: true })
   reason?: string;
 
-  @Column({ type: 'timestamptz', nullable: true, name: 'created_at' })
-  createdAt: Date;
-
-  @Column({ type: 'timestamptz', nullable: true, name: 'updated_at' })
-  updatedAt?: Date | null;
-
   @Column({ nullable: false, name: 'wallet_id' })
   walletId: string;
 
-  @Column({ nullable: false, name: 'wallet_name' })
+  @Column({ nullable: true, name: 'wallet_name' })
   walletName: string;
 
   @Column({
@@ -83,5 +75,24 @@ export class TransactionHistoryEntity {
   destinationAddress: string;
 
   @Column({ nullable: false, name: 'payment_network' })
+  paymentNetwork: string;
+}
+
+export interface ITransactionHistoryEntity extends IBaseEntity {
+  user: IUserEntity;
+  event: WalletWebhookEventEnum;
+  transactionId: string;
+  type: string;
+  currency: string;
+  amount: string;
+  fee: string;
+  feeLevel?: FeeLevel;
+  blockchainTxId?: string | null;
+  reason?: string | null;
+  walletId: string;
+  walletName: string;
+  paymentStatus: PaymentStatus;
+  sourceAddress: string;
+  destinationAddress: string;
   paymentNetwork: string;
 }

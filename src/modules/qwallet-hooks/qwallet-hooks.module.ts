@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { QwalletHooksService } from './qwallet-hooks.service';
 import { QwalletHooksController } from './qwallet-hooks.controller';
-import { QwalletNotificationsService } from '../notifications/qwallet-notifications.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -30,7 +29,6 @@ import { CwalletService } from '../cwallet/cwallet.service';
   controllers: [QwalletHooksController],
   providers: [
     QwalletHooksService,
-    QwalletNotificationsService,
     NotificationsGateway,
     UserService,
     JwtService,

@@ -1,7 +1,7 @@
 import { QwalletSubAccountDto } from '@/modules/qwallet/dto/qwallet-subaccount.dto';
 import { QwalletDto } from '@/modules/qwallet/dto/qwallet.dto';
 import { PaymentStatus } from '@/types/payment.types';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
 import { ApiProperty } from '@nestjs/swagger';
 
 class RecipientDetailsDto {
@@ -78,7 +78,7 @@ export class QWalletHookWithdrawSuccessfulEventDto {
 
 export interface IQWalletHookWithdrawSuccessfulEvent {
   id: string;
-  event?: WalletWebhookEventType;
+  event?: WalletWebhookEventEnum;
   reference: string | null;
   transactionId: string;
   type: string;

@@ -8,6 +8,7 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { IQWalletHookWithdrawSuccessfulEvent } from '../qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
 import { TransactionHistoryDto } from './dto/create-transaction-history.dto';
 import { IUpdateCwalletTransactionDto } from '../cwallet-hooks/dto/update-cwallet-hook.dto';
+import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
 
 //TODO: add try catch block for error handling
 @Injectable()
@@ -40,10 +41,8 @@ export class TransactionHistoryService {
 
   async updateQWalletTransactionByTransactionId(
     updates: IQWalletHookWithdrawSuccessfulEvent,
-  ): Promise<TransactionHistoryEntity> {
-    const existing = await this.findTransactionByTransactionId(
-      updates.transactionId,
-    );
+  ): Promise<TransactionHistoryEntity | any> {
+    const existing = await this.findTransactionByTransactionId(updates.id);
 
     if (!existing) {
       throw new CustomHttpException(
@@ -52,10 +51,11 @@ export class TransactionHistoryService {
       );
     }
 
+    existing.event = updates.event;
     existing.paymentStatus = updates.status;
     existing.updatedAt = updates.done_at;
     existing.blockchainTxId = updates.txid;
-    existing.reason = updates.reason;
+    existing.reason = updates.narration;
 
     return this.transactionRepo.save(existing);
   }

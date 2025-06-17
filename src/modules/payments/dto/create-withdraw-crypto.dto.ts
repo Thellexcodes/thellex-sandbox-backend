@@ -17,7 +17,7 @@ export class CreateCryptoWithdrawPaymentDto {
   })
   @IsNotEmpty()
   @IsEnum(TokenEnum)
-  currency: TokenEnum;
+  assetCode: TokenEnum;
 
   @ApiProperty({
     description: 'Value to be sent to the recipient',

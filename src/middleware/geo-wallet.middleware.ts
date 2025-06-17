@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import axios from 'axios';
-import { WalletType } from '@/types/wallet-manager.types';
+import { CustomRequest } from '@/types/request.types';
 
 const AFRICAN_COUNTRY_CODES = [
   'DZ',
@@ -61,12 +61,8 @@ const AFRICAN_COUNTRY_CODES = [
 ];
 
 @Injectable()
-export class GeoWalletMiddleware implements NestMiddleware {
-  async use(
-    req: Request & { walletType?: WalletType },
-    res: Response,
-    next: NextFunction,
-  ) {
+export class GeoLocationMiddleware implements NestMiddleware {
+  async use(req: CustomRequest, res: Response, next: NextFunction) {
     try {
       const forwarded = req.headers['x-forwarded-for'];
       const ip =
@@ -74,28 +70,29 @@ export class GeoWalletMiddleware implements NestMiddleware {
           ? forwarded.split(',')[0].trim()
           : req.socket.remoteAddress;
 
-      if (!ip) {
-        req.walletType = WalletType.CWALLET;
-        return next();
-      }
+      if (!ip) return next();
 
       const token = process.env.IPINFO_TOKEN;
       const url = `https://ipinfo.io/${ip}/json${token ? `?token=${token}` : ''}`;
       const { data } = await axios.get(url);
 
-      let continent = data.continent;
       const country = data.country;
+      let continent = data.continent || null;
 
       if (!continent && country) {
         continent = AFRICAN_COUNTRY_CODES.includes(country) ? 'AF' : 'OTHER';
       }
 
-      req.walletType =
-        continent === 'AF' ? WalletType.QWALLET : WalletType.CWALLET;
+      req.geoLocation = {
+        ip,
+        country,
+        continent,
+        isAfrica: continent === 'AF',
+      };
 
       next();
     } catch (error) {
-      req.walletType = WalletType.CWALLET;
+      req.geoLocation = undefined;
       next();
     }
   }

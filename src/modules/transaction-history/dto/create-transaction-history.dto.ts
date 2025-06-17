@@ -1,20 +1,19 @@
 import { PaymentStatus, PaymentType } from '@/types/payment.types';
-import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
-import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { FeeLevel, WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { IUserEntity, UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 export class TransactionHistoryDto {
-  event?: WalletWebhookEventType;
+  event?: WalletWebhookEventEnum;
   transactionId: string;
   type: PaymentType;
-  currency: string;
+  assetCode: string;
   amount: string;
   fee: string;
   feeLevel?: FeeLevel;
   blockchainTxId: string;
   reason?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   walletId: string;
   walletName?: string;
   paymentStatus?: PaymentStatus;
@@ -26,10 +25,10 @@ export class TransactionHistoryDto {
 }
 
 export interface ITransactionHistory {
-  event?: WalletWebhookEventType;
+  event?: WalletWebhookEventEnum;
   transactionId: string;
   type: PaymentType;
-  currency: string;
+  assetCode: string;
   amount: string;
   fee: string;
   feeLevel?: FeeLevel;
@@ -44,5 +43,5 @@ export interface ITransactionHistory {
   destinationAddress: string;
   paymentNetwork: string;
   tokenId?: string;
-  user: UserEntity;
+  user: IUserEntity;
 }

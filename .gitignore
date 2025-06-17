@@ -47,6 +47,8 @@ cert
 # temp directory
 .temp
 .tmp
+**/books/
+
 
 # Runtime data
 pids

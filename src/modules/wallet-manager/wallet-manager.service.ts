@@ -3,107 +3,103 @@ import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
-  cWalletNetworkNameGetter,
   getSupportedAssets,
-  getSupportedNetwork,
+  isSupportedBlockchainToken,
 } from '@/utils/helpers';
 import PQueue from 'p-queue';
-import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
-import { IQWallet } from '@/types/qwallet.types';
 import { CwalletService } from '../cwallet/cwallet.service';
-import {
-  Blockchain,
-  GetWalletInput,
-} from '@circle-fin/developer-controlled-wallets';
-import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
-import { IWalletInfo, IWalletSummary } from './dto/get-balance-response.dto';
 import { Web3Service } from '@/utils/services/web3.service';
+import { ConfigService } from '@nestjs/config';
+import { ENV_TESTNET } from '@/constants/env';
+import {
+  IWalletBalanceSummary,
+  IWalletMap,
+} from './dto/get-balance-response.dto';
 
 @Injectable()
 export class WalletManagerService {
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
-    private readonly web3Service: Web3Service,
+    private readonly configService: ConfigService,
   ) {}
 
-  async getBalance(user: UserEntity): Promise<IWalletSummary> {
+  async getBalance(user: UserEntity): Promise<IWalletBalanceSummary> {
     try {
-      const qWallets = user.qWalletProfile?.wallets ?? [];
-      const cWallets = user.cWalletProfile?.wallets ?? [];
-      const qWalletId = user.qWalletProfile?.qid;
+      const qwallets = user.qWalletProfile?.wallets ?? [];
+      const cwallets = user.cWalletProfile?.wallets ?? [];
+      const qwalletId = user.qWalletProfile?.qid;
+
       const supportedAssets = getSupportedAssets();
 
-      const walletMap: Record<string, IWalletInfo> = {};
+      // Define allowed networks dynamically from getSupportedNetwork
+      const allowedNetworks = new Set([
+        SupportedBlockchainType.BEP20,
+        SupportedBlockchainType.MATIC,
+      ]);
+
+      const filteredAssets = supportedAssets.filter(({ network }) =>
+        allowedNetworks.has(network.toLowerCase() as SupportedBlockchainType),
+      );
+
+      const walletMap: Record<string, IWalletMap> = {};
       let totalInUsd = 0;
 
       const queue = new PQueue({ concurrency: 3 });
 
-      const tasks = supportedAssets.map(({ token, network }) =>
+      const isTestnet = this.configService.get('NODE_ENV') === ENV_TESTNET;
+
+      const tasks = filteredAssets.map(({ token, network }) =>
         queue.add(async () => {
-          const qWallet = qWallets.find(
-            (w) =>
-              w.defaultNetwork === network.toLowerCase() &&
-              w.currency.toLowerCase() === token.toLowerCase(),
+          const tokenLower = token.toLowerCase();
+
+          // Normalize network name based on env
+          const networkNormalized =
+            isTestnet && network === 'matic'
+              ? 'matic-amoy'
+              : network.toLowerCase();
+
+          const qwallet = qwallets.find(
+            (w) => w.defaultNetwork?.toLowerCase() === networkNormalized,
           );
 
-          const cWallet = cWallets.find(
-            (c) =>
-              c.defaultNetwork.toLocaleLowerCase() ==
-              cWalletNetworkNameGetter(network).toLocaleLowerCase(),
+          const cwallet = cwallets.find(
+            (w) => w.defaultNetwork?.toLowerCase() === networkNormalized,
           );
 
-          if (!qWallet && !cWallet) return;
+          const qbalanceUsd =
+            qwallet && qwalletId
+              ? await this.getQWalletBalance(token, network, qwallet.id)
+              : 0;
 
-          const assetKey = token.toLowerCase();
+          const cbalanceUsd =
+            cwallet && cwallet.address
+              ? await this.getCWalletBalance(token, network, cwallet.id)
+              : 0;
 
-          if (!walletMap[assetKey]) {
-            walletMap[assetKey] = {
-              assetCode: token,
-              totalBalance: '0',
-              networks: [],
+          const total = qbalanceUsd + cbalanceUsd;
+          totalInUsd += total;
+
+          if (!walletMap[tokenLower]) {
+            walletMap[tokenLower] = {
+              totalBalance: total.toString(),
+              networks: [networkNormalized as SupportedBlockchainType],
+              assetCode: tokenLower,
+              transactionHistory: [],
             };
-          }
-
-          // Fetch QWallet balance (if exists)
-          // if (qWallet) {
-          //   const qBalanceUsd = await this.getQWalletBalance(
-          //     qWallet,
-          //     token,
-          //     network,
-          //     qWalletId,
-          //   );
-
-          //   if (qBalanceUsd > 0) {
-          //     totalInUsd += qBalanceUsd;
-          //     walletMap[assetKey].networks.push({
-          //       name: network.toLowerCase(),
-          //       address: qWallet.address,
-          //     });
-
-          //     const newTotal =
-          //       parseFloat(walletMap[assetKey].totalBalance) + qBalanceUsd;
-          //     walletMap[assetKey].totalBalance = newTotal.toFixed(2);
-          //   }
-          // }
-
-          if (cWallet) {
-            const cBalanceUsd = await this.getCWalletBalance(
-              cWallet,
-              token,
-              network,
-            );
-
-            if (cBalanceUsd > 0) {
-              totalInUsd += cBalanceUsd;
-              walletMap[assetKey].networks.push({
-                name: network.toLowerCase(),
-                address: cWallet.address,
-              });
-
-              const newTotal =
-                parseFloat(walletMap[assetKey].totalBalance) + cBalanceUsd;
-              walletMap[assetKey].totalBalance = newTotal.toFixed(2);
+          } else {
+            walletMap[tokenLower][networkNormalized] = total;
+            walletMap[tokenLower].totalBalance = (
+              parseFloat(walletMap[tokenLower].totalBalance) + total
+            ).toString();
+            if (
+              !walletMap[tokenLower].networks.includes(
+                networkNormalized as SupportedBlockchainType,
+              )
+            ) {
+              walletMap[tokenLower].networks.push(
+                networkNormalized as SupportedBlockchainType,
+              );
             }
           }
         }),
@@ -111,146 +107,65 @@ export class WalletManagerService {
 
       await Promise.all(tasks);
 
+      console.log({
+        totalInUsd,
+        wallets: walletMap,
+      });
+
       return {
-        totalBalance: totalInUsd.toFixed(2),
-        currency: 'USD',
-        wallets: Object.values(walletMap),
+        totalInUsd,
+        wallets: walletMap,
       };
     } catch (error) {
-      console.error('Error fetching balances:', error);
-      throw new Error('Unable to retrieve balances');
+      console.error('getBalance error:', error);
+      throw new Error('Failed to get balance');
     }
   }
 
-  // Aggregate balance of TRX from Quidax, Circle, and TRX network
-  async getSingleAssetBalance(user: UserEntity, assetId: string): Promise<any> {
-    // if (assetId.toLowerCase() !== 'trx') {
-    //   throw new Error('This example only handles TRX asset balance.');
-    // }
-    // // Get TRX balance from Quidax wallet
-    // const quidaxBalance = await thisqwalletService.
-    //   .getAssetBalance(userId, assetId)
-    //   .catch(() => 0);
-    // // Get TRX balance from Circle wallet
-    // const circleBalance = await this.circleService
-    //   .getAssetBalance(userId, assetId)
-    //   .catch(() => 0);
-    // // Get TRX balance from TRX native network wallet/address (if separate)
-    // const trxNetworkBalance = await this.trxNetworkService
-    //   .getBalance(userId)
-    //   .catch(() => 0);
-    // // Aggregate total TRX balance
-    // const totalBalance =
-    //   Number(quidaxBalance) + Number(circleBalance) + Number(trxNetworkBalance);
-    // return {
-    //   userId,
-    //   assetId: 'TRX',
-    //   balances: {
-    //     quidax: quidaxBalance,
-    //     circle: circleBalance,
-    //     trxNetwork: trxNetworkBalance,
-    //   },
-    //   totalBalance,
-    // };
-  }
-
-  // Get detailed breakdown of assets held in wallet
-  async getAssets(userId: string): Promise<any[]> {
-    // Fetch all assets and their balances for userId
-    return [
-      { assetId: 'BTC', balance: '0.5' },
-      { assetId: 'ETH', balance: '10' },
-      { assetId: 'USDC', balance: '1000' },
-    ];
-  }
-
-  // Get transaction history for wallet
-  async getTransactionHistory(userId: string, limit?: number): Promise<any[]> {
-    // Fetch transactions from backend or blockchain APIs
-    return [
-      {
-        txId: 'abc123',
-        type: 'deposit',
-        amount: '0.5',
-        asset: 'BTC',
-        timestamp: '...',
-      },
-      {
-        txId: 'def456',
-        type: 'swap',
-        amount: '10',
-        asset: 'ETH',
-        timestamp: '...',
-      },
-    ].slice(0, limit || 10);
-  }
-
-  // Get the wallet addresses associated with the user across different chains
-  async getWalletAddresses(userId: string): Promise<any> {
-    // // Return array of addresses linked to userId
-    // return [
-    //   { chain: 'Bitcoin', address: '1A2b3C4d...' },
-    //   { chain: 'Ethereum', address: '0x1234abcd...' },
-    // ];
-  }
-
-  // Refresh or sync wallet state (e.g., fetch latest balances from chains)
-  async syncWallet(user: UserEntity): Promise<any> {
-    // // Perform refresh or sync operation, maybe call external APIs or nodes
-    // return { success: true, message: `Wallet for user ${userId} synced.` };
-  }
-
-  // Get staking info or locked assets info for wallet
-  async getStakingInfo(userId: string): Promise<any> {
-    // // Fetch staking data for user wallet
-    // return {
-    //   totalStaked: '100',
-    //   rewardsPending: '5',
-    //   stakedAssets: [
-    //     { assetId: 'ETH', amount: '50' },
-    //     { assetId: 'DOT', amount: '50' },
-    //   ],
-    // };
-  }
-
-  // Get rewards info (e.g., earned rewards, claimable rewards)
-  async getRewards(userId: string): Promise<any> {
-    // // Return rewards info
-    // return {
-    //   rewardsEarned: '10',
-    //   rewardsClaimable: '7',
-    // };
-  }
-
   private async getQWalletBalance(
-    wallet: IQWallet,
     token: TokenEnum,
     network: SupportedBlockchainType,
-    qWalletId: string,
+    qwalletId: string,
   ): Promise<number> {
-    if (!getSupportedNetwork(network, token)) return 0;
+    if (!isSupportedBlockchainToken(network, token)) return 0;
 
-    return Number(
-      await this.qwalletService
-        .getUserWallet(qWalletId, token)
-        .then((d) => d.data.balance)
-        .catch(() => '0'),
+    const qwallet = await this.qwalletService.findOne(qwalletId);
+    if (!qwallet || !qwallet.tokens) return 0;
+
+    const matchingToken = qwallet.tokens.find(
+      (t) => t.assetCode.toLowerCase() === token.toLowerCase(),
     );
+
+    if (!matchingToken) return 0;
+
+    const balance = Number(matchingToken.balance);
+    return isNaN(balance) || balance <= 0 ? 0 : balance;
   }
 
   private async getCWalletBalance(
-    wallet: CwalletsEntity,
     token: TokenEnum,
     network: SupportedBlockchainType,
+    walletId: string,
   ): Promise<number> {
-    if (!getSupportedNetwork(network, token)) return 0;
+    if (!isSupportedBlockchainToken(network, token)) return 0;
 
-    return Number(
-      await this.cwalletService.getBalanceByAddress(
-        wallet.walletID,
-        token,
-        network,
-      ),
+    const cwallet = await this.cwalletService.lookupSubWalletByID(walletId);
+    if (!cwallet || !cwallet.tokens) return 0;
+
+    const matchingToken = cwallet.tokens.find(
+      (t) => t.assetCode.toLowerCase() === token.toLowerCase(),
     );
+
+    if (!matchingToken) return 0;
+
+    const balance = Number(matchingToken.balance);
+    return isNaN(balance) || balance <= 0 ? 0 : balance;
   }
+
+  getTransactionHistory(a, b) {}
+  getWalletAddresses(a) {}
+  syncWallet(a) {}
+  getRewards(a) {}
+  getAssets(a) {}
+  getSingleAssetBalance(a, b) {}
 }

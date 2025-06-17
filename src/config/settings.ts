@@ -53,7 +53,7 @@ export enum SupportedBlockchainType {
   BEP20 = 'bep20', // Binance Smart Chain BEP20 tokens
   TRC20 = 'trc20', // Tron TRC20 tokens
   MATIC = 'matic', // Polygon (Matic) mainnet
-  MATIC_AMOY = 'MATIC_AMOY', // Polygon Amoy testnet (optional)
+  MATIC_AMOY = 'MATIC-AMOY', // Polygon Amoy testnet (optional)
   AVAX = 'avax',
   AVAX_FUJI = 'avax-fuji',
   SOL = 'sol',
@@ -177,3 +177,39 @@ export const tokenIds: Record<
     [SupportedBlockchainType.TRC20]: 'usdt-token-id-trc20',
   },
 };
+
+export enum SupportedWalletTypes {
+  EVM = 'evm',
+  STELLAR = 'stellar',
+}
+
+export enum WalletProviderEnum {
+  QUIDAX = 'quidax',
+  CIRCLE = 'circle',
+}
+
+export function mapNetworkToWalletType(
+  network: SupportedBlockchainType,
+): SupportedWalletTypes {
+  switch (network) {
+    case SupportedBlockchainType.BEP20:
+      return SupportedWalletTypes.EVM;
+    // case SupportedBlockchainType.ERC20:
+    // case SupportedBlockchainType.POLYGON:
+    // case SupportedBlockchainType.ARBITRUM:
+    // case SupportedBlockchainType.OPTIMISM:
+    //   return SupportedWalletTypes.EVM;
+
+    // case SupportedBlockchainType.SOLANA:
+    //   return SupportedWalletTypes.SOLANA;
+
+    // case SupportedBlockchainType.TRON:
+    //   return SupportedWalletTypes.TRON;
+
+    // case SupportedBlockchainType.STELLAR:
+    //   return SupportedWalletTypes.STELLAR;
+
+    default:
+      return SupportedWalletTypes.EVM;
+  }
+}

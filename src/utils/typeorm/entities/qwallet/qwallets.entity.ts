@@ -1,7 +1,12 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { QWalletProfileEntity } from './qwallet-profile.entity';
-import { BaseEntity } from '../base.entity';
+import { BaseEntity, IBaseEntity } from '../base.entity';
 import { TokenEntity } from '../token/token.entity';
+import {
+  SupportedBlockchainType,
+  SupportedWalletTypes,
+  WalletProviderEnum,
+} from '@/config/settings';
 
 @Entity({ name: 'qwallets' })
 export class QWalletsEntity extends BaseEntity {
@@ -15,9 +20,6 @@ export class QWalletsEntity extends BaseEntity {
   reference: string | null;
 
   @Column({ type: 'varchar' })
-  currency: string;
-
-  @Column({ type: 'varchar' })
   address: string;
 
   @Column({ name: 'is_crypto', type: 'boolean', nullable: true })
@@ -29,9 +31,44 @@ export class QWalletsEntity extends BaseEntity {
   @Column({ name: 'total_payments', type: 'varchar', nullable: true })
   totalPayments: string | null;
 
-  @Column({ name: 'default_network', type: 'varchar' })
-  defaultNetwork: string;
+  @Column({ type: 'enum', enum: WalletProviderEnum, nullable: false })
+  walletProvider: WalletProviderEnum;
 
-  @OneToMany(() => TokenEntity, (token) => token.qwallet)
+  @Column({
+    name: 'wallet_type',
+    enum: SupportedWalletTypes,
+    nullable: false,
+  })
+  walletType: SupportedWalletTypes;
+
+  @Column({
+    name: 'default_network',
+    type: 'enum',
+    enum: SupportedBlockchainType,
+    default: SupportedBlockchainType.BEP20,
+  })
+  defaultNetwork: SupportedBlockchainType;
+
+  @Column({
+    name: 'networks',
+    type: 'simple-array',
+  })
+  networks: SupportedBlockchainType[];
+
+  @OneToMany(() => TokenEntity, (token) => token.qwallet, { eager: true })
+  tokens: TokenEntity[];
+}
+
+export interface IQWalletEntity extends IBaseEntity {
+  profile: QWalletProfileEntity;
+  reference: string | null;
+  address: string;
+  isCrypto: boolean | null;
+  destinationTag: string | null;
+  totalPayments: string | null;
+  walletProvider: WalletProviderEnum;
+  walletType: SupportedWalletTypes;
+  defaultNetwork: SupportedBlockchainType;
+  networks: SupportedBlockchainType[];
   tokens: TokenEntity[];
 }

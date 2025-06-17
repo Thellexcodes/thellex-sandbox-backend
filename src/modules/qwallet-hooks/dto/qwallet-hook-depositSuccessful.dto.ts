@@ -33,6 +33,7 @@ export class QwalletHookDepositSuccessfulEventDto {
 
 export interface IQwalletHookDepositSuccessfulData {
   id: string;
+  event?: string;
   type: PaymentType;
   currency: string;
   amount: string;

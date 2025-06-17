@@ -8,9 +8,14 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CwalletProfilesEntity } from './cwallet-profiles.entity';
-import { TokenEntity } from '../token/token.entity';
-import { BaseEntity } from '../base.entity';
+import {
+  CwalletProfilesEntity,
+  ICwalletProfilesEntity,
+} from './cwallet-profiles.entity';
+import { ITokenEntity, TokenEntity } from '../token/token.entity';
+import { BaseEntity, IBaseEntity } from '../base.entity';
+import { SupportedBlockchainType } from '@/config/settings';
+import { ENV_TESTNET } from '@/constants/env';
 
 @Entity({ name: 'cwallets' })
 export class CwalletsEntity extends BaseEntity {
@@ -36,8 +41,16 @@ export class CwalletsEntity extends BaseEntity {
   @Column({ name: 'total_payments', type: 'varchar', nullable: true })
   totalPayments: string | null;
 
-  @Column({ name: 'default_network', type: 'varchar' })
-  defaultNetwork: string;
+  @Column({
+    name: 'default_network',
+    type: 'enum',
+    enum: SupportedBlockchainType,
+    default:
+      process.env.NODE_ENV === ENV_TESTNET
+        ? SupportedBlockchainType.MATIC_AMOY
+        : SupportedBlockchainType.MATIC,
+  })
+  defaultNetwork: SupportedBlockchainType;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
@@ -60,18 +73,23 @@ export class CwalletsEntity extends BaseEntity {
   @Column({ name: 'sca_core', type: 'varchar', nullable: true })
   scaCore: string | null;
 
-  @OneToMany(() => TokenEntity, (token) => token.cwallet)
+  @Column({
+    name: 'networks',
+    type: 'simple-array',
+  })
+  networks: SupportedBlockchainType[];
+
+  @OneToMany(() => TokenEntity, (token) => token.cwallet, { eager: true })
   tokens: TokenEntity[];
 }
 
-export interface ICwallet {
-  id: string;
-  profile: any;
+export interface ICwalletEntity extends IBaseEntity {
+  profile: ICwalletProfilesEntity;
   reference: string | null;
   currency: string;
   address: string;
   totalPayments: string | null;
-  defaultNetwork: string;
+  defaultNetwork: SupportedBlockchainType;
   createdAt: Date;
   updatedAt: Date;
   walletID: string;
@@ -79,4 +97,5 @@ export interface ICwallet {
   accountType: string;
   state: string | null;
   scaCore: string | null;
+  tokens?: ITokenEntity[];
 }

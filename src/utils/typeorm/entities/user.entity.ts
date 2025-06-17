@@ -5,18 +5,33 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { BaseEntity } from './base.entity';
-import { AuthnEntity } from './auth.entity';
-import { AuthVerificationCodesEntity } from './auth-verification-codes.entity';
-import { DeviceEntity } from './device.entity';
-import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
-import { NotificationEntity } from './notification.entity';
-import { TransactionHistoryEntity } from './transaction-history.entity';
-import { QWalletProfileEntity } from './qwallet/qwallet-profile.entity';
-import { CwalletProfilesEntity } from './cwallet/cwallet-profiles.entity';
+import { BaseEntity, IBaseEntity } from './base.entity';
+import { AuthnEntity, IAuthnEntity } from './auth.entity';
+import {
+  AuthVerificationCodesEntity,
+  IAuthVerificationCodeEntity,
+} from './auth-verification-codes.entity';
+import { DeviceEntity, IDeviceEntity } from './device.entity';
+import {
+  CardManagementEntity,
+  ICardManagementEntity,
+} from '@/utils/typeorm/entities/card-management.entity';
+import { INotificationEntity, NotificationEntity } from './notification.entity';
+import {
+  ITransactionHistoryEntity,
+  TransactionHistoryEntity,
+} from './transaction-history.entity';
+import {
+  IQWalletProfileEntity,
+  QWalletProfileEntity,
+} from './qwallet/qwallet-profile.entity';
+import {
+  CwalletProfilesEntity,
+  ICwalletProfilesEntity,
+} from './cwallet/cwallet-profiles.entity';
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { KycEntity } from './kyc/kyc.entity';
+import { IKycEntity, KycEntity } from './kyc/kyc.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -128,4 +143,32 @@ export class UserEntity extends BaseEntity {
     eager: true,
   })
   cWalletProfile: CwalletProfilesEntity;
+}
+
+export interface IUserEntity extends IBaseEntity {
+  id: string;
+  uid: number;
+  account?: string;
+  email: string;
+  firstName: string;
+  middlename?: string;
+  lastName?: string;
+  emailVerified?: boolean;
+  password?: string;
+  suspended?: boolean;
+  idempotencyKey: string;
+  alertID: string;
+
+  verificationCodes?: IAuthVerificationCodeEntity[];
+  authn?: IAuthnEntity[];
+  devices?: IDeviceEntity[];
+  electronic_cards?: ICardManagementEntity[];
+  kyc?: IKycEntity;
+  transactionHistory?: ITransactionHistoryEntity[];
+  notifications?: INotificationEntity[];
+  qWalletProfile?: IQWalletProfileEntity;
+  cWalletProfile?: ICwalletProfilesEntity;
+
+  createdAt: Date;
+  updatedAt: Date;
 }

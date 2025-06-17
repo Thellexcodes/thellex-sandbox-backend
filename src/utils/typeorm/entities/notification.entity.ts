@@ -8,10 +8,11 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
+import { IUserEntity, UserEntity } from './user.entity';
+import { BaseEntity, IBaseEntity } from './base.entity';
 
 @Entity({ name: 'notifications' })
-export class NotificationEntity {
+export class NotificationEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -31,14 +32,8 @@ export class NotificationEntity {
   @Column({ default: false })
   consumed: boolean;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
   @Column()
-  currency: string;
+  assetCode: string;
 
   @Column()
   expiresAt: Date;
@@ -50,5 +45,18 @@ export class NotificationEntity {
   txID: string;
 
   @Column({ nullable: true })
-  qwalletID: string;
+  walletID: string;
+}
+
+export interface INotificationEntity extends IBaseEntity {
+  id: string;
+  user: IUserEntity;
+  title: string;
+  message: string;
+  consumed: boolean;
+  currency: string;
+  expiresAt: Date;
+  amount?: string | null;
+  txID: string;
+  qwalletID?: string | null;
 }

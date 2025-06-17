@@ -19,3 +19,9 @@ export class BaseEntity extends Base {
   })
   updatedAt: Date;
 }
+
+export interface IBaseEntity extends Base {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

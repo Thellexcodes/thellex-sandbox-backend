@@ -7,11 +7,11 @@ import {
   IQWalletHookWithdrawSuccessfulEvent,
   QWalletHookWithdrawSuccessfulEventDto,
 } from './qwallet-hook-withdrawSuccessful.dto';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
 
 export type QWalletWebhookEventMap = {
-  [WalletWebhookEventType.DepositSuccessful]: IQwalletHookDepositSuccessfulData;
-  [WalletWebhookEventType.WithdrawalSuccessful]: IQWalletHookWithdrawSuccessfulEvent;
+  [WalletWebhookEventEnum.DepositSuccessful]: IQwalletHookDepositSuccessfulData;
+  [WalletWebhookEventEnum.WithdrawalSuccessful]: IQWalletHookWithdrawSuccessfulEvent;
 };
 
 export type QWalletWebhookPayload = {
@@ -26,8 +26,8 @@ export type QWalletWebhookPayload = {
   QWalletHookWithdrawSuccessfulEventDto,
 )
 export class QWalletWebhookPayloadDto {
-  @ApiProperty({ enum: Object.values(WalletWebhookEventType) })
-  event: WalletWebhookEventType;
+  @ApiProperty({ enum: Object.values(WalletWebhookEventEnum) })
+  event: WalletWebhookEventEnum;
 
   @ApiProperty({
     oneOf: [

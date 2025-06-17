@@ -1,7 +1,6 @@
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Response } from 'express';
 import { WalletType } from './wallet-manager.types';
-import { IQWallet } from './qwallet.types';
 import { TokenEnum } from '@/config/settings';
 
 interface UserSession {
@@ -17,19 +16,27 @@ interface Cookie {
 }
 
 export interface CustomRequest extends Request {
+  [x: string]: any;
   user?: UserEntity;
   sessionId?: string;
   session?: UserSession;
   walletType?: WalletType;
+  geoLocation?: {
+    ip: string;
+    country?: string;
+    continent?: string;
+    isAfrica?: boolean;
+  };
 }
 
 export interface CustomResponse extends Response {}
 
-export interface CryptoQueryParams {
-  id: string;
-  symbol?: string;
+export interface ITokenAsset {
+  id?: string;
+  assetCode?: string;
   name?: string;
   address?: string;
+  network?: string;
   currentPrice?: string;
   priceChangePercentage24h?: string;
   marketCap?: string;
@@ -37,6 +44,12 @@ export interface CryptoQueryParams {
 }
 
 export type RequestCryptoPaymentResponse = {
-  wallet: IQWallet | null;
+  wallet: any | null;
   assetCode: TokenEnum;
 };
+
+export interface ApiResponse<T> {
+  status: 'success' | 'error';
+  message: string;
+  data: T;
+}

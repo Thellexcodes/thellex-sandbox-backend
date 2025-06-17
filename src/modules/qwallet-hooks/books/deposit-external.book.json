@@ -1,62 +1,110 @@
 {
   "event": "deposit.successful",
   "data": {
-    "id": "xofy3d26",
+    "id": "2755c845-964e-4b17-8ef5-10356b4fb39f",
     "type": "coin_address",
-    "currency": "trx",
-    "amount": "3.0",
+    "currency": "usdt",
+    "amount": "10.0",
     "fee": "0.0",
-    "txid": "c5aee052782c0f9419067b96c7a019ff21a7155878865c85e73ca76085736bab",
+    "txid": "0xb4feef435496f1fa93d51bb86a510b80cccdf0f8bc52cbe71564f73d958397ec",
     "status": "accepted",
     "reason": null,
-    "created_at": "2024-04-02T13:16:17.000Z",
+    "created_at": "2025-06-17T12:01:27.000Z",
     "done_at": null,
     "wallet": {
-      "id": "060a4376-a043-4834-91f8-f59f05ccb174",
-      "name": "Tron",
-      "currency": "trx",
-      "balance": "5.0",
+      "id": "3c9c48c8-eb53-4e65-b62f-058e0ba6c0c8",
+      "name": "USDT Tether",
+      "currency": "usdt",
+      "balance": "11.1327",
       "locked": "0.0",
       "staked": "0.0",
       "user": {
-        "id": "cd613c4d-4005-45ed-9e75-0283bb335f12",
-        "sn": "QDX26RYDKVU",
-        "email": "test@gmail.com",
+        "id": "2ed922fe-a10d-405a-9745-c9eb2c92e6b6",
+        "sn": "QDXRTFBY2I6",
+        "email": "boltdsg@gmail.com",
         "reference": null,
         "first_name": "test",
         "last_name": "user",
         "display_name": null,
-        "created_at": "2024-09-18T13:38:28.000Z",
-        "updated_at": "2024-09-18T13:39:14.000Z"
+        "created_at": "2025-06-01T11:42:25.000Z",
+        "updated_at": "2025-06-01T11:42:25.000Z"
       },
-      "converted_balance": "1243.0",
+      "converted_balance": "17501.71767",
       "reference_currency": "ngn",
       "is_crypto": true,
-      "created_at": "2024-09-18T13:40:01.000Z",
-      "updated_at": "2024-09-18T13:57:10.000Z",
+      "created_at": "2025-06-01T11:42:25.000Z",
+      "updated_at": "2025-06-17T12:01:29.000Z",
       "blockchain_enabled": true,
-      "default_network": "trc20",
+      "default_network": "bep20",
       "networks": [
+        {
+          "id": "bep20",
+          "name": "Binance Smart Chain",
+          "deposits_enabled": true,
+          "withdraws_enabled": true
+        },
+        {
+          "id": "erc20",
+          "name": "Ethereum Network",
+          "deposits_enabled": true,
+          "withdraws_enabled": true
+        },
         {
           "id": "trc20",
           "name": "Tron Network",
           "deposits_enabled": true,
           "withdraws_enabled": true
+        },
+        {
+          "id": "polygon",
+          "name": "Polygon Network",
+          "deposits_enabled": true,
+          "withdraws_enabled": true
+        },
+        {
+          "id": "solana",
+          "name": "Solana Network",
+          "deposits_enabled": true,
+          "withdraws_enabled": true
+        },
+        {
+          "id": "celo",
+          "name": "Celo Network",
+          "deposits_enabled": true,
+          "withdraws_enabled": true
+        },
+        {
+          "id": "optimism",
+          "name": "Optimism Network",
+          "deposits_enabled": true,
+          "withdraws_enabled": true
+        },
+        {
+          "id": "ton",
+          "name": "Ton Network",
+          "deposits_enabled": true,
+          "withdraws_enabled": true
+        },
+        {
+          "id": "arbitrum",
+          "name": "Arbitrum Network",
+          "deposits_enabled": true,
+          "withdraws_enabled": false
         }
       ],
-      "deposit_address": "TX35qctiFnjwd7AeNmVqwggrBh7qqWC4ad",
+      "deposit_address": "0x2179EA580dF5b25b3Cb369f13397C5a6730a48d9",
       "destination_tag": null
     },
     "user": {
-      "id": "u2d7imxe",
+      "id": "2ed922fe-a10d-405a-9745-c9eb2c92e6b6",
       "sn": "QDXRTFBY2I6",
-      "email": "test@gmail.com",
+      "email": "boltdsg@gmail.com",
       "reference": null,
       "first_name": "test",
       "last_name": "user",
       "display_name": null,
-      "created_at": "2024-04-02T13:09:40.000Z",
-      "updated_at": "2024-04-02T13:09:41.000Z"
+      "created_at": "2025-06-01T11:42:25.000Z",
+      "updated_at": "2025-06-01T11:42:25.000Z"
     },
     "payment_transaction": {
       "status": "confirmed",
@@ -64,26 +112,26 @@
       "required_confirmations": 1
     },
     "payment_address": {
-      "id": "mzlhmte6",
+      "id": "f759f14b-a9ad-492c-afc0-2be4a2e55c0f",
       "reference": null,
-      "currency": "trx",
-      "address": "TKipGdUmft8UsHQsmLi8eaAX63RxxQt3cN",
-      "network": "trc20",
+      "currency": "usdt",
+      "address": "0x2179EA580dF5b25b3Cb369f13397C5a6730a48d9",
+      "network": "bep20",
       "user": {
-        "id": "u2d7imxe",
-        "sn": "QDXTEJ7YRMF",
-        "email": "test@gmail.com",
+        "id": "2ed922fe-a10d-405a-9745-c9eb2c92e6b6",
+        "sn": "QDXRTFBY2I6",
+        "email": "boltdsg@gmail.com",
         "reference": null,
         "first_name": "test",
         "last_name": "user",
         "display_name": null,
-        "created_at": "2024-04-02T13:09:40.000Z",
-        "updated_at": "2024-04-02T13:09:41.000Z"
+        "created_at": "2025-06-01T11:42:25.000Z",
+        "updated_at": "2025-06-01T11:42:25.000Z"
       },
       "destination_tag": null,
       "total_payments": null,
-      "created_at": "2024-04-02T13:12:11.000Z",
-      "updated_at": "2024-04-02T13:12:12.000Z"
+      "created_at": "2025-06-03T04:17:31.000Z",
+      "updated_at": "2025-06-03T04:17:42.000Z"
     }
   }
 }

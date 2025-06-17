@@ -1,29 +1,17 @@
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity, IBaseEntity } from '../base.entity';
+import { CwalletsEntity, ICwalletEntity } from '../cwallet/cwallet.entity';
+import { IQWalletEntity, QWalletsEntity } from '../qwallet/qwallets.entity';
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  UpdateDateColumn,
-} from 'typeorm';
-import { BaseEntity } from '../base.entity';
-import { CwalletsEntity } from '../cwallet/cwallet.entity';
-import { QWalletsEntity } from '../qwallet/qwallets.entity';
+  SupportedBlockchainType,
+  SupportedWalletTypes,
+  WalletProviderEnum,
+} from '@/config/settings';
 
 @Entity({ name: 'tokens' })
 export class TokenEntity extends BaseEntity {
-  @Column({ name: 'chain_type', type: 'varchar' })
-  chainType: 'EVM' | 'STELLAR';
-
-  @Column({ name: 'symbol', type: 'varchar' })
-  symbol: string;
-
   @Column({ name: 'name', type: 'varchar', nullable: true })
   name: string | null;
-
-  // EVM specific
-  @Column({ name: 'contract_address', type: 'varchar', nullable: true })
-  contractAddress: string | null;
 
   // Stellar specific
   @Column({ name: 'asset_code', type: 'varchar', nullable: true })
@@ -35,18 +23,19 @@ export class TokenEntity extends BaseEntity {
   @Column({ name: 'decimals', type: 'int', default: 18 })
   decimals: number;
 
-  @Column({ type: 'varchar', nullable: true })
-  network: string | null;
-
-  // 💰 Wallet context
-  @Column({ name: 'wallet_id', type: 'uuid' })
-  walletId: string;
-
-  @Column({ name: 'wallet_type', type: 'varchar' })
-  walletType: string;
-
-  @Column({ name: 'balance', type: 'varchar', nullable: true })
+  @Column({ name: 'balance', type: 'varchar', nullable: false, default: '0' })
   balance: string | null;
+
+  @Column({
+    name: 'wallet_type',
+    type: 'enum',
+    enum: SupportedWalletTypes,
+    nullable: false,
+  })
+  walletType: SupportedWalletTypes;
+
+  @Column({ type: 'enum', enum: WalletProviderEnum, nullable: false })
+  walletProvider: WalletProviderEnum;
 
   @ManyToOne(() => CwalletsEntity, (wallet) => wallet.tokens, {
     nullable: true,
@@ -61,4 +50,18 @@ export class TokenEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'qwallet_id' })
   qwallet?: QWalletsEntity;
+}
+
+export interface ITokenEntity extends IBaseEntity {
+  name: string | null;
+  contractAddress: string | null;
+  assetCode: string | null;
+  issuer: string | null;
+  decimals: number;
+  networks: SupportedBlockchainType[];
+  balance: string | null;
+  walletType: SupportedWalletTypes;
+  walletProvider: WalletProviderEnum;
+  cwallet?: ICwalletEntity | null;
+  qwallet?: IQWalletEntity | null;
 }

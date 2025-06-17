@@ -52,20 +52,20 @@ export class PaymentsService {
         withdrawCryptoPaymentDto.sourceAddress,
       );
 
-      await this.qwalletService.createCryptoWithdrawal(
+      return await this.qwalletService.createCryptoWithdrawal(
         withdrawCryptoPaymentDto,
         wallet,
       );
     }
 
-    const wallet = await this.cwalletService.lookupSubWallet(
-      withdrawCryptoPaymentDto.sourceAddress,
-    );
+    // const wallet = await this.cwalletService.lookupSubWallet(
+    //   withdrawCryptoPaymentDto.sourceAddress,
+    // );
 
-    return await this.cwalletService.createCryptoWithdrawal(
-      withdrawCryptoPaymentDto,
-      wallet,
-    );
+    // return await this.cwalletService.createCryptoWithdrawal(
+    //   withdrawCryptoPaymentDto,
+    //   wallet,
+    // );
   }
 
   async handleCryptoFeeEstimator() {}

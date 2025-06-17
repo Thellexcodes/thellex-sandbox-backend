@@ -1,10 +1,12 @@
 import { NotificationPayload } from '@/types/notification.types';
-import { NOTIFICATION_SOCKETS } from '@/types/socket.enums';
-import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import {
+  NOTIFICATION_SOCKETS,
+  TRANSACTION_NOTIFICATION_TYPES_ENUM,
+} from '@/types/socket.enums';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+//TODO: handle errors with enum
 @WebSocketGateway({ cors: { origin: '*' } })
 export class NotificationsGateway {
   @WebSocketServer()
@@ -50,8 +52,8 @@ export class NotificationsGateway {
     }
   }
 
-  emitNotificationToUser(userId: string, notification: any) {
-    const sockets = this.userSockets.get(userId);
+  emitNotificationToUser(alertID: string, notification: any) {
+    const sockets = this.userSockets.get(alertID);
     if (sockets) {
       sockets.forEach((socketId) =>
         this.server.to(socketId).emit('notification', notification),
@@ -59,15 +61,19 @@ export class NotificationsGateway {
     }
   }
 
-  async emitDepositSuccessfulToUser(
+  async emitTransactionNotificationToUser(
     alertID: string,
+    eventType: TRANSACTION_NOTIFICATION_TYPES_ENUM,
     payload: NotificationPayload,
   ) {
     const sockets = this.userSockets.get(alertID);
+    const event =
+      eventType === 'deposit'
+        ? NOTIFICATION_SOCKETS.DEPOSIT_SUCCESSFUL
+        : NOTIFICATION_SOCKETS.WITHDRAWAL_SUCCESSFUL;
+
     sockets?.forEach((socketId) => {
-      this.server
-        .to(socketId)
-        .emit(NOTIFICATION_SOCKETS.DEPOSIT_SUCCESSFUL, payload);
+      this.server.to(socketId).emit(event, payload);
     });
   }
 }

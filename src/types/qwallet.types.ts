@@ -1,11 +1,16 @@
-import { FEEType } from '@/config/settings';
-import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { SupportedBlockchainType } from '@/config/settings';
+import { ApiResponse } from './request.types';
 
-export interface CreateSubAccountRequest {
-  email: string;
+// network
+interface IQNetwork {
+  id: string;
+  name: string;
+  deposits_enabled: boolean;
+  withdraws_enabled: boolean;
 }
 
-export interface ISubAccountData {
+//Sub Account
+export interface IQSubAccountData {
   id: string;
   sn: string;
   email: string;
@@ -16,128 +21,65 @@ export interface ISubAccountData {
   created_at: string;
   updated_at: string;
 }
+export type IQCreateSubAccountResponse = Promise<ApiResponse<IQSubAccountData>>;
+export type IQGetSubAccountResponse = Promise<IQSubAccountData | null>;
 
-export interface ApiResponse<T> {
-  status: string;
-  message: string;
-  data: T;
-}
-
-export interface IQwalletNetwork {
-  id: string;
-  name: string;
-  deposits_enabled: boolean;
-  withdraws_enabled: boolean;
-}
-
+// Wallets
 export interface IQWallet {
-  id: string;
-  profile: QWalletProfileEntity;
-  reference: string;
-  currency: string;
-  address: string;
-  isCrypto: boolean;
-  destinationTag: string | null;
-  totalPayments: string | null;
-  balance: string;
-  defaultNetwork: string;
-
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface IQwalletBalance {
   id: string;
   name: string;
   currency: string;
   balance: string;
   locked: string;
   staked: string;
-  user: ISubAccountData;
+  user: IQSubAccountData;
   converted_balance: string;
   reference_currency: string;
   is_crypto: boolean;
   created_at: string;
   updated_at: string;
   blockchain_enabled: boolean;
-  default_network: string | null;
-  networks: IQwalletNetwork[];
-  destination_tag: string | null;
-}
-
-export class QWalletWithdrawalFeeResponse {
-  fee: number;
-  type: FEEType;
-}
-
-// Responses
-export type CreateSubAccountResponse = ApiResponse<ISubAccountData>;
-
-//Wallet
-export type CreateUserWalletResponse = ApiResponse<IQWallet>;
-export type GetUserWalletResponse = ApiResponse<IQWallet>;
-export type GetUserWalletsResponse = ApiResponse<IQwalletBalance[]>;
-export type GetPaymentAddressResponse = ApiResponse<IQWallet[]>;
-// : Promise<ValidateAddressResponse>
-//  Promise<CreateWithdrawalResponse> {
-// : Promise<GetWithdrawalResponse>
-
-//Swap
-interface SwapData {
-  id: string;
-  from_currency: string;
-  to_currency: string;
-  quoted_price: string;
-  quoted_currency: string;
-  from_amount: string;
-  to_amount: string;
-  confirmed: boolean;
-  expires_at: string; // ISO date string
-  created_at: string; // ISO date string
-  updated_at: string; // ISO date string
-  user: ISubAccountData;
-}
-
-export type CreateSwapResponse = ApiResponse<SwapData>;
-export type ConfirmSwapResponse = ApiResponse<any>;
-export type RefreshSwapQuoteResponse = ApiResponse<any>;
-export type GetTemporarySwapQuoteResponse = ApiResponse<any>;
-export type GetSwapTransactionResponse = ApiResponse<any>;
-export type GetAllSwapsResponse = ApiResponse<any>;
-
-//Order
-interface OrderData {}
-export type CreateOrderResponse = ApiResponse<OrderData>;
-export type GetAllOrdersResponse = ApiResponse<any>;
-export type GetOrderDetailsResponse = ApiResponse<any>;
-export type CancelOrderResponse = ApiResponse<any>;
-
-//Withdraw
-export interface WithdrawRecipient {
-  type: string;
-  details: {
-    address: string;
-    destination_tag: string | null;
-    name: string | null;
-  };
-}
-
-export interface IWithdrawWallet {
-  id: string;
-  currency: string;
-  balance: string;
-  locked: string;
-  staked: string;
-  converted_balance: string;
-  reference_currency: string;
-  is_crypto: boolean;
-  created_at: string;
-  updated_at: string;
+  default_network: string;
+  networks: IQNetwork[];
   deposit_address: string;
   destination_tag: string | null;
 }
 
-export interface IWithdrawData {
+export interface IQWalletResponseData {
+  id: string;
+  reference: string | null;
+  currency: string;
+  address: string;
+  network: SupportedBlockchainType;
+  user: IQSubAccountData;
+  destination_tag: string | null;
+  total_payments: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export type IQGetPaymentAddressResponse = Promise<
+  ApiResponse<IQWalletResponseData>
+>;
+export type IQCreatePaymentAddressResponse = Promise<
+  ApiResponse<IQWalletResponseData>
+>;
+export type IQValidateAddressResponse = Promise<ApiResponse<any>>;
+export type IQGetUserWalletResponse = Promise<ApiResponse<IQWallet>>;
+
+//Withdrawals
+interface IQRecipientDetails {
+  address: string;
+  destination_tag: string | null;
+  name: string | null;
+}
+
+interface IQRecipient {
+  type: string;
+  details: IQRecipientDetails;
+}
+
+interface IQWithdrawPaymentResponseData {
   id: string;
   reference: string | null;
   type: string;
@@ -152,9 +94,10 @@ export interface IWithdrawData {
   reason: string | null;
   created_at: string;
   done_at: string | null;
-  recipient: WithdrawRecipient;
-  wallet: IWithdrawWallet;
-  user: ISubAccountData;
+  recipient: IQRecipient;
+  wallet: IQWallet;
+  user: IQSubAccountData;
 }
 
-export type HandleWithdrawPaymentResponse = ApiResponse<IWithdrawData>;
+export type IQWithdrawPaymentResponse =
+  ApiResponse<IQWithdrawPaymentResponseData>;

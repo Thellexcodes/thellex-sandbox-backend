@@ -1,56 +1,47 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
   ITransactionHistory,
   TransactionHistoryDto,
 } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { SupportedBlockchainType } from '@/config/settings';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
-class NetworkInfoDto {
+export class WalletMapDto {
   @ApiProperty()
-  name: string;
+  totalBalance: string;
+
+  @ApiProperty({
+    type: [String],
+    description: 'Supported blockchain networks',
+  })
+  networks: string[];
 
   @ApiProperty()
-  address: string;
+  assetCode: string;
 
   @ApiProperty({ type: [TransactionHistoryDto] })
   transactionHistory: TransactionHistoryDto[];
 }
 
-export class AssetBalanceDto {
+export class GetWalletBalanceSummaryResponse {
   @ApiProperty()
+  totalInUsd: number;
+
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: { $ref: getSchemaPath(WalletMapDto) },
+  })
+  wallets: Record<string, WalletMapDto>;
+}
+
+export interface IWalletMap {
+  totalBalance: string;
+  networks: SupportedBlockchainType[];
   assetCode: string;
-
-  @ApiProperty()
-  totalBalance: string;
-
-  @ApiProperty({ type: [NetworkInfoDto] })
-  networks: NetworkInfoDto[];
+  transactionHistory: ITransactionHistory[];
+  [network: string]: any;
 }
 
-export class GetBalanceResponseDto {
-  @ApiProperty()
-  totalBalance: string;
-
-  @ApiProperty()
-  currency: string;
-
-  @ApiProperty({ type: [AssetBalanceDto] })
-  wallets: AssetBalanceDto[];
-}
-
-export interface INetworkInfo {
-  name: string;
-  address: string;
-}
-
-export interface IWalletInfo {
-  assetCode: string;
-  totalBalance: string;
-  networks: INetworkInfo[];
-  transactionHistory?: ITransactionHistory[];
-}
-
-export interface IWalletSummary {
-  totalBalance: string;
-  currency: string;
-  wallets: IWalletInfo[];
+export interface IWalletBalanceSummary {
+  totalInUsd: number;
+  wallets: Record<string, IWalletMap>;
 }

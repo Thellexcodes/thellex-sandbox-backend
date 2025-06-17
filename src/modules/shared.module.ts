@@ -12,6 +12,10 @@ import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 import { FiatYellowcardModule } from './fiat-yellowcard/fiat-yellowcard.module';
 import { CwalletHooksModule } from './cwallet-hooks/cwallet-hooks.module';
+import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
+import { WalletNotificationsService } from './notifications/wallet-notifications.service';
+import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
+import { NotificationsGateway } from './notifications/notifications.gateway';
 
 @Global()
 @Module({
@@ -25,11 +29,24 @@ import { CwalletHooksModule } from './cwallet-hooks/cwallet-hooks.module';
       AuthVerificationCodesEntity,
       QWalletsEntity,
       QWalletProfileEntity,
+      TokenEntity,
+      NotificationEntity,
     ]),
     FiatYellowcardModule,
     CwalletHooksModule,
   ],
-  providers: [Web3Service, TransactionHistoryService],
-  exports: [TypeOrmModule, Web3Service, TransactionHistoryService],
+  providers: [
+    Web3Service,
+    NotificationsGateway,
+    TransactionHistoryService,
+    WalletNotificationsService,
+  ],
+  exports: [
+    Web3Service,
+    TypeOrmModule,
+    NotificationsGateway,
+    TransactionHistoryService,
+    WalletNotificationsService,
+  ],
 })
 export class SharedModule {}
