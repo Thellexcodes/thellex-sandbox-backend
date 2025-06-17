@@ -16,10 +16,17 @@ interface Cookie {
 }
 
 export interface CustomRequest extends Request {
+  [x: string]: any;
   user?: UserEntity;
   sessionId?: string;
   session?: UserSession;
   walletType?: WalletType;
+  geoLocation?: {
+    ip: string;
+    country?: string;
+    continent?: string;
+    isAfrica?: boolean;
+  };
 }
 
 export interface CustomResponse extends Response {}

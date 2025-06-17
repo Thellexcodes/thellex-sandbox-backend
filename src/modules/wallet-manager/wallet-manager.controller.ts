@@ -11,14 +11,17 @@ import {
 import { WalletManagerService } from './wallet-manager.service';
 import {
   ApiBearerAuth,
-  ApiBody,
+  ApiExtraModels,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { GetBalanceResponseDto } from './dto/get-balance-response.dto';
+import {
+  GetWalletBalanceSummaryResponse,
+  WalletMapDto,
+} from './dto/get-balance-response.dto';
 
 @ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
@@ -27,9 +30,10 @@ export class WalletManagerController {
   constructor(private readonly walletManagerService: WalletManagerService) {}
 
   // Get overall wallet balance across all assets
+  @ApiExtraModels(WalletMapDto)
   @Get('balance')
   @UseGuards(AuthGuard)
-  @ApiOkResponse({ type: GetBalanceResponseDto })
+  @ApiOkResponse({ type: GetWalletBalanceSummaryResponse })
   async getBalance(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
     const result = await this.walletManagerService.getBalance(user);

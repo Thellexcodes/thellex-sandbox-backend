@@ -1,5 +1,5 @@
 {
-  "currency": "usdt",
+  "assetCode": "usdt",
   "amount": "1.00",
   "network": "bep20",
   "sourceAddress": "0x2179EA580dF5b25b3Cb369f13397C5a6730a48d9",

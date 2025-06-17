@@ -4,25 +4,35 @@ import {
   CallHandler,
   HttpException,
   HttpStatus,
+  ExecutionContext,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {
-  intercept(_, next: CallHandler): Observable<any> {
+  intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       catchError((error) => {
         if (error instanceof HttpException) {
-          throw error;
+          return throwError(() => error);
         } else if (error instanceof Error) {
-          throw new HttpException(
-            error.message,
-            HttpStatus.INTERNAL_SERVER_ERROR,
+          return throwError(
+            () =>
+              new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+              ),
           );
         } else {
-          console.log(error.message, '3');
-          throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+          console.error('Unknown error:', error);
+          return throwError(
+            () =>
+              new HttpException(
+                'Internal server error',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+              ),
+          );
         }
       }),
     );

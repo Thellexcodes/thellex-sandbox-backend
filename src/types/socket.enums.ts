@@ -9,3 +9,8 @@ export enum NOTIFICATION_SOCKETS {
   PASSWORD_CHANGED = 'password_changed',
   PROMOTION = 'promotion',
 }
+
+export enum TRANSACTION_NOTIFICATION_TYPES_ENUM {
+  Deposit = 'deposit',
+  Withdrawal = 'withdrawal',
+}

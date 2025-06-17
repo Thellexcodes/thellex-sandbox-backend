@@ -3,6 +3,7 @@ import {
   Blockchain,
   CreateTransferTransactionForDeveloperResponse,
   EstimateTransactionFeeData,
+  TokenResponse,
   TransactionResponseData,
   TrimDataResponse,
   ValidateAddressData,
@@ -11,45 +12,102 @@ import {
   WalletSetResponse,
 } from '@circle-fin/developer-controlled-wallets';
 
-export type CwalletSetResponse = TrimDataResponse<WalletSetResponse>;
+// -----------------------------
+// WALLET TYPES
+// -----------------------------
 
-export type CwalletsResponse = TrimDataResponse<Wallets>;
-
-export type CwalletResponse = TrimDataResponse<WalletResponse>;
-
-export type CwalletBalanceResponse = TrimDataResponse<Balances>;
-
-export type CwalletTransactionResponse =
-  TrimDataResponse<CreateTransferTransactionForDeveloperResponse>;
-
-export type ValidateAddressDataResponse = Promise<ValidateAddressData>;
-
-export type EstimateTransactionFeeDataResponse =
-  Promise<EstimateTransactionFeeData>;
-
-export type GetTransactionResponse = Promise<
-  TransactionResponseData['transaction']
->;
-
-export interface IWalletSet {
+/**
+ * Represents a Circle Custody Wallet Set
+ */
+export interface ICWalletSet {
   id: string;
-  custodyType: 'DEVELOPER';
+  custodyType: 'DEVELOPER'; // Developer custody type
   name: string;
   updateDate: string;
   createDate: string;
 }
 
-export type CreateWalletSetResponse = {
-  walletSet: IWalletSet;
+/**
+ * Response after creating a new wallet set
+ */
+export type ICCreateWalletSetResponse = {
+  walletSet: ICWalletSet;
 };
 
-export interface IValidateAddress {
+/**
+ * Trimmed response for fetching all wallet sets
+ */
+export type ICWalletSetResponse = TrimDataResponse<WalletSetResponse>;
+
+/**
+ * Trimmed response for fetching multiple wallets
+ */
+export type ICWalletsResponse = TrimDataResponse<Wallets>;
+
+/**
+ * Trimmed response for fetching a specific wallet
+ */
+export type ICWalletResponse = TrimDataResponse<WalletResponse>;
+
+/**
+ * Trimmed response for fetching a wallet's balances
+ */
+export type ICWalletBalanceResponse = TrimDataResponse<Balances>;
+
+// -----------------------------
+// TRANSACTION TYPES
+// -----------------------------
+
+/**
+ * Response after creating a transfer transaction for a developer wallet
+ */
+export type ICWalletTransactionResponse =
+  TrimDataResponse<CreateTransferTransactionForDeveloperResponse>;
+
+/**
+ * Response for retrieving a transaction by its ID
+ */
+export type ICGetTransactionResponse = Promise<
+  TransactionResponseData['transaction']
+>;
+
+/**
+ * Response for retrieving token metadata by its ID
+ */
+export type ICGetTokenResponse = Promise<TrimDataResponse<TokenResponse>>;
+
+// -----------------------------
+// ADDRESS VALIDATION
+// -----------------------------
+
+/**
+ * Payload for validating a blockchain address
+ */
+export interface ICValidateAddress {
   address: string;
   blockchain: Blockchain;
 }
 
-export interface IEstimateTransferFee {
+/**
+ * Response after validating an address
+ */
+export type ICValidateAddressDataResponse = Promise<ValidateAddressData>;
+
+// -----------------------------
+// FEE ESTIMATION
+// -----------------------------
+
+/**
+ * Payload for estimating the gas/fee for a token transfer
+ */
+export interface ICEstimateTransferFee {
   tokenAddress: string;
   destinationAddress: string;
-  amount: string[];
+  amount: string[]; // Amount(s) to transfer
 }
+
+/**
+ * Response after estimating the transaction fee
+ */
+export type ICEstimateTransactionFeeDataResponse =
+  Promise<EstimateTransactionFeeData>;

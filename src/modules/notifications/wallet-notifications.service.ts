@@ -1,18 +1,20 @@
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   NotificationErrors,
+  NotificationMessageEnum,
   NotificationsEnum,
 } from '@/types/notifications.enum';
 import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { IQwalletHookDepositSuccessfulData } from '../qwallet-hooks/dto/qwallet-hook-depositSuccessful.dto';
 
 @Injectable()
-export class QwalletNotificationsService {
+export class WalletNotificationsService {
+  private readonly logger = new Logger(WalletNotificationsService.name);
+
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
@@ -21,39 +23,36 @@ export class QwalletNotificationsService {
   async createNotification({
     user,
     title,
-    data,
     message,
+    data,
   }: {
     user: UserEntity;
     title: NotificationsEnum;
-    message: string;
-    data: {
-      amount: string;
-      currency: string;
-      txid?: string;
-      qwalletID?: string;
-    };
+    message: NotificationMessageEnum;
+    data: Partial<
+      Pick<NotificationEntity, 'amount' | 'assetCode' | 'txID' | 'walletID'>
+    >;
   }): Promise<NotificationEntity> {
     try {
-      const { amount, currency, txid } = data;
-      const upperCurrency = currency.toUpperCase();
+      const upperCurrency = data.assetCode?.toUpperCase() || '';
       const expiresAt = getUtcExpiryDateMonthsFromNow(3);
 
-      const notification = this.notificationRepo.create({
+      const notification: Partial<NotificationEntity> = {
         user,
         title: title.replace(/_/g, ' '),
-        message: `${message} ${amount} ${upperCurrency}`,
+        message: `${message} ${data.amount || ''} ${upperCurrency}`,
         expiresAt,
         consumed: false,
-        txID: txid,
-        amount,
-        currency: upperCurrency,
-        qwalletID: user.qWalletProfile.id,
-      });
+        assetCode: upperCurrency,
+        amount: data.amount,
+        txID: data.txID,
+        walletID: data.walletID,
+      };
 
-      return await this.notificationRepo.save(notification);
+      const entity = this.notificationRepo.create(notification);
+      return await this.notificationRepo.save(entity);
     } catch (error) {
-      console.log(error);
+      this.logger.error('Failed to create notification', error);
       throw new CustomHttpException(
         NotificationErrors.CREATE_FAILED,
         HttpStatus.BAD_REQUEST,
@@ -65,6 +64,7 @@ export class QwalletNotificationsService {
     try {
       await this.notificationRepo.update(id, { consumed: true });
     } catch (error) {
+      this.logger.error(`Failed to mark notification ${id} as consumed`, error);
       throw new CustomHttpException(
         NotificationErrors.UPDATE_FAILED,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -78,6 +78,7 @@ export class QwalletNotificationsService {
         expiresAt: LessThan(new Date()),
       });
     } catch (error) {
+      this.logger.error('Failed to delete expired notifications', error);
       throw new CustomHttpException(
         NotificationErrors.DELETE_FAILED,
         HttpStatus.INTERNAL_SERVER_ERROR,

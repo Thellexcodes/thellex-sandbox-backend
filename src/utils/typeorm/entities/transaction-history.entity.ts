@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { IUserEntity, UserEntity } from './user.entity';
 import { PaymentStatus } from '@/types/payment.types';
-import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventEnum } from '@/types/wallet-manager.types';
 import { BaseEntity, IBaseEntity } from './base.entity';
 
 @Entity('transaction_history')
@@ -17,8 +17,8 @@ export class TransactionHistoryEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column({ type: 'enum', enum: WalletWebhookEventType, nullable: false })
-  event: WalletWebhookEventType;
+  @Column({ type: 'enum', enum: WalletWebhookEventEnum, nullable: false })
+  event: WalletWebhookEventEnum;
 
   @Column({ nullable: false, name: 'transaction_id' })
   transactionId: string;
@@ -27,7 +27,7 @@ export class TransactionHistoryEntity extends BaseEntity {
   type: string;
 
   @Column({ nullable: false })
-  currency: string;
+  assetCode: string;
 
   @Column('decimal', { precision: 18, scale: 8, nullable: false })
   amount: string;
@@ -57,7 +57,7 @@ export class TransactionHistoryEntity extends BaseEntity {
   @Column({ nullable: false, name: 'wallet_id' })
   walletId: string;
 
-  @Column({ nullable: false, name: 'wallet_name' })
+  @Column({ nullable: true, name: 'wallet_name' })
   walletName: string;
 
   @Column({
@@ -80,7 +80,7 @@ export class TransactionHistoryEntity extends BaseEntity {
 
 export interface ITransactionHistoryEntity extends IBaseEntity {
   user: IUserEntity;
-  event: WalletWebhookEventType;
+  event: WalletWebhookEventEnum;
   transactionId: string;
   type: string;
   currency: string;

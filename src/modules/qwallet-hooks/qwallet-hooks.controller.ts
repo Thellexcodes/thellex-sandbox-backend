@@ -1,18 +1,9 @@
-import {
-  Controller,
-  Post,
-  Body,
-  HttpStatus,
-  Req,
-  HttpCode,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Req } from '@nestjs/common';
 import { QwalletHooksService } from './qwallet-hooks.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CustomRequest } from '@/types/request.types';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
-import { WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
 
 //TODO: add qwallet security middleware
 @ApiTags('WebHooks')
@@ -22,7 +13,6 @@ export class QwalletHooksController {
   constructor(private readonly qwalletHooksService: QwalletHooksService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Webhook endpoint to handle qwallet events',
     description: `
@@ -40,23 +30,12 @@ The payload contains the event type and event-specific data.
       'Payload containing the wallet event type and its corresponding data',
     type: QWalletWebhookPayloadDto,
   })
-  async handleQWalletWebhook(
-    @Body() payload: QWalletWebhookPayloadDto,
-    @Req() req: CustomRequest,
-  ) {
-    const user = req.user;
-
+  async handleQWalletWebhook(@Body() payload: QWalletWebhookPayloadDto) {
     switch (payload.event) {
-      case WalletWebhookEventType.DepositSuccessful:
-        return await this.qwalletHooksService.handleDepositSuccessful(
-          payload,
-          user,
-        );
-      case WalletWebhookEventType.WithdrawalSuccessful:
-        return await this.qwalletHooksService.handleWithdrawSuccessful(
-          payload,
-          user,
-        );
+      case WalletWebhookEventEnum.DepositSuccessful:
+        return await this.qwalletHooksService.handleDepositSuccessful(payload);
+      case WalletWebhookEventEnum.WithdrawalSuccessful:
+        return await this.qwalletHooksService.handleWithdrawSuccessful(payload);
       default:
         return null;
     }

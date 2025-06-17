@@ -8,10 +8,13 @@ import {
 } from '@/utils/helpers';
 import PQueue from 'p-queue';
 import { CwalletService } from '../cwallet/cwallet.service';
-import { IWalletInfo, IWalletSummary } from './dto/get-balance-response.dto';
 import { Web3Service } from '@/utils/services/web3.service';
 import { ConfigService } from '@nestjs/config';
 import { ENV_TESTNET } from '@/constants/env';
+import {
+  IWalletBalanceSummary,
+  IWalletMap,
+} from './dto/get-balance-response.dto';
 
 @Injectable()
 export class WalletManagerService {
@@ -21,7 +24,7 @@ export class WalletManagerService {
     private readonly configService: ConfigService,
   ) {}
 
-  async getBalance(user: UserEntity): Promise<IWalletSummary | any> {
+  async getBalance(user: UserEntity): Promise<IWalletBalanceSummary> {
     try {
       const qwallets = user.qWalletProfile?.wallets ?? [];
       const cwallets = user.cWalletProfile?.wallets ?? [];
@@ -39,7 +42,7 @@ export class WalletManagerService {
         allowedNetworks.has(network.toLowerCase() as SupportedBlockchainType),
       );
 
-      const walletMap: Record<string, IWalletInfo> = {};
+      const walletMap: Record<string, IWalletMap> = {};
       let totalInUsd = 0;
 
       const queue = new PQueue({ concurrency: 3 });
@@ -82,6 +85,7 @@ export class WalletManagerService {
               totalBalance: total.toString(),
               networks: [networkNormalized as SupportedBlockchainType],
               assetCode: tokenLower,
+              transactionHistory: [],
             };
           } else {
             walletMap[tokenLower][networkNormalized] = total;
@@ -102,6 +106,11 @@ export class WalletManagerService {
       );
 
       await Promise.all(tasks);
+
+      console.log({
+        totalInUsd,
+        wallets: walletMap,
+      });
 
       return {
         totalInUsd,

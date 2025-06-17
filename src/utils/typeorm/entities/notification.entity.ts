@@ -33,7 +33,7 @@ export class NotificationEntity extends BaseEntity {
   consumed: boolean;
 
   @Column()
-  currency: string;
+  assetCode: string;
 
   @Column()
   expiresAt: Date;
@@ -45,7 +45,7 @@ export class NotificationEntity extends BaseEntity {
   txID: string;
 
   @Column({ nullable: true })
-  qwalletID: string;
+  walletID: string;
 }
 
 export interface INotificationEntity extends IBaseEntity {

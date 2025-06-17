@@ -3,20 +3,21 @@ import { ConfigService } from '@nestjs/config';
 import {
   AccountType,
   CircleDeveloperControlledWalletsClient,
+  GetTokenInput,
   GetTransactionInput,
   initiateDeveloperControlledWalletsClient,
   Wallet,
   WalletSetResponseData,
 } from '@circle-fin/developer-controlled-wallets';
 import {
-  CwalletBalanceResponse,
-  CwalletResponse,
-  CwalletTransactionResponse,
-  EstimateTransactionFeeDataResponse,
-  GetTransactionResponse,
-  IEstimateTransferFee,
-  IValidateAddress,
-  ValidateAddressDataResponse,
+  ICEstimateTransactionFeeDataResponse,
+  ICEstimateTransferFee,
+  ICGetTransactionResponse,
+  ICValidateAddress,
+  ICValidateAddressDataResponse,
+  ICWalletBalanceResponse,
+  ICWalletResponse,
+  ICWalletTransactionResponse,
 } from '@/types/cwallet.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
@@ -44,7 +45,7 @@ import { TransactionHistoryService } from '../transaction-history/transaction-hi
 import { PaymentStatus, PaymentType } from '@/types/payment.types';
 import { TransactionHistoryDto } from '../transaction-history/dto/create-transaction-history.dto';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
-import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { FeeLevel, WalletWebhookEventEnum } from '@/types/wallet-manager.types';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 
 @Injectable()
@@ -169,7 +170,7 @@ export class CwalletService {
   ): Promise<TransactionHistoryEntity> {
     try {
       const tokenId = getTokenId({
-        token: dto.currency,
+        token: dto.assetCode,
         isTestnet: this.configService.get('NODE_ENV') === ENV_TESTNET,
       });
 
@@ -189,10 +190,10 @@ export class CwalletService {
 
       const txnHistory: TransactionHistoryDto = {
         tokenId: transaction.tokenId,
-        event: WalletWebhookEventType.WithdrawPending,
+        event: WalletWebhookEventEnum.WithdrawPending,
         transactionId: transfer.data.id,
         type: PaymentType.OUTBOUND,
-        currency: dto.currency,
+        assetCode: dto.assetCode,
         amount: dto.amount,
         fee: transaction.networkFee ?? '0.00',
         blockchainTxId: transaction.txHash,
@@ -219,7 +220,7 @@ export class CwalletService {
     }
   }
 
-  async getUserWallet(id: string): Promise<CwalletResponse> {
+  async getUserWallet(id: string): Promise<ICWalletResponse> {
     try {
       return await this.circleClient.getWallet({ id });
     } catch (error) {
@@ -230,7 +231,7 @@ export class CwalletService {
 
   async getWalletTokenBalance(
     walletId: string,
-  ): Promise<CwalletBalanceResponse> {
+  ): Promise<ICWalletBalanceResponse> {
     try {
       return await this.circleClient.getWalletTokenBalance({ id: walletId });
     } catch (error) {
@@ -239,12 +240,16 @@ export class CwalletService {
     }
   }
 
+  async getToken(data: GetTokenInput) {
+    return await this.circleClient.getToken(data);
+  }
+
   async createTransaction(
     walletId: string,
     tokenId: string,
     destinationAddress: string,
     amount: string[],
-  ): Promise<CwalletTransactionResponse> {
+  ): Promise<ICWalletTransactionResponse> {
     try {
       return await this.circleClient.createTransaction({
         walletId,
@@ -259,7 +264,7 @@ export class CwalletService {
     }
   }
 
-  async getTransaction(data: GetTransactionInput): GetTransactionResponse {
+  async getTransaction(data: GetTransactionInput): ICGetTransactionResponse {
     try {
       const response = await this.circleClient.getTransaction(data);
       return response.data.transaction;
@@ -269,15 +274,7 @@ export class CwalletService {
     }
   }
 
-  async getBalanceByAddress(
-    id: string,
-    token: TokenEnum,
-    network: SupportedBlockchainType,
-  ): Promise<number> {
-    if (!isSupportedBlockchainToken(network, token)) {
-      throw new Error(`Token ${token} not supported on ${network}`);
-    }
-
+  async getBalanceByAddress(id: string, token: TokenEnum): Promise<number> {
     const normalizedToken = token.toUpperCase();
 
     const response = await this.circleClient.getWalletTokenBalance({
@@ -288,13 +285,15 @@ export class CwalletService {
     return Number(response.data.tokenBalances[0]?.amount ?? 0);
   }
 
-  async validateAddress(data: IValidateAddress): ValidateAddressDataResponse {
+  async validateAddress(
+    data: ICValidateAddress,
+  ): ICValidateAddressDataResponse {
     return (await this.circleClient.validateAddress(data)).data;
   }
 
   async estimateTransferFee(
-    data: IEstimateTransferFee,
-  ): EstimateTransactionFeeDataResponse {
+    data: ICEstimateTransferFee,
+  ): ICEstimateTransactionFeeDataResponse {
     return (await this.circleClient.estimateTransferFee(data)).data;
   }
 
@@ -320,7 +319,7 @@ export class CwalletService {
       this.tokenRepo.create({
         assetCode: symbol,
         name: symbol,
-        balance: '0',
+        balance: '0', //TODO: Fetch and update wallet balance
         cwallet: wallet,
         walletType: SupportedWalletTypes.EVM,
         walletProvider: WalletProviderEnum.CIRCLE,
@@ -405,5 +404,25 @@ export class CwalletService {
     }
 
     return wallets;
+  }
+
+  async updateWalletTokenBalance(
+    wallet: CwalletsEntity,
+    assetCode: string,
+    newBalance: string,
+  ): Promise<void> {
+    try {
+      if (!wallet) throw new Error('Wallet not found');
+
+      //[x] also include network check
+      const token = wallet.tokens.find((t) => t.assetCode === assetCode);
+      if (!token) throw new Error('Token not found in wallet');
+
+      token.balance = newBalance;
+
+      await this.tokenRepo.save(token);
+    } catch (err) {
+      console.error('Error updating wallet token balance:', err);
+    }
   }
 }

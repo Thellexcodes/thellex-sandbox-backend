@@ -1,8 +1,16 @@
 import { SupportedBlockchainType } from '@/config/settings';
 import { ApiResponse } from './request.types';
 
+// network
+interface IQNetwork {
+  id: string;
+  name: string;
+  deposits_enabled: boolean;
+  withdraws_enabled: boolean;
+}
+
 //Sub Account
-export interface ISubAccountData {
+export interface IQSubAccountData {
   id: string;
   sn: string;
   email: string;
@@ -13,31 +21,83 @@ export interface ISubAccountData {
   created_at: string;
   updated_at: string;
 }
-export type CreateSubAccountResponse = Promise<ApiResponse<ISubAccountData>>;
-export type GetSubAccountResponse = Promise<ISubAccountData | null>;
+export type IQCreateSubAccountResponse = Promise<ApiResponse<IQSubAccountData>>;
+export type IQGetSubAccountResponse = Promise<IQSubAccountData | null>;
 
 // Wallets
-export interface IWalletData {
+export interface IQWallet {
+  id: string;
+  name: string;
+  currency: string;
+  balance: string;
+  locked: string;
+  staked: string;
+  user: IQSubAccountData;
+  converted_balance: string;
+  reference_currency: string;
+  is_crypto: boolean;
+  created_at: string;
+  updated_at: string;
+  blockchain_enabled: boolean;
+  default_network: string;
+  networks: IQNetwork[];
+  deposit_address: string;
+  destination_tag: string | null;
+}
+
+export interface IQWalletResponseData {
   id: string;
   reference: string | null;
   currency: string;
   address: string;
   network: SupportedBlockchainType;
-  user: ISubAccountData;
+  user: IQSubAccountData;
   destination_tag: string | null;
   total_payments: string | null;
   created_at: Date;
   updated_at: Date;
 }
 
-export type GetPaymentAddressResponse = Promise<ApiResponse<IWalletData>>;
-export type CreatePaymentAddressResponse = Promise<ApiResponse<IWalletData>>;
+export type IQGetPaymentAddressResponse = Promise<
+  ApiResponse<IQWalletResponseData>
+>;
+export type IQCreatePaymentAddressResponse = Promise<
+  ApiResponse<IQWalletResponseData>
+>;
+export type IQValidateAddressResponse = Promise<ApiResponse<any>>;
+export type IQGetUserWalletResponse = Promise<ApiResponse<IQWallet>>;
 
-//unkown
-export type HandleWithdrawPaymentResponse = ApiResponse<any>;
-export type CreateSwapResponse = ApiResponse<any>;
-export type ConfirmSwapResponse = ApiResponse<any>;
-export type RefreshSwapQuoteResponse = ApiResponse<any>;
-export type GetTemporarySwapQuoteResponse = ApiResponse<any>;
-export type GetSwapTransactionResponse = ApiResponse<any>;
-export type GetAllSwapsResponse = ApiResponse<any>;
+//Withdrawals
+interface IQRecipientDetails {
+  address: string;
+  destination_tag: string | null;
+  name: string | null;
+}
+
+interface IQRecipient {
+  type: string;
+  details: IQRecipientDetails;
+}
+
+interface IQWithdrawPaymentResponseData {
+  id: string;
+  reference: string | null;
+  type: string;
+  currency: string;
+  amount: string;
+  fee: string;
+  total: string;
+  txid: string | null;
+  transaction_note: string;
+  narration: string;
+  status: string;
+  reason: string | null;
+  created_at: string;
+  done_at: string | null;
+  recipient: IQRecipient;
+  wallet: IQWallet;
+  user: IQSubAccountData;
+}
+
+export type IQWithdrawPaymentResponse =
+  ApiResponse<IQWithdrawPaymentResponseData>;

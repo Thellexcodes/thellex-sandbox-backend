@@ -31,10 +31,10 @@ import { CronjobsModule } from './modules/crons/cronjobs.module';
 import { QwalletHooksModule } from './modules/qwallet-hooks/qwallet-hooks.module';
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
 import { WalletManagerModule } from './modules/wallet-manager/wallet-manager.module';
-import { GeoWalletMiddleware } from './middleware/geo-wallet.middleware';
 import { QwalletModule } from './modules/qwallet/qwallet.module';
 import { CwalletModule } from './modules/cwallet/cwallet.module';
 import { SharedModule } from './modules/shared.module';
+import { GeoLocationMiddleware } from './middleware/geo-wallet.middleware';
 
 @Module({
   imports: [
@@ -89,6 +89,6 @@ import { SharedModule } from './modules/shared.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LogRequestMiddleware, GeoWalletMiddleware).forRoutes('*');
+    consumer.apply(LogRequestMiddleware, GeoLocationMiddleware).forRoutes('*');
   }
 }
