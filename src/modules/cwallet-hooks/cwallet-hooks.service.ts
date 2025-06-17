@@ -16,81 +16,81 @@ export class CwalletHooksService {
     private readonly cwalletService: CwalletService,
   ) {}
 
-  async handleDepositSuccessful(payload: CwalletHookDto) {
-    const id = payload.notification.id;
-    const txnState = payload.notification.state;
-    const notificationPayload = payload.notification;
-    if (txnState === PaymentStatus.Confirmed.toLocaleUpperCase()) {
-      const wallet = await this.cwalletService.lookupSubWallet(
-        notificationPayload.destinationAddress,
-      );
+  // async handleDepositSuccessful(payload: CwalletHookDto) {
+  //   const id = payload.notification.id;
+  //   const txnState = payload.notification.state;
+  //   const notificationPayload = payload.notification;
+  //   if (txnState === PaymentStatus.Confirmed.toLocaleUpperCase()) {
+  //     const wallet = await this.cwalletService.lookupSubWallet(
+  //       notificationPayload.destinationAddress,
+  //     );
 
-      const user = wallet.profile.user;
+  //     const user = wallet.profile.user;
 
-      const transaction =
-        await this.transactionHistoryServie.findTransactionByTransactionId(id);
+  //     const transaction =
+  //       await this.transactionHistoryServie.findTransactionByTransactionId(id);
 
-      if (transaction) return;
+  //     if (transaction) return;
 
-      const transactionHistory: TransactionHistoryDto = {
-        transactionId: id,
-        type: PaymentType.INBOUND,
-        currency: '', //TODO: get token from txnHash
-        amount: notificationPayload.amounts[0],
-        fee: notificationPayload.networkFee,
-        blockchainTxId: notificationPayload.txHash,
-        createdAt: undefined,
-        updatedAt: undefined,
-        walletId: '',
-        sourceAddress: notificationPayload.sourceAddress,
-        destinationAddress: notificationPayload.destinationAddress,
-        paymentNetwork: '',
-        user,
-      };
+  //     const transactionHistory: TransactionHistoryDto = {
+  //       transactionId: id,
+  //       type: PaymentType.INBOUND,
+  //       currency: '', //TODO: get token from txnHash
+  //       amount: notificationPayload.amounts[0],
+  //       fee: notificationPayload.networkFee,
+  //       blockchainTxId: notificationPayload.txHash,
+  //       createdAt: undefined,
+  //       updatedAt: undefined,
+  //       walletId: '',
+  //       sourceAddress: notificationPayload.sourceAddress,
+  //       destinationAddress: notificationPayload.destinationAddress,
+  //       paymentNetwork: '',
+  //       user,
+  //     };
 
-      await this.transactionHistoryServie.create(transactionHistory, user);
+  //     await this.transactionHistoryServie.create(transactionHistory, user);
 
-      //[x] create notification and alert user
-      // const notification =
-      //   await this.qwalletNotificationService.createNotification({
-      //     user,
-      //     data,
-      //     title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-      //     message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-      //   });
+  //     //[x] create notification and alert user
+  //     // const notification =
+  //     //   await this.qwalletNotificationService.createNotification({
+  //     //     user,
+  //     //     data,
+  //     //     title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+  //     //     message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+  //     //   });
 
-      // await this.notificationsGateway.emitDepositSuccessfulToUser(
-      //   user.alertID,
-      //   { transaction, notification },
-      // );
-    }
-  }
+  //     // await this.notificationsGateway.emitDepositSuccessfulToUser(
+  //     //   user.alertID,
+  //     //   { transaction, notification },
+  //     // );
+  //   }
+  // }
 
-  async handleWithdrawSuccessful(payload: CwalletHookDto) {
-    const id = payload.notification.id;
-    const txnState = payload.notification.state;
-    const notification = payload.notification;
+  // async handleWithdrawSuccessful(payload: CwalletHookDto) {
+  //   const id = payload.notification.id;
+  //   const txnState = payload.notification.state;
+  //   const notification = payload.notification;
 
-    if (txnState === PaymentStatus.Confirmed.toLocaleUpperCase()) {
-      const transaction =
-        await this.transactionHistoryServie.findTransactionByTransactionId(id);
+  //   if (txnState === PaymentStatus.Confirmed.toLocaleUpperCase()) {
+  //     const transaction =
+  //       await this.transactionHistoryServie.findTransactionByTransactionId(id);
 
-      if (
-        !transaction ||
-        transaction.type !== PaymentStatus.Outbound ||
-        transaction.event === WalletWebhookEventType.DepositSuccessful
-      )
-        return;
+  //     if (
+  //       !transaction ||
+  //       transaction.type !== PaymentStatus.Outbound ||
+  //       transaction.event === WalletWebhookEventType.DepositSuccessful
+  //     )
+  //       return;
 
-      await this.transactionHistoryServie.updateCwalletTransaction({
-        transactionId: id,
-        updates: {
-          paymentStatus: PaymentStatus.Confirmed,
-          event: WalletWebhookEventType.DepositSuccessful,
-          blockchainTxId: notification.txHash,
-          updatedAt: toUTCDate(notification.updateDate),
-        },
-      });
-    }
-  }
+  //     await this.transactionHistoryServie.updateCwalletTransaction({
+  //       transactionId: id,
+  //       updates: {
+  //         paymentStatus: PaymentStatus.Confirmed,
+  //         event: WalletWebhookEventType.DepositSuccessful,
+  //         blockchainTxId: notification.txHash,
+  //         updatedAt: toUTCDate(notification.updateDate),
+  //       },
+  //     });
+  //   }
+  // }
 }

@@ -3,6 +3,7 @@ import {
   ITransactionHistory,
   TransactionHistoryDto,
 } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { SupportedBlockchainType } from '@/config/settings';
 
 class NetworkInfoDto {
   @ApiProperty()
@@ -45,7 +46,7 @@ export interface INetworkInfo {
 export interface IWalletInfo {
   assetCode: string;
   totalBalance: string;
-  networks: INetworkInfo[];
+  networks: SupportedBlockchainType[];
   transactionHistory?: ITransactionHistory[];
 }
 

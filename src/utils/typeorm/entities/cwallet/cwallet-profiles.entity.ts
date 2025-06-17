@@ -9,8 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CwalletsEntity } from './cwallet.entity';
-import { UserEntity } from '../user.entity';
+import { CwalletsEntity, ICwalletEntity } from './cwallet.entity';
+import { IUserEntity, UserEntity } from '../user.entity';
+import { IBaseEntity } from '../base.entity';
 
 @Entity({ name: 'cwallet_profiles' })
 export class CwalletProfilesEntity extends BaseEntity {
@@ -44,4 +45,12 @@ export class CwalletProfilesEntity extends BaseEntity {
     eager: true,
   })
   wallets: CwalletsEntity[];
+}
+
+export interface ICwalletProfilesEntity extends IBaseEntity {
+  user: IUserEntity;
+  state: string;
+  walletSetId: string;
+  displayName: string | null;
+  wallets: ICwalletEntity[];
 }

@@ -1,7 +1,6 @@
 import { PaymentStatus, PaymentType } from '@/types/payment.types';
-import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
 import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { IUserEntity, UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 export class TransactionHistoryDto {
   event?: WalletWebhookEventType;
@@ -44,5 +43,5 @@ export interface ITransactionHistory {
   destinationAddress: string;
   paymentNetwork: string;
   tokenId?: string;
-  user: UserEntity;
+  user: IUserEntity;
 }

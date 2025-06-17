@@ -109,7 +109,7 @@ export class KycEntity extends BaseEntity {
   kycExpiresAt: Date;
 }
 
-export interface IKyc extends IBaseEntity {
+export interface IKycEntity extends IBaseEntity {
   user: IUserEntity;
 
   dob?: string;

@@ -24,7 +24,7 @@ export interface CustomRequest extends Request {
 
 export interface CustomResponse extends Response {}
 
-export interface ITokenQuery {
+export interface ITokenAsset {
   id?: string;
   assetCode?: string;
   name?: string;
@@ -40,3 +40,9 @@ export type RequestCryptoPaymentResponse = {
   wallet: any | null;
   assetCode: TokenEnum;
 };
+
+export interface ApiResponse<T> {
+  status: 'success' | 'error';
+  message: string;
+  data: T;
+}

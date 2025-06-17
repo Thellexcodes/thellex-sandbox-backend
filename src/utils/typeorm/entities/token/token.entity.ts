@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../base.entity';
-import { CwalletsEntity } from '../cwallet/cwallet.entity';
-import { QWalletsEntity } from '../qwallet/qwallets.entity';
+import { BaseEntity, IBaseEntity } from '../base.entity';
+import { CwalletsEntity, ICwalletEntity } from '../cwallet/cwallet.entity';
+import { IQWalletEntity, QWalletsEntity } from '../qwallet/qwallets.entity';
 import {
   SupportedBlockchainType,
   SupportedWalletTypes,
@@ -13,10 +13,6 @@ export class TokenEntity extends BaseEntity {
   @Column({ name: 'name', type: 'varchar', nullable: true })
   name: string | null;
 
-  // EVM specific
-  @Column({ name: 'contract_address', type: 'varchar', nullable: true })
-  contractAddress: string | null;
-
   // Stellar specific
   @Column({ name: 'asset_code', type: 'varchar', nullable: true })
   assetCode: string | null;
@@ -26,12 +22,6 @@ export class TokenEntity extends BaseEntity {
 
   @Column({ name: 'decimals', type: 'int', default: 18 })
   decimals: number;
-
-  @Column({
-    type: 'simple-array',
-    name: 'networks',
-  })
-  networks: SupportedBlockchainType[];
 
   @Column({ name: 'balance', type: 'varchar', nullable: false, default: '0' })
   balance: string | null;
@@ -62,7 +52,7 @@ export class TokenEntity extends BaseEntity {
   qwallet?: QWalletsEntity;
 }
 
-export interface ITokenEntity {
+export interface ITokenEntity extends IBaseEntity {
   name: string | null;
   contractAddress: string | null;
   assetCode: string | null;
@@ -72,6 +62,6 @@ export interface ITokenEntity {
   balance: string | null;
   walletType: SupportedWalletTypes;
   walletProvider: WalletProviderEnum;
-  cwallet?: CwalletsEntity | null;
-  qwallet?: QWalletsEntity | null;
+  cwallet?: ICwalletEntity | null;
+  qwallet?: IQWalletEntity | null;
 }

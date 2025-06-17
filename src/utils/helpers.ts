@@ -124,12 +124,20 @@ export function getSupportedAssets() {
   return assets;
 }
 
-export function getSupportedNetwork(
+export function isSupportedBlockchainToken(
   network: SupportedBlockchainType,
   token: TokenEnum,
 ): boolean {
   const tokens = ChainTokens[network];
   return tokens?.includes(token) ?? false;
+}
+
+export function isSupportedBlockchainType(
+  value: string,
+): value is SupportedBlockchainType {
+  return Object.values(SupportedBlockchainType).includes(
+    value as SupportedBlockchainType,
+  );
 }
 
 export function normalizeBlockchains(
@@ -164,11 +172,6 @@ export function yellowCardAuthHeaders() {
     Authorization: `Bearer ${process.env.YELLOWCARD_AUTH_KEY}`,
   };
 }
-
-type GetTokenIdOptions = {
-  token: TokenEnum | string;
-  chain: SupportedBlockchainType;
-};
 
 export function getTokenId({
   token,
@@ -213,4 +216,17 @@ export function toUTCDate(dateString: string): Date {
   }
   const date = new Date(dateString);
   return isNaN(date.getTime()) ? new Date(new Date().toISOString()) : date;
+}
+
+export function getTokensForNetworks(
+  networks: SupportedBlockchainType[],
+): TokenEnum[] {
+  const tokensSet = new Set<TokenEnum>();
+  networks.forEach((network) => {
+    const tokens = ChainTokens[network];
+    if (tokens) {
+      tokens.forEach((token) => tokensSet.add(token));
+    }
+  });
+  return Array.from(tokensSet);
 }

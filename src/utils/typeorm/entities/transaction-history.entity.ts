@@ -6,15 +6,13 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
+import { IUserEntity, UserEntity } from './user.entity';
 import { PaymentStatus } from '@/types/payment.types';
 import { FeeLevel, WalletWebhookEventType } from '@/types/wallet-manager.types';
+import { BaseEntity, IBaseEntity } from './base.entity';
 
 @Entity('transaction_history')
-export class TransactionHistoryEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class TransactionHistoryEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
@@ -56,12 +54,6 @@ export class TransactionHistoryEntity {
   @Column({ nullable: true })
   reason?: string;
 
-  @Column({ type: 'timestamptz', nullable: true, name: 'created_at' })
-  createdAt: Date;
-
-  @Column({ type: 'timestamptz', nullable: true, name: 'updated_at' })
-  updatedAt?: Date | null;
-
   @Column({ nullable: false, name: 'wallet_id' })
   walletId: string;
 
@@ -83,5 +75,24 @@ export class TransactionHistoryEntity {
   destinationAddress: string;
 
   @Column({ nullable: false, name: 'payment_network' })
+  paymentNetwork: string;
+}
+
+export interface ITransactionHistoryEntity extends IBaseEntity {
+  user: IUserEntity;
+  event: WalletWebhookEventType;
+  transactionId: string;
+  type: string;
+  currency: string;
+  amount: string;
+  fee: string;
+  feeLevel?: FeeLevel;
+  blockchainTxId?: string | null;
+  reason?: string | null;
+  walletId: string;
+  walletName: string;
+  paymentStatus: PaymentStatus;
+  sourceAddress: string;
+  destinationAddress: string;
   paymentNetwork: string;
 }

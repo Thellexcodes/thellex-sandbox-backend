@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { QWalletProfileEntity } from './qwallet-profile.entity';
-import { BaseEntity } from '../base.entity';
-import { IToken, TokenEntity } from '../token/token.entity';
+import { BaseEntity, IBaseEntity } from '../base.entity';
+import { TokenEntity } from '../token/token.entity';
 import {
   SupportedBlockchainType,
   SupportedWalletTypes,
@@ -59,7 +59,7 @@ export class QWalletsEntity extends BaseEntity {
   tokens: TokenEntity[];
 }
 
-export interface IQWalletEntity {
+export interface IQWalletEntity extends IBaseEntity {
   profile: QWalletProfileEntity;
   reference: string | null;
   address: string;

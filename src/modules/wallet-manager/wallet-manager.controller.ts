@@ -99,15 +99,6 @@ export class WalletManagerController {
     responseHandler(result, res, req);
   }
 
-  // Get staking info or locked assets info for wallet
-  @Get('staking')
-  @UseGuards(AuthGuard)
-  async getStakingInfo(@Req() req: CustomRequest, @Res() res: CustomResponse) {
-    const userId = req.user.id;
-    const result = await this.walletManagerService.getStakingInfo(userId);
-    responseHandler(result, res, req);
-  }
-
   // Get rewards info (e.g., earned rewards, claimable rewards)
   @Get('rewards')
   @UseGuards(AuthGuard)

@@ -61,7 +61,6 @@ export class PaymentsController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    const user = req.user;
     const response =
       this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
 

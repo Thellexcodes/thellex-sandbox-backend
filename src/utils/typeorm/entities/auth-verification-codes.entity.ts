@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from './base.entity';
-import { UserEntity } from './user.entity';
+import { BaseEntity, IBaseEntity } from './base.entity';
+import { IUserEntity, UserEntity } from './user.entity';
 
 @Entity({ name: 'auth_verification_codes' })
 export class AuthVerificationCodesEntity extends BaseEntity {
@@ -19,4 +19,10 @@ export class AuthVerificationCodesEntity extends BaseEntity {
 
   @Column({ nullable: true, default: false })
   expired: boolean;
+}
+
+export interface IAuthVerificationCodeEntity extends IBaseEntity {
+  user: IUserEntity;
+  code: number;
+  expired?: boolean;
 }

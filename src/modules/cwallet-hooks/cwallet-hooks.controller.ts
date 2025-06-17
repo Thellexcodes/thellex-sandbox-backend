@@ -14,15 +14,15 @@ export class CwalletHooksController {
   create(@Body() payload: CwalletHookDto, @Req() req: CustomRequest) {
     const user = req.user;
 
-    switch (payload.notificationType) {
-      case CircleNotificationType.TransactionsInbound:
-        this.cwalletHooksService.handleDepositSuccessful(payload);
+    // switch (payload.notificationType) {
+    //   case CircleNotificationType.TransactionsInbound:
+    //     this.cwalletHooksService.handleDepositSuccessful(payload);
 
-      case CircleNotificationType.TransactionsOutbound:
-        this.cwalletHooksService.handleWithdrawSuccessful(payload);
-      default:
-        return null;
-    }
+    //   case CircleNotificationType.TransactionsOutbound:
+    //     this.cwalletHooksService.handleWithdrawSuccessful(payload);
+    //   default:
+    //     return null;
+    // }
 
     //     {
     //   subscriptionId: 'b3ca6bfa-8bff-4c29-a11b-50f73d79996d',

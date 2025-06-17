@@ -1,4 +1,4 @@
-import { BaseEntity } from '@/utils/typeorm/entities/base.entity';
+import { BaseEntity, IBaseEntity } from '@/utils/typeorm/entities/base.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
@@ -18,5 +18,13 @@ export class CardManagementEntity extends BaseEntity {
   assetIssuer: string;
 
   @Column()
+  amount: string;
+}
+
+export interface ICardManagementEntity extends IBaseEntity {
+  user: UserEntity;
+  transactionId: string;
+  assetCode: string;
+  assetIssuer: string;
   amount: string;
 }

@@ -1,7 +1,7 @@
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { IUserEntity, UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
-import { QWalletsEntity } from './qwallets.entity';
-import { BaseEntity } from '../base.entity';
+import { IQWalletEntity, QWalletsEntity } from './qwallets.entity';
+import { BaseEntity, IBaseEntity } from '../base.entity';
 import { WalletProviderEnum } from '@/config/settings';
 
 @Entity({ name: 'qwallet_profiles' })
@@ -42,4 +42,17 @@ export class QWalletProfileEntity extends BaseEntity {
     eager: true,
   })
   wallets: QWalletsEntity[];
+}
+
+export interface IQWalletProfileEntity extends IBaseEntity {
+  user: IUserEntity;
+  qid: string;
+  qsn: string;
+  state: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  reference?: string | null;
+  displayName?: string | null;
+  walletProvider: WalletProviderEnum;
+  wallets: IQWalletEntity[];
 }

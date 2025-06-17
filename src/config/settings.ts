@@ -53,7 +53,7 @@ export enum SupportedBlockchainType {
   BEP20 = 'bep20', // Binance Smart Chain BEP20 tokens
   TRC20 = 'trc20', // Tron TRC20 tokens
   MATIC = 'matic', // Polygon (Matic) mainnet
-  MATIC_AMOY = 'MATIC_AMOY', // Polygon Amoy testnet (optional)
+  MATIC_AMOY = 'MATIC-AMOY', // Polygon Amoy testnet (optional)
   AVAX = 'avax',
   AVAX_FUJI = 'avax-fuji',
   SOL = 'sol',

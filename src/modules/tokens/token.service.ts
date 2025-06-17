@@ -1,6 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { ITokenQuery } from '@/types/request.types';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { Repository } from 'typeorm';
@@ -12,7 +11,7 @@ export class TokenService {
     private readonly tokenRepo: Repository<TokenEntity>,
   ) {}
 
-  async findOneBySymbol(params: ITokenQuery): Promise<TokenEntity> {
+  async findOneBySymbol(params): Promise<TokenEntity> {
     try {
       const query = this.tokenRepo
         .createQueryBuilder('token')
