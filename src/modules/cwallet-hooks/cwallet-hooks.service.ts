@@ -37,7 +37,7 @@ export class CwalletHooksService {
       const txnState = payload.notification.state;
       const notificationPayload = payload.notification;
 
-      if (txnState === PaymentStatus.Confirmed.toLocaleUpperCase()) {
+      if (txnState === PaymentStatus.Complete) {
         const wallet = await this.cwalletService.lookupSubWallet(
           notificationPayload.destinationAddress,
         );
@@ -82,7 +82,7 @@ export class CwalletHooksService {
           destinationAddress: notificationPayload.destinationAddress,
           paymentNetwork: notificationPayload.blockchain,
           user,
-          paymentStatus: PaymentStatus.Accepted,
+          paymentStatus: PaymentStatus.Complete,
         };
 
         const transaction = await this.transactionHistoryServie.create(
@@ -142,9 +142,9 @@ export class CwalletHooksService {
       const txnState = payload.notification.state;
       const notificationPayload = payload.notification;
 
-      if (txnState === PaymentStatus.Confirmed.toLocaleUpperCase()) {
+      if (txnState === PaymentStatus.Complete) {
         const wallet = await this.cwalletService.lookupSubWallet(
-          notificationPayload.destinationAddress,
+          notificationPayload.sourceAddress,
         );
 
         if (!wallet) {
@@ -159,14 +159,17 @@ export class CwalletHooksService {
             txnID,
           );
 
-        if (
-          !transaction ||
-          transaction.type !== PaymentType.OUTBOUND ||
-          transaction.event === WalletWebhookEventEnum.DepositSuccessful
-        ) {
+        if (!transaction || transaction.type !== PaymentType.OUTBOUND) {
           throw new CustomHttpException(
             QWalletStatus.TRANSACTION_NOT_FOUND,
             HttpStatus.NOT_FOUND,
+          );
+        }
+
+        if (transaction.event === WalletWebhookEventEnum.WithdrawalSuccessful) {
+          throw new CustomHttpException(
+            QWalletStatus.TRANSACTION_ALREADY_PROCESSED,
+            HttpStatus.CONFLICT,
           );
         }
 
@@ -174,7 +177,7 @@ export class CwalletHooksService {
         await this.transactionHistoryServie.updateCwalletTransaction({
           transactionId: txnID,
           updates: {
-            paymentStatus: PaymentStatus.Confirmed,
+            paymentStatus: PaymentStatus.Complete,
             event: WalletWebhookEventEnum.WithdrawalSuccessful,
             blockchainTxId: notificationPayload.txHash,
             updatedAt: toUTCDate(notificationPayload.updateDate),

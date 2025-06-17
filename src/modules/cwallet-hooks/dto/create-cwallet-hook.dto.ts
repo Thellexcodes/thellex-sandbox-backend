@@ -1,3 +1,4 @@
+import { PaymentStatus } from '@/types/payment.types';
 import {
   CircleNotificationType,
   CircleTransactionType,
@@ -33,8 +34,8 @@ class NotificationDto {
   @ApiProperty()
   refId: string;
 
-  @ApiProperty({ enum: WalletWebhookEventEnum })
-  state: WalletWebhookEventEnum;
+  @ApiProperty({ enum: PaymentStatus })
+  state: PaymentStatus;
 
   @ApiProperty()
   errorReason: string;

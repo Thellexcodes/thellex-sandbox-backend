@@ -2,6 +2,7 @@ import { TransactionType } from '@circle-fin/developer-controlled-wallets';
 
 export enum PaymentStatus {
   None = 'None',
+  Complete = 'COMPLETE',
   Confirmed = 'confirmed',
   Accepted = 'accepted',
   Done = 'Done',
