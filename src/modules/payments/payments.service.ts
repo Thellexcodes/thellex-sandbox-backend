@@ -42,7 +42,7 @@ export class PaymentsService {
    */
   async handleWithdrawCryptoPayment(
     withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ): Promise<TransactionHistoryEntity> {
+  ): Promise<TransactionHistoryEntity | null> {
     if (
       [SupportedBlockchainType.BEP20, SupportedBlockchainType.TRC20].includes(
         withdrawCryptoPaymentDto.network,
@@ -58,14 +58,18 @@ export class PaymentsService {
       );
     }
 
-    // const wallet = await this.cwalletService.lookupSubWallet(
-    //   withdrawCryptoPaymentDto.sourceAddress,
-    // );
+    if (
+      [SupportedBlockchainType.MATIC].includes(withdrawCryptoPaymentDto.network)
+    ) {
+      const wallet = await this.cwalletService.lookupSubWallet(
+        withdrawCryptoPaymentDto.sourceAddress,
+      );
 
-    // return await this.cwalletService.createCryptoWithdrawal(
-    //   withdrawCryptoPaymentDto,
-    //   wallet,
-    // );
+      return await this.cwalletService.createCryptoWithdrawal(
+        withdrawCryptoPaymentDto,
+        wallet,
+      );
+    }
   }
 
   async handleCryptoFeeEstimator() {}

@@ -8,7 +8,7 @@ export class TransactionHistoryDto {
   type: PaymentType;
   assetCode: string;
   amount: string;
-  fee: string;
+  fee?: string;
   feeLevel?: FeeLevel;
   blockchainTxId: string;
   reason?: string | null;
@@ -30,7 +30,7 @@ export interface ITransactionHistory {
   type: PaymentType;
   assetCode: string;
   amount: string;
-  fee: string;
+  fee?: string;
   feeLevel?: FeeLevel;
   blockchainTxId: string;
   reason: string | null;

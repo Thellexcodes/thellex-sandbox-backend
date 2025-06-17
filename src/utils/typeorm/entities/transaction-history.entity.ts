@@ -36,7 +36,7 @@ export class TransactionHistoryEntity extends BaseEntity {
     precision: 65,
     scale: 30,
     default: '0.00',
-    nullable: false,
+    nullable: true,
   })
   fee: string;
 

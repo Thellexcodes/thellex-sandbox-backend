@@ -167,7 +167,7 @@ export class CwalletService {
   async createCryptoWithdrawal(
     dto: CreateCryptoWithdrawPaymentDto,
     wallet: CwalletsEntity,
-  ): Promise<TransactionHistoryEntity> {
+  ): Promise<TransactionHistoryEntity | any> {
     try {
       const tokenId = getTokenId({
         token: dto.assetCode,
@@ -189,22 +189,21 @@ export class CwalletService {
       });
 
       const txnHistory: TransactionHistoryDto = {
-        tokenId: transaction.tokenId,
         event: WalletWebhookEventEnum.WithdrawPending,
+        tokenId: transaction.tokenId,
         transactionId: transfer.data.id,
         type: PaymentType.OUTBOUND,
         assetCode: dto.assetCode,
         amount: dto.amount,
-        fee: transaction.networkFee ?? '0.00',
         blockchainTxId: transaction.txHash,
         walletId: wallet.walletID,
         sourceAddress: wallet.address,
         destinationAddress: transaction.destinationAddress,
         paymentNetwork,
         reason: dto.transaction_note,
-        updatedAt: new Date(transaction.updateDate),
         feeLevel: FeeLevel.HIGH,
-        createdAt: new Date(transaction.createDate),
+        updatedAt: toUTCDate(transaction.updateDate),
+        createdAt: toUTCDate(transaction.createDate),
         walletName: paymentNetwork,
         user: wallet.profile.user,
         paymentStatus: PaymentStatus.Processing,

@@ -67,8 +67,6 @@ export class TransactionHistoryService {
       params.transactionId,
     );
 
-    console.log(params.updates);
-
     if (!existing) {
       throw new CustomHttpException(
         'Transaction not found',

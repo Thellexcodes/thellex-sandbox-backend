@@ -62,7 +62,7 @@ export class PaymentsController {
     @Res() res: CustomResponse,
   ) {
     const response =
-      this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
+      await this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
 
     responseHandler(response, res, req);
   }
