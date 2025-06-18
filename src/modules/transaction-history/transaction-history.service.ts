@@ -2,13 +2,12 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QWalletStatus } from '@/modules/qwallet/qwallet-status.enum';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { IQWalletHookWithdrawSuccessfulEvent } from '../qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
+import { IQWalletHookWithdrawSuccessfulEvent } from '../wallets/qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
 import { TransactionHistoryDto } from './dto/create-transaction-history.dto';
-import { IUpdateCwalletTransactionDto } from '../cwallet-hooks/dto/update-cwallet-hook.dto';
-import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { QWalletStatus } from '../wallets/qwallet/qwallet-status.enum';
+import { IUpdateCwalletTransactionDto } from '../wallets/cwallet-hooks/dto/update-cwallet-hook.dto';
 
 //TODO: add try catch block for error handling
 @Injectable()

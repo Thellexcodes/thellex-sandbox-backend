@@ -13,11 +13,11 @@ import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/types/user-error.enum';
-import { QwalletService } from '../qwallet/qwallet.service';
 import { ChainTokens, SupportedBlockchainType } from '@/config/settings';
-import { CwalletService } from '../cwallet/cwallet.service';
 import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
+import { QwalletService } from '../wallets/qwallet/qwallet.service';
+import { CwalletService } from '../wallets/cwallet/cwallet.service';
 
 @Injectable()
 export class UserService {

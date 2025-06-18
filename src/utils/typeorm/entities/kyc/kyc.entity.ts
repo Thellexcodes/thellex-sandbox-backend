@@ -1,19 +1,10 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsDateString,
-  IsEnum,
-  IsNotEmpty,
-  IsNumberString,
-  IsOptional,
-} from 'class-validator';
 import { EncryptionTransformer } from 'typeorm-encrypted';
-import { KycProvider } from '@/types/kyc.types';
+import { IdTypeEnum, KycProvider } from '@/types/kyc.types';
 import { IUserEntity, UserEntity } from '../user.entity';
 import { BaseEntity, IBaseEntity } from '../base.entity';
-
-const encryptionKey =
-  process.env.ENCRYPTION_KEY || 'your_32_characters_long_key';
+import { CustomerTypesEnum } from '@/config/settings';
+import { getAppConfig } from '@/constants/env';
 
 //TODO: Handle errors with enum
 @Entity({ name: 'kyc' })
@@ -22,119 +13,199 @@ export class KycEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @ApiProperty({ description: 'Date of birth of BVN holder (yyyy-mm-dd)' })
-  @IsOptional()
-  @IsDateString({}, { message: 'dob/invalid-format' })
+  private static encryption = new EncryptionTransformer({
+    key: getAppConfig().KYC_ENCRYPTION_KEY,
+    algorithm: 'aes-256-cbc',
+    ivLength: 16,
+  });
+
   @Column({
     name: 'dob',
     type: 'text',
     nullable: true,
-    transformer: new EncryptionTransformer({
-      key: encryptionKey,
-      algorithm: 'aes-256-cbc',
-      ivLength: 16,
-    }),
+    transformer: KycEntity.encryption,
   })
   dob: string;
 
-  @ApiProperty({ description: 'Bank Verification Number (BVN)' })
-  @IsNotEmpty({ message: 'bvn/empty' })
-  @IsNumberString({}, { message: 'bvn/not-numeric' })
   @Column({
     name: 'bvn',
     type: 'text',
-    transformer: new EncryptionTransformer({
-      key: encryptionKey,
-      algorithm: 'aes-256-cbc',
-      ivLength: 16,
-    }),
+    transformer: KycEntity.encryption,
   })
   bvn: string;
 
-  @ApiProperty({ description: 'National Identification Number (NIN)' })
-  @IsNotEmpty({ message: 'nin/empty' })
-  @IsNumberString({}, { message: 'nin/not-numeric' })
   @Column({
     name: 'nin',
     type: 'text',
-    transformer: new EncryptionTransformer({
-      key: encryptionKey,
-      algorithm: 'aes-256-cbc',
-      ivLength: 16,
-    }),
+    transformer: KycEntity.encryption,
   })
   nin: string;
 
-  @ApiProperty({ enum: KycProvider, description: 'KYC provider used' })
-  @IsEnum(KycProvider, { message: 'provider/invalid' })
   @Column({
     name: 'provider',
     type: 'enum',
     enum: KycProvider,
-    default: KycProvider.IDENFY,
+    default: KycProvider.DOJAH,
   })
   provider: KycProvider;
 
-  @Column({ name: 'customer_type', default: 'retail' })
-  customerType: 'retail' | 'institution';
+  @Column({
+    name: 'customer_type',
+    type: 'enum',
+    enum: CustomerTypesEnum,
+    default: CustomerTypesEnum.Retail,
+  })
+  customerType: CustomerTypesEnum;
 
   // Retail fields
-  @Column({ name: 'full_name', nullable: true }) name: string;
-  @Column({ name: 'phone_number', nullable: true }) phone: string;
-  @Column({ name: 'email_address', nullable: true }) email: string;
-  @Column({ name: 'country_of_residence', nullable: true }) country: string;
-  @Column({ name: 'home_address', nullable: true }) address: string;
-  @Column({ name: 'id_type', nullable: true }) idType: string;
-  @Column({ name: 'id_number', nullable: true }) idNumber: string;
-  @Column({ name: 'additional_id_type', nullable: true })
+  @Column({
+    name: 'first_name',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  firstName: string;
+
+  @Column({
+    name: 'middle_name',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  middlename: string;
+
+  @Column({
+    name: 'last_name',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  lastName: string;
+
+  @Column({
+    name: 'phone_number',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  phone: string;
+
+  @Column({
+    name: 'email_address',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  email: string;
+
+  @Column({
+    name: 'country_of_residence',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  country: string;
+
+  @Column({
+    name: 'home_address',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  address: string;
+
+  @Column({
+    name: 'id_type',
+    nullable: true,
+    type: 'enum',
+    transformer: KycEntity.encryption,
+    enum: IdTypeEnum,
+  })
+  idType: IdTypeEnum[];
+
+  @Column({
+    name: 'id_number',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  idNumber: string;
+
+  @Column({
+    name: 'additional_id_type',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
   additionalIdType: string;
-  @Column({ name: 'additional_id_number', nullable: true })
+
+  @Column({
+    name: 'additional_id_number',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
   additionalIdNumber: string;
 
   // Institution fields
-  @Column({ name: 'business_id', nullable: true }) businessId: string;
-  @Column({ name: 'business_name', nullable: true }) businessName: string;
+  @Column({
+    name: 'business_id',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  businessId: string;
+
+  @Column({
+    name: 'business_name',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  businessName: string;
 
   @Column({ name: 'is_verified', default: false })
   isVerified: boolean;
 
   @Column({
-    name: 'created_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
+    type: 'timestamptz',
+    nullable: true,
+    default: () => "CURRENT_TIMESTAMP + INTERVAL '18 months'",
   })
-  createdAt: Date;
-
-  @Column({ type: 'timestamp', nullable: true })
   kycExpiresAt: Date;
 }
 
 export interface IKycEntity extends IBaseEntity {
-  user: IUserEntity;
+  user: UserEntity;
 
-  dob?: string;
+  dob?: string | null;
+
   bvn: string;
+
   nin: string;
 
   provider: KycProvider;
-  customerType: 'retail' | 'institution';
+
+  customerType: CustomerTypesEnum;
 
   // Retail fields
-  name?: string;
-  phone?: string;
-  email?: string;
-  country?: string;
-  address?: string;
-  idType?: string;
-  idNumber?: string;
-  additionalIdType?: string;
-  additionalIdNumber?: string;
+  firstName?: string | null;
+  middlename?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
+  address?: string | null;
+  idType?: string | null;
+  idNumber?: string | null;
+  additionalIdType?: string | null;
+  additionalIdNumber?: string | null;
 
   // Institution fields
-  businessId?: string;
-  businessName?: string;
+  businessId?: string | null;
+  businessName?: string | null;
 
   isVerified: boolean;
-  createdAt: Date;
-  kycExpiresAt?: Date;
+
+  kycExpiresAt?: Date | null;
 }

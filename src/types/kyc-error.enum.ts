@@ -9,4 +9,9 @@ export enum KycErrorEnum {
   EMAIL_CHECK_FAILED = 'EMAIL_CHECK_FAILED',
   PHONE_CHECK_FAILED = 'PHONE_CHECK_FAILED',
   INTERNAL_ERROR = 'INTERNAL_ERROR',
+  KYC_LOOKUP_FAILED = 'kyc/lookup-failed',
+  KYC_ALREADY_EXISTS = 'kyc/already-exists',
+  NAME_MISMATCH = 'kyc/name-mismatch',
+  MISSING_USER = 'MISSING_USER',
+  NOT_ELIGIBLE = 'NOT_ELIGIBLE',
 }

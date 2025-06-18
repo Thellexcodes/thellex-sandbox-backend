@@ -188,6 +188,11 @@ export enum WalletProviderEnum {
   CIRCLE = 'circle',
 }
 
+export enum CustomerTypesEnum {
+  Retail = 'retail',
+  Institution = 'institution',
+}
+
 export function mapNetworkToWalletType(
   network: SupportedBlockchainType,
 ): SupportedWalletTypes {

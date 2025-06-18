@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { CreateRequestPaymentDto } from '../qwallet/dto/create-request.dto';
-import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { RequestCryptoPaymentResponse } from '@/types/request.types';
-import { CwalletService } from '../cwallet/cwallet.service';
 import { SupportedBlockchainType } from '@/config/settings';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import { QwalletService } from '../wallets/qwallet/qwallet.service';
+import { CwalletService } from '../wallets/cwallet/cwallet.service';
+import { CreateRequestPaymentDto } from './dto/create-payment.dto';
 
 @Injectable()
 export class PaymentsService {

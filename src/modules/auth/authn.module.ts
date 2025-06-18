@@ -11,10 +11,10 @@ import { AuthnEntity } from '@/utils/typeorm/entities/auth.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { MailService } from '../email/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
-import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
-import { CwalletService } from '../cwallet/cwallet.service';
+import { QwalletService } from '../wallets/qwallet/qwallet.service';
+import { CwalletService } from '../wallets/cwallet/cwallet.service';
 
 @Global()
 @Module({

@@ -1,4 +1,14 @@
 export enum KycProvider {
-  IDENFY = 'DOJAH',
-  VERIFF = 'SUMSUB',
+  DOJAH = 'dojah',
+  SUMSUB = 'sumsub',
+}
+
+export enum IdTypeEnum {
+  NIN = 'NIN',
+  BVN = 'BVN',
+  INTERNATIONAL_PASSPORT = 'INTERNATIONAL_PASSPORT',
+  DRIVER_LICENSE = 'DRIVER_LICENSE',
+  VOTER_CARD = 'VOTER_CARD',
+  NATIONAL_ID_CARD = 'NATIONAL_ID_CARD',
+  RESIDENT_PERMIT = 'RESIDENT_PERMIT',
 }

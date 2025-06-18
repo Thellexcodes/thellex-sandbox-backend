@@ -12,9 +12,9 @@ import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../email/mail.service';
 import { StellarService } from '../stellar/stellar.service';
 import { CardManagementEntity } from '../../utils/typeorm/entities/card-management.entity';
-import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { QwalletService } from '../wallets/qwallet/qwallet.service';
 
 @Global()
 @Module({

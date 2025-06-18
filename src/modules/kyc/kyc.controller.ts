@@ -10,7 +10,7 @@ import { BasicTierKycDto } from './dto/kyc-data.dto';
 @Controller('kyc')
 @ApiBearerAuth('access-token')
 export class DkycController {
-  constructor(private readonly dkycService: KycService) {}
+  constructor(private readonly kycService: KycService) {}
 
   @Post('basic')
   @UseGuards(AuthGuard)
@@ -21,10 +21,7 @@ export class DkycController {
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const basicKycRes = await this.dkycService.createBasicKyc(
-      basicKycDto,
-      user,
-    );
+    const basicKycRes = await this.kycService.createBasicKyc(basicKycDto, user);
 
     responseHandler(basicKycRes, res, req);
   }

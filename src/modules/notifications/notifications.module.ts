@@ -12,10 +12,10 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../email/mail.service';
-import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
-import { CwalletService } from '../cwallet/cwallet.service';
+import { QwalletService } from '../wallets/qwallet/qwallet.service';
+import { CwalletService } from '../wallets/cwallet/cwallet.service';
 
 @Module({
   imports: [
