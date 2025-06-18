@@ -7,9 +7,9 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../email/mail.service';
-import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
-import { CwalletService } from '../cwallet/cwallet.service';
+import { QwalletService } from '../wallets/qwallet/qwallet.service';
+import { CwalletService } from '../wallets/cwallet/cwallet.service';
 
 @Global()
 @Module({

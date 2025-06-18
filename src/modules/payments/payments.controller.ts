@@ -14,6 +14,7 @@ import { PaymentsService } from './payments.service';
 import { CustomRequest, CustomResponse } from '@/types/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
+import { BasicKycCheckerGuard } from '@/middleware/guards/basic-kyc-checker.guard';
 
 ApiTags('payments');
 @Controller('Payments')
@@ -39,20 +40,6 @@ export class PaymentsController {
     responseHandler(requestResponse, res, req);
   }
 
-  @Post('request-fiat')
-  @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Request a fiat payment' })
-  async requestFiatPayment(@Body() createRequestPaymentDto: any) {
-    //TODO: implement on-ramp
-  }
-
-  @Post('withdraw-fiat')
-  @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Request a fiat payment' })
-  async withdrawFiatPayment(@Body() createRequestPaymentDto: any) {
-    //TODO: implement off-ramp
-  }
-
   @Post('withdraw-crypto')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
@@ -65,6 +52,20 @@ export class PaymentsController {
       await this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
 
     responseHandler(response, res, req);
+  }
+
+  @Post('on-ramp')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Request a fiat payment' })
+  async requestFiatPayment(@Body() createRequestPaymentDto: any) {
+    //TODO: implement on-ramp
+  }
+
+  @Post('off-ramp')
+  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @ApiOperation({ summary: 'Request a fiat payment' })
+  async withdrawFiatPayment(@Body() createRequestPaymentDto: any) {
+    console.log({ createRequestPaymentDto });
   }
 
   @Get()

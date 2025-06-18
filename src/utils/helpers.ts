@@ -13,7 +13,7 @@ import {
   TokenEnum,
   tokenIds,
 } from '@/config/settings';
-import { ENV_TESTNET, YELLOWCARD_API } from '@/constants/env';
+import { ENV_TESTNET, getAppConfig } from '@/constants/env';
 
 //TODO: handle errors with enums
 
@@ -162,8 +162,7 @@ export const cWalletNetworkNameGetter = (
     : 'MATIC';
 
 export function yellowCardUrl(): string {
-  const env = process.env.NODE_ENV;
-  return env === 'testnet' ? YELLOWCARD_API.sandbox : YELLOWCARD_API.production;
+  return getAppConfig().YELLOWCARD_API;
 }
 
 export function yellowCardAuthHeaders() {
@@ -229,4 +228,19 @@ export function getTokensForNetworks(
     }
   });
   return Array.from(tokensSet);
+}
+
+export function calculateNameMatchScore(
+  input: string,
+  recordName: string,
+): number {
+  const normalize = (str: string) =>
+    str
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z]/g, '');
+  const inputNorm = normalize(input);
+  const recordNorm = normalize(recordName);
+  const matches = [...inputNorm].filter((c) => recordNorm.includes(c));
+  return matches.length / inputNorm.length;
 }

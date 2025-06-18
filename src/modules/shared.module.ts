@@ -10,12 +10,14 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
-import { FiatYellowcardModule } from './fiat-yellowcard/fiat-yellowcard.module';
-import { CwalletHooksModule } from './cwallet-hooks/cwallet-hooks.module';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { WalletNotificationsService } from './notifications/wallet-notifications.service';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { NotificationsGateway } from './notifications/notifications.gateway';
+import { YellowCardService } from './payments/yellowcard.service';
+import { CwalletHooksModule } from './wallets/cwallet-hooks/cwallet-hooks.module';
+import { QwalletService } from './wallets/qwallet/qwallet.service';
+import { HttpService } from '@/middleware/http.service';
 
 @Global()
 @Module({
@@ -32,7 +34,6 @@ import { NotificationsGateway } from './notifications/notifications.gateway';
       TokenEntity,
       NotificationEntity,
     ]),
-    FiatYellowcardModule,
     CwalletHooksModule,
   ],
   providers: [
@@ -40,6 +41,9 @@ import { NotificationsGateway } from './notifications/notifications.gateway';
     NotificationsGateway,
     TransactionHistoryService,
     WalletNotificationsService,
+    YellowCardService,
+    QwalletService,
+    HttpService,
   ],
   exports: [
     Web3Service,
@@ -47,6 +51,9 @@ import { NotificationsGateway } from './notifications/notifications.gateway';
     NotificationsGateway,
     TransactionHistoryService,
     WalletNotificationsService,
+    YellowCardService,
+    QwalletService,
+    HttpService,
   ],
 })
 export class SharedModule {}

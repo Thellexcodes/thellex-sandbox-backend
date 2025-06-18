@@ -1,6 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@/middleware/http.service';
-import { DOJAH_KYC_API } from '@/constants/env';
 import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { KycErrorEnum } from '@/types/kyc-error.enum';
@@ -14,6 +13,9 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { BasicTierKycDto } from './dto/kyc-data.dto';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
+import { getAppConfig } from '@/constants/env';
+import { calculateNameMatchScore } from '@/utils/helpers';
+import { IdTypeEnum } from '@/types/kyc.types';
 
 @Injectable()
 export class KycService {
@@ -21,36 +23,82 @@ export class KycService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     @InjectRepository(KycEntity)
-    private readonly dkycRepo: Repository<KycEntity>,
+    private readonly kycRepo: Repository<KycEntity>,
   ) {}
 
   private get dojahUrl(): string {
-    const env = this.configService.get<string>('NODE_ENV');
-    return env === 'testnet' ? DOJAH_KYC_API.sandbox : DOJAH_KYC_API.production;
+    return getAppConfig().DOJAH_KYC_API;
   }
 
-  async createBasicKyc(kydataDto: BasicTierKycDto, user: UserEntity) {
-    const record = await this.dkycRepo.findOne({
+  async createBasicKyc(
+    kydataDto: BasicTierKycDto,
+    user: UserEntity,
+  ): Promise<void> {
+    const existingRecord = await this.kycRepo.findOne({
       where: { user: { id: user.id } },
     });
-    //[x] P
-    if (!record) {
-      //Lookup Nin
-      const nin = await this.lookupNIN(kydataDto.nin);
 
-      // Lookup Bvn
-      const bvn = await this.lookupBVN(kydataDto.nin);
-
-      await this.dkycRepo.save({
-        user: { id: user.id },
-        ninVerified: true,
-      });
+    if (existingRecord) {
+      throw new CustomHttpException(
+        KycErrorEnum.KYC_ALREADY_EXISTS,
+        HttpStatus.BAD_REQUEST,
+      );
     }
+
+    let ninResponse: NinLookupResponse, bvnResponse: BvnLookupResponse;
+
+    if (kydataDto.nin) {
+      ninResponse = await this.lookupNIN(Number(kydataDto.nin));
+    }
+    if (kydataDto.bvn) {
+      bvnResponse = await this.lookupBVN(Number(kydataDto.bvn));
+    }
+
+    const matchThreshold = 0.7;
+
+    if (ninResponse) {
+      const firstNameScore = calculateNameMatchScore(
+        kydataDto.firstName,
+        ninResponse.entity.first_name,
+      );
+      if (firstNameScore < matchThreshold) {
+        throw new CustomHttpException(
+          KycErrorEnum.NAME_MISMATCH,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    if (bvnResponse) {
+      const lastNameScore = calculateNameMatchScore(
+        kydataDto.lastName,
+        bvnResponse.entity.last_name,
+      );
+      if (lastNameScore < matchThreshold) {
+        throw new CustomHttpException(
+          KycErrorEnum.NAME_MISMATCH,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    const kycRecord = this.kycRepo.create({
+      nin: kydataDto.nin,
+      bvn: kydataDto.bvn,
+      user,
+      firstName: kydataDto.firstName,
+      middlename: kydataDto.middlename,
+      lastName: kydataDto.lastName,
+      dob: kydataDto.dob,
+      idType: [IdTypeEnum.BVN, IdTypeEnum.NIN],
+    });
+
+    await this.kycRepo.save(kycRecord);
   }
 
   async lookupNIN(nin: number): Promise<NinLookupResponse> {
     try {
-      const ninCheckerResponse: NinLookupResponse = await this.httpService.get(
+      const ninCheckerResponse = await this.httpService.get<NinLookupResponse>(
         `${this.dojahUrl}/api/v1/kyc/nin`,
         {
           headers: {
@@ -285,55 +333,9 @@ export class KycService {
     }
   }
 
-  async validateOrFetchKyc(user: UserEntity) {
-    const now = new Date();
-    const expiry = user.kyc?.kycExpiresAt;
-
-    // if (user.kyc?.isVerified && (!expiry || expiry > now)) {
-    //   return user.kyc;
-    // }
-
-    // if (user.customerType === 'institution' && user.isTrustedInstitution) {
-    //   return user.kyc;
-    // }
-
-    // const payload = this.buildKycPayload(user);
-    // await this.callYellowCardKyc(payload); // Assume you abstracted YellowCard call
-
-    // const newKyc = this.kycRepo.create({
-    //   ...payload,
-    //   customerType: user.customerType,
-    //   user,
-    //   isVerified: true,
-    //   kycExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year expiry
-    // });
-
-    // return await this.kycRepo.save(newKyc);
-  }
-
-  async buildKycPayload(user: UserEntity) {
-    // return user.customerType === 'retail'
-    //   ? {
-    //       name: 'User Full Name',
-    //       dob: '01/01/1990',
-    //       email: user.email,
-    //       phone: '+234...',
-    //       idNumber: '123...',
-    //       idType: 'NIN',
-    //       country: 'NG',
-    //       address: 'User address',
-    //       additionalIdNumber: '456...',
-    //       additionalIdType: 'BVN',
-    //     }
-    //   : {
-    //       businessId: 'BUS-12345',
-    //       businessName: 'Business Ltd.',
-    //     };
-  }
-
-  async callYellowCardKyc(payload) {
-    // Call external YellowCard API
-    // If fails, throw ForbiddenException
-    return true;
+  async getUserKyc(userId: string): Promise<KycEntity | null> {
+    return await this.kycRepo.findOne({
+      where: { user: { id: userId } },
+    });
   }
 }

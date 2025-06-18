@@ -5,23 +5,15 @@ import { HttpService } from '@/middleware/http.service';
 import { UserService } from '../users/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../email/mail.service';
-import { QwalletService } from '../qwallet/qwallet.service';
-import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      UserEntity,
-      KycEntity,
-      QWalletProfileEntity,
-      AuthVerificationCodesEntity,
-    ]),
+    TypeOrmModule.forFeature([UserEntity, KycEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (
@@ -31,13 +23,6 @@ import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
     }),
   ],
   controllers: [DkycController],
-  providers: [
-    KycService,
-    HttpService,
-    UserService,
-    MailService,
-    QwalletService,
-    HttpService,
-  ],
+  providers: [KycService, HttpService, UserService, MailService, HttpService],
 })
 export class KycModule {}

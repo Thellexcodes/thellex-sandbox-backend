@@ -1,3 +1,4 @@
+import { IdTypeEnum } from '@/types/kyc.types';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
@@ -5,9 +6,14 @@ import {
   IsNumberString,
   IsDateString,
   IsOptional,
+  IsEnum,
 } from 'class-validator';
 
 export class BasicTierKycDto {
+  @ApiProperty({ enum: IdTypeEnum, description: 'Type of ID provided' })
+  @IsEnum(IdTypeEnum, { message: 'idType/invalid' })
+  idType: IdTypeEnum;
+
   @ApiProperty({ description: 'First name of the user' })
   @IsOptional()
   @IsString({ message: 'firstName/not-string' })
@@ -31,10 +37,30 @@ export class BasicTierKycDto {
   @ApiProperty({ description: 'Bank Verification Number (BVN)' })
   @IsNotEmpty({ message: 'bvn/empty' })
   @IsNumberString({}, { message: 'bvn/not-numeric' })
-  bvn: number;
+  bvn: string;
 
   @ApiProperty({ description: 'National Identification Number (NIN)' })
   @IsNotEmpty({ message: 'nin/empty' })
   @IsNumberString({}, { message: 'nin/not-numeric' })
-  nin: number;
+  nin: string;
+
+  @ApiProperty({ description: 'House number of the user' })
+  @IsNotEmpty({ message: 'houseNumber/empty' })
+  @IsString({ message: 'houseNumber/not-string' })
+  houseNumber: string;
+
+  @ApiProperty({ description: 'Street name of the user' })
+  @IsNotEmpty({ message: 'streetName/empty' })
+  @IsString({ message: 'streetName/not-string' })
+  streetName: string;
+
+  @ApiProperty({ description: 'State of residence' })
+  @IsNotEmpty({ message: 'state/empty' })
+  @IsString({ message: 'state/not-string' })
+  state: string;
+
+  @ApiProperty({ description: 'LGA of residence' })
+  @IsNotEmpty({ message: 'lga/empty' })
+  @IsString({ message: 'lga/not-string' })
+  lga: string;
 }
