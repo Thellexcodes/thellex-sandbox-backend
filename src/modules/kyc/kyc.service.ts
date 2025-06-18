@@ -33,15 +33,14 @@ export class KycService {
     const record = await this.dkycRepo.findOne({
       where: { user: { id: user.id } },
     });
-    //[x] Properly queue later
-
-    //Lookup Nin
-    const nin = await this.lookupNIN(kydataDto.nin);
-
-    // Lookup Bvn
-    const bvn = await this.lookupBVN(kydataDto.nin);
-
+    //[x] P
     if (!record) {
+      //Lookup Nin
+      const nin = await this.lookupNIN(kydataDto.nin);
+
+      // Lookup Bvn
+      const bvn = await this.lookupBVN(kydataDto.nin);
+
       await this.dkycRepo.save({
         user: { id: user.id },
         ninVerified: true,
