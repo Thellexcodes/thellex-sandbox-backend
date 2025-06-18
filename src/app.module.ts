@@ -32,7 +32,7 @@ import { QwalletHooksModule } from './modules/wallets/qwallet-hooks/qwallet-hook
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
 import { WalletManagerModule } from './modules/wallets/wallet-manager/wallet-manager.module';
 import { SharedModule } from './modules/shared.module';
-import { GeoLocationMiddleware } from './middleware/geo-wallet.middleware';
+import { GeoLocationMiddleware } from './middleware/geo-location.middleware';
 import { QwalletModule } from './modules/wallets/qwallet/qwallet.module';
 import { CwalletModule } from './modules/wallets/cwallet/cwallet.module';
 
