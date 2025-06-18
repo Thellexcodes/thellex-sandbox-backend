@@ -254,11 +254,15 @@ async getBalanceByAddress(
 
 ```
 
-### Upcoming Integrations
+### Completed Integrations
 
 - **Webhooks**: Real-time event delivery system to notify merchants of:
+
   - Successful payments
   - Payout status updates
+
+  ### Upcoming Integrations
+
 - **Gas Sponsorship for DCW**: Automatically subsidize gas fees for USDC transactions, enabling frictionless merchant onboarding and payments even without native chain tokens.
 
 ## Usage
