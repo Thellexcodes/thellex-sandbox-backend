@@ -16,7 +16,6 @@ import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { WalletNotificationsService } from './notifications/wallet-notifications.service';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { NotificationsGateway } from './notifications/notifications.gateway';
-import { QWalletAddressFixerService } from './qwallet/qwallet-address-fixes.service';
 
 @Global()
 @Module({
@@ -41,7 +40,6 @@ import { QWalletAddressFixerService } from './qwallet/qwallet-address-fixes.serv
     NotificationsGateway,
     TransactionHistoryService,
     WalletNotificationsService,
-    QWalletAddressFixerService,
   ],
   exports: [
     Web3Service,
@@ -49,7 +47,6 @@ import { QWalletAddressFixerService } from './qwallet/qwallet-address-fixes.serv
     NotificationsGateway,
     TransactionHistoryService,
     WalletNotificationsService,
-    QWalletAddressFixerService,
   ],
 })
 export class SharedModule {}
