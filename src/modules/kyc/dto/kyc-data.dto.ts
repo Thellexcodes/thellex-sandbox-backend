@@ -15,17 +15,15 @@ export class BasicTierKycDto {
   idType: IdTypeEnum;
 
   @ApiProperty({ description: 'First name of the user' })
-  @IsOptional()
   @IsString({ message: 'firstName/not-string' })
   firstName: string;
 
   @ApiProperty({ description: 'Last name of the user' })
   @IsOptional()
   @IsString({ message: 'middleName/not-string' })
-  middlename: string;
+  middleName: string;
 
   @ApiProperty({ description: 'Last name of the user' })
-  @IsOptional()
   @IsString({ message: 'lastName/not-string' })
   lastName: string;
 
@@ -45,22 +43,23 @@ export class BasicTierKycDto {
   nin: string;
 
   @ApiProperty({ description: 'House number of the user' })
-  @IsNotEmpty({ message: 'houseNumber/empty' })
+  @IsOptional()
   @IsString({ message: 'houseNumber/not-string' })
   houseNumber: string;
 
   @ApiProperty({ description: 'Street name of the user' })
   @IsNotEmpty({ message: 'streetName/empty' })
   @IsString({ message: 'streetName/not-string' })
+  @IsOptional()
   streetName: string;
 
   @ApiProperty({ description: 'State of residence' })
-  @IsNotEmpty({ message: 'state/empty' })
   @IsString({ message: 'state/not-string' })
+  @IsOptional()
   state: string;
 
   @ApiProperty({ description: 'LGA of residence' })
-  @IsNotEmpty({ message: 'lga/empty' })
+  @IsOptional()
   @IsString({ message: 'lga/not-string' })
   lga: string;
 }

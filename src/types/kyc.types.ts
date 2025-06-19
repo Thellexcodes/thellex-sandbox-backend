@@ -1,4 +1,4 @@
-export enum KycProvider {
+export enum KycProviderEnum {
   DOJAH = 'dojah',
   SUMSUB = 'sumsub',
 }

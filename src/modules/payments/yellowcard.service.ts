@@ -1,12 +1,13 @@
 import { getAppConfig } from '@/constants/env';
 import { HttpService } from '@/middleware/http.service';
-import { IYCChannelsResultResponse } from '@/types/yellocard.models';
+import {
+  IYCChannelsResponseType,
+  IYCNetworksResponseType,
+} from '@/types/yellocard.models';
+
 import { generateYcSignature } from '@/utils/helpers';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
-// Import or define your interfaces here, e.g.:
-// import { IYCChannelsResultResponse, IYCNetworksResponse, ... } from './interfaces';
 
 @Injectable()
 export class YellowCardService {
@@ -24,7 +25,7 @@ export class YellowCardService {
   // --- Payments API ---
 
   // Get Channels
-  async getChannels(crypto?: string): Promise<IYCChannelsResultResponse> {
+  async getChannels(crypto?: boolean): IYCChannelsResponseType {
     const method = 'GET';
     const path = crypto ? '/business/channels/crypto' : '/business/channels';
     const url = crypto
@@ -33,29 +34,29 @@ export class YellowCardService {
 
     const headers = this.generateAuthHeaders(method, path);
 
-    return await this.httpService.get<IYCChannelsResultResponse>(url, {
+    return await this.httpService.get<IYCChannelsResponseType>(url, {
       headers,
     });
   }
 
   // Get Networks
-  async getNetworks() {
-    // const method = 'GET';
-    // const path = '/business/networks';
-    // const url = `${this.ycUrl}/networks`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+  async getNetworks(): IYCNetworksResponseType {
+    const method = 'GET';
+    const path = '/business/networks';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.get<IYCNetworksResponseType>(url, {
+      headers,
+    });
   }
 
   // Get Rates
   async getRates() {
-    // const method = 'GET';
-    // const path = '/business/rates';
-    // const url = `${this.ycUrl}/rates`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = '/business/rates';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.get(url, { headers });
   }
 
   // Get Account

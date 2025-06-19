@@ -61,7 +61,7 @@ export class PaymentsController {
   }
 
   @Post('on-ramp')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, BasicKycCheckerGuard)
   @ApiOperation({ summary: 'Request a fiat payment' })
   async requestFiatPayment(@Body() createRequestPaymentDto: any) {
     const response = await this.paymentService.handleYcOnRamp(

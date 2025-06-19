@@ -273,3 +273,12 @@ export function generateYcSignature({
     },
   };
 }
+
+/**
+ * Generate a random AES-256 encryption key as a hex string
+ * @returns {string} 64-character hex key string
+ */
+export function generateAes256Key(): string {
+  const keyBuffer = crypto.randomBytes(32); // 32 bytes = 256 bits
+  return keyBuffer.toString('hex'); // convert to hex string
+}

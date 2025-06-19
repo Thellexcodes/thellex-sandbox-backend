@@ -1,3 +1,4 @@
+// Channels
 export interface IYCChannel {
   max: number;
   currency: string;
@@ -19,8 +20,28 @@ export interface IYCChannel {
   id: string;
 }
 
-export interface IYCChannelsResult {
+export interface IYCChannelsResponse {
   channels: IYCChannel[];
 }
 
-export type IYCChannelsResultResponse = Promise<IYCChannelsResult>;
+export type IYCChannelsResponseType = Promise<IYCChannelsResponse>;
+
+// Networks
+export interface IYCNetwork {
+  code: string;
+  updatedAt: string; // ISO date string
+  status: string;
+  channelIds: string[]; // assuming array of strings
+  createdAt: string; // ISO date string
+  accountNumberType: string;
+  id: string;
+  country: string;
+  name: string;
+  countryAccountNumberType: string;
+}
+
+export interface IYCNetworksResponse {
+  networks: IYCNetwork[];
+}
+
+export type IYCNetworksResponseType = Promise<IYCNetworksResponse>;

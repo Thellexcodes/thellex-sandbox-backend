@@ -1,12 +1,13 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EncryptionTransformer } from 'typeorm-encrypted';
-import { IdTypeEnum, KycProvider } from '@/types/kyc.types';
+import { IdTypeEnum, KycProviderEnum } from '@/types/kyc.types';
 import { IUserEntity, UserEntity } from '../user.entity';
 import { BaseEntity, IBaseEntity } from '../base.entity';
 import { CustomerTypesEnum } from '@/config/settings';
 import { getAppConfig } from '@/constants/env';
 
 //TODO: Handle errors with enum
+//TODO: INCLUDE iv for randomness
 @Entity({ name: 'kyc' })
 export class KycEntity extends BaseEntity {
   @OneToOne(() => UserEntity, (user) => user.kyc)
@@ -14,7 +15,7 @@ export class KycEntity extends BaseEntity {
   user: UserEntity;
 
   private static encryption = new EncryptionTransformer({
-    key: getAppConfig().KYC_ENCRYPTION_KEY,
+    key: getAppConfig().KYC_ENCRYPTION_KEY.trim(),
     algorithm: 'aes-256-cbc',
     ivLength: 16,
   });
@@ -44,10 +45,9 @@ export class KycEntity extends BaseEntity {
   @Column({
     name: 'provider',
     type: 'enum',
-    enum: KycProvider,
-    default: KycProvider.DOJAH,
+    enum: KycProviderEnum,
   })
-  provider: KycProvider;
+  provider: KycProviderEnum;
 
   @Column({
     name: 'customer_type',
@@ -57,7 +57,6 @@ export class KycEntity extends BaseEntity {
   })
   customerType: CustomerTypesEnum;
 
-  // Retail fields
   @Column({
     name: 'first_name',
     nullable: true,
@@ -72,7 +71,7 @@ export class KycEntity extends BaseEntity {
     type: 'text',
     transformer: KycEntity.encryption,
   })
-  middlename: string;
+  middleName: string;
 
   @Column({
     name: 'last_name',
@@ -117,11 +116,10 @@ export class KycEntity extends BaseEntity {
   @Column({
     name: 'id_type',
     nullable: true,
-    type: 'enum',
-    transformer: KycEntity.encryption,
-    enum: IdTypeEnum,
+    type: 'text',
+    array: true,
   })
-  idType: IdTypeEnum[];
+  idTypes: IdTypeEnum[];
 
   @Column({
     name: 'id_number',
@@ -131,23 +129,6 @@ export class KycEntity extends BaseEntity {
   })
   idNumber: string;
 
-  @Column({
-    name: 'additional_id_type',
-    nullable: true,
-    type: 'text',
-    transformer: KycEntity.encryption,
-  })
-  additionalIdType: string;
-
-  @Column({
-    name: 'additional_id_number',
-    nullable: true,
-    type: 'text',
-    transformer: KycEntity.encryption,
-  })
-  additionalIdNumber: string;
-
-  // Institution fields
   @Column({
     name: 'business_id',
     nullable: true,
@@ -173,10 +154,42 @@ export class KycEntity extends BaseEntity {
     default: () => "CURRENT_TIMESTAMP + INTERVAL '18 months'",
   })
   kycExpiresAt: Date;
+
+  @Column({
+    name: 'house_number',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  houseNumber: string;
+
+  @Column({
+    name: 'street_name',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  streetName: string;
+
+  @Column({
+    name: 'state',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  state: string;
+
+  @Column({
+    name: 'lga',
+    nullable: true,
+    type: 'text',
+    transformer: KycEntity.encryption,
+  })
+  lga: string;
 }
 
 export interface IKycEntity extends IBaseEntity {
-  user: UserEntity;
+  user: IUserEntity;
 
   dob?: string | null;
 
@@ -184,7 +197,7 @@ export interface IKycEntity extends IBaseEntity {
 
   nin: string;
 
-  provider: KycProvider;
+  provider: KycProviderEnum;
 
   customerType: CustomerTypesEnum;
 
@@ -196,7 +209,7 @@ export interface IKycEntity extends IBaseEntity {
   email?: string | null;
   country?: string | null;
   address?: string | null;
-  idType?: string | null;
+  idTypes?: string | null;
   idNumber?: string | null;
   additionalIdType?: string | null;
   additionalIdNumber?: string | null;
@@ -208,4 +221,9 @@ export interface IKycEntity extends IBaseEntity {
   isVerified: boolean;
 
   kycExpiresAt?: Date | null;
+
+  houseNumber?: string;
+  streetName?: string;
+  state?: string;
+  lga?: string;
 }

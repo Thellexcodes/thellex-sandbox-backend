@@ -25,8 +25,6 @@ export class BasicKycCheckerGuard implements CanActivate {
       kyc.nin.trim() !== '' &&
       kyc.bvn.trim() !== '';
 
-    console.log({ isEligible });
-
     if (!isEligible) {
       throw new CustomHttpException(
         KycErrorEnum.NOT_ELIGIBLE,
@@ -39,7 +37,7 @@ export class BasicKycCheckerGuard implements CanActivate {
     request.user.kycInfo = {
       firstName: kyc.firstName,
       lastName: kyc.lastName,
-      middleName: kyc.middlename,
+      middleName: kyc.middleName,
       dob: kyc.dob,
     };
 
