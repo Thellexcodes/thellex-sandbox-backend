@@ -60,14 +60,28 @@ export class PaymentsController {
     responseHandler(response, res, req);
   }
 
-  @Post('on-ramp')
+  @Post('fiat-collection-request')
   @UseGuards(AuthGuard, BasicKycCheckerGuard)
   @ApiOperation({ summary: 'Request a fiat payment' })
-  async requestFiatPayment(@Body() createRequestPaymentDto: any) {
+  async requestFiatPayment(
+    @Body() createRequestPaymentDto: any,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
+
     const response = await this.paymentService.handleYcOnRamp(
       createRequestPaymentDto,
+      user,
     );
+
+    responseHandler(response, res, req);
   }
+
+  @Post('confirm-collection-request')
+  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @ApiOperation({ summary: 'Request a fiat payment' })
+  async confirmFiatCollectionRequest() {}
 
   @Post('off-ramp')
   @UseGuards(AuthGuard, BasicKycCheckerGuard)

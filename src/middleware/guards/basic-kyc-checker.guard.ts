@@ -32,15 +32,6 @@ export class BasicKycCheckerGuard implements CanActivate {
       );
     }
 
-    request.user.isBasicKycEligible = true;
-
-    request.user.kycInfo = {
-      firstName: kyc.firstName,
-      lastName: kyc.lastName,
-      middleName: kyc.middleName,
-      dob: kyc.dob,
-    };
-
     return true;
   }
 }

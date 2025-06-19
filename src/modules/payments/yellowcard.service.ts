@@ -1,8 +1,11 @@
 import { getAppConfig } from '@/constants/env';
 import { HttpService } from '@/middleware/http.service';
+import { AnyObject } from '@/types/any.types';
 import {
   IYCChannelsResponseType,
   IYCNetworksResponseType,
+  IYCPaymentRequestResponse,
+  IYCPaymentRequestResponseType,
 } from '@/types/yellocard.models';
 
 import { generateYcSignature } from '@/utils/helpers';
@@ -149,14 +152,14 @@ export class YellowCardService {
   }
 
   // --- Collections ---
-
-  async submitCollectionRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/submit';
-    // const url = `${this.ycUrl}/collections/submit`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+  async submitCollectionRequest(
+    body: AnyObject,
+  ): IYCPaymentRequestResponseType {
+    const method = 'POST';
+    const path = '/business/collections';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
   async acceptCollectionRequest(body: object) {
