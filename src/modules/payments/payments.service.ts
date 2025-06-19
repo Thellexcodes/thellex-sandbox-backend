@@ -7,12 +7,17 @@ import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-h
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { CreateRequestPaymentDto } from './dto/create-payment.dto';
+import { YellowCardService } from './yellowcard.service';
+import { HttpService } from '@/middleware/http.service';
+import { IYCChannel, IYCChannelsResult } from '@/types/yellocard.models';
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
+    private readonly httpService: HttpService,
+    private readonly ycService: YellowCardService,
   ) {}
 
   /**
@@ -71,6 +76,16 @@ export class PaymentsService {
       );
     }
   }
+
+  async handleGetPaymentChannels(): Promise<IYCChannel[] | any> {
+    //[x] check the supported channels with settings
+    const paymentChannelResponse = await this.ycService.getChannels('crypto');
+    return paymentChannelResponse.channels;
+  }
+
+  async handleGetCryptoChannels(): Promise<any> {}
+
+  async handleYcOnRamp(data) {}
 
   async handleCryptoFeeEstimator() {}
 }

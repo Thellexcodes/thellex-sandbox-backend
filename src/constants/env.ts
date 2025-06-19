@@ -6,7 +6,7 @@ export const ENV_KYC_ENCRYPTION = process.env.ENV_KYC_ENCRYPTION;
 type ApiConfig = {
   DOJAH_KYC_API: string;
   QWALLET_API: string;
-  YELLOWCARD_API: string;
+  YC_PAYMENT_API: string;
   KYC_ENCRYPTION_KEY: string;
 };
 
@@ -20,9 +20,9 @@ export function getAppConfig(): ApiConfig {
 
   const QWALLET_API = 'https://app.quidax.io/api/v1';
 
-  const YELLOWCARD_API = isSandbox
-    ? 'https://sandbox.api.yellowcard.io/business/payments'
-    : 'https://api.yellowcard.io/business/payments';
+  const YC_PAYMENT_API = isSandbox
+    ? 'https://sandbox.api.yellowcard.io'
+    : 'https://sandbox.api.yellowcard.io';
 
   const KYC_ENCRYPTION_KEY = isSandbox
     ? 'your_32_characters_long_key'
@@ -31,7 +31,7 @@ export function getAppConfig(): ApiConfig {
   return {
     DOJAH_KYC_API,
     QWALLET_API,
-    YELLOWCARD_API,
+    YC_PAYMENT_API,
     KYC_ENCRYPTION_KEY,
   };
 }

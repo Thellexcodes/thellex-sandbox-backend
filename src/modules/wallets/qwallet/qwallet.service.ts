@@ -38,8 +38,6 @@ import { PaymentStatus, PaymentType } from '@/types/payment.types';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { ApiResponse } from '@/types/request.types';
-import { GetPassportResponse } from 'dojah-typescript-sdk';
-import { withdrawDataResp } from '../qwallet-hooks/books/datas';
 import { getAppConfig } from '@/constants/env';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';

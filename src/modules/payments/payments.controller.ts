@@ -22,6 +22,12 @@ ApiTags('payments');
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
 
+  @Get('channels')
+  async channels(@Req() req: CustomRequest, @Res() res: CustomResponse) {
+    const response = await this.paymentService.handleGetPaymentChannels();
+    responseHandler(response, res, req);
+  }
+
   @Post('request-crypto')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Request a crypto payment' })
@@ -58,7 +64,9 @@ export class PaymentsController {
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Request a fiat payment' })
   async requestFiatPayment(@Body() createRequestPaymentDto: any) {
-    //TODO: implement on-ramp
+    const response = await this.paymentService.handleYcOnRamp(
+      createRequestPaymentDto,
+    );
   }
 
   @Post('off-ramp')
