@@ -1,4 +1,4 @@
-import { IdTypeEnum } from '@/types/kyc.types';
+import { IdTypeEnum } from '@/models/kyc.types';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,

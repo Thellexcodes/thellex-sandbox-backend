@@ -1,12 +1,14 @@
 import { getAppConfig } from '@/constants/env';
 import { HttpService } from '@/middleware/http.service';
-import { AnyObject } from '@/types/any.types';
+import { AnyObject } from '@/models/any.types';
 import {
+  IYCAcceptCollectionRequestPayload,
   IYCChannelsResponseType,
   IYCNetworksResponseType,
   IYCPaymentRequestResponse,
   IYCPaymentRequestResponseType,
-} from '@/types/yellocard.models';
+  IYellowCardWebhookConfig,
+} from '@/models/yellocard.models';
 
 import { generateYcSignature } from '@/utils/helpers';
 import { Injectable } from '@nestjs/common';
@@ -162,13 +164,12 @@ export class YellowCardService {
     return await this.httpService.post(url, body, { headers });
   }
 
-  async acceptCollectionRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/accept';
-    // const url = `${this.ycUrl}/collections/accept`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+  async acceptCollectionRequest(body: IYCAcceptCollectionRequestPayload) {
+    const method = 'POST';
+    const path = '/collections/accept';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
   async denyCollectionRequest(body: object) {
@@ -229,14 +230,12 @@ export class YellowCardService {
   }
 
   // --- Webhooks ---
-
-  async createWebhook(body: object) {
-    // const method = 'POST';
-    // const path = '/webhooks';
-    // const url = `${this.ycUrl}/webhooks`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+  async createWebhook(body: IYellowCardWebhookConfig) {
+    const method = 'POST';
+    const path = '/business/webhooks';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
   async updateWebhook(body: object) {

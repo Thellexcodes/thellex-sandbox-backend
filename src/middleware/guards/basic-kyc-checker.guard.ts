@@ -5,7 +5,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { CustomHttpException } from '../custom.http.exception';
-import { KycErrorEnum } from '@/types/kyc-error.enum';
+import { KycErrorEnum } from '@/models/kyc-error.enum';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 @Injectable()

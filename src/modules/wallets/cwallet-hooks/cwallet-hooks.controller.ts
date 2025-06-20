@@ -2,8 +2,8 @@ import { Controller, Post, Body, Req, Res } from '@nestjs/common';
 import { CwalletHooksService } from './cwallet-hooks.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
-import { CustomRequest, CustomResponse } from '@/types/request.types';
-import { CircleNotificationType } from '@/types/wallet-manager.types';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
+import { CircleNotificationType } from '@/models/wallet-manager.types';
 
 @ApiTags('WebHooks')
 @Controller('cwallet-hooks')

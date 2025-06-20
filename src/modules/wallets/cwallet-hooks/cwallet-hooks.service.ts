@@ -3,15 +3,15 @@ import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
 import {
   WalletErrorEnum,
   WalletWebhookEventEnum,
-} from '@/types/wallet-manager.types';
-import { PaymentStatus, PaymentType } from '@/types/payment.types';
+} from '@/models/wallet-manager.types';
+import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { toUTCDate } from '@/utils/helpers';
 import { CwalletService } from '../cwallet/cwallet.service';
 import {
   NotificationMessageEnum,
   NotificationsEnum,
-} from '@/types/notifications.enum';
-import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/types/socket.enums';
+} from '@/models/notifications.enum';
+import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/models/socket.enums';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { QWalletStatus } from '../qwallet/qwallet-status.enum';
 import { TokenEnum } from '@/config/settings';

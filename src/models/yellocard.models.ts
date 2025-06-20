@@ -99,4 +99,14 @@ export interface IYCPaymentRequestResponse {
   depositId: string;
 }
 
+export interface IYCAcceptCollectionRequestPayload {
+  id: string;
+}
+
 export type IYCPaymentRequestResponseType = Promise<IYCPaymentRequestResponse>;
+
+//webhooks
+export interface IYellowCardWebhookConfig {
+  active: boolean;
+  url: string;
+}

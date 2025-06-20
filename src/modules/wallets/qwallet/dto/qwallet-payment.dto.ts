@@ -1,4 +1,4 @@
-import { PaymentStatus } from '@/types/payment.types';
+import { PaymentStatus } from '@/models/payment.types';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class QwalletPaymentTransactionDto {

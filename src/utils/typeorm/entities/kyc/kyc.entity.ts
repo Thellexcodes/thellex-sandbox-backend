@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EncryptionTransformer } from 'typeorm-encrypted';
-import { IdTypeEnum, KycProviderEnum } from '@/types/kyc.types';
+import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { IUserEntity, UserEntity } from '../user.entity';
 import { BaseEntity, IBaseEntity } from '../base.entity';
 import { CustomerTypesEnum } from '@/config/settings';

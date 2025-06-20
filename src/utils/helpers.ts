@@ -1,5 +1,5 @@
 import { RateDto } from '@/modules/aggregators/swap/dto/rate.dto';
-import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { UserEntity } from './typeorm/entities/user.entity';

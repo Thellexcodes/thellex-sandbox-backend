@@ -2,12 +2,12 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@/middleware/http.service';
 import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { KycErrorEnum } from '@/types/kyc-error.enum';
+import { KycErrorEnum } from '@/models/kyc-error.enum';
 import {
   BvnLookupResponse,
   NinLookupResponse,
   PhoneNumberLookupResponse,
-} from '@/types/identifications.types';
+} from '@/models/identifications.types';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -15,7 +15,7 @@ import { BasicTierKycDto } from './dto/kyc-data.dto';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { getAppConfig } from '@/constants/env';
 import { calculateNameMatchScore } from '@/utils/helpers';
-import { IdTypeEnum, KycProviderEnum } from '@/types/kyc.types';
+import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { TierEnum } from '@/constants/tier.lists';
 import { UserService } from '../users/user.service';
 

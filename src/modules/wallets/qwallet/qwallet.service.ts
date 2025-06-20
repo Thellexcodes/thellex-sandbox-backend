@@ -10,7 +10,7 @@ import {
   IQValidateAddressResponse,
   IQWallet,
   IQWithdrawPaymentResponse,
-} from '@/types/qwallet.types';
+} from '@/models/qwallet.types';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -33,11 +33,11 @@ import {
   FeeLevel,
   WalletErrorEnum,
   WalletWebhookEventEnum,
-} from '@/types/wallet-manager.types';
-import { PaymentStatus, PaymentType } from '@/types/payment.types';
+} from '@/models/wallet-manager.types';
+import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
-import { ApiResponse } from '@/types/request.types';
+import { ApiResponse } from '@/models/request.types';
 import { getAppConfig } from '@/constants/env';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';

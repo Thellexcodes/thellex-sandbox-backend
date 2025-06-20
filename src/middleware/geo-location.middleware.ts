@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import axios from 'axios';
-import { CustomRequest } from '@/types/request.types';
+import { CustomRequest } from '@/models/request.types';
 
 const AFRICAN_COUNTRY_CODES = [
   'DZ',
