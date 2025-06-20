@@ -12,12 +12,13 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
-import { UserErrorEnum } from '@/types/user-error.enum';
+import { UserErrorEnum } from '@/models/user-error.enum';
 import { ChainTokens, SupportedBlockchainType } from '@/config/settings';
 import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
+import { TierEnum } from '@/constants/tier.lists';
 
 @Injectable()
 export class UserService {
@@ -220,5 +221,9 @@ export class UserService {
     });
 
     await this.tokenRepo.save(tokenEntities);
+  }
+
+  async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {
+    await this.userRepository.update(userId, { tier: newTier });
   }
 }

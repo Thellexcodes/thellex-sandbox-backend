@@ -32,6 +32,7 @@ import {
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IKycEntity, KycEntity } from './kyc/kyc.entity';
+import { TierEnum } from '@/constants/tier.lists';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -86,6 +87,14 @@ export class UserEntity extends BaseEntity {
     default: () => 'uuid_generate_v4()',
   })
   alertID: string;
+
+  @Column({
+    nullable: false,
+    type: 'enum',
+    default: TierEnum.NONE,
+    enum: TierEnum,
+  })
+  tier: TierEnum;
 
   @OneToMany(
     () => AuthVerificationCodesEntity,

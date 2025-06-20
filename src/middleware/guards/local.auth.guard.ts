@@ -8,7 +8,7 @@ import { jwtConfigurations } from 'src/config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '@/modules/users/user.service';
-import { AuthErrorEnum } from '@/types/auth-error.enum';
+import { AuthErrorEnum } from '@/models/auth-error.enum';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

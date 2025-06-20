@@ -16,7 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import {
   GetWalletBalanceSummaryResponse,

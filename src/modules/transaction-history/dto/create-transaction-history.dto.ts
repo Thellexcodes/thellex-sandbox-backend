@@ -1,5 +1,8 @@
-import { PaymentStatus, PaymentType } from '@/types/payment.types';
-import { FeeLevel, WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import {
+  FeeLevel,
+  WalletWebhookEventEnum,
+} from '@/models/wallet-manager.types';
 import { IUserEntity, UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 export class TransactionHistoryDto {

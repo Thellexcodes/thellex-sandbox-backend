@@ -1,5 +1,5 @@
 import { RateDto } from '@/modules/aggregators/swap/dto/rate.dto';
-import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { UserEntity } from './typeorm/entities/user.entity';
@@ -13,7 +13,8 @@ import {
   TokenEnum,
   tokenIds,
 } from '@/config/settings';
-import { ENV_TESTNET, getAppConfig } from '@/constants/env';
+import { ENV_TESTNET } from '@/constants/env';
+import * as crypto from 'crypto';
 
 //TODO: handle errors with enums
 
@@ -161,10 +162,6 @@ export const cWalletNetworkNameGetter = (
     ? 'MATIC-AMOY'
     : 'MATIC';
 
-export function yellowCardUrl(): string {
-  return getAppConfig().YELLOWCARD_API;
-}
-
 export function yellowCardAuthHeaders() {
   return {
     'Content-Type': 'application/json',
@@ -243,4 +240,45 @@ export function calculateNameMatchScore(
   const recordNorm = normalize(recordName);
   const matches = [...inputNorm].filter((c) => recordNorm.includes(c));
   return matches.length / inputNorm.length;
+}
+
+export function generateYcSignature({
+  method,
+  path,
+  publicKey,
+  secretKey,
+  body,
+}: IGenerateYCSignature) {
+  const timestamp = new Date().toISOString();
+  let bodyHash = '';
+
+  if (method === 'POST' || method === 'PUT') {
+    const rawBody =
+      typeof body === 'string' ? body : JSON.stringify(body || {});
+    const hash = crypto.createHash('sha256').update(rawBody).digest();
+    bodyHash = hash.toString('base64');
+  }
+
+  const message = `${timestamp}${path}${method.toUpperCase()}${bodyHash}`;
+
+  const signature = crypto
+    .createHmac('sha256', secretKey)
+    .update(message)
+    .digest('base64');
+
+  return {
+    headers: {
+      Authorization: `YcHmacV1 ${publicKey}:${signature}`,
+      'X-YC-Timestamp': timestamp,
+    },
+  };
+}
+
+/**
+ * Generate a random AES-256 encryption key as a hex string
+ * @returns {string} 64-character hex key string
+ */
+export function generateAes256Key(): string {
+  const keyBuffer = crypto.randomBytes(32); // 32 bytes = 256 bits
+  return keyBuffer.toString('hex'); // convert to hex string
 }

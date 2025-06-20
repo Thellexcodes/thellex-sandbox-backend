@@ -3,7 +3,7 @@ import {
   SupportedBlockchainType,
   TokenEnum,
 } from '@/config/settings';
-import { PaymentType } from '@/types/payment.types';
+import { PaymentType } from '@/models/payment.types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
 

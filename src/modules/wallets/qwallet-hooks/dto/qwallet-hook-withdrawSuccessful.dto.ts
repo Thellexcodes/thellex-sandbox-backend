@@ -1,5 +1,5 @@
-import { PaymentStatus } from '@/types/payment.types';
-import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { PaymentStatus } from '@/models/payment.types';
+import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { QwalletDto } from '../../qwallet/dto/qwallet.dto';
 import { QwalletSubAccountDto } from '../../qwallet/dto/qwallet-subaccount.dto';

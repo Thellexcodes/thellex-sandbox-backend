@@ -1,4 +1,4 @@
-import { PaymentStatus, PaymentType } from '@/types/payment.types';
+import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 import { QwalletDto } from '../../qwallet/dto/qwallet.dto';

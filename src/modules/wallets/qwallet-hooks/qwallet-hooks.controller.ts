@@ -2,7 +2,7 @@ import { Controller, Post, Body, Req } from '@nestjs/common';
 import { QwalletHooksService } from './qwallet-hooks.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
-import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 
 //TODO: add qwallet security middleware
 @ApiTags('WebHooks')

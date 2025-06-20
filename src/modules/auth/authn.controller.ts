@@ -1,6 +1,6 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthnService } from './authn.service';
-import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { responseHandler } from '@/utils/helpers';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';

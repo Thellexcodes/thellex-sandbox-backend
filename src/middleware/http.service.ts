@@ -1,4 +1,4 @@
-import { AnyObject } from '@/types/any.types';
+import { AnyObject } from '@/models/any.types';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 

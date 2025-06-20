@@ -3,6 +3,7 @@
 /node_modules
 /build
 openapi.json
+tsconfig.build.tsbuildinfo
 
 # Logs
 logs

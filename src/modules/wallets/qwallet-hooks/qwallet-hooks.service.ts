@@ -9,16 +9,16 @@ import { IQWalletHookWithdrawSuccessfulEvent } from './dto/qwallet-hook-withdraw
 import {
   NotificationMessageEnum,
   NotificationsEnum,
-} from '@/types/notifications.enum';
+} from '@/models/notifications.enum';
 import {
   FeeLevel,
   WalletErrorEnum,
   WalletWebhookEventEnum,
-} from '@/types/wallet-manager.types';
+} from '@/models/wallet-manager.types';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { toUTCDate } from '@/utils/helpers';
-import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/types/socket.enums';
-import { PaymentStatus } from '@/types/payment.types';
+import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/models/socket.enums';
+import { PaymentStatus } from '@/models/payment.types';
 import { WalletNotificationsService } from '../../notifications/wallet-notifications.service';
 import { QWalletStatus } from '../qwallet/qwallet-status.enum';
 import { IQWalletAddressGenerated } from './dto/qwallet-hook-walletUpdated.dto';

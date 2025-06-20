@@ -7,8 +7,11 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { IUserEntity, UserEntity } from './user.entity';
-import { PaymentStatus } from '@/types/payment.types';
-import { FeeLevel, WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { PaymentStatus } from '@/models/payment.types';
+import {
+  FeeLevel,
+  WalletWebhookEventEnum,
+} from '@/models/wallet-manager.types';
 import { BaseEntity, IBaseEntity } from './base.entity';
 
 @Entity('transaction_history')

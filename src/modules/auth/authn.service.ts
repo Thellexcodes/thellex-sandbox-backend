@@ -19,7 +19,7 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { ConfigService } from '@nestjs/config';
 import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
 import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
-import { AuthErrorEnum } from '@/types/auth-error.enum';
+import { AuthErrorEnum } from '@/models/auth-error.enum';
 
 @Injectable()
 export class AuthnService {

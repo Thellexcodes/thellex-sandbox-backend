@@ -2,12 +2,12 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@/middleware/http.service';
 import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { KycErrorEnum } from '@/types/kyc-error.enum';
+import { KycErrorEnum } from '@/models/kyc-error.enum';
 import {
   BvnLookupResponse,
   NinLookupResponse,
   PhoneNumberLookupResponse,
-} from '@/types/identifications.types';
+} from '@/models/identifications.types';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -15,15 +15,19 @@ import { BasicTierKycDto } from './dto/kyc-data.dto';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { getAppConfig } from '@/constants/env';
 import { calculateNameMatchScore } from '@/utils/helpers';
-import { IdTypeEnum } from '@/types/kyc.types';
+import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
+import { TierEnum } from '@/constants/tier.lists';
+import { UserService } from '../users/user.service';
 
+//TODO: Handle errors with enum
 @Injectable()
 export class KycService {
   constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
     @InjectRepository(KycEntity)
     private readonly kycRepo: Repository<KycEntity>,
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
   ) {}
 
   private get dojahUrl(): string {
@@ -33,67 +37,94 @@ export class KycService {
   async createBasicKyc(
     kydataDto: BasicTierKycDto,
     user: UserEntity,
-  ): Promise<void> {
-    const existingRecord = await this.kycRepo.findOne({
-      where: { user: { id: user.id } },
-    });
-
-    if (existingRecord) {
-      throw new CustomHttpException(
-        KycErrorEnum.KYC_ALREADY_EXISTS,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    let ninResponse: NinLookupResponse, bvnResponse: BvnLookupResponse;
-
-    if (kydataDto.nin) {
-      ninResponse = await this.lookupNIN(Number(kydataDto.nin));
-    }
-    if (kydataDto.bvn) {
-      bvnResponse = await this.lookupBVN(Number(kydataDto.bvn));
-    }
-
-    const matchThreshold = 0.7;
-
-    if (ninResponse) {
-      const firstNameScore = calculateNameMatchScore(
-        kydataDto.firstName,
-        ninResponse.entity.first_name,
-      );
-      if (firstNameScore < matchThreshold) {
+  ): Promise<boolean> {
+    try {
+      if (user.tier !== TierEnum.NONE) {
         throw new CustomHttpException(
-          KycErrorEnum.NAME_MISMATCH,
+          KycErrorEnum.KYC_ALREADY_EXISTS,
           HttpStatus.BAD_REQUEST,
         );
       }
-    }
 
-    if (bvnResponse) {
-      const lastNameScore = calculateNameMatchScore(
-        kydataDto.lastName,
-        bvnResponse.entity.last_name,
-      );
-      if (lastNameScore < matchThreshold) {
-        throw new CustomHttpException(
-          KycErrorEnum.NAME_MISMATCH,
-          HttpStatus.BAD_REQUEST,
-        );
+      let ninResponse: NinLookupResponse | undefined;
+      let bvnResponse: BvnLookupResponse | undefined;
+
+      if (kydataDto.nin) {
+        ninResponse = await this.lookupNIN(Number(kydataDto.nin));
+        if (!ninResponse?.entity) {
+          throw new CustomHttpException(
+            KycErrorEnum.NIN_NOT_FOUND,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       }
+
+      if (kydataDto.bvn) {
+        bvnResponse = await this.lookupBVN(Number(kydataDto.bvn));
+        if (!bvnResponse?.entity) {
+          throw new CustomHttpException(
+            KycErrorEnum.BVN_NOT_FOUND,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      const matchThreshold = 0.4;
+
+      if (ninResponse?.entity) {
+        const firstNameScore = calculateNameMatchScore(
+          kydataDto.firstName,
+          ninResponse.entity.first_name,
+        );
+
+        if (firstNameScore < matchThreshold) {
+          throw new CustomHttpException(
+            KycErrorEnum.NAME_MISMATCH,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      if (bvnResponse?.entity) {
+        const lastNameScore = calculateNameMatchScore(
+          kydataDto.lastName,
+          bvnResponse.entity.last_name,
+        );
+
+        if (lastNameScore < matchThreshold) {
+          throw new CustomHttpException(
+            KycErrorEnum.NAME_MISMATCH,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      const userKycData: Partial<KycEntity> = {
+        nin: kydataDto.nin,
+        bvn: kydataDto.bvn,
+        user,
+        firstName: ninResponse?.entity?.first_name ?? kydataDto.firstName,
+        middleName: kydataDto?.middleName,
+        lastName: ninResponse?.entity?.last_name ?? kydataDto.lastName,
+        dob: ninResponse?.entity.date_of_birth ?? kydataDto.dob,
+        idTypes: [IdTypeEnum.BVN, IdTypeEnum.NIN],
+        houseNumber: kydataDto.houseNumber,
+        streetName: kydataDto.streetName,
+        state: kydataDto.state,
+        lga: kydataDto.lga,
+        provider: KycProviderEnum.DOJAH,
+      };
+
+      const kycRecord = this.kycRepo.create(userKycData);
+
+      await this.kycRepo.save(kycRecord);
+
+      await this.userService.updateUserTier(user.id, TierEnum.BASIC);
+
+      return true;
+    } catch (error) {
+      console.log(error);
     }
-
-    const kycRecord = this.kycRepo.create({
-      nin: kydataDto.nin,
-      bvn: kydataDto.bvn,
-      user,
-      firstName: kydataDto.firstName,
-      middlename: kydataDto.middlename,
-      lastName: kydataDto.lastName,
-      dob: kydataDto.dob,
-      idType: [IdTypeEnum.BVN, IdTypeEnum.NIN],
-    });
-
-    await this.kycRepo.save(kycRecord);
   }
 
   async lookupNIN(nin: number): Promise<NinLookupResponse> {

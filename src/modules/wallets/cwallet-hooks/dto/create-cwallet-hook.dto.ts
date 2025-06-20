@@ -1,9 +1,9 @@
-import { PaymentStatus } from '@/types/payment.types';
+import { PaymentStatus } from '@/models/payment.types';
 import {
   CircleNotificationType,
   CircleTransactionType,
   WalletWebhookEventEnum,
-} from '@/types/wallet-manager.types';
+} from '@/models/wallet-manager.types';
 import { ApiProperty } from '@nestjs/swagger';
 
 class NotificationDto {

@@ -7,7 +7,7 @@ import {
   NotificationErrors,
   NotificationMessageEnum,
   NotificationsEnum,
-} from '@/types/notifications.enum';
+} from '@/models/notifications.enum';
 import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 

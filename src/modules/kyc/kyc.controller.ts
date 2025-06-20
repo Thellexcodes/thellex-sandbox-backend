@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { ApiBearerAuth, ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { KycService } from './kyc.service';
 import { BasicTierKycDto } from './dto/kyc-data.dto';

@@ -1,4 +1,4 @@
-import { CreateSwapValidationErrors } from '@/types/swap-error.enum';
+import { CreateSwapValidationErrors } from '@/models/swap-error.enum';
 import {
   IsNotEmpty,
   IsOptional,

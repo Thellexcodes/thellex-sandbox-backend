@@ -7,7 +7,7 @@ import {
   IQWalletHookWithdrawSuccessfulEvent,
   QWalletHookWithdrawSuccessfulEventDto,
 } from './qwallet-hook-withdrawSuccessful.dto';
-import { WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 import {
   IQWalletAddressGenerated,
   QWalletAddressGeneratedDto,

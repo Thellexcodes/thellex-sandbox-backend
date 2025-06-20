@@ -1,8 +1,8 @@
-import { NotificationPayload } from '@/types/notification.types';
+import { NotificationPayload } from '@/models/notification.types';
 import {
   NOTIFICATION_SOCKETS,
   TRANSACTION_NOTIFICATION_TYPES_ENUM,
-} from '@/types/socket.enums';
+} from '@/models/socket.enums';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 

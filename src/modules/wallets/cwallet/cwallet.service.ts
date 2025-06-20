@@ -18,7 +18,7 @@ import {
   ICWalletBalanceResponse,
   ICWalletResponse,
   ICWalletTransactionResponse,
-} from '@/types/cwallet.types';
+} from '@/models/cwallet.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -40,9 +40,12 @@ import {
   toUTCDate,
 } from '@/utils/helpers';
 import { ENV_TESTNET } from '@/constants/env';
-import { PaymentStatus, PaymentType } from '@/types/payment.types';
+import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
-import { FeeLevel, WalletWebhookEventEnum } from '@/types/wallet-manager.types';
+import {
+  FeeLevel,
+  WalletWebhookEventEnum,
+} from '@/models/wallet-manager.types';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';

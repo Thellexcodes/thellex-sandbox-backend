@@ -2,7 +2,7 @@ import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
-import { CustomRequest, CustomResponse } from '@/types/request.types';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
