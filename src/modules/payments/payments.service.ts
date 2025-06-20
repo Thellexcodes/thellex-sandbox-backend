@@ -119,8 +119,8 @@ export class PaymentsService {
 
     const userKycData = user.kyc;
 
-    const localAmount = 3000;
-    const amountUSD = 50;
+    const localAmount = 500;
+    // const amountUSD = 50;
 
     const [year, month, day] = userKycData.dob.split('-');
     userKycData.dob = `${month}/${day}/${year}`;
@@ -135,6 +135,8 @@ export class PaymentsService {
       email: user.email,
       idNumber: userKycData.nin,
       idType: IdTypeEnum.NIN,
+      additionalIdType: IdTypeEnum.BVN,
+      additionalIdNumber: userKycData.bvn,
     };
 
     console.log(recipient);
@@ -184,69 +186,5 @@ export class PaymentsService {
     } catch (error) {
       console.log(error);
     }
-
-    //     {
-    // [1]   partnerId: 'c2119ce9-2ee6-4ba6-9b12-67af1dcba485',
-    // [1]   url: 'https://webhook.site/9df281f6-0cbd-4e60-a9ab-c01dfe16046a',
-    // [1]   state: '',
-    // [1]   active: true,
-    // [1]   createdAt: '2025-06-19T19:55:04.202Z',
-    // [1]   updatedAt: '2025-06-19T19:55:04.202Z',
-    // [1]   id: 'ba1af894-b517-4a57-8364-f6c95cd06c72'
-    // [1] }
   }
 }
-
-// 1] {
-// [1]   currency: 'NGN',
-// [1]   status: 'processing',
-// [1]   serviceFeeAmountUSD: 0.03,
-// [1]   partnerFeeAmountLocal: 0,
-// [1]   country: 'NG',
-// [1]   reference: 'TLX2567567',
-// [1]   recipient: {
-// [1]     country: 'US',
-// [1]     address: '',
-// [1]     idType: 'NIN',
-// [1]     phone: '',
-// [1]     dob: '1994-03-17',
-// [1]     name: 'SAMUEL',
-// [1]     idNumber: '86474618432',
-// [1]     email: 'boltdsg@gmail.com'
-// [1]   },
-// [1]   expiresAt: '2025-06-19T20:13:39.366Z',
-// [1]   requestSource: 'api',
-// [1]   directSettlement: false,
-// [1]   refundRetry: 0,
-// [1]   id: '9b4fba6b-1d71-5aeb-9c0c-f1f2b1adda30',
-// [1]   partnerId: 'c2119ce9-2ee6-4ba6-9b12-67af1dcba485',
-// [1]   rate: 1615,
-// [1]   bankInfo: {
-// [1]     name: 'PAGA',
-// [1]     accountNumber: '7641290419',
-// [1]     accountName: 'Ken Adams'
-// [1]   },
-// [1]   tier0Active: false,
-// [1]   createdAt: '2025-06-19T20:03:39.370Z',
-// [1]   forceAccept: true,
-// [1]   source: { accountType: 'bank' },
-// [1]   sequenceId: '61c11389-89a2-4f4f-947e-d1c0cd9f84b3',
-// [1]   reason: 'other',
-// [1]   convertedAmount: 3000,
-// [1]   channelId: 'af944f0c-ba70-47c7-86dc-1bad5a6ab4e4',
-// [1]   serviceFeeAmountLocal: 48.45,
-// [1]   updatedAt: '2025-06-19T20:03:41.977Z',
-// [1]   partnerFeeAmountUSD: 0,
-// [1]   amount: 1.86,
-// [1]   depositId: 'e2a4a45b-954e-5205-b303-e5f454c7dca3'
-// [1] }
-
-//     {
-// [1]   partnerId: 'c2119ce9-2ee6-4ba6-9b12-67af1dcba485',
-// [1]   url: 'https://webhook.site/9df281f6-0cbd-4e60-a9ab-c01dfe16046a',
-// [1]   state: '',
-// [1]   active: true,
-// [1]   createdAt: '2025-06-19T19:55:04.202Z',
-// [1]   updatedAt: '2025-06-19T19:55:04.202Z',
-// [1]   id: 'ba1af894-b517-4a57-8364-f6c95cd06c72'
-// [1] }
