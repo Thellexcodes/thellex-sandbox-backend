@@ -99,7 +99,8 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => CardManagementEntity, (card) => card.user, { eager: true })
   electronic_cards: CardManagementEntity[];
 
-  @Exclude()
+  @Expose()
+  @ApiProperty()
   @Type(() => IKycDto)
   @OneToOne(() => KycEntity, (kyc) => kyc.user, {
     nullable: true,

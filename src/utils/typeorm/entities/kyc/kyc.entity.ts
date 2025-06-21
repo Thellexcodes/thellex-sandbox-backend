@@ -13,7 +13,6 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'kyc' })
 export class KycEntity extends BaseEntity {
-  @Exclude()
   @OneToOne(() => UserEntity, (user) => user.kyc)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
@@ -55,6 +54,7 @@ export class KycEntity extends BaseEntity {
     nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   firstName: string;
 
   @Column({
@@ -63,6 +63,7 @@ export class KycEntity extends BaseEntity {
     nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   middleName: string;
 
   @Column({
@@ -71,6 +72,7 @@ export class KycEntity extends BaseEntity {
     nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   lastName: string;
 
   @Column({
@@ -79,15 +81,8 @@ export class KycEntity extends BaseEntity {
     nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   phone: string;
-
-  @Column({
-    name: 'email_address',
-    type: 'text',
-    nullable: true,
-    transformer: KycEntity.encryption,
-  })
-  email: string;
 
   @Column({
     name: 'country_of_residence',
@@ -95,6 +90,7 @@ export class KycEntity extends BaseEntity {
     nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   country: string;
 
   @Column({
@@ -103,6 +99,7 @@ export class KycEntity extends BaseEntity {
     nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   address: string;
 
   @Column({ name: 'id_type', type: 'text', array: true, nullable: true })
@@ -130,6 +127,7 @@ export class KycEntity extends BaseEntity {
     nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   businessName: string;
 
   @Column({
@@ -174,35 +172,14 @@ export class KycEntity extends BaseEntity {
 
 @Exclude()
 export class IKycDto extends KycEntity {
-  @Expose()
-  @Type(() => IUserDto)
-  @ApiProperty({ type: () => IUserDto })
-  user: IUserDto;
-
-  @Exclude() dob: string;
-  @Exclude() bvn: string;
+  @Exclude() user: IUserDto;
   @Exclude() nin: string;
+  @Exclude() bvn: string;
+  @Exclude() dob: string;
   @Exclude() provider: KycProviderEnum;
-  @Expose()
-  @ApiProperty({ enum: CustomerTypesEnum })
-  customerType: CustomerTypesEnum;
-
-  @Expose() @ApiPropertyOptional() firstName: string;
-  @Expose() @ApiPropertyOptional() middleName: string;
-  @Expose() @ApiPropertyOptional() lastName: string;
-  @Expose() @ApiPropertyOptional() phone: string;
-  @Expose() @ApiPropertyOptional() email: string;
-  @Expose() @ApiPropertyOptional() country: string;
-  @Expose() @ApiPropertyOptional() address: string;
-
   @Exclude() idTypes: IdTypeEnum[];
-  @Exclude() idNumber: string;
-
   @Exclude() businessId: string;
-  @Exclude() businessName: string;
-
   @Exclude() kycExpiresAt: Date;
-
   @Exclude() houseNumber: string;
   @Exclude() streetName: string;
   @Exclude() state: string;
