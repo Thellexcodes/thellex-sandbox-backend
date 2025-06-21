@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/user.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -40,7 +40,7 @@ export class UserService {
 
   async create(
     createUserDto: CreateUserDto,
-  ): Promise<string | CustomHttpException> {
+  ): Promise<{ access_token: string }> {
     try {
       const email = createUserDto.email.toLowerCase();
       let user = await this.findOneByEmail(email);
@@ -50,8 +50,8 @@ export class UserService {
         await this.emailVerificationComposer(user);
 
         // Existing user — return token only
-        const token = await this.signToken({ id: user.id });
-        return token;
+        const access_token = await this.signToken({ id: user.id });
+        return { access_token };
       }
 
       const uid = await generateUniqueUid(this.userRepository);
@@ -70,8 +70,8 @@ export class UserService {
       await this.emailVerificationComposer(user);
 
       // Return token
-      const token = await this.signToken({ id: user.id });
-      return token;
+      const access_token = await this.signToken({ id: user.id });
+      return { access_token };
     } catch (error: any) {
       console.error('User creation failed:', error);
       throw new CustomHttpException(
