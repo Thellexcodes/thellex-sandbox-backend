@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity, IBaseEntity } from './base.entity';
-import { IUserEntity, UserEntity } from './user.entity';
+import { BaseEntity } from './base.entity';
+import { IUserDto, UserEntity } from './user.entity';
+import { Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'auth_verification_codes' })
 export class AuthVerificationCodesEntity extends BaseEntity {
@@ -21,8 +22,14 @@ export class AuthVerificationCodesEntity extends BaseEntity {
   expired: boolean;
 }
 
-export interface IAuthVerificationCodeEntity extends IBaseEntity {
-  user: IUserEntity;
-  code: number;
+export class IAuthVerificationCodeDto extends BaseEntity {
+  @Expose()
+  code!: number;
+
+  @Expose()
   expired?: boolean;
+
+  @Expose()
+  @Type(() => IUserDto)
+  user!: IUserDto;
 }

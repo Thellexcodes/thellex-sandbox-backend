@@ -1,7 +1,8 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { UserEntity } from './user.entity';
-import { BaseEntity, IBaseEntity } from './base.entity';
+import { IUserDto, UserEntity } from './user.entity';
+import { BaseEntity } from './base.entity';
 import { AuthenticatorTransportFuture } from '@simplewebauthn/server';
+import { Expose } from 'class-transformer';
 
 @Entity({ name: 'devices' })
 export class DeviceEntity extends BaseEntity {
@@ -49,19 +50,46 @@ export class DeviceEntity extends BaseEntity {
   attestationObject: string | null;
 }
 
-export interface IDeviceEntity extends IBaseEntity {
-  user: UserEntity;
+export class IDeviceDto extends BaseEntity {
+  @Expose()
+  user: IUserDto;
+
+  @Expose()
   token?: string | null;
+
+  @Expose()
   name?: string | null;
+
+  @Expose()
   agent?: string | null;
+
+  @Expose()
   ip?: string | null;
+
+  @Expose()
   location?: string | null;
+
+  @Expose()
   type?: string | null;
+
+  @Expose()
   count?: number | null;
+
+  @Expose({ name: 'device_token' })
   device_token?: string | null;
+
+  @Expose()
   credentialID?: string | null;
+
+  @Expose()
   publicKey?: string | null;
+
+  @Expose()
   transports?: AuthenticatorTransportFuture[] | null;
+
+  @Expose()
   attestationResponse?: object | null;
+
+  @Expose()
   attestationObject?: string | null;
 }

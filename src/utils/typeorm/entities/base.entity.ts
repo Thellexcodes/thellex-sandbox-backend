@@ -1,27 +1,29 @@
-import { BaseEntity as Base, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  BaseEntity as TypeOrmBase,
+} from 'typeorm';
 
-export class BaseEntity extends Base {
+export abstract class BaseEntity extends TypeOrmBase {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({
-    name: 'created_at',
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
-  @Column({
-    name: 'updated_at',
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
 }
 
-export interface IBaseEntity extends Base {
+export class BaseDto {
+  @ApiProperty()
   id: string;
+
+  @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty()
   updatedAt: Date;
 }

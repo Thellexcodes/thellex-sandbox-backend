@@ -11,7 +11,7 @@ import {
   IQWallet,
   IQWithdrawPaymentResponse,
 } from '@/models/qwallet.types';
-import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -26,9 +26,9 @@ import {
   WalletProviderEnum,
 } from '@/config/settings';
 import {
-  IQWalletEntity,
+  IQWalletDto,
   QWalletsEntity,
-} from '@/utils/typeorm/entities/qwallet/qwallets.entity';
+} from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import {
   FeeLevel,
   WalletErrorEnum,
@@ -109,7 +109,7 @@ export class QwalletService {
     });
   }
 
-  async lookupUserWallets(qid: string): Promise<IQWalletEntity[]> {
+  async lookupUserWallets(qid: string): Promise<IQWalletDto[]> {
     const response = await this.getPaymentAddresses(qid, TokenEnum.USDT);
     return Array.isArray(response.data) ? response.data : [];
   }
@@ -493,7 +493,7 @@ export class QwalletService {
     user: UserEntity,
     network: SupportedBlockchainType,
     assetCode: TokenEnum,
-  ): Promise<IQWalletEntity | null> {
+  ): Promise<QWalletsEntity | null> {
     const profile = user.qWalletProfile;
 
     if (!profile?.wallets?.length) {

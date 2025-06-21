@@ -1,34 +1,34 @@
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
-import { BaseEntity, IBaseEntity } from './base.entity';
-import { AuthnEntity, IAuthnEntity } from './auth.entity';
+import { BaseEntity } from './base.entity';
+import { AuthEntity, IAuthDto } from './auth.entity';
 import {
   AuthVerificationCodesEntity,
-  IAuthVerificationCodeEntity,
+  IAuthVerificationCodeDto,
 } from './auth-verification-codes.entity';
-import { DeviceEntity, IDeviceEntity } from './device.entity';
+import { DeviceEntity, IDeviceDto } from './device.entity';
 import {
   CardManagementEntity,
-  ICardManagementEntity,
+  ICardManagementDto,
 } from '@/utils/typeorm/entities/card-management.entity';
-import { INotificationEntity, NotificationEntity } from './notification.entity';
+import { NotificationEntity } from './notification.entity';
+import { TransactionHistoryEntity } from './transaction-history.entity';
 import {
-  ITransactionHistoryEntity,
-  TransactionHistoryEntity,
-} from './transaction-history.entity';
-import {
-  IQWalletProfileEntity,
+  IQWalletProfileDto,
   QWalletProfileEntity,
-} from './qwallet/qwallet-profile.entity';
-import {
-  CwalletProfilesEntity,
-  ICwalletProfilesEntity,
-} from './cwallet/cwallet-profiles.entity';
-import { IKycEntity, KycEntity } from './kyc/kyc.entity';
+} from './wallets/qwallet/qwallet-profile.entity';
+
+import { IKycDto, KycEntity } from './kyc/kyc.entity';
 import { TierEnum } from '@/constants/tier.lists';
 import { UserSettingEntity } from './settings/user.settings.entity';
 import { BankAccountEntity } from './settings/bank-account.entity';
 import { PayoutSettingEntity } from './settings/payout-settings.entity';
 import { TaxSettingEntity } from './settings/tax.entity';
+import {
+  CwalletProfilesEntity,
+  ICwalletProfilesDto,
+} from './wallets/cwallet/cwallet-profiles.entity';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -83,10 +83,10 @@ export class UserEntity extends BaseEntity {
   )
   verificationCodes: AuthVerificationCodesEntity[];
 
-  @OneToMany(() => AuthnEntity, (authn) => authn.user, {
+  @OneToMany(() => AuthEntity, (auth) => auth.user, {
     eager: false,
   })
-  authn: AuthnEntity[];
+  auth: AuthEntity[];
 
   @OneToMany(() => DeviceEntity, (device) => device.user, {
     eager: false,
@@ -123,61 +123,125 @@ export class UserEntity extends BaseEntity {
   })
   qWalletProfile: QWalletProfileEntity;
 
-  @OneToOne(() => CwalletProfilesEntity, (cwallet) => cwallet.user, {
+  @OneToOne(() => CwalletProfilesEntity, (c) => c.user, {
     cascade: true,
     eager: true,
   })
   cWalletProfile: CwalletProfilesEntity;
 
-  @OneToMany(() => UserSettingEntity, (setting) => setting.user, {
+  @OneToMany(() => UserSettingEntity, (s) => s.user, {
     cascade: true,
     eager: true,
   })
   settings: UserSettingEntity[];
 
-  @OneToMany(() => BankAccountEntity, (bankAccount) => bankAccount.user, {
+  @OneToMany(() => BankAccountEntity, (b) => b.user, {
     cascade: true,
     eager: true,
   })
   bankAccounts: BankAccountEntity[];
 
-  @OneToOne(() => PayoutSettingEntity, (payoutSetting) => payoutSetting.user, {
+  @OneToOne(() => PayoutSettingEntity, (p) => p.user, {
     cascade: true,
     eager: true,
   })
   payoutSettings: PayoutSettingEntity;
 
-  @OneToOne(() => TaxSettingEntity, (taxSetting) => taxSetting.user, {
+  @OneToOne(() => TaxSettingEntity, (t) => t.user, {
     eager: true,
     cascade: true,
   })
   taxSettings: TaxSettingEntity;
 }
 
-export interface IUserEntity extends IBaseEntity {
-  id: string;
-  uid: number;
-  account?: string;
-  email: string;
-  firstName: string;
-  middlename?: string;
-  lastName?: string;
-  emailVerified?: boolean;
-  password?: string;
-  suspended?: boolean;
-  idempotencyKey: string;
-  alertID: string;
+export class IUserDto {
+  @ApiProperty()
+  @Expose()
+  uid!: number;
 
-  verificationCodes?: IAuthVerificationCodeEntity[];
-  authn?: IAuthnEntity[];
-  devices?: IDeviceEntity[];
-  electronic_cards?: ICardManagementEntity[];
-  kyc?: IKycEntity;
-  transactionHistory?: ITransactionHistoryEntity[];
-  notifications?: INotificationEntity[];
-  qWalletProfile?: IQWalletProfileEntity;
-  cWalletProfile?: ICwalletProfilesEntity;
+  @Expose()
+  @ApiProperty()
+  email!: string;
 
-  createdAt: Date;
-  updatedAt: Date;
+  @Expose()
+  @ApiProperty()
+  emailVerified!: boolean;
+
+  @Expose()
+  @ApiProperty()
+  password!: string;
+
+  @Expose()
+  @ApiProperty({ nullable: true })
+  suspended!: boolean;
+
+  @Expose()
+  @ApiProperty()
+  idempotencyKey!: string;
+
+  @Expose()
+  @ApiProperty()
+  alertID!: string;
+
+  @Expose()
+  @ApiProperty({ enum: TierEnum, example: TierEnum.BASIC })
+  tier: TierEnum;
+
+  @Expose()
+  @ApiProperty()
+  @Type(() => IAuthVerificationCodeDto)
+  verificationCodes!: IAuthVerificationCodeDto[];
+
+  @Expose()
+  @ApiProperty()
+  @Type(() => IAuthDto)
+  auth!: IAuthDto[];
+
+  @Expose()
+  @ApiProperty()
+  @Type(() => IDeviceDto)
+  devices!: IDeviceDto[];
+
+  @Expose()
+  @Type(() => ICardManagementDto)
+  @ApiProperty({ type: [String] })
+  electronic_cards!: ICardManagementDto[];
+
+  @Exclude()
+  @Type(() => IKycDto)
+  kyc!: IKycDto;
+
+  @Expose()
+  @ApiProperty({ type: [String] })
+  transactionHistory: string[];
+
+  @Expose()
+  @ApiProperty({ type: [String] })
+  notifications: string[];
+
+  @Expose()
+  @Type(() => IQWalletProfileDto)
+  @ApiProperty({ type: IQWalletProfileDto })
+  qWalletProfile: IQWalletProfileDto;
+
+  @Expose()
+  @Type(() => ICwalletProfilesDto)
+  @ApiProperty({ type: ICwalletProfilesDto })
+  cWalletProfile: ICwalletProfilesDto;
+
+  @Expose()
+  @ApiProperty({ type: [String] })
+  settings: string[];
+
+  @Expose()
+  @ApiProperty({ type: [String] })
+  bankAccounts: string[];
+
+  @Expose()
+  @ApiProperty({ nullable: true })
+  payoutSettings: string | null;
+
+  @Expose()
+  @ApiProperty({ nullable: true })
+  taxSettings: string | null;
 }

@@ -9,9 +9,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CwalletsEntity, ICwalletEntity } from './cwallet.entity';
-import { IUserEntity, UserEntity } from '../user.entity';
-import { IBaseEntity } from '../base.entity';
+import { CwalletsEntity, ICwalletsDto } from './cwallet.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
+import { IUserDto, UserEntity } from '../../user.entity';
+import { BaseDto } from '../../base.entity';
 
 @Entity({ name: 'cwallet_profiles' })
 export class CwalletProfilesEntity extends BaseEntity {
@@ -47,10 +49,37 @@ export class CwalletProfilesEntity extends BaseEntity {
   wallets: CwalletsEntity[];
 }
 
-export interface ICwalletProfilesEntity extends IBaseEntity {
-  user: IUserEntity;
+export class ICwalletProfilesDto extends BaseDto {
+  @ApiProperty({ format: 'uuid' })
+  @Expose()
+  id: string;
+
+  @ApiProperty({ type: () => IUserDto })
+  @Type(() => IUserDto)
+  user: IUserDto;
+
+  @ApiProperty()
+  @Expose()
   state: string;
+
+  @ApiProperty({ format: 'uuid' })
+  @Expose()
   walletSetId: string;
+
+  @ApiPropertyOptional()
+  @Expose()
   displayName: string | null;
-  wallets: ICwalletEntity[];
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  @Expose()
+  createdAt: Date;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  @Expose()
+  updatedAt: Date;
+
+  @ApiProperty({ type: () => [ICwalletsDto] })
+  @Expose()
+  @Type(() => ICwalletsDto)
+  wallets: ICwalletsDto[];
 }

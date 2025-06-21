@@ -1,7 +1,4 @@
-import {
-  ITransactionHistory,
-  TransactionHistoryDto,
-} from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { SupportedBlockchainType } from '@/config/settings';
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
@@ -49,7 +46,7 @@ export interface IWalletMap {
   networks: SupportedBlockchainType[];
   assetCode: string;
   address: string;
-  transactionHistory: ITransactionHistory[];
+  transactionHistory: TransactionHistoryDto[];
   [network: string]: any;
 }
 

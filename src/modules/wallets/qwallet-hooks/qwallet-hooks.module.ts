@@ -13,7 +13,7 @@ import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { TransactionHistoryService } from '../../transaction-history/transaction-history.service';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
-import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { CwalletService } from '../cwallet/cwallet.service';
 
 @Module({

@@ -9,12 +9,14 @@ import {
 } from 'typeorm';
 import {
   CwalletProfilesEntity,
-  ICwalletProfilesEntity,
+  ICwalletProfilesDto,
 } from './cwallet-profiles.entity';
-import { ITokenEntity, TokenEntity } from '../token/token.entity';
-import { BaseEntity, IBaseEntity } from '../base.entity';
 import { SupportedBlockchainType } from '@/config/settings';
 import { ENV_TESTNET } from '@/constants/env';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
+import { BaseEntity } from '../../base.entity';
+import { ITokenDto, TokenEntity } from '../../token/token.entity';
 
 @Entity({ name: 'cwallets' })
 export class CwalletsEntity extends BaseEntity {
@@ -79,19 +81,69 @@ export class CwalletsEntity extends BaseEntity {
   tokens: TokenEntity[];
 }
 
-export interface ICwalletEntity extends IBaseEntity {
-  profile: ICwalletProfilesEntity;
+export class ICwalletsDto {
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   reference: string | null;
+
+  @ApiProperty()
+  @Expose()
   currency: string;
+
+  @ApiProperty()
+  @Expose()
   address: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   totalPayments: string | null;
+
+  @ApiProperty({ enum: SupportedBlockchainType })
+  @Expose()
   defaultNetwork: SupportedBlockchainType;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  @Expose()
   createdAt: Date;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  @Expose()
   updatedAt: Date;
+
+  @ApiProperty({ type: String, format: 'uuid' })
+  @Expose()
   walletID: string;
+
+  @ApiProperty()
+  @Expose()
   custodyType: string;
+
+  @ApiProperty()
+  @Expose()
   accountType: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   state: string | null;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   scaCore: string | null;
-  tokens?: ITokenEntity[];
+
+  @ApiProperty({
+    enum: SupportedBlockchainType,
+    isArray: true,
+  })
+  @Expose()
+  networks: SupportedBlockchainType[];
+
+  @ApiProperty({ type: () => ICwalletProfilesDto })
+  @Expose()
+  @Type(() => ICwalletProfilesDto)
+  profile: ICwalletProfilesDto;
+
+  @ApiProperty({ type: () => [ITokenDto] })
+  @Expose()
+  @Type(() => ITokenDto)
+  tokens: ITokenDto[];
 }

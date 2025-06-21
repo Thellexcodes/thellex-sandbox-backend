@@ -1,11 +1,13 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { IUserEntity, UserEntity } from './user.entity';
+import { IUserDto, UserEntity } from './user.entity';
 import { PaymentStatus } from '@/models/payment.types';
 import {
   FeeLevel,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { BaseEntity, IBaseEntity } from './base.entity';
+import { BaseDto, BaseEntity } from './base.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'transaction_history' })
 export class TransactionHistoryEntity extends BaseEntity {
@@ -87,21 +89,75 @@ export class TransactionHistoryEntity extends BaseEntity {
   paymentNetwork: string;
 }
 
-export interface ITransactionHistoryEntity extends IBaseEntity {
-  user: IUserEntity;
+export class ITransactionHistoryDto extends BaseDto {
+  @ApiProperty({ type: () => IUserDto })
+  @Expose()
+  @Type(() => IUserDto)
+  user: IUserDto;
+
+  @ApiProperty({ enum: WalletWebhookEventEnum })
+  @Expose()
   event: WalletWebhookEventEnum;
+
+  @ApiProperty()
+  @Expose()
   transactionId: string;
+
+  @ApiProperty()
+  @Expose()
   type: string;
-  currency: string;
+
+  @ApiProperty()
+  @Expose()
+  assetCode: string;
+
+  @ApiProperty({ type: String, description: 'Amount with precision' })
+  @Expose()
   amount: string;
-  fee: string;
+
+  @ApiPropertyOptional({ type: String, description: 'Fee amount, nullable' })
+  @Expose()
+  fee?: string | null;
+
+  @ApiPropertyOptional({ enum: FeeLevel, description: 'Fee level enum' })
+  @Expose()
   feeLevel?: FeeLevel;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Blockchain transaction ID, nullable',
+  })
+  @Expose()
   blockchainTxId?: string | null;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Reason for transaction, nullable',
+  })
+  @Expose()
   reason?: string | null;
+
+  @ApiProperty()
+  @Expose()
   walletId: string;
-  walletName: string;
+
+  @ApiPropertyOptional({ type: String, description: 'Wallet name, nullable' })
+  @Expose()
+  walletName?: string | null;
+
+  @ApiProperty({ enum: PaymentStatus })
+  @Expose()
   paymentStatus: PaymentStatus;
+
+  @ApiProperty()
+  @Expose()
   sourceAddress: string;
+
+  @ApiProperty()
+  @Expose()
   destinationAddress: string;
+
+  @ApiProperty()
+  @Expose()
   paymentNetwork: string;
 }

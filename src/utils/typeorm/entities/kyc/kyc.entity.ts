@@ -1,10 +1,12 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EncryptionTransformer } from 'typeorm-encrypted';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
-import { IUserEntity, UserEntity } from '../user.entity';
-import { BaseEntity, IBaseEntity } from '../base.entity';
+import { IUserDto, UserEntity } from '../user.entity';
+import { BaseDto, BaseEntity } from '../base.entity';
 import { CustomerTypesEnum } from '@/config/settings';
 import { getAppConfig } from '@/constants/env';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
 
 //TODO: Handle errors with enum
 //TODO: INCLUDE iv for randomness
@@ -188,42 +190,97 @@ export class KycEntity extends BaseEntity {
   lga: string;
 }
 
-export interface IKycEntity extends IBaseEntity {
-  user: IUserEntity;
+export class IKycDto extends BaseDto {
+  @ApiProperty({ type: () => IUserDto })
+  @Expose()
+  @Type(() => IUserDto)
+  user: IUserDto;
 
-  dob?: string | null;
+  @ApiPropertyOptional({ type: String, description: 'Date of birth' })
+  @Expose()
+  dob?: string;
 
+  @ApiProperty({ type: String, description: 'BVN number' })
+  @Expose()
   bvn: string;
 
+  @ApiProperty({ type: String, description: 'NIN number' })
+  @Expose()
   nin: string;
 
+  @ApiProperty({ enum: KycProviderEnum })
+  @Expose()
   provider: KycProviderEnum;
 
+  @ApiProperty({ enum: CustomerTypesEnum })
+  @Expose()
   customerType: CustomerTypesEnum;
 
-  // Retail fields
-  firstName?: string | null;
-  middlename?: string | null;
-  lastName?: string | null;
-  phone?: string | null;
-  email?: string | null;
-  country?: string | null;
-  address?: string | null;
-  idTypes?: string | null;
-  idNumber?: string | null;
-  additionalIdType?: string | null;
-  additionalIdNumber?: string | null;
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  firstName?: string;
 
-  // Institution fields
-  businessId?: string | null;
-  businessName?: string | null;
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  middleName?: string;
 
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  lastName?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  phone?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  email?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  country?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  address?: string;
+
+  @ApiPropertyOptional({ isArray: true, enum: IdTypeEnum })
+  @Expose()
+  idTypes?: IdTypeEnum[];
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  idNumber?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  businessId?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
+  businessName?: string;
+
+  @ApiProperty({ type: Boolean })
+  @Expose()
   isVerified: boolean;
 
-  kycExpiresAt?: Date | null;
+  @ApiPropertyOptional({ type: Date })
+  @Expose()
+  kycExpiresAt?: Date;
 
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   houseNumber?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   streetName?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   state?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose()
   lga?: string;
 }

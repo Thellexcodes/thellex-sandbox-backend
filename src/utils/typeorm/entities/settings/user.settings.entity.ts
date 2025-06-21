@@ -1,6 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { UserEntity } from '../user.entity';
+import { IUserDto, UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'settings' })
 export class UserSettingEntity extends BaseEntity {
@@ -56,5 +58,71 @@ export class UserSettingEntity extends BaseEntity {
   themeColor?: string;
 
   @Column({ name: 'language', nullable: true })
+  language?: string;
+}
+
+export class IUserSettingDto {
+  @ApiProperty({ type: () => IUserDto })
+  @Expose()
+  @Type(() => IUserDto)
+  user: IUserDto;
+
+  @ApiPropertyOptional()
+  @Expose()
+  storeName?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  storeLogoUrl?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  currency?: string;
+
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Tax rate (e.g. 7.50 = 7.5%)',
+  })
+  @Expose()
+  taxRate?: number;
+
+  @ApiProperty({ default: false })
+  @Expose()
+  isTaxInclusive?: boolean;
+
+  @ApiPropertyOptional()
+  @Expose()
+  payoutFrequency?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  payoutDay?: string;
+
+  @ApiProperty({ default: true })
+  @Expose()
+  enableCardPayments: boolean;
+
+  @ApiProperty({ default: true })
+  @Expose()
+  enableCashPayments: boolean;
+
+  @ApiProperty({ default: false })
+  @Expose()
+  enableCryptoPayments: boolean;
+
+  @ApiProperty({ default: true })
+  @Expose()
+  notifyOnSale: boolean;
+
+  @ApiProperty({ default: true })
+  @Expose()
+  notifyOnPayout: boolean;
+
+  @ApiPropertyOptional()
+  @Expose()
+  themeColor?: string;
+
+  @ApiPropertyOptional()
+  @Expose()
   language?: string;
 }

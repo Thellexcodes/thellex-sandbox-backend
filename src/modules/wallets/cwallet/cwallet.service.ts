@@ -20,10 +20,8 @@ import {
   ICWalletTransactionResponse,
 } from '@/models/cwallet.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import {
   ChainTokens,
   SupportedBlockchainType,
@@ -50,6 +48,8 @@ import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
+import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 
 @Injectable()
 export class CwalletService {

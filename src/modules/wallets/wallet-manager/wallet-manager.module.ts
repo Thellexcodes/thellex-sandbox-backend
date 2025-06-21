@@ -5,7 +5,7 @@ import { QwalletService } from '../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { QWalletProfileEntity } from '@/utils/typeorm/entities/qwallet/qwallet-profile.entity';
+import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { UserService } from '../../users/user.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { JwtService } from '@nestjs/jwt';

@@ -1,6 +1,8 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { IUserEntity, UserEntity } from './user.entity';
-import { BaseEntity, IBaseEntity } from './base.entity';
+import { IUserDto, UserEntity } from './user.entity';
+import { BaseDto, BaseEntity } from './base.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'notifications' })
 export class NotificationEntity extends BaseEntity {
@@ -36,15 +38,44 @@ export class NotificationEntity extends BaseEntity {
   walletID: string | null;
 }
 
-export interface INotificationEntity extends IBaseEntity {
-  id: string;
-  user: IUserEntity;
+export class INotificationDto extends BaseDto {
+  @ApiProperty({ type: () => IUserDto })
+  @Expose()
+  @Type(() => IUserDto)
+  user: IUserDto;
+
+  @ApiProperty()
+  @Expose()
   title: string;
+
+  @ApiProperty()
+  @Expose()
   message: string;
+
+  @ApiProperty()
+  @Expose()
   consumed: boolean;
-  currency: string;
+
+  @ApiProperty()
+  @Expose()
+  assetCode: string;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  @Expose()
   expiresAt: Date;
-  amount?: string | null;
-  txID: string;
-  qwalletID?: string | null;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Transaction amount, nullable',
+  })
+  @Expose()
+  amount: string | null;
+
+  @ApiProperty()
+  @Expose()
+  txnID: string;
+
+  @ApiPropertyOptional({ type: String, description: 'Wallet ID, nullable' })
+  @Expose()
+  walletID: string | null;
 }

@@ -13,7 +13,6 @@ import { AuthnService } from './modules/auth/auth.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserService } from './modules/users/user.service';
 import { UserEntity } from './utils/typeorm/entities/user.entity';
-import { AuthnEntity } from './utils/typeorm/entities/auth.entity';
 import { DeviceEntity } from './utils/typeorm/entities/device.entity';
 import { MailModule } from './modules/email/mail.module';
 import { MailService } from './modules/email/mail.service';
@@ -35,12 +34,13 @@ import { SharedModule } from './modules/shared.module';
 import { GeoLocationMiddleware } from './middleware/geo-location.middleware';
 import { QwalletModule } from './modules/wallets/qwallet/qwallet.module';
 import { CwalletModule } from './modules/wallets/cwallet/cwallet.module';
+import { AuthEntity } from './utils/typeorm/entities/auth.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
-      AuthnEntity,
+      AuthEntity,
       DeviceEntity,
       AuthVerificationCodesEntity,
     ]),
