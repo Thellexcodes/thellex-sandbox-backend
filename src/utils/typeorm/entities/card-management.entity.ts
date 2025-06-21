@@ -8,16 +8,16 @@ export class CardManagementEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column()
+  @Column({ name: 'transaction_id', type: 'varchar' })
   transactionId: string;
 
-  @Column()
+  @Column({ name: 'asset_code', type: 'varchar' })
   assetCode: string;
 
-  @Column()
+  @Column({ name: 'asset_issuer', type: 'varchar' })
   assetIssuer: string;
 
-  @Column()
+  @Column({ name: 'amount', type: 'varchar' })
   amount: string;
 }
 

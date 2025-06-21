@@ -12,6 +12,10 @@ import { QWalletsEntity } from '@/utils/typeorm/entities/qwallet/qwallets.entity
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
+import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
+import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
+import { PayoutSettingEntity } from '@/utils/typeorm/entities/settings/payout-settings.entity';
+import { TaxSettingEntity } from '@/utils/typeorm/entities/settings/tax.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -32,7 +36,11 @@ export const typeOrmConfig = async (
       DeviceEntity,
       CwalletsEntity,
       QWalletsEntity,
+      TaxSettingEntity,
+      BankAccountEntity,
+      UserSettingEntity,
       NotificationEntity,
+      PayoutSettingEntity,
       CardManagementEntity,
       CwalletProfilesEntity,
       TransactionHistoryEntity,

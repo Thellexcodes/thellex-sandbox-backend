@@ -18,6 +18,10 @@ import { YellowCardService } from './payments/yellowcard.service';
 import { CwalletHooksModule } from './wallets/cwallet-hooks/cwallet-hooks.module';
 import { QwalletService } from './wallets/qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
+import { SettingsModule } from './settings/settings.module';
+import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
+import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Global()
 @Module({
@@ -33,8 +37,11 @@ import { HttpService } from '@/middleware/http.service';
       QWalletProfileEntity,
       TokenEntity,
       NotificationEntity,
+      BankAccountEntity,
+      UserSettingEntity,
     ]),
     CwalletHooksModule,
+    SettingsModule,
   ],
   providers: [
     Web3Service,
@@ -43,6 +50,7 @@ import { HttpService } from '@/middleware/http.service';
     WalletNotificationsService,
     YellowCardService,
     QwalletService,
+    JwtService,
     HttpService,
   ],
   exports: [
@@ -54,6 +62,7 @@ import { HttpService } from '@/middleware/http.service';
     YellowCardService,
     QwalletService,
     HttpService,
+    JwtService,
   ],
 })
 export class SharedModule {}

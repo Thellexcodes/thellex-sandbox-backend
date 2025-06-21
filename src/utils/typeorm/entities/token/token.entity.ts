@@ -13,7 +13,6 @@ export class TokenEntity extends BaseEntity {
   @Column({ name: 'name', type: 'varchar', nullable: true })
   name: string | null;
 
-  // Stellar specific
   @Column({ name: 'asset_code', type: 'varchar', nullable: true })
   assetCode: string | null;
 
@@ -34,7 +33,12 @@ export class TokenEntity extends BaseEntity {
   })
   walletType: SupportedWalletTypes;
 
-  @Column({ type: 'enum', enum: WalletProviderEnum, nullable: false })
+  @Column({
+    name: 'wallet_provider',
+    type: 'enum',
+    enum: WalletProviderEnum,
+    nullable: false,
+  })
   walletProvider: WalletProviderEnum;
 
   @ManyToOne(() => CwalletsEntity, (wallet) => wallet.tokens, {

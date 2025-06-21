@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -15,6 +15,7 @@ import {
   IWalletBalanceSummary,
   IWalletMap,
 } from './dto/get-balance-response.dto';
+import { CustomHttpException } from '@/middleware/custom.http.exception';
 
 @Injectable()
 export class WalletManagerService {
@@ -81,9 +82,12 @@ export class WalletManagerService {
           totalInUsd += total;
 
           if (!walletMap[tokenLower]) {
+            const address = qwallet?.address || cwallet?.address || '';
+
             walletMap[tokenLower] = {
               totalBalance: total.toString(),
               networks: [networkNormalized as SupportedBlockchainType],
+              address,
               assetCode: tokenLower,
               transactionHistory: [],
             };
@@ -118,7 +122,10 @@ export class WalletManagerService {
       };
     } catch (error) {
       console.error('getBalance error:', error);
-      throw new Error('Failed to get balance');
+      throw new CustomHttpException(
+        'Failed to get balance',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

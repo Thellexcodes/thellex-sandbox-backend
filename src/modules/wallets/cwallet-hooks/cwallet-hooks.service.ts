@@ -110,7 +110,7 @@ export class CwalletHooksService {
             data: {
               amount: notificationPayload.amounts[0],
               assetCode,
-              txID: transaction.id,
+              txnID: transaction.id,
               walletID: notificationPayload.walletId,
             },
           });
@@ -213,7 +213,7 @@ export class CwalletHooksService {
             data: {
               amount: transaction.amount,
               assetCode: transaction.assetCode,
-              txID: transaction.transactionId,
+              txnID: transaction.transactionId,
               walletID: transaction.walletId,
             },
           });

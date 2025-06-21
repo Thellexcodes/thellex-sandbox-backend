@@ -5,7 +5,6 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import {
@@ -19,32 +18,22 @@ import { ENV_TESTNET } from '@/constants/env';
 
 @Entity({ name: 'cwallets' })
 export class CwalletsEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @ManyToOne(() => CwalletProfilesEntity, (profile) => profile.wallets, {
-    onDelete: 'CASCADE',
-    nullable: false,
-  })
-  @JoinColumn({ name: 'profile_id' })
-  profile: CwalletProfilesEntity;
-
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, name: 'reference' })
   reference: string | null;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', name: 'currency' })
   currency: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', name: 'address' })
   address: string;
 
-  @Column({ name: 'total_payments', type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, name: 'total_payments' })
   totalPayments: string | null;
 
   @Column({
-    name: 'default_network',
     type: 'enum',
     enum: SupportedBlockchainType,
+    name: 'default_network',
     default:
       process.env.NODE_ENV === ENV_TESTNET
         ? SupportedBlockchainType.MATIC_AMOY
@@ -52,32 +41,39 @@ export class CwalletsEntity extends BaseEntity {
   })
   defaultNetwork: SupportedBlockchainType;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ name: 'wallet_id', type: 'uuid', nullable: false })
+  @Column({ type: 'uuid', nullable: false, name: 'wallet_id' })
   walletID: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', name: 'custody_type' })
   custodyType: string;
 
-  @Column({ name: 'account_type', type: 'varchar' })
+  @Column({ type: 'varchar', name: 'account_type' })
   accountType: string;
 
-  @Column({ name: 'state', type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, name: 'state' })
   state: string | null;
 
-  @Column({ name: 'sca_core', type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, name: 'sca_core' })
   scaCore: string | null;
 
   @Column({
-    name: 'networks',
     type: 'simple-array',
+    name: 'networks',
   })
   networks: SupportedBlockchainType[];
+
+  @ManyToOne(() => CwalletProfilesEntity, (profile) => profile.wallets, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
+  @JoinColumn({ name: 'profile_id' })
+  profile: CwalletProfilesEntity;
 
   @OneToMany(() => TokenEntity, (token) => token.cwallet, { eager: true })
   tokens: TokenEntity[];

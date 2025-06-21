@@ -26,6 +26,7 @@ import {
   FiatCollectionRequestDto,
   FiatCollectionResponseDto,
 } from './dto/fiat-collection-request.dto';
+import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
 
 ApiTags('payments');
 @Controller('Payments')
@@ -109,11 +110,13 @@ export class PaymentsController {
     responseHandler(response, res, req);
   }
 
-  @Post('off-ramp')
+  @Post('offramp-crypto')
   @UseGuards(AuthGuard, BasicKycCheckerGuard)
-  @ApiOperation({ summary: 'Request a fiat payment' })
-  async withdrawFiatPayment(@Body() createRequestPaymentDto: any) {
-    console.log({ createRequestPaymentDto });
+  @ApiOperation({ summary: 'Request a fiat payment (off-ramp)' })
+  async requestOffRampFiatPayment(
+    @Body() requestOffRampDto: RequestCryptoOffRampPaymentDto,
+  ) {
+    console.log({ requestOffRampDto });
   }
 
   // @Get()

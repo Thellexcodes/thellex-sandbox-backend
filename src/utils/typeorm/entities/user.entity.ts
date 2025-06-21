@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity, IBaseEntity } from './base.entity';
 import { AuthnEntity, IAuthnEntity } from './auth.entity';
 import {
@@ -33,46 +27,30 @@ import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IKycEntity, KycEntity } from './kyc/kyc.entity';
 import { TierEnum } from '@/constants/tier.lists';
+import { UserSettingEntity } from './settings/user.settings.entity';
+import { BankAccountEntity } from './settings/bank-account.entity';
+import { PayoutSettingEntity } from './settings/payout-settings.entity';
+import { TaxSettingEntity } from './settings/tax.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ unique: true })
+  @Column({ name: 'uid', unique: true })
   uid: number;
 
-  @Column({ nullable: true })
-  account: string;
-
-  @Column({ nullable: false, unique: true })
+  @Column({ name: 'email', nullable: false, unique: true })
   email: string;
 
-  @IsOptional()
-  @IsString({ message: 'firstName/not-string' })
-  @ApiProperty({ description: 'First name of the user' })
-  firstName: string;
-
-  @ApiProperty({ description: 'Last name of the user' })
-  @IsOptional()
-  @IsString({ message: 'middleName/not-string' })
-  middlename: string;
-
-  @Column({ nullable: true, default: false })
+  @Column({ name: 'email_verified', nullable: true, default: false })
   emailVerified: boolean;
 
-  @Column({ nullable: true })
+  @Column({ name: 'password', nullable: true })
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'suspended', nullable: true })
   suspended: boolean;
 
-  @ApiProperty({ description: 'Last name of the user' })
-  @IsOptional()
-  @IsString({ message: 'lastName/not-string' })
-  lastName: string;
-
   @Column({
+    name: 'idempotency_key',
     type: 'uuid',
     unique: true,
     nullable: false,
@@ -81,6 +59,7 @@ export class UserEntity extends BaseEntity {
   idempotencyKey: string;
 
   @Column({
+    name: 'alert_id',
     type: 'uuid',
     unique: true,
     nullable: false,
@@ -152,6 +131,30 @@ export class UserEntity extends BaseEntity {
     eager: true,
   })
   cWalletProfile: CwalletProfilesEntity;
+
+  @OneToMany(() => UserSettingEntity, (setting) => setting.user, {
+    cascade: true,
+    eager: true,
+  })
+  settings: UserSettingEntity[];
+
+  @OneToMany(() => BankAccountEntity, (bankAccount) => bankAccount.user, {
+    cascade: true,
+    eager: true,
+  })
+  bankAccounts: BankAccountEntity[];
+
+  @OneToOne(() => PayoutSettingEntity, (payoutSetting) => payoutSetting.user, {
+    cascade: true,
+    eager: true,
+  })
+  payoutSettings: PayoutSettingEntity;
+
+  @OneToOne(() => TaxSettingEntity, (taxSetting) => taxSetting.user, {
+    eager: true,
+    cascade: true,
+  })
+  taxSettings: TaxSettingEntity;
 }
 
 export interface IUserEntity extends IBaseEntity {

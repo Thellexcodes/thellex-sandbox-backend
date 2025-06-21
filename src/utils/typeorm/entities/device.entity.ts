@@ -3,50 +3,50 @@ import { UserEntity } from './user.entity';
 import { BaseEntity, IBaseEntity } from './base.entity';
 import { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 
-@Entity('devices')
+@Entity({ name: 'devices' })
 export class DeviceEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, (user) => user.devices)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column({ nullable: true })
-  token: string;
+  @Column({ name: 'token', nullable: true, type: 'varchar' })
+  token: string | null;
 
-  @Column({ nullable: true })
-  name: string;
+  @Column({ name: 'name', nullable: true, type: 'varchar' })
+  name: string | null;
 
-  @Column({ nullable: true })
-  agent: string;
+  @Column({ name: 'agent', nullable: true, type: 'varchar' })
+  agent: string | null;
 
-  @Column({ nullable: true })
-  ip: string;
+  @Column({ name: 'ip', nullable: true, type: 'varchar' })
+  ip: string | null;
 
-  @Column({ nullable: true })
-  location: string;
+  @Column({ name: 'location', nullable: true, type: 'varchar' })
+  location: string | null;
 
-  @Column({ nullable: true })
-  type: string;
+  @Column({ name: 'type', nullable: true, type: 'varchar' })
+  type: string | null;
 
-  @Column({ nullable: true })
-  count: number;
+  @Column({ name: 'count', nullable: true, type: 'int' })
+  count: number | null;
 
-  @Column({ nullable: true })
-  device_token: string;
+  @Column({ name: 'device_token', nullable: true, type: 'varchar' })
+  deviceToken: string | null;
 
-  @Column({ nullable: true })
-  credentialID: string;
+  @Column({ name: 'credential_id', nullable: true, type: 'varchar' })
+  credentialID: string | null;
 
-  @Column({ nullable: true })
-  publicKey: string;
+  @Column({ name: 'public_key', nullable: true, type: 'varchar' })
+  publicKey: string | null;
 
-  @Column({ nullable: true, type: 'text', array: true })
-  transports: AuthenticatorTransportFuture[];
+  @Column({ name: 'transports', nullable: true, type: 'text', array: true })
+  transports: AuthenticatorTransportFuture[] | null;
 
-  @Column('json', { nullable: true })
-  attestationResponse: object;
+  @Column('json', { name: 'attestation_response', nullable: true })
+  attestationResponse: object | null;
 
-  @Column('text', { nullable: true })
-  attestationObject: string;
+  @Column('text', { name: 'attestation_object', nullable: true })
+  attestationObject: string | null;
 }
 
 export interface IDeviceEntity extends IBaseEntity {
