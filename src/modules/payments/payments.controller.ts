@@ -28,7 +28,7 @@ import {
 } from './dto/fiat-collection-request.dto';
 import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
 
-ApiTags('payments');
+ApiTags('Payments');
 @Controller('Payments')
 @ApiBearerAuth('access-token')
 export class PaymentsController {

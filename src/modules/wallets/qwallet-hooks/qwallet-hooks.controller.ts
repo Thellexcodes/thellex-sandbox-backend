@@ -5,7 +5,7 @@ import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
 import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 
 //TODO: add qwallet security middleware
-@ApiTags('WebHooks')
+@ApiTags('Web Hooks')
 @Controller('qwallet-hooks')
 @ApiBearerAuth('access-token')
 export class QwalletHooksController {

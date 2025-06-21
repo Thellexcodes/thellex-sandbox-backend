@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { BridgeService } from './bridge.service';
 import { CreateBridgeDto } from './dto/create-bridge.dto';
 import { UpdateBridgeDto } from './dto/update-bridge.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('bridge')
 export class BridgeController {
   constructor(private readonly bridgeService: BridgeService) {}
