@@ -1,21 +1,9 @@
-// src/modules/notifications/entities/notification.entity.ts
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { IUserEntity, UserEntity } from './user.entity';
 import { BaseEntity, IBaseEntity } from './base.entity';
 
 @Entity({ name: 'notifications' })
 export class NotificationEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
   @ManyToOne(() => UserEntity, (user) => user.notifications, {
     nullable: false,
     onDelete: 'CASCADE',
@@ -23,29 +11,29 @@ export class NotificationEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column()
+  @Column({ name: 'title', type: 'varchar' })
   title: string;
 
-  @Column('text')
+  @Column({ name: 'message', type: 'text' })
   message: string;
 
-  @Column({ default: false })
+  @Column({ name: 'consumed', type: 'boolean', default: false })
   consumed: boolean;
 
-  @Column()
+  @Column({ name: 'asset_code', type: 'varchar' })
   assetCode: string;
 
-  @Column()
+  @Column({ name: 'expires_at', type: 'timestamp' })
   expiresAt: Date;
 
-  @Column({ nullable: true })
-  amount: string;
+  @Column({ name: 'amount', type: 'varchar', nullable: true })
+  amount: string | null;
 
-  @Column({ nullable: false })
-  txID: string;
+  @Column({ name: 'txn_id', type: 'varchar', nullable: false })
+  txnID: string;
 
-  @Column({ nullable: true })
-  walletID: string;
+  @Column({ name: 'wallet_id', type: 'varchar', nullable: true })
+  walletID: string | null;
 }
 
 export interface INotificationEntity extends IBaseEntity {

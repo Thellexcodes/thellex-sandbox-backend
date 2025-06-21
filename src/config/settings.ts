@@ -218,3 +218,10 @@ export function mapNetworkToWalletType(
       return SupportedWalletTypes.EVM;
   }
 }
+
+export enum SupportedFiatCurrency {
+  USD = 'USD',
+  EUR = 'EUR',
+  GBP = 'GBP',
+  NGN = 'NGN',
+}

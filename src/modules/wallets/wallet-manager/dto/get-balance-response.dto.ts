@@ -18,25 +18,37 @@ export class WalletMapDto {
   @ApiProperty()
   assetCode: string;
 
+  @ApiProperty()
+  address: string;
+
   @ApiProperty({ type: [TransactionHistoryDto] })
   transactionHistory: TransactionHistoryDto[];
+}
+
+export class WalletMapRecord {
+  @ApiProperty({ type: WalletMapDto })
+  usdc: WalletMapDto;
+
+  @ApiProperty({ type: WalletMapDto })
+  usdt: WalletMapDto;
 }
 
 export class GetWalletBalanceSummaryResponse {
   @ApiProperty()
   totalInUsd: number;
 
-  @ApiProperty({
-    type: 'object',
-    additionalProperties: { $ref: getSchemaPath(WalletMapDto) },
-  })
-  wallets: Record<string, WalletMapDto>;
+  @ApiProperty({ type: WalletMapRecord })
+  wallets: {
+    usdc: WalletMapDto;
+    usdt: WalletMapDto;
+  };
 }
 
 export interface IWalletMap {
   totalBalance: string;
   networks: SupportedBlockchainType[];
   assetCode: string;
+  address: string;
   transactionHistory: ITransactionHistory[];
   [network: string]: any;
 }

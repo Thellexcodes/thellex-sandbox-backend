@@ -30,7 +30,7 @@ export class WalletNotificationsService {
     title: NotificationsEnum;
     message: NotificationMessageEnum;
     data: Partial<
-      Pick<NotificationEntity, 'amount' | 'assetCode' | 'txID' | 'walletID'>
+      Pick<NotificationEntity, 'amount' | 'assetCode' | 'txnID' | 'walletID'>
     >;
   }): Promise<NotificationEntity> {
     try {
@@ -45,7 +45,7 @@ export class WalletNotificationsService {
         consumed: false,
         assetCode: upperCurrency,
         amount: data.amount,
-        txID: data.txID,
+        txnID: data.txnID,
         walletID: data.walletID,
       };
 
