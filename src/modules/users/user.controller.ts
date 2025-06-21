@@ -1,7 +1,19 @@
 import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import {
+  AccessResponseDto,
+  AccessTokenResultDto,
+  CreateUserDto,
+  UserAuthenticateResponseDto,
+  UserResponseDto,
+  UserVerifyResponseDto,
+} from './dto/user.dto';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -17,6 +29,7 @@ export class UserController {
 
   @Post('access')
   @ApiBody({ type: CreateUserDto, description: 'Data required to create user' })
+  @ApiOkResponse({ type: AccessResponseDto })
   async create(
     @Body() createUserDto: CreateUserDto,
     @Req() req: CustomRequest,
@@ -28,6 +41,7 @@ export class UserController {
 
   @Post('authenticate')
   @UseGuards(AuthGuard)
+  @ApiOkResponse({ type: UserAuthenticateResponseDto })
   async tokenLogin(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
@@ -43,6 +57,7 @@ export class UserController {
   @Post('verify')
   @UseGuards(AuthGuard)
   @ApiBody({ description: 'Verifies user', type: VerifyUserDto })
+  @ApiOkResponse({ type: UserVerifyResponseDto })
   async verify(
     @Body() verifyUserDto: VerifyUserDto,
     @Req() req: CustomRequest,

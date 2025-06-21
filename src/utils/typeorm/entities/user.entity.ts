@@ -23,8 +23,6 @@ import {
   CwalletProfilesEntity,
   ICwalletProfilesEntity,
 } from './cwallet/cwallet-profiles.entity';
-import { IsOptional, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 import { IKycEntity, KycEntity } from './kyc/kyc.entity';
 import { TierEnum } from '@/constants/tier.lists';
 import { UserSettingEntity } from './settings/user.settings.entity';
@@ -103,7 +101,6 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => KycEntity, (kyc) => kyc.user, {
     nullable: true,
     cascade: true,
-    eager: true,
   })
   kyc: KycEntity;
 
