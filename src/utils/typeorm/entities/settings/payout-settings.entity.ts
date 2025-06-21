@@ -1,8 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { BaseDto, BaseEntity } from '../base.entity';
-import { IUserDto, UserEntity } from '../user.entity';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { BaseEntity } from '../base.entity';
+import { UserEntity } from '../user.entity';
 
 @Entity('payout_settings')
 export class PayoutSettingEntity extends BaseEntity {
@@ -23,21 +21,4 @@ export class PayoutSettingEntity extends BaseEntity {
   notifyOnPayout: boolean;
 }
 
-export class IPayoutSettingDto extends BaseDto {
-  @ApiProperty({ type: () => IUserDto })
-  @Expose()
-  @Type(() => IUserDto)
-  user: IUserDto;
-
-  @ApiPropertyOptional()
-  @Expose()
-  payoutFrequency?: string;
-
-  @ApiPropertyOptional()
-  @Expose()
-  payoutDay?: string;
-
-  @ApiProperty({ default: true })
-  @Expose()
-  notifyOnPayout: boolean;
-}
+export class IPayoutSettingDto extends PayoutSettingEntity {}

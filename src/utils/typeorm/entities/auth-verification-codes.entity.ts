@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { IUserDto, UserEntity } from './user.entity';
-import { Expose, Type } from 'class-transformer';
+import { UserEntity } from './user.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'auth_verification_codes' })
 export class AuthVerificationCodesEntity extends BaseEntity {
@@ -22,14 +22,8 @@ export class AuthVerificationCodesEntity extends BaseEntity {
   expired: boolean;
 }
 
-export class IAuthVerificationCodeDto extends BaseEntity {
-  @Expose()
-  code!: number;
-
-  @Expose()
-  expired?: boolean;
-
-  @Expose()
-  @Type(() => IUserDto)
-  user!: IUserDto;
+@Exclude()
+export class IAuthVerificationCodeDto extends AuthVerificationCodesEntity {
+  @Exclude() code: number;
+  @Exclude() expired: boolean;
 }

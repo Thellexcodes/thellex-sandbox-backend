@@ -1,6 +1,6 @@
-import { BaseDto, BaseEntity } from '@/utils/typeorm/entities/base.entity';
-import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { Expose, Type } from 'class-transformer';
+import { BaseEntity } from '@/utils/typeorm/entities/base.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity({ name: 'card_management' })
@@ -22,20 +22,5 @@ export class CardManagementEntity extends BaseEntity {
   amount: string;
 }
 
-export class ICardManagementDto extends BaseDto {
-  @Expose()
-  @Type(() => IUserDto)
-  user: IUserDto;
-
-  @Expose()
-  transactionId: string;
-
-  @Expose()
-  assetCode: string;
-
-  @Expose()
-  assetIssuer: string;
-
-  @Expose()
-  amount: string;
-}
+@Exclude()
+export class ICardManagementDto extends CardManagementEntity {}

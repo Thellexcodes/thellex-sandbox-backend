@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { BaseDto } from '../base.entity';
 import { ITokenDto } from '../token/token.entity';
+import { BaseDto } from '../base.entity';
 
 @Exclude()
 export class IWalletDto extends BaseDto {

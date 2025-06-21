@@ -1,7 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseDto, BaseEntity } from './base.entity';
-import { IUserDto, UserEntity } from './user.entity';
-import { Expose, Type } from 'class-transformer';
+import { BaseEntity } from './base.entity';
+import { UserEntity } from './user.entity';
+import { Exclude, Expose, Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'auth' })
 export class AuthEntity extends BaseEntity {
@@ -9,21 +10,18 @@ export class AuthEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
+  @Expose()
+  @ApiProperty()
   @Column({ nullable: false, unique: true })
   challenge: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ nullable: true, default: false })
   expired: boolean;
 }
 
-export class IAuthDto extends BaseDto {
-  @Expose()
-  challenge!: string;
-
-  @Expose()
-  expired?: boolean;
-
-  @Expose()
-  @Type(() => IUserDto)
-  user!: IUserDto;
+@Exclude()
+export class IAuthDto extends AuthEntity {
+  @Exclude() user: UserEntity;
 }

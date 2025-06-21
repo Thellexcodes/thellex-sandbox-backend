@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseDto, BaseEntity } from '../base.entity';
+import { BaseEntity } from '../base.entity';
 import { QWalletsEntity } from '../wallets/qwallet/qwallets.entity';
 import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
 import { CwalletsEntity } from '../wallets/cwallet/cwallet.entity';
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'tokens' })
@@ -54,40 +54,5 @@ export class TokenEntity extends BaseEntity {
   qwallet?: QWalletsEntity;
 }
 
-export class ITokenDto extends BaseDto {
-  @ApiProperty({ nullable: true })
-  @Expose()
-  name: string | null;
-
-  @ApiProperty({ nullable: true })
-  @Expose()
-  contractAddress: string | null;
-
-  @ApiProperty({ nullable: true })
-  @Expose()
-  assetCode: string | null;
-
-  @ApiProperty({ nullable: true })
-  @Expose()
-  issuer: string | null;
-
-  @ApiProperty()
-  @Expose()
-  decimals: number;
-
-  @ApiProperty({ type: [String] })
-  @Expose()
-  networks: string[];
-
-  @ApiProperty({ nullable: true })
-  @Expose()
-  balance: string | null;
-
-  @ApiProperty()
-  @Expose()
-  walletType: string;
-
-  @ApiProperty()
-  @Expose()
-  walletProvider: string;
-}
+@Exclude()
+export class ITokenDto extends TokenEntity {}

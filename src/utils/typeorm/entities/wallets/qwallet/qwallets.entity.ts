@@ -3,14 +3,14 @@ import {
   IQWalletProfileDto,
   QWalletProfileEntity,
 } from './qwallet-profile.entity';
-import { BaseDto, BaseEntity } from '../../base.entity';
+import { BaseEntity } from '../../base.entity';
 import { ITokenDto, TokenEntity } from '../../token/token.entity';
 import {
   SupportedBlockchainType,
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'qwallets' })
 export class QWalletsEntity extends BaseEntity {
@@ -63,40 +63,5 @@ export class QWalletsEntity extends BaseEntity {
   tokens: TokenEntity[];
 }
 
-export class IQWalletDto extends BaseDto {
-  @Expose()
-  @Type(() => IQWalletProfileDto)
-  profile: IQWalletProfileDto;
-
-  @Expose()
-  reference: string | null;
-
-  @Expose()
-  address: string;
-
-  @Expose()
-  isCrypto: boolean | null;
-
-  @Expose()
-  destinationTag: string | null;
-
-  @Expose()
-  totalPayments: string | null;
-
-  @Expose()
-  walletProvider: WalletProviderEnum;
-
-  @Expose()
-  walletType: SupportedWalletTypes;
-
-  @Expose()
-  defaultNetwork: SupportedBlockchainType;
-
-  @Expose()
-  @Type(() => String)
-  networks: SupportedBlockchainType[];
-
-  @Expose()
-  @Type(() => ITokenDto)
-  tokens: ITokenDto[];
-}
+@Exclude()
+export class IQWalletDto extends QWalletsEntity {}

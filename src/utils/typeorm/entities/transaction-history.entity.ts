@@ -5,9 +5,9 @@ import {
   FeeLevel,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { BaseDto, BaseEntity } from './base.entity';
+import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'transaction_history' })
 export class TransactionHistoryEntity extends BaseEntity {
@@ -15,6 +15,8 @@ export class TransactionHistoryEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
+  @Expose()
+  @ApiProperty()
   @Column({
     name: 'event',
     type: 'enum',
@@ -23,15 +25,23 @@ export class TransactionHistoryEntity extends BaseEntity {
   })
   event: WalletWebhookEventEnum;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'transaction_id', type: 'varchar', nullable: false })
   transactionId: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'type', type: 'varchar', nullable: false })
   type: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'asset_code', type: 'varchar', nullable: false })
   assetCode: string;
 
+  @Expose()
+  @ApiProperty()
   @Column('decimal', {
     name: 'amount',
     precision: 18,
@@ -40,6 +50,8 @@ export class TransactionHistoryEntity extends BaseEntity {
   })
   amount: string;
 
+  @Expose()
+  @ApiProperty()
   @Column('decimal', {
     name: 'fee',
     precision: 65,
@@ -49,6 +61,8 @@ export class TransactionHistoryEntity extends BaseEntity {
   })
   fee: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({
     name: 'fee_level',
     type: 'enum',
@@ -58,18 +72,28 @@ export class TransactionHistoryEntity extends BaseEntity {
   })
   feeLevel?: FeeLevel;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'blockchain_tx_id', type: 'varchar', nullable: true })
   blockchainTxId: string | null;
 
+  @Expose()
+  @ApiPropertyOptional()
   @Column({ name: 'reason', type: 'varchar', nullable: true })
   reason?: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'wallet_id', type: 'varchar', nullable: false })
   walletId: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'wallet_name', type: 'varchar', nullable: true })
   walletName: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({
     name: 'payment_status',
     type: 'enum',
@@ -79,85 +103,21 @@ export class TransactionHistoryEntity extends BaseEntity {
   })
   paymentStatus: PaymentStatus;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'source_address', type: 'varchar', nullable: false })
   sourceAddress: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'destination_address', type: 'varchar', nullable: false })
   destinationAddress: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'payment_network', type: 'varchar', nullable: false })
   paymentNetwork: string;
 }
 
-export class ITransactionHistoryDto extends BaseDto {
-  @ApiProperty({ type: () => IUserDto })
-  @Expose()
-  @Type(() => IUserDto)
-  user: IUserDto;
-
-  @ApiProperty({ enum: WalletWebhookEventEnum })
-  @Expose()
-  event: WalletWebhookEventEnum;
-
-  @ApiProperty()
-  @Expose()
-  transactionId: string;
-
-  @ApiProperty()
-  @Expose()
-  type: string;
-
-  @ApiProperty()
-  @Expose()
-  assetCode: string;
-
-  @ApiProperty({ type: String, description: 'Amount with precision' })
-  @Expose()
-  amount: string;
-
-  @ApiPropertyOptional({ type: String, description: 'Fee amount, nullable' })
-  @Expose()
-  fee?: string | null;
-
-  @ApiPropertyOptional({ enum: FeeLevel, description: 'Fee level enum' })
-  @Expose()
-  feeLevel?: FeeLevel;
-
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Blockchain transaction ID, nullable',
-  })
-  @Expose()
-  blockchainTxId?: string | null;
-
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Reason for transaction, nullable',
-  })
-  @Expose()
-  reason?: string | null;
-
-  @ApiProperty()
-  @Expose()
-  walletId: string;
-
-  @ApiPropertyOptional({ type: String, description: 'Wallet name, nullable' })
-  @Expose()
-  walletName?: string | null;
-
-  @ApiProperty({ enum: PaymentStatus })
-  @Expose()
-  paymentStatus: PaymentStatus;
-
-  @ApiProperty()
-  @Expose()
-  sourceAddress: string;
-
-  @ApiProperty()
-  @Expose()
-  destinationAddress: string;
-
-  @ApiProperty()
-  @Expose()
-  paymentNetwork: string;
-}
+@Exclude()
+export class ITransactionHistoryDto extends TransactionHistoryEntity {}

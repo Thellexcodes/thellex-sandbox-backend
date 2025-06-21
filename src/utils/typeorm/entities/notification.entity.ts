@@ -1,8 +1,8 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { IUserDto, UserEntity } from './user.entity';
-import { BaseDto, BaseEntity } from './base.entity';
+import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'notifications' })
 export class NotificationEntity extends BaseEntity {
@@ -13,69 +13,46 @@ export class NotificationEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'title', type: 'varchar' })
   title: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'message', type: 'text' })
   message: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'consumed', type: 'boolean', default: false })
   consumed: boolean;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'asset_code', type: 'varchar' })
   assetCode: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'expires_at', type: 'timestamp' })
   expiresAt: Date;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'amount', type: 'varchar', nullable: true })
   amount: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'txn_id', type: 'varchar', nullable: false })
   txnID: string;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'wallet_id', type: 'varchar', nullable: true })
   walletID: string | null;
 }
 
-export class INotificationDto extends BaseDto {
-  @ApiProperty({ type: () => IUserDto })
-  @Expose()
-  @Type(() => IUserDto)
-  user: IUserDto;
-
-  @ApiProperty()
-  @Expose()
-  title: string;
-
-  @ApiProperty()
-  @Expose()
-  message: string;
-
-  @ApiProperty()
-  @Expose()
-  consumed: boolean;
-
-  @ApiProperty()
-  @Expose()
-  assetCode: string;
-
-  @ApiProperty({ type: String, format: 'date-time' })
-  @Expose()
-  expiresAt: Date;
-
-  @ApiPropertyOptional({
-    type: String,
-    description: 'Transaction amount, nullable',
-  })
-  @Expose()
-  amount: string | null;
-
-  @ApiProperty()
-  @Expose()
-  txnID: string;
-
-  @ApiPropertyOptional({ type: String, description: 'Wallet ID, nullable' })
-  @Expose()
-  walletID: string | null;
-}
+@Exclude()
+export class INotificationDto extends NotificationEntity {}

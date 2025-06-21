@@ -2,14 +2,15 @@ import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EncryptionTransformer } from 'typeorm-encrypted';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { IUserDto, UserEntity } from '../user.entity';
-import { BaseDto, BaseEntity } from '../base.entity';
+import { BaseEntity } from '../base.entity';
 import { CustomerTypesEnum } from '@/config/settings';
 import { getAppConfig } from '@/constants/env';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 //TODO: Handle errors with enum
 //TODO: INCLUDE iv for randomness
+
 @Entity({ name: 'kyc' })
 export class KycEntity extends BaseEntity {
   @OneToOne(() => UserEntity, (user) => user.kyc)
@@ -30,25 +31,13 @@ export class KycEntity extends BaseEntity {
   })
   dob: string;
 
-  @Column({
-    name: 'bvn',
-    type: 'text',
-    transformer: KycEntity.encryption,
-  })
+  @Column({ name: 'bvn', type: 'text', transformer: KycEntity.encryption })
   bvn: string;
 
-  @Column({
-    name: 'nin',
-    type: 'text',
-    transformer: KycEntity.encryption,
-  })
+  @Column({ name: 'nin', type: 'text', transformer: KycEntity.encryption })
   nin: string;
 
-  @Column({
-    name: 'provider',
-    type: 'enum',
-    enum: KycProviderEnum,
-  })
+  @Column({ name: 'provider', type: 'enum', enum: KycProviderEnum })
   provider: KycProviderEnum;
 
   @Column({
@@ -61,94 +50,86 @@ export class KycEntity extends BaseEntity {
 
   @Column({
     name: 'first_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   firstName: string;
 
   @Column({
     name: 'middle_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   middleName: string;
 
   @Column({
     name: 'last_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   lastName: string;
 
   @Column({
     name: 'phone_number',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   phone: string;
 
   @Column({
     name: 'email_address',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   email: string;
 
   @Column({
     name: 'country_of_residence',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   country: string;
 
   @Column({
     name: 'home_address',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   address: string;
 
-  @Column({
-    name: 'id_type',
-    nullable: true,
-    type: 'text',
-    array: true,
-  })
+  @Column({ name: 'id_type', type: 'text', array: true, nullable: true })
   idTypes: IdTypeEnum[];
 
   @Column({
     name: 'id_number',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   idNumber: string;
 
   @Column({
     name: 'business_id',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   businessId: string;
 
   @Column({
     name: 'business_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   businessName: string;
-
-  @Column({ name: 'is_verified', default: false })
-  isVerified: boolean;
 
   @Column({
     type: 'timestamptz',
@@ -159,128 +140,70 @@ export class KycEntity extends BaseEntity {
 
   @Column({
     name: 'house_number',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   houseNumber: string;
 
   @Column({
     name: 'street_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   streetName: string;
 
   @Column({
     name: 'state',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   state: string;
 
   @Column({
     name: 'lga',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   lga: string;
 }
 
-export class IKycDto extends BaseDto {
-  @ApiProperty({ type: () => IUserDto })
+@Exclude()
+export class IKycDto extends KycEntity {
   @Expose()
   @Type(() => IUserDto)
+  @ApiProperty({ type: () => IUserDto })
   user: IUserDto;
 
-  @ApiPropertyOptional({ type: String, description: 'Date of birth' })
+  @Exclude() dob: string;
+  @Exclude() bvn: string;
+  @Exclude() nin: string;
+  @Exclude() provider: KycProviderEnum;
   @Expose()
-  dob?: string;
-
-  @ApiProperty({ type: String, description: 'BVN number' })
-  @Expose()
-  bvn: string;
-
-  @ApiProperty({ type: String, description: 'NIN number' })
-  @Expose()
-  nin: string;
-
-  @ApiProperty({ enum: KycProviderEnum })
-  @Expose()
-  provider: KycProviderEnum;
-
   @ApiProperty({ enum: CustomerTypesEnum })
-  @Expose()
   customerType: CustomerTypesEnum;
 
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  firstName?: string;
+  @Expose() @ApiPropertyOptional() firstName: string;
+  @Expose() @ApiPropertyOptional() middleName: string;
+  @Expose() @ApiPropertyOptional() lastName: string;
+  @Expose() @ApiPropertyOptional() phone: string;
+  @Expose() @ApiPropertyOptional() email: string;
+  @Expose() @ApiPropertyOptional() country: string;
+  @Expose() @ApiPropertyOptional() address: string;
 
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  middleName?: string;
+  @Exclude() idTypes: IdTypeEnum[];
+  @Exclude() idNumber: string;
 
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  lastName?: string;
+  @Exclude() businessId: string;
+  @Exclude() businessName: string;
 
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  phone?: string;
+  @Exclude() kycExpiresAt: Date;
 
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  email?: string;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  country?: string;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  address?: string;
-
-  @ApiPropertyOptional({ isArray: true, enum: IdTypeEnum })
-  @Expose()
-  idTypes?: IdTypeEnum[];
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  idNumber?: string;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  businessId?: string;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  businessName?: string;
-
-  @ApiProperty({ type: Boolean })
-  @Expose()
-  isVerified: boolean;
-
-  @ApiPropertyOptional({ type: Date })
-  @Expose()
-  kycExpiresAt?: Date;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  houseNumber?: string;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  streetName?: string;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  state?: string;
-
-  @ApiPropertyOptional({ type: String })
-  @Expose()
-  lga?: string;
+  @Exclude() houseNumber: string;
+  @Exclude() streetName: string;
+  @Exclude() state: string;
+  @Exclude() lga: string;
 }

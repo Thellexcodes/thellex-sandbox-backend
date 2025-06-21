@@ -2,7 +2,8 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { IUserDto, UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { AuthenticatorTransportFuture } from '@simplewebauthn/server';
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'devices' })
 export class DeviceEntity extends BaseEntity {
@@ -10,33 +11,51 @@ export class DeviceEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'token', nullable: true, type: 'varchar' })
   token: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'name', nullable: true, type: 'varchar' })
   name: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'agent', nullable: true, type: 'varchar' })
   agent: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'ip', nullable: true, type: 'varchar' })
   ip: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'location', nullable: true, type: 'varchar' })
   location: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'type', nullable: true, type: 'varchar' })
   type: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'count', nullable: true, type: 'int' })
   count: number | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'device_token', nullable: true, type: 'varchar' })
   deviceToken: string | null;
 
   @Column({ name: 'credential_id', nullable: true, type: 'varchar' })
   credentialID: string | null;
 
+  @Expose()
+  @ApiProperty()
   @Column({ name: 'public_key', nullable: true, type: 'varchar' })
   publicKey: string | null;
 
@@ -50,46 +69,12 @@ export class DeviceEntity extends BaseEntity {
   attestationObject: string | null;
 }
 
-export class IDeviceDto extends BaseEntity {
-  @Expose()
-  user: IUserDto;
-
-  @Expose()
-  token?: string | null;
-
-  @Expose()
-  name?: string | null;
-
-  @Expose()
-  agent?: string | null;
-
-  @Expose()
-  ip?: string | null;
-
-  @Expose()
-  location?: string | null;
-
-  @Expose()
-  type?: string | null;
-
-  @Expose()
-  count?: number | null;
-
-  @Expose({ name: 'device_token' })
-  device_token?: string | null;
-
-  @Expose()
-  credentialID?: string | null;
-
-  @Expose()
-  publicKey?: string | null;
-
-  @Expose()
-  transports?: AuthenticatorTransportFuture[] | null;
-
-  @Expose()
-  attestationResponse?: object | null;
-
-  @Expose()
-  attestationObject?: string | null;
+@Exclude()
+export class IDeviceDto extends DeviceEntity {
+  @Exclude() user: UserEntity;
+  @Exclude() credentialID: string;
+  @Exclude() publicKey: string;
+  @Exclude() transports: AuthenticatorTransportFuture[];
+  @Exclude() attestationResponse: object;
+  @Exclude() attestationObject: string;
 }

@@ -16,6 +16,7 @@ import { TaxSettingEntity } from '@/utils/typeorm/entities/settings/tax.entity';
 import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
+import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -30,6 +31,7 @@ export const typeOrmConfig = async (
     database: configService.get<string>('POSTGRES_DATABASE'),
     password: configService.get<string>('POSTGRES_PASSWORD'),
     entities: [
+      KycEntity,
       UserEntity,
       TokenEntity,
       AuthEntity,
