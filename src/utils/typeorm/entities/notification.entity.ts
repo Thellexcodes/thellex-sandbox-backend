@@ -6,6 +6,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'notifications' })
 export class NotificationEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.notifications, {
     nullable: false,
     onDelete: 'CASCADE',

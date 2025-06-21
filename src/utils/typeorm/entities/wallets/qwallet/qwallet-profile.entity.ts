@@ -1,14 +1,14 @@
-import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
-import { IQWalletDto, QWalletsEntity } from './qwallets.entity';
+import { QWalletsEntity } from './qwallets.entity';
 import { BaseEntity } from '../../base.entity';
 import { WalletProviderEnum } from '@/config/settings';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { IWalletDto } from '../wallets.entity';
 
 @Entity({ name: 'qwallet_profiles' })
 export class QWalletProfileEntity extends BaseEntity {
+  @Exclude()
   @OneToOne(() => UserEntity, (user) => user.qWalletProfile, {
     nullable: false,
     onDelete: 'CASCADE',
@@ -48,4 +48,41 @@ export class QWalletProfileEntity extends BaseEntity {
 }
 
 @Exclude()
-export class IQWalletProfileDto extends QWalletProfileEntity {}
+export class IQWalletProfileDto extends QWalletProfileEntity {
+  @Expose()
+  @ApiProperty({ type: 'string', format: 'uuid' })
+  qid: string;
+
+  @Expose()
+  @ApiProperty({ type: 'string' })
+  qsn: string;
+
+  @Expose()
+  @ApiProperty({ type: 'string', default: 'active' })
+  state: string;
+
+  @Expose()
+  @ApiProperty({ type: 'string', nullable: true })
+  firstName: string;
+
+  @Expose()
+  @ApiProperty({ type: 'string', nullable: true })
+  lastName: string;
+
+  @Expose()
+  @ApiProperty({ type: 'string', nullable: true })
+  reference: string | null;
+
+  @Expose()
+  @ApiProperty({ type: 'string', nullable: true })
+  displayName: string | null;
+
+  @Expose()
+  @ApiProperty({ enum: WalletProviderEnum })
+  walletProvider: WalletProviderEnum;
+
+  @Expose()
+  @Type(() => QWalletsEntity)
+  @ApiProperty({ type: () => [QWalletsEntity] })
+  wallets: QWalletsEntity[];
+}

@@ -6,6 +6,7 @@ import { Exclude } from 'class-transformer';
 
 @Entity('tax_settings')
 export class TaxSettingEntity extends BaseEntity {
+  @Exclude()
   @OneToOne(() => UserEntity, (user) => user.taxSettings, {
     onDelete: 'CASCADE',
     nullable: false,

@@ -1,9 +1,11 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { UserEntity } from '../user.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('payout_settings')
 export class PayoutSettingEntity extends BaseEntity {
+  @Exclude()
   @OneToOne(() => UserEntity, (user) => user.payoutSettings, {
     onDelete: 'CASCADE',
     nullable: false,

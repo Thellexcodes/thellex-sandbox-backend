@@ -13,6 +13,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'kyc' })
 export class KycEntity extends BaseEntity {
+  @Exclude()
   @OneToOne(() => UserEntity, (user) => user.kyc)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;

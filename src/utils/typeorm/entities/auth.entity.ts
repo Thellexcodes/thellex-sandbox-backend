@@ -6,6 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'auth' })
 export class AuthEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.auth, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
@@ -22,6 +23,4 @@ export class AuthEntity extends BaseEntity {
 }
 
 @Exclude()
-export class IAuthDto extends AuthEntity {
-  @Exclude() user: UserEntity;
-}
+export class IAuthDto extends AuthEntity {}

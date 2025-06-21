@@ -5,6 +5,7 @@ import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'auth_verification_codes' })
 export class AuthVerificationCodesEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.verificationCodes, {
     nullable: false,
   })

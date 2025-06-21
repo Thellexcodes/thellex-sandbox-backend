@@ -7,6 +7,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'devices' })
 export class DeviceEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.devices)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;

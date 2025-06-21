@@ -8,21 +8,33 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'tokens' })
 export class TokenEntity extends BaseEntity {
+  @Expose()
+  @ApiProperty({ type: String, nullable: true })
   @Column({ name: 'name', type: 'varchar', nullable: true })
   name: string | null;
 
+  @Expose()
+  @ApiProperty({ type: String, nullable: true })
   @Column({ name: 'asset_code', type: 'varchar', nullable: true })
   assetCode: string | null;
 
+  @Expose()
+  @ApiProperty({ type: String, nullable: true })
   @Column({ name: 'issuer', type: 'varchar', nullable: true })
   issuer: string | null;
 
+  @Expose()
+  @ApiProperty({ type: Number, default: 18 })
   @Column({ name: 'decimals', type: 'int', default: 18 })
   decimals: number;
 
+  @Expose()
+  @ApiProperty({ type: String, default: '0' })
   @Column({ name: 'balance', type: 'varchar', nullable: false, default: '0' })
   balance: string | null;
 
+  @Expose()
+  @ApiProperty({ enum: SupportedWalletTypes })
   @Column({
     name: 'wallet_type',
     type: 'enum',
@@ -31,6 +43,8 @@ export class TokenEntity extends BaseEntity {
   })
   walletType: SupportedWalletTypes;
 
+  @Expose()
+  @ApiProperty({ enum: WalletProviderEnum })
   @Column({
     name: 'wallet_provider',
     type: 'enum',
@@ -55,4 +69,7 @@ export class TokenEntity extends BaseEntity {
 }
 
 @Exclude()
-export class ITokenDto extends TokenEntity {}
+export class ITokenDto extends TokenEntity {
+  @Exclude() qwallet?: QWalletsEntity;
+  @Exclude() cwallet?: CwalletsEntity;
+}

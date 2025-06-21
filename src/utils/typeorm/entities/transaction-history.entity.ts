@@ -11,6 +11,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'transaction_history' })
 export class TransactionHistoryEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;

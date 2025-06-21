@@ -5,6 +5,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity({ name: 'card_management' })
 export class CardManagementEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.auth, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;

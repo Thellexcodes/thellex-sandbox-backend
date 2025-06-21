@@ -78,6 +78,7 @@ export class UserEntity extends BaseEntity {
   })
   tier: TierEnum;
 
+  @Expose()
   @OneToMany(() => AuthVerificationCodesEntity, (v) => v.user, {
     cascade: true,
     eager: false,
@@ -95,8 +96,6 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
 
-  @ApiProperty({ type: () => [ICardManagementDto] })
-  @Expose()
   @Type(() => ICardManagementDto)
   @OneToMany(() => CardManagementEntity, (card) => card.user, { eager: true })
   electronic_cards: CardManagementEntity[];
@@ -163,8 +162,6 @@ export class UserEntity extends BaseEntity {
   })
   bankAccounts: BankAccountEntity[];
 
-  @ApiProperty({ type: () => PayoutSettingEntity, nullable: true })
-  @Expose()
   @Type(() => PayoutSettingEntity)
   @OneToOne(() => PayoutSettingEntity, (p) => p.user, {
     cascade: true,
@@ -172,8 +169,6 @@ export class UserEntity extends BaseEntity {
   })
   payoutSettings: PayoutSettingEntity;
 
-  @ApiProperty({ type: () => TaxSettingEntity, nullable: true })
-  @Expose()
   @Type(() => TaxSettingEntity)
   @OneToOne(() => TaxSettingEntity, (t) => t.user, {
     eager: true,
@@ -188,4 +183,7 @@ export class IUserDto extends UserEntity {
   @Exclude() alertID: string;
   @Exclude() idempotencyKey: string;
   @Exclude() verificationCodes: AuthVerificationCodesEntity[];
+  @Exclude() electronic_cards: CardManagementEntity[];
+  @Exclude() payoutSettings: PayoutSettingEntity;
+  @Exclude() taxSettings: TaxSettingEntity;
 }

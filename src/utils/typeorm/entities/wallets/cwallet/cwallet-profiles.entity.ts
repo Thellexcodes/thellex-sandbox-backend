@@ -1,24 +1,20 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
   OneToOne,
-  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CwalletsEntity, ICwalletsDto } from './cwallet.entity';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
-import { IUserDto, UserEntity } from '../../user.entity';
+import { CwalletsEntity } from './cwallet.entity';
+import { Exclude } from 'class-transformer';
+import { UserEntity } from '../../user.entity';
+import { BaseEntity } from '../../base.entity';
 
 @Entity({ name: 'cwallet_profiles' })
 export class CwalletProfilesEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+  @Exclude()
   @OneToOne(() => UserEntity, (user) => user.cWalletProfile, {
     nullable: false,
     onDelete: 'CASCADE',
