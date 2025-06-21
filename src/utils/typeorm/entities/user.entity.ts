@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { AuthEntity, IAuthDto } from './auth.entity';
+import { AuthEntity } from './auth.entity';
 import { AuthVerificationCodesEntity } from './auth-verification-codes.entity';
 import { DeviceEntity, IDeviceDto } from './device.entity';
 import {
@@ -19,7 +19,10 @@ import { UserSettingEntity } from './settings/user.settings.entity';
 import { BankAccountEntity } from './settings/bank-account.entity';
 import { PayoutSettingEntity } from './settings/payout-settings.entity';
 import { TaxSettingEntity } from './settings/tax.entity';
-import { CwalletProfilesEntity } from './wallets/cwallet/cwallet-profiles.entity';
+import {
+  CwalletProfilesEntity,
+  ICwalletProfilesDto,
+} from './wallets/cwallet/cwallet-profiles.entity';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -85,13 +88,9 @@ export class UserEntity extends BaseEntity {
   })
   verificationCodes: AuthVerificationCodesEntity[];
 
-  @ApiProperty({ type: () => [AuthEntity] })
-  @Expose()
   @OneToMany(() => AuthEntity, (auth) => auth.user)
   auth: AuthEntity[];
 
-  @ApiProperty({ type: () => [IDeviceDto] })
-  @Expose()
   @Type(() => IDeviceDto)
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
@@ -126,8 +125,6 @@ export class UserEntity extends BaseEntity {
   })
   notifications: NotificationEntity[];
 
-  @ApiProperty({ type: () => IQWalletProfileDto })
-  @Expose()
   @Type(() => IQWalletProfileDto)
   @OneToOne(() => QWalletProfileEntity, (q) => q.user, {
     cascade: true,
@@ -135,9 +132,7 @@ export class UserEntity extends BaseEntity {
   })
   qWalletProfile: QWalletProfileEntity;
 
-  @ApiProperty({ type: () => IQWalletProfileDto })
-  @Expose()
-  @Type(() => IQWalletProfileDto)
+  @Type(() => ICwalletProfilesDto)
   @OneToOne(() => CwalletProfilesEntity, (c) => c.user, {
     cascade: true,
     eager: true,
@@ -186,4 +181,8 @@ export class IUserDto extends UserEntity {
   @Exclude() electronic_cards: CardManagementEntity[];
   @Exclude() payoutSettings: PayoutSettingEntity;
   @Exclude() taxSettings: TaxSettingEntity;
+  @Exclude() cWalletProfile: CwalletProfilesEntity;
+  @Exclude() qWalletProfile: QWalletProfileEntity;
+  @Exclude() auth: AuthEntity[];
+  @Exclude() devices: DeviceEntity[];
 }

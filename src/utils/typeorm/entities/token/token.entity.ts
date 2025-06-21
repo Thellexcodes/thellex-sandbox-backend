@@ -44,7 +44,7 @@ export class TokenEntity extends BaseEntity {
   walletType: SupportedWalletTypes;
 
   @Expose()
-  @ApiProperty({ enum: WalletProviderEnum })
+  @ApiProperty({ enum: WalletProviderEnum, example: 'Circle' })
   @Column({
     name: 'wallet_provider',
     type: 'enum',

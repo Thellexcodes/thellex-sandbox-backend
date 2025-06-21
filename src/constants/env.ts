@@ -1,6 +1,28 @@
-export const ENV_TESTNET = 'testnet' as const;
-export const ENV_PRODUCTION = 'production' as const;
 export const LOG_MESSAGE_EVENT = 'logEventMessage';
+export const ENV_DEVELOPMENT = 'development' as const;
+export const ENV_TESTING = 'testing' as const;
+export const ENV_TESTNET = 'testnet' as const;
+export const ENV_STAGING = 'staging' as const;
+export const ENV_QA = 'qa' as const;
+export const ENV_PRODUCTION = 'production' as const;
+
+export const ENVIRONMENTS = [
+  ENV_DEVELOPMENT,
+  ENV_TESTING,
+  ENV_TESTNET,
+  ENV_STAGING,
+  ENV_QA,
+  ENV_PRODUCTION,
+];
+
+export type EnvType =
+  | typeof ENV_DEVELOPMENT
+  | typeof ENV_TESTING
+  | typeof ENV_TESTNET
+  | typeof ENV_STAGING
+  | typeof ENV_QA
+  | typeof ENV_PRODUCTION;
+
 export const ENV_KYC_ENCRYPTION = process.env.ENV_KYC_ENCRYPTION;
 
 type ApiConfig = {
@@ -31,6 +53,33 @@ export function getAppConfig(): ApiConfig {
     YC_PAYMENT_API,
     KYC_ENCRYPTION_KEY,
   };
+}
+
+export function getEnv(): EnvType {
+  const env = process.env.NODE_ENV?.toLowerCase();
+
+  switch (env) {
+    case ENV_DEVELOPMENT:
+      return ENV_DEVELOPMENT;
+
+    case ENV_TESTING:
+      return ENV_TESTING;
+
+    case ENV_TESTNET:
+      return ENV_TESTNET;
+
+    case ENV_STAGING:
+      return ENV_STAGING;
+
+    case ENV_QA:
+      return ENV_QA;
+
+    case ENV_PRODUCTION:
+      return ENV_PRODUCTION;
+
+    default:
+      return ENV_PRODUCTION;
+  }
 }
 
 export type Environment = typeof ENV_TESTNET | typeof ENV_PRODUCTION;

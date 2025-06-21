@@ -19,7 +19,6 @@ export class QWalletsEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'profile_id' })
-  @ApiProperty({ type: () => QWalletProfileEntity })
   profile: QWalletProfileEntity;
 
   @ApiProperty({ type: 'string', nullable: true })
@@ -121,4 +120,6 @@ export class IQWalletDto extends QWalletsEntity {
   @Type(() => TokenEntity)
   @ApiProperty({ type: () => [TokenEntity] })
   tokens: TokenEntity[];
+
+  @Exclude() profile: QWalletProfileEntity;
 }
