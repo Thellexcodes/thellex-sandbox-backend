@@ -5,7 +5,7 @@ import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { CircleNotificationType } from '@/models/wallet-manager.types';
 
-@ApiTags('WebHooks')
+@ApiTags('Web Hooks')
 @Controller('cwallet-hooks')
 export class CwalletHooksController {
   constructor(private readonly cwalletHooksService: CwalletHooksService) {}

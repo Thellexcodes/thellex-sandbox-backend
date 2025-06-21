@@ -1,7 +1,9 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { SwapService } from './swap.service';
 import { RateDto } from './dto/rate.dto';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('swap')
 export class SwapController {
   constructor(private readonly swapService: SwapService) {}

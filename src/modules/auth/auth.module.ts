@@ -4,8 +4,8 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
-import { AuthnController } from './authn.controller';
-import { AuthnService } from './authn.service';
+import { AuthController } from './auth.controller';
+import { AuthnService } from './auth.service';
 import { UserService } from '../users/user.service';
 import { AuthnEntity } from '@/utils/typeorm/entities/auth.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
@@ -34,7 +34,7 @@ import { CwalletService } from '../wallets/cwallet/cwallet.service';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthnController],
+  controllers: [AuthController],
   providers: [
     AuthnService,
     UserService,

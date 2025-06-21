@@ -1,15 +1,16 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthnService } from './authn.service';
+import { AuthnService } from './auth.service';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
-import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { responseHandler } from '@/utils/helpers';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
 import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
 
-@Controller('authn')
+@ApiTags('Auth')
 @ApiBearerAuth('access-token')
-export class AuthnController {
+@Controller('auth')
+export class AuthController {
   constructor(private readonly authNService: AuthnService) {}
 
   @Post('/register-options')

@@ -6,7 +6,7 @@ import { responseHandler } from '@/utils/helpers';
 import { KycService } from './kyc.service';
 import { BasicTierKycDto } from './dto/kyc-data.dto';
 
-@ApiTags('KYC')
+@ApiTags('Kyc')
 @Controller('kyc')
 @ApiBearerAuth('access-token')
 export class DkycController {

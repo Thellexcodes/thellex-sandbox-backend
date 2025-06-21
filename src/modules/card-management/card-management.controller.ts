@@ -14,11 +14,13 @@ import { CardManagementService } from './card-management.service';
 import { CreateCardManagementDto } from './dto/create-card-management.dto';
 import { UpdateCardManagementDto } from './dto/update-card-management.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiExcludeController, ApiTags } from '@nestjs/swagger';
 import { StellarService } from '../stellar/stellar.service';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 
+@ApiExcludeController()
+@ApiTags('Card Management')
 @Controller('card-management')
 export class CardManagementController {
   constructor(
