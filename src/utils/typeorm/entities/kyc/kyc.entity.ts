@@ -1,13 +1,16 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EncryptionTransformer } from 'typeorm-encrypted';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
-import { IUserEntity, UserEntity } from '../user.entity';
-import { BaseEntity, IBaseEntity } from '../base.entity';
+import { IUserDto, UserEntity } from '../user.entity';
+import { BaseEntity } from '../base.entity';
 import { CustomerTypesEnum } from '@/config/settings';
 import { getAppConfig } from '@/constants/env';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 //TODO: Handle errors with enum
 //TODO: INCLUDE iv for randomness
+
 @Entity({ name: 'kyc' })
 export class KycEntity extends BaseEntity {
   @OneToOne(() => UserEntity, (user) => user.kyc)
@@ -28,25 +31,13 @@ export class KycEntity extends BaseEntity {
   })
   dob: string;
 
-  @Column({
-    name: 'bvn',
-    type: 'text',
-    transformer: KycEntity.encryption,
-  })
+  @Column({ name: 'bvn', type: 'text', transformer: KycEntity.encryption })
   bvn: string;
 
-  @Column({
-    name: 'nin',
-    type: 'text',
-    transformer: KycEntity.encryption,
-  })
+  @Column({ name: 'nin', type: 'text', transformer: KycEntity.encryption })
   nin: string;
 
-  @Column({
-    name: 'provider',
-    type: 'enum',
-    enum: KycProviderEnum,
-  })
+  @Column({ name: 'provider', type: 'enum', enum: KycProviderEnum })
   provider: KycProviderEnum;
 
   @Column({
@@ -59,94 +50,85 @@ export class KycEntity extends BaseEntity {
 
   @Column({
     name: 'first_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   firstName: string;
 
   @Column({
     name: 'middle_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   middleName: string;
 
   @Column({
     name: 'last_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   lastName: string;
 
   @Column({
     name: 'phone_number',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   phone: string;
 
   @Column({
-    name: 'email_address',
-    nullable: true,
-    type: 'text',
-    transformer: KycEntity.encryption,
-  })
-  email: string;
-
-  @Column({
     name: 'country_of_residence',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   country: string;
 
   @Column({
     name: 'home_address',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   address: string;
 
-  @Column({
-    name: 'id_type',
-    nullable: true,
-    type: 'text',
-    array: true,
-  })
+  @Column({ name: 'id_type', type: 'text', array: true, nullable: true })
   idTypes: IdTypeEnum[];
 
   @Column({
     name: 'id_number',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   idNumber: string;
 
   @Column({
     name: 'business_id',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   businessId: string;
 
   @Column({
     name: 'business_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
+  @ApiPropertyOptional()
   businessName: string;
-
-  @Column({ name: 'is_verified', default: false })
-  isVerified: boolean;
 
   @Column({
     type: 'timestamptz',
@@ -157,73 +139,49 @@ export class KycEntity extends BaseEntity {
 
   @Column({
     name: 'house_number',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   houseNumber: string;
 
   @Column({
     name: 'street_name',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   streetName: string;
 
   @Column({
     name: 'state',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   state: string;
 
   @Column({
     name: 'lga',
-    nullable: true,
     type: 'text',
+    nullable: true,
     transformer: KycEntity.encryption,
   })
   lga: string;
 }
 
-export interface IKycEntity extends IBaseEntity {
-  user: IUserEntity;
-
-  dob?: string | null;
-
-  bvn: string;
-
-  nin: string;
-
-  provider: KycProviderEnum;
-
-  customerType: CustomerTypesEnum;
-
-  // Retail fields
-  firstName?: string | null;
-  middlename?: string | null;
-  lastName?: string | null;
-  phone?: string | null;
-  email?: string | null;
-  country?: string | null;
-  address?: string | null;
-  idTypes?: string | null;
-  idNumber?: string | null;
-  additionalIdType?: string | null;
-  additionalIdNumber?: string | null;
-
-  // Institution fields
-  businessId?: string | null;
-  businessName?: string | null;
-
-  isVerified: boolean;
-
-  kycExpiresAt?: Date | null;
-
-  houseNumber?: string;
-  streetName?: string;
-  state?: string;
-  lga?: string;
+@Exclude()
+export class IKycDto extends KycEntity {
+  @Exclude() user: IUserDto;
+  @Exclude() nin: string;
+  @Exclude() bvn: string;
+  @Exclude() dob: string;
+  @Exclude() provider: KycProviderEnum;
+  @Exclude() idTypes: IdTypeEnum[];
+  @Exclude() businessId: string;
+  @Exclude() kycExpiresAt: Date;
+  @Exclude() houseNumber: string;
+  @Exclude() streetName: string;
+  @Exclude() state: string;
+  @Exclude() lga: string;
 }

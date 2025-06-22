@@ -78,10 +78,7 @@ export type FEEType = 'flat' | 'percentage';
 
 // --- Mainnet/Production-supported chains for each token ---
 export const MAINNET_CHAINS: Record<TokenEnum, SupportedBlockchainType[]> = {
-  [TokenEnum.USDC]: [
-    SupportedBlockchainType.MATIC,
-    SupportedBlockchainType.AVAX,
-  ],
+  [TokenEnum.USDC]: [SupportedBlockchainType.MATIC],
   [TokenEnum.USDT]: [SupportedBlockchainType.BEP20],
 };
 

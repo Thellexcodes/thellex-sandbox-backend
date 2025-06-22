@@ -1,10 +1,12 @@
-import { BaseEntity, IBaseEntity } from '@/utils/typeorm/entities/base.entity';
+import { BaseEntity } from '@/utils/typeorm/entities/base.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity({ name: 'card_management' })
 export class CardManagementEntity extends BaseEntity {
-  @ManyToOne(() => UserEntity, (user) => user.authn, { nullable: false })
+  @Exclude()
+  @ManyToOne(() => UserEntity, (user) => user.auth, { nullable: false })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
@@ -21,10 +23,5 @@ export class CardManagementEntity extends BaseEntity {
   amount: string;
 }
 
-export interface ICardManagementEntity extends IBaseEntity {
-  user: UserEntity;
-  transactionId: string;
-  assetCode: string;
-  assetIssuer: string;
-  amount: string;
-}
+@Exclude()
+export class ICardManagementDto extends CardManagementEntity {}

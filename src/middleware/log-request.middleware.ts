@@ -1,4 +1,5 @@
-import { ENV_TESTNET } from '@/constants/env';
+import { getEnv } from '@/constants/env';
+import { ENV_TESTNET } from '@/models/settings.types';
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import chalk from 'chalk';
 import { Request, Response, NextFunction } from 'express';
@@ -6,7 +7,7 @@ import { Request, Response, NextFunction } from 'express';
 @Injectable()
 export class LogRequestMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    if (process.env.NODE_ENV === ENV_TESTNET) {
+    if (getEnv() === ENV_TESTNET) {
       console.log(
         chalk.redBright(
           `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`,

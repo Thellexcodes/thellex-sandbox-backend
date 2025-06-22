@@ -1,9 +1,11 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity, IBaseEntity } from './base.entity';
-import { IUserEntity, UserEntity } from './user.entity';
+import { BaseEntity } from './base.entity';
+import { UserEntity } from './user.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'auth_verification_codes' })
 export class AuthVerificationCodesEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.verificationCodes, {
     nullable: false,
   })
@@ -21,8 +23,8 @@ export class AuthVerificationCodesEntity extends BaseEntity {
   expired: boolean;
 }
 
-export interface IAuthVerificationCodeEntity extends IBaseEntity {
-  user: IUserEntity;
-  code: number;
-  expired?: boolean;
+@Exclude()
+export class IAuthVerificationCodeDto extends AuthVerificationCodesEntity {
+  @Exclude() code: number;
+  @Exclude() expired: boolean;
 }

@@ -1,30 +1,40 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity, IBaseEntity } from '../base.entity';
-import { CwalletsEntity, ICwalletEntity } from '../cwallet/cwallet.entity';
-import { IQWalletEntity, QWalletsEntity } from '../qwallet/qwallets.entity';
-import {
-  SupportedBlockchainType,
-  SupportedWalletTypes,
-  WalletProviderEnum,
-} from '@/config/settings';
+import { BaseEntity } from '../base.entity';
+import { QWalletsEntity } from '../wallets/qwallet/qwallets.entity';
+import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
+import { CwalletsEntity } from '../wallets/cwallet/cwallet.entity';
+import { Exclude, Expose } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'tokens' })
 export class TokenEntity extends BaseEntity {
+  @Expose()
+  @ApiProperty({ type: String, nullable: true })
   @Column({ name: 'name', type: 'varchar', nullable: true })
   name: string | null;
 
+  @Expose()
+  @ApiProperty({ type: String, nullable: true })
   @Column({ name: 'asset_code', type: 'varchar', nullable: true })
   assetCode: string | null;
 
+  @Expose()
+  @ApiProperty({ type: String, nullable: true })
   @Column({ name: 'issuer', type: 'varchar', nullable: true })
   issuer: string | null;
 
+  @Expose()
+  @ApiProperty({ type: Number, default: 18 })
   @Column({ name: 'decimals', type: 'int', default: 18 })
   decimals: number;
 
+  @Expose()
+  @ApiProperty({ type: String, default: '0' })
   @Column({ name: 'balance', type: 'varchar', nullable: false, default: '0' })
   balance: string | null;
 
+  @Expose()
+  @ApiProperty({ enum: SupportedWalletTypes })
   @Column({
     name: 'wallet_type',
     type: 'enum',
@@ -33,6 +43,8 @@ export class TokenEntity extends BaseEntity {
   })
   walletType: SupportedWalletTypes;
 
+  @Expose()
+  @ApiProperty({ enum: WalletProviderEnum, example: 'Circle' })
   @Column({
     name: 'wallet_provider',
     type: 'enum',
@@ -56,16 +68,8 @@ export class TokenEntity extends BaseEntity {
   qwallet?: QWalletsEntity;
 }
 
-export interface ITokenEntity extends IBaseEntity {
-  name: string | null;
-  contractAddress: string | null;
-  assetCode: string | null;
-  issuer: string | null;
-  decimals: number;
-  networks: SupportedBlockchainType[];
-  balance: string | null;
-  walletType: SupportedWalletTypes;
-  walletProvider: WalletProviderEnum;
-  cwallet?: ICwalletEntity | null;
-  qwallet?: IQWalletEntity | null;
+@Exclude()
+export class ITokenDto extends TokenEntity {
+  @Exclude() qwallet?: QWalletsEntity;
+  @Exclude() cwallet?: CwalletsEntity;
 }

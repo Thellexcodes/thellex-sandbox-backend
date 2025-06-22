@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { UpdateStellarDto } from './dto/update-stellar.dto';
 import { ConfigService } from '@nestjs/config';
 import { Horizon, Networks, Transaction } from '@stellar/stellar-sdk';
-import { ENV_TESTNET } from '@/constants/env';
+import { getAppConfig } from '@/constants/env';
 import { NETWORK_PASSPHRASES } from '@/constants/stellar';
+import { ENV_TESTNET } from '@/models/settings.types';
 
 @Injectable()
 export class StellarService {
@@ -11,10 +12,7 @@ export class StellarService {
   private server: Horizon.Server;
 
   constructor(private configService: ConfigService) {
-    this.rpcUrl =
-      this.configService.get<string>('NODE_ENV') === ENV_TESTNET
-        ? this.configService.get<string>('STELLAR_RPC_ENDPOINT')
-        : this.configService.get<string>('SOROBAN_RPC_ENDPOINT');
+    this.rpcUrl = getAppConfig().BLOCKCHAIN.STELLAR_RPC_ENDPOINT;
 
     this.server = new Horizon.Server(this.rpcUrl, {
       allowHttp:

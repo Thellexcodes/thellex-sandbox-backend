@@ -2,11 +2,8 @@ import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   AccessResponseDto,
-  AccessTokenResultDto,
   CreateUserDto,
   UserAuthenticateResponseDto,
-  UserResponseDto,
-  UserVerifyResponseDto,
 } from './dto/user.dto';
 import {
   ApiBearerAuth,
@@ -18,7 +15,7 @@ import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { VerifyUserDto } from './dto/verify-user.dto';
+import { UserVerifyResponseDto, VerifyUserDto } from './dto/verify-user.dto';
 
 //TODO: middleware for outstanding verifications
 @ApiTags('User')

@@ -13,8 +13,9 @@ import {
   TokenEnum,
   tokenIds,
 } from '@/config/settings';
-import { ENV_TESTNET } from '@/constants/env';
 import * as crypto from 'crypto';
+import { ENV_TESTNET } from '@/models/settings.types';
+import { getEnv } from '@/constants/env';
 
 //TODO: handle errors with enums
 
@@ -147,7 +148,7 @@ export function normalizeBlockchains(
   return blockchains.map((bc) => {
     switch (bc.toLowerCase()) {
       case SupportedBlockchainType.MATIC:
-        return process.env.NODE_ENV === ENV_TESTNET ? 'MATIC-AMOY' : 'MATIC';
+        return getEnv() === ENV_TESTNET ? 'MATIC-AMOY' : 'MATIC';
       default:
         throw new Error(`Unsupported blockchain type: ${bc}`);
     }
@@ -157,8 +158,7 @@ export function normalizeBlockchains(
 export const cWalletNetworkNameGetter = (
   network: SupportedBlockchainType,
 ): string =>
-  network === SupportedBlockchainType.MATIC &&
-  process.env.NODE_ENV === ENV_TESTNET
+  network === SupportedBlockchainType.MATIC && getEnv() === ENV_TESTNET
     ? 'MATIC-AMOY'
     : 'MATIC';
 

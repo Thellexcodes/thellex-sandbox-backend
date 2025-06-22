@@ -1,35 +1,104 @@
-export const ENV_TESTNET = 'testnet' as const;
-export const ENV_PRODUCTION = 'production' as const;
-export const LOG_MESSAGE_EVENT = 'logEventMessage';
+import {
+  alchemyApiMap,
+  ApiConfig,
+  authJwtSecretMap,
+  baseRpcUrlMap,
+  clientRpIdMap,
+  clientUrlMap,
+  cwalletApiKeyMap,
+  cwalletEntityCypherTextMap,
+  cwalletEntityPublicKeyMap,
+  cwalletEntitySecretMap,
+  dojahApiMap,
+  emailAppNameMap,
+  emailAppPasswordMap,
+  emailUserMap,
+  Env,
+  ENV_DEVELOPMENT,
+  ENV_PRODUCTION,
+  ENV_QA,
+  ENV_STAGING,
+  ENV_TESTING,
+  ENV_TESTNET,
+  ethereumRpcUrlMap,
+  ipinfoTokenMap,
+  kycEncryptionKeyMap,
+  postgresDbMap,
+  postgresHostMap,
+  postgresPasswordMap,
+  postgresPortMap,
+  postgresUserMap,
+  qwalletApiMap,
+  serverIpMap,
+  serverPortMap,
+  stellarRpcEndpointMap,
+  ycPaymentApiMap,
+  ycSecretKeyMap,
+} from '@/models/settings.types';
+
+export type EnvType =
+  | typeof ENV_DEVELOPMENT
+  | typeof ENV_TESTING
+  | typeof ENV_TESTNET
+  | typeof ENV_STAGING
+  | typeof ENV_QA
+  | typeof ENV_PRODUCTION;
+
 export const ENV_KYC_ENCRYPTION = process.env.ENV_KYC_ENCRYPTION;
 
-type ApiConfig = {
-  DOJAH_KYC_API: string;
-  QWALLET_API: string;
-  YC_PAYMENT_API: string;
-  KYC_ENCRYPTION_KEY: string;
-};
-
 export function getAppConfig(): ApiConfig {
-  const isSandbox = process.env.NODE_ENV === ENV_TESTNET;
-
-  const DOJAH_KYC_API = isSandbox
-    ? 'https://api.dojah.io'
-    : 'https://api.dojah.io';
-
-  const QWALLET_API = 'https://app.quidax.io/api/v1';
-
-  const YC_PAYMENT_API = isSandbox
-    ? 'https://sandbox.api.yellowcard.io'
-    : 'https://sandbox.api.yellowcard.io';
-
-  const KYC_ENCRYPTION_KEY = process.env.KYC_ENCRYPTION_KEY;
+  const env = getEnv();
 
   return {
-    DOJAH_KYC_API,
-    QWALLET_API,
-    YC_PAYMENT_API,
-    KYC_ENCRYPTION_KEY,
+    KYC_ENCRYPTION_KEY: kycEncryptionKeyMap[env] || '',
+    ALCHEMY_API: alchemyApiMap[env] || '',
+    SERVER: {
+      PORT: Number(serverPortMap[env]) || 0,
+      IP: serverIpMap[env] || '',
+    },
+    POSTGRES: {
+      HOST: postgresHostMap[env] || '',
+      PORT: Number(postgresPortMap[env]) || 0,
+      USER: postgresUserMap[env] || '',
+      DATABASE: postgresDbMap[env] || '',
+      PASSWORD: postgresPasswordMap[env] || '',
+    },
+    AUTH_JWT_SECRET: authJwtSecretMap[env] || '',
+    CLIENT: {
+      RP_ID: clientRpIdMap[env] || '',
+      URL: clientUrlMap[env] || '',
+    },
+    EMAIL: {
+      MAIL_USER: emailUserMap[env] || '',
+      MAIL_APP_PASSWORD: emailAppPasswordMap[env] || '',
+      APPLICATION_NAME: emailAppNameMap[env] || '',
+    },
+    BLOCKCHAIN: {
+      ETHEREUM_RPC_URL: ethereumRpcUrlMap[env] || '',
+      BASE_RPC_URL: baseRpcUrlMap[env] || '',
+      STELLAR_RPC_ENDPOINT: stellarRpcEndpointMap[env] || '',
+    },
+    DOJAH: {
+      APP_ID: process.env.DOJAH_APP_ID || '',
+      AUTH_PUBLIC_KEY: process.env.DOJAH_AUTH_PUBLIC_KEY || '',
+      API: dojahApiMap[env] || '',
+    },
+    CWALLET: {
+      API_KEY: cwalletApiKeyMap[env] || '',
+      ENTITY_SECRET: cwalletEntitySecretMap[env] || '',
+      ENTITY_PUBLIC_KEY: cwalletEntityPublicKeyMap[env] || '',
+      ENTITY_CYPHER_TEXT: cwalletEntityCypherTextMap[env] || '',
+    },
+    QWALLET: {
+      SECRET_KEY: process.env.QWALLET_SECRET_KEY || '',
+      API: qwalletApiMap[env] || '',
+    },
+    YC: {
+      PUBLIC_KEY: process.env.YC_PUBLIC_KEY || '',
+      SECRET_KEY: ycSecretKeyMap[env] || '',
+      PAYMENT_API: ycPaymentApiMap[env] || '',
+    },
+    IPINFO_TOKEN: ipinfoTokenMap[env] || '',
   };
 }
 
@@ -53,3 +122,19 @@ export type AssetsEnvData = {
     usdc: UsdcAssetData;
   };
 };
+
+export function getEnv(): Env {
+  const env = process.env.NODE_ENV?.toLowerCase();
+
+  switch (env) {
+    case ENV_DEVELOPMENT:
+    case ENV_TESTING:
+    case ENV_TESTNET:
+    case ENV_STAGING:
+    case ENV_QA:
+    case ENV_PRODUCTION:
+      return env;
+    default:
+      throw new Error(`Unsupported environment: ${env}`);
+  }
+}

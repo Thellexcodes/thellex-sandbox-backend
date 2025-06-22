@@ -1,4 +1,3 @@
-import { AuthnEntity } from '@/utils/typeorm/entities/auth.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,12 +19,13 @@ import { ConfigService } from '@nestjs/config';
 import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
 import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
 import { AuthErrorEnum } from '@/models/auth-error.enum';
+import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 
 @Injectable()
 export class AuthnService {
   constructor(
-    @InjectRepository(AuthnEntity)
-    private readonly authnRepository: Repository<AuthnEntity>,
+    @InjectRepository(AuthEntity)
+    private readonly authnRepository: Repository<AuthEntity>,
 
     @InjectRepository(DeviceEntity)
     private readonly deviceRepository: Repository<DeviceEntity>,

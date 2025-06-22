@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.dto';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
@@ -14,11 +14,12 @@ import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/models/user-error.enum';
 import { ChainTokens, SupportedBlockchainType } from '@/config/settings';
-import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { TierEnum } from '@/constants/tier.lists';
+import { plainToInstance } from 'class-transformer';
+import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 
 @Injectable()
 export class UserService {
@@ -59,12 +60,6 @@ export class UserService {
       newUser.email = email;
       newUser.uid = uid;
       user = await newUser.save();
-
-      // ---- QWALLET SETUP ----
-      await this.qwalletService.ensureUserHasProfileAndWallets(user);
-
-      // ---- CWALLET SETUP ----
-      await this.cwalletService.ensureUserHasProfileAndWallets(user);
 
       // Send verification email once
       await this.emailVerificationComposer(user);
@@ -174,38 +169,84 @@ export class UserService {
   async verifyUser(
     verifyUserDto: VerifyUserDto,
     user: UserEntity,
-  ): Promise<UserEntity> {
+  ): Promise<IUserDto> {
+    const { code } = verifyUserDto;
+
     const auth = await this.authenticationRepository.findOne({
       where: {
-        code: verifyUserDto.code,
+        code,
         user: { id: user.id },
       },
     });
 
-    if (!auth || auth.expired) {
-      throw new Error('Authentication code not found or expired');
+    if (!auth) {
+      throw new CustomHttpException(
+        'Verification code not found',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
-    if (auth.code !== verifyUserDto.code) {
+    if (auth.expired) {
+      throw new CustomHttpException(
+        'Verification code has expired',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (auth.code !== code) {
       throw new CustomHttpException(
         UserErrorEnum.REJECTED_AGREEMENT,
         HttpStatus.FORBIDDEN,
       );
     }
 
-    // Mark the authentication code as expired to prevent reuse
+    // If already verified, return transformed result directly
+    if (user.emailVerified) {
+      const verifiedUser = await this.userRepository.findOne({
+        where: { id: user.id },
+        relations: [
+          'qWalletProfile',
+          'qWalletProfile.wallets',
+          'qWalletProfile.wallets.tokens',
+          'cWalletProfile',
+          'cWalletProfile.wallets',
+          'cWalletProfile.wallets.tokens',
+        ],
+      });
+
+      return plainToInstance(IUserDto, verifiedUser, {
+        excludeExtraneousValues: true,
+      });
+    }
+
+    // First-time verification flow
+    user.emailVerified = true;
     auth.expired = true;
 
-    // Mark the user's email as verified
-    user.emailVerified = true;
-
-    // Save changes in parallel to optimize performance
     await Promise.all([
       this.authenticationRepository.save(auth),
       this.userRepository.save(user),
+      this.qwalletService.ensureUserHasProfileAndWallets(user),
+      this.cwalletService.ensureUserHasProfileAndWallets(user),
     ]);
 
-    return user;
+    const userData = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: [
+        'qWalletProfile',
+        'qWalletProfile.wallets',
+        'qWalletProfile.wallets.tokens',
+        'cWalletProfile',
+        'cWalletProfile.wallets',
+        'cWalletProfile.wallets.tokens',
+      ],
+    });
+
+    const result = plainToInstance(IUserDto, userData, {
+      excludeExtraneousValues: true,
+    });
+
+    return result;
   }
 
   async storeTokensForWallet(wallet: CwalletsEntity): Promise<void> {

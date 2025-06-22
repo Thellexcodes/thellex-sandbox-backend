@@ -1,9 +1,12 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { UserEntity } from '../user.entity';
+import { IUserDto, UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccountEntity extends BaseEntity {
+  @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.bankAccounts, {
     onDelete: 'CASCADE',
     nullable: false,
@@ -11,21 +14,36 @@ export class BankAccountEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column({ name: 'bank_name' })
+  @Expose()
+  @ApiProperty({ description: 'Bank name' })
+  @Column({ name: 'bank_name', type: 'varchar', length: 100 })
   bankName: string;
 
-  @Column({ name: 'account_name' })
+  @Expose()
+  @ApiProperty({ description: 'Account holder name' })
+  @Column({ name: 'account_name', type: 'varchar', length: 150 })
   accountName: string;
 
-  @Column({ name: 'account_number' })
+  @Expose()
+  @ApiProperty({ description: 'Bank account number' })
+  @Column({ name: 'account_number', type: 'varchar', length: 50 })
   accountNumber: string;
 
-  @Column({ name: 'swift_code', nullable: true })
+  @Expose()
+  @ApiPropertyOptional({ description: 'SWIFT code', maxLength: 11 })
+  @Column({ name: 'swift_code', type: 'varchar', length: 11, nullable: true })
   swiftCode?: string;
 
-  @Column({ nullable: true })
+  @Expose()
+  @ApiPropertyOptional({ description: 'IBAN number', maxLength: 34 })
+  @Column({ type: 'varchar', length: 34, nullable: true })
   iban?: string;
 
-  @Column({ name: 'is_primary', default: false })
+  @Expose()
+  @ApiProperty({ description: 'Indicates if this is the primary bank account' })
+  @Column({ name: 'is_primary', type: 'boolean', default: false })
   isPrimary: boolean;
 }
+
+@Exclude()
+export class IBankAccountDto extends BankAccountEntity {}

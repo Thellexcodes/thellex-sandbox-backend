@@ -20,10 +20,8 @@ import {
   ICWalletTransactionResponse,
 } from '@/models/cwallet.types';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { CwalletProfilesEntity } from '@/utils/typeorm/entities/cwallet/cwallet-profiles.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CwalletsEntity } from '@/utils/typeorm/entities/cwallet/cwallet.entity';
 import {
   ChainTokens,
   SupportedBlockchainType,
@@ -35,11 +33,9 @@ import {
   cWalletNetworkNameGetter,
   getTokenId,
   getTokensForNetworks,
-  isSupportedBlockchainToken,
   normalizeBlockchains,
   toUTCDate,
 } from '@/utils/helpers';
-import { ENV_TESTNET } from '@/constants/env';
 import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import {
@@ -50,6 +46,10 @@ import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
+import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
+import { ENV_PRODUCTION } from '@/models/settings.types';
+import { getEnv } from '@/constants/env';
 
 @Injectable()
 export class CwalletService {
@@ -170,11 +170,11 @@ export class CwalletService {
   async createCryptoWithdrawal(
     dto: CreateCryptoWithdrawPaymentDto,
     wallet: CwalletsEntity,
-  ): Promise<TransactionHistoryEntity | any> {
+  ): Promise<TransactionHistoryEntity> {
     try {
       const tokenId = getTokenId({
         token: dto.assetCode,
-        isTestnet: this.configService.get('NODE_ENV') === ENV_TESTNET,
+        isTestnet: !(getEnv() === ENV_PRODUCTION),
       });
 
       const paymentNetwork = cWalletNetworkNameGetter(dto.network);

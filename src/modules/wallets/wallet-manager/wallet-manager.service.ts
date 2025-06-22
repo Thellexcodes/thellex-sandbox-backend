@@ -10,12 +10,13 @@ import PQueue from 'p-queue';
 import { CwalletService } from '../cwallet/cwallet.service';
 import { Web3Service } from '@/utils/services/web3.service';
 import { ConfigService } from '@nestjs/config';
-import { ENV_TESTNET } from '@/constants/env';
 import {
   IWalletBalanceSummary,
   IWalletMap,
 } from './dto/get-balance-response.dto';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { ENV_PRODUCTION, ENV_TESTNET } from '@/models/settings.types';
+import { getEnv } from '@/constants/env';
 
 @Injectable()
 export class WalletManagerService {
@@ -48,7 +49,7 @@ export class WalletManagerService {
 
       const queue = new PQueue({ concurrency: 3 });
 
-      const isTestnet = this.configService.get('NODE_ENV') === ENV_TESTNET;
+      const isProd = getEnv() === ENV_PRODUCTION;
 
       const tasks = filteredAssets.map(({ token, network }) =>
         queue.add(async () => {
@@ -56,7 +57,7 @@ export class WalletManagerService {
 
           // Normalize network name based on env
           const networkNormalized =
-            isTestnet && network === 'matic'
+            !isProd && network === 'matic'
               ? 'matic-amoy'
               : network.toLowerCase();
 
