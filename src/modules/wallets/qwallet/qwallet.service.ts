@@ -518,7 +518,7 @@ export class QwalletService {
   }
 
   private get qwalletUrl(): string {
-    return getAppConfig().QWALLET_API;
+    return getAppConfig().QWALLET.API;
   }
 
   private getAuthHeaders() {

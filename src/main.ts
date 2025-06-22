@@ -3,13 +3,13 @@ dotenv.config();
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
 import { ErrorInterceptor } from '@/middleware/error.interceptor';
 import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 // import * as path from 'path';
-import { LogRequestMiddleware } from './middleware/log-request.middleware';
 import { writeFileSync } from 'fs';
+import { getEnvVarMap } from './models/settings.types';
+import { getAppConfig } from './constants/env';
 
 // const certFolder = path.join(__dirname, '../cert');
 
@@ -50,9 +50,8 @@ async function bootstrap() {
     writeFileSync('./openapi.json', JSON.stringify(document));
   }
 
-  const configService = app.get(ConfigService);
-  const serverPort = configService.get<number>('SERVER_PORT');
-  const serverIp = configService.get<string>('SERVER_IP');
+  const serverIp = getAppConfig().SERVER.IP;
+  const serverPort = getAppConfig().SERVER.PORT;
 
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());

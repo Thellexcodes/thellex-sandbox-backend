@@ -31,7 +31,7 @@ export class KycService {
   ) {}
 
   private get dojahUrl(): string {
-    return getAppConfig().DOJAH_KYC_API;
+    return getAppConfig().DOJAH.API;
   }
 
   async createBasicKyc(

@@ -9,10 +9,9 @@ import {
 } from 'typeorm';
 import { CwalletProfilesEntity } from './cwallet-profiles.entity';
 import { SupportedBlockchainType } from '@/config/settings';
-import { ENV_TESTNET, getEnv } from '@/constants/env';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { BaseEntity } from '../../base.entity';
-import { ITokenDto, TokenEntity } from '../../token/token.entity';
+import { TokenEntity } from '../../token/token.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'cwallets' })
@@ -54,10 +53,7 @@ export class CwalletsEntity extends BaseEntity {
     type: 'enum',
     enum: SupportedBlockchainType,
     name: 'default_network',
-    default:
-      getEnv() === ENV_TESTNET
-        ? SupportedBlockchainType.MATIC_AMOY
-        : SupportedBlockchainType.MATIC,
+    default: SupportedBlockchainType.MATIC,
   })
   defaultNetwork: SupportedBlockchainType;
 

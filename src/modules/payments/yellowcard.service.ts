@@ -286,7 +286,7 @@ export class YellowCardService {
   }
 
   private get ycUrl(): string {
-    return getAppConfig().YC_PAYMENT_API;
+    return getAppConfig().YC.PAYMENT_API;
   }
 
   private generateAuthHeaders(

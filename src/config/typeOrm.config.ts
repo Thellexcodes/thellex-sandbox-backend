@@ -1,4 +1,4 @@
-import { ENV_TESTNET } from '@/constants/env';
+import { getAppConfig, getEnv } from '@/constants/env';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
@@ -17,19 +17,20 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
+import { ENV_PRODUCTION } from '@/models/settings.types';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
 ): Promise<TypeOrmModuleOptions> => {
-  const isTestNet = configService.get<string>('NODE_ENV') === ENV_TESTNET;
+  const isProd = getEnv() === ENV_PRODUCTION;
 
   return {
     type: 'postgres',
-    host: configService.get<string>('POSTGRES_HOST'),
-    port: configService.get<number>('POSTGRES_PORT'),
-    username: configService.get<string>('POSTGRES_USER'),
-    database: configService.get<string>('POSTGRES_DATABASE'),
-    password: configService.get<string>('POSTGRES_PASSWORD'),
+    host: getAppConfig().POSTGRES.HOST,
+    port: getAppConfig().POSTGRES.PORT,
+    username: getAppConfig().POSTGRES.USER,
+    database: getAppConfig().POSTGRES.DATABASE,
+    password: getAppConfig().POSTGRES.PASSWORD,
     entities: [
       KycEntity,
       UserEntity,
@@ -52,7 +53,7 @@ export const typeOrmConfig = async (
     extra: {
       charset: 'utf8mb4_unicode_ci',
     },
-    synchronize: isTestNet,
+    synchronize: !isProd,
     autoLoadEntities: true,
     logging: false,
     // ssl: isTestNet ? { rejectUnauthorized: false } : false,
