@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@/middleware/http.service';
 import {
   IQCreatePaymentAddressResponse,
@@ -8,7 +7,6 @@ import {
   IQGetUserWalletResponse,
   IQSubAccountData,
   IQValidateAddressResponse,
-  IQWallet,
   IQWithdrawPaymentResponse,
 } from '@/models/qwallet.types';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
@@ -18,10 +16,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { CreateSubAccountDto } from './dto/create-qwallet.dto';
 import {
-  ChainTokens,
-  mapNetworkToWalletType,
   SupportedBlockchainType,
-  SupportedWalletTypes,
   TokenEnum,
   WalletProviderEnum,
 } from '@/config/settings';
@@ -42,6 +37,8 @@ import { getAppConfig } from '@/constants/env';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { walletConfig } from '@/utils/tokenChains';
+import { toUTCDate } from '@/utils/helpers';
 
 //TODO: handle errors with enum
 @Injectable()
@@ -51,7 +48,6 @@ export class QwalletService {
     private readonly qwalletProfilesRepo: Repository<QWalletProfileEntity>,
     @InjectRepository(QWalletsEntity)
     private readonly qwalletsRepo: Repository<QWalletsEntity>,
-    private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly transactionHistoryService: TransactionHistoryService,
     @InjectRepository(TokenEntity)
@@ -103,10 +99,18 @@ export class QwalletService {
   }
 
   async lookupSubWallet(address: string): Promise<QWalletsEntity | null> {
-    return this.qwalletsRepo.findOne({
-      where: { address },
-      relations: ['profile', 'profile.user'],
-    });
+    return this.qwalletsRepo
+      .createQueryBuilder('wallet')
+      .leftJoinAndSelect('wallet.profile', 'profile')
+      .leftJoinAndSelect('profile.user', 'user')
+      .where(
+        `EXISTS (
+        SELECT 1 FROM jsonb_each(wallet.networkMetadata) AS meta
+        WHERE meta.value ->> 'address' = :address
+      )`,
+        { address },
+      )
+      .getOne();
   }
 
   async lookupUserWallets(qid: string): Promise<IQWalletDto[]> {
@@ -130,11 +134,11 @@ export class QwalletService {
 
   async createPaymentAddress(
     qid: string,
-    network: SupportedBlockchainType,
+    assetCode: TokenEnum,
+    network: string,
   ): IQCreatePaymentAddressResponse {
-    const currency = ChainTokens[network];
     return await this.httpService.post(
-      `${this.qwalletUrl}/users/${qid}/wallets/${currency}/addresses`,
+      `${this.qwalletUrl}/${qid}/wallets/${assetCode}/addresses?network=${network}`,
       {},
       { headers: this.getAuthHeaders() },
     );
@@ -156,73 +160,91 @@ export class QwalletService {
   async createAndStoreWalletsWithTokens(
     qid: string,
     profile: QWalletProfileEntity,
-    networks: SupportedBlockchainType[] = [SupportedBlockchainType.BEP20],
   ) {
-    let walletResponses = await this.lookupUserWallets(qid);
+    const walletTypes = profile.walletTypes;
+    const walletProvider = profile.walletProvider;
 
-    if (!walletResponses || walletResponses.length === 0) {
-      const responses = [];
+    const allWalletsResponses = [];
 
-      for (const network of networks) {
-        // Step 1: Create wallet
-        const creationRes = await this.createPaymentAddress(qid, network);
-
-        if (creationRes?.data?.id) {
-          const walletId = creationRes.data.id;
-
-          // Step 2: Fetch wallet details once (no retry, no delay)
-          const walletDetails = await this.fetchPaymentAddress(
-            qid,
-            TokenEnum.USDT,
-          );
-
-          const address = walletDetails?.data?.address ?? 'no-address';
-
-          if (address) {
-            responses.push({
-              address,
-              defaultNetwork: walletDetails.data.network,
-              networks: [walletDetails.data.network],
-              walletId,
-            });
-          } else {
-            console.warn(`Wallet for ${network} created but address is null`);
-          }
-        } else {
-          console.warn(
-            `Failed to create wallet for ${qid} on network ${network}`,
-            creationRes,
-          );
-        }
+    for (const walletType of walletTypes) {
+      // Get networks and tokens from walletConfig for this walletType and provider
+      const providerConfig =
+        walletConfig[walletType]?.providers[walletProvider];
+      if (!providerConfig) {
+        console.warn(
+          `No provider config for walletType ${walletType} and provider ${walletProvider}`,
+        );
+        continue;
       }
 
-      walletResponses = responses;
+      const networks = Object.keys(
+        providerConfig.networks,
+      ) as SupportedBlockchainType[];
+
+      for (const network of networks) {
+        const tokens = providerConfig.networks[network].tokens;
+        for (const token of tokens) {
+          const creationRes = await this.createPaymentAddress(
+            qid,
+            token,
+            network,
+          );
+
+          if (creationRes?.data?.id) {
+            const walletId = creationRes.data.id;
+
+            const address = creationRes?.data?.address ?? 'no-address';
+
+            if (address) {
+              allWalletsResponses.push({
+                address,
+                network: creationRes.data.network,
+                walletId,
+                walletType,
+                token,
+              });
+            } else {
+              console.warn(`Wallet for ${network} created but address is null`);
+            }
+          } else {
+            console.warn(
+              `Failed to create wallet for ${qid} on network ${network} for token ${token}`,
+              creationRes,
+            );
+          }
+        }
+      }
     }
 
+    // Now map wallet responses to entities and save
     const newWallets: QWalletsEntity[] = [];
+    const networkMetadata: Record<string, any> = {};
 
-    for (const walletData of walletResponses) {
-      const walletType = mapNetworkToWalletType(walletData.defaultNetwork);
-
+    for (const walletData of allWalletsResponses) {
       const existing = await this.qwalletsRepo.findOne({
         where: {
-          address: walletData.address,
-          walletType,
+          walletType: walletData.walletType,
           profile: { id: profile.id },
         },
         relations: ['tokens'],
       });
 
-      if (existing) continue;
+      if (existing) {
+        const hasNetwork =
+          existing.networkMetadata &&
+          Object.keys(existing.networkMetadata).includes(walletData.network);
+        if (hasNetwork) continue;
+      }
+
+      const address = walletData.address ?? 'no-address';
+
+      networkMetadata[walletData.network] = { address };
 
       const newWallet = this.qwalletsRepo.create({
-        address: walletData.address,
-        walletType,
-        walletProvider: WalletProviderEnum.QUIDAX,
-        defaultNetwork: walletData.defaultNetwork,
-        networks,
+        walletType: walletData.walletType,
+        walletProvider: walletProvider,
+        networkMetadata,
         profile,
-        tokens: [],
       });
 
       newWallets.push(newWallet);
@@ -230,39 +252,79 @@ export class QwalletService {
 
     const savedWallets = await this.qwalletsRepo.save(newWallets);
 
-    await this.tokenRepo.save(
-      savedWallets.flatMap((wallet) =>
-        this.buildTokensForWallet(wallet, networks),
+    const allNewTokens = await Promise.all(
+      savedWallets.map((wallet) =>
+        this.buildTokensForWallet(wallet, wallet.networkMetadata),
       ),
     );
+
+    const tokensToSave = allNewTokens.flat().filter(Boolean);
+
+    if (tokensToSave.length > 0) {
+      await this.tokenRepo.save(tokensToSave);
+    }
 
     return savedWallets;
   }
 
-  private buildTokensForWallet(
+  async buildTokensForWallet(
     wallet: QWalletsEntity,
-    networks: SupportedBlockchainType[],
-  ): TokenEntity[] {
-    const tokens: TokenEntity[] = [];
+    networkMetadata: Record<
+      SupportedBlockchainType,
+      {
+        address: string;
+        tokenId?: string;
+        memo?: string;
+        destinationTag?: string;
+      }
+    >,
+  ): Promise<TokenEntity[]> {
+    const tokensToSave: TokenEntity[] = [];
 
-    for (const net of networks) {
-      const symbols = ChainTokens[net] || [];
+    const providerConfig =
+      walletConfig[wallet.walletType]?.providers?.[wallet.walletProvider];
+    if (!providerConfig) return tokensToSave;
 
-      for (const symbol of symbols) {
-        tokens.push(
-          this.tokenRepo.create({
+    for (const network of Object.keys(
+      networkMetadata,
+    ) as SupportedBlockchainType[]) {
+      const networkConfig = providerConfig.networks?.[network];
+      if (!networkConfig) continue;
+
+      const tokenSymbols = networkConfig.tokens;
+
+      for (const symbol of tokenSymbols) {
+        const tokenIdFromConfig = networkConfig.tokenIds?.[symbol];
+        const tokenIdFromMetadata = networkMetadata[network]?.tokenId;
+
+        // Check if token already exists for this wallet + network + symbol
+        const existing = await this.tokenRepo.findOne({
+          where: {
+            qwallet: { id: wallet.id },
+            network,
             assetCode: symbol,
-            name: symbol,
-            qwallet: wallet,
-            walletProvider: WalletProviderEnum.QUIDAX,
-            walletType: SupportedWalletTypes.EVM,
-            balance: '0', //TODO: Fetch and update wallet balance
-          }),
-        );
+          },
+        });
+
+        if (existing) continue;
+
+        const token = this.tokenRepo.create({
+          name: symbol,
+          issuer: tokenIdFromMetadata ?? tokenIdFromConfig ?? null,
+          decimals: 18,
+          walletType: wallet.walletType,
+          walletProvider: wallet.walletProvider,
+          qwallet: wallet,
+          network,
+          assetCode: symbol,
+          balance: '0',
+        });
+
+        tokensToSave.push(token);
       }
     }
 
-    return tokens;
+    return tokensToSave;
   }
 
   async createSubAccount(
@@ -295,19 +357,16 @@ export class QwalletService {
 
   async ensureUserHasProfileAndWallets(
     user: UserEntity,
-  ): Promise<QWalletProfileEntity> {
+  ): Promise<QWalletProfileEntity | any> {
     try {
       let profile = await this.lookupSubAccount(user);
-
       // If profile exists but wasn't saved yet (no ID), save it
       if (profile && !profile.id) {
         profile = await this.qwalletProfilesRepo.save(profile);
       }
-
       // If profile doesn't exist even after lookup
       if (!profile) {
         const remote = await this.fetchSubAccountFromRemote(user.email);
-
         if (remote) {
           profile = await this.saveSubAccount(user, remote);
         } else {
@@ -318,14 +377,12 @@ export class QwalletService {
           profile = await this.qwalletProfilesRepo.save(created);
         }
       }
-
       // Check if wallets already exist
       const walletsExist = await this.qwalletsRepo.findOne({
         where: { profile: { id: profile.id } },
       });
-
       // Create wallets + tokens only if none exist
-      if (!walletsExist) {
+      if (!walletsExist || (walletsExist.tokens?.length ?? 0) === 0) {
         await this.createAndStoreWalletsWithTokens(profile.qid, profile);
       }
 
@@ -377,7 +434,7 @@ export class QwalletService {
   }
 
   async updateWalletAddress(
-    walletPartial: Pick<QWalletsEntity, 'id' | 'address'>,
+    walletPartial: Pick<QWalletsEntity, 'id' | 'networkMetadata'>,
   ): Promise<QWalletsEntity> {
     return await this.qwalletsRepo.save(walletPartial);
   }
@@ -403,6 +460,7 @@ export class QwalletService {
   }
 
   // >>>>>>>>>>>>>>> Withdrawals <<<<<<<<<<<<<<<
+
   async createCryptoWithdrawal(
     createCryptoWithdralPaymentDto: CreateCryptoWithdrawPaymentDto,
     wallet: QWalletsEntity,
@@ -410,14 +468,18 @@ export class QwalletService {
     try {
       const user = wallet.profile.user;
       const uuid = user.qWalletProfile.qid;
+      const { network, assetCode, amount } = createCryptoWithdralPaymentDto;
 
-      //check if netowrk is supported
-      const isNetworkSupportedInWallet = wallet.networks.includes(
-        createCryptoWithdralPaymentDto.network,
-      );
+      const networkMeta = wallet.networkMetadata?.[network];
+      if (!networkMeta) {
+        throw new CustomHttpException(
+          WalletErrorEnum.NETWORK_UNSUPPORTED,
+          HttpStatus.FORBIDDEN,
+        );
+      }
 
       const token = wallet.tokens.find(
-        (t) => t.assetCode === createCryptoWithdralPaymentDto.assetCode,
+        (t) => t.assetCode === assetCode && t.network === network,
       );
 
       if (!token) {
@@ -427,13 +489,7 @@ export class QwalletService {
         );
       }
 
-      if (!isNetworkSupportedInWallet)
-        throw new CustomHttpException(
-          WalletErrorEnum.NETWORK_UNSUPPORTED,
-          HttpStatus.FORBIDDEN,
-        );
-
-      if (token.balance < createCryptoWithdralPaymentDto.amount) {
+      if (parseFloat(token.balance) < parseFloat(amount.toString())) {
         throw new CustomHttpException(
           WalletErrorEnum.BALANCE_LOW,
           HttpStatus.BAD_REQUEST,
@@ -444,13 +500,12 @@ export class QwalletService {
         `${this.qwalletUrl}/users/${uuid}/withdraws`,
         {
           ...createCryptoWithdralPaymentDto,
-          currency: createCryptoWithdralPaymentDto.assetCode,
+          currency: assetCode,
         },
         { headers: this.getAuthHeaders() },
       );
 
       const txnData = response.data;
-      // const txnData = withdrawDataResp;
 
       const transactionData: TransactionHistoryDto = {
         event: WalletWebhookEventEnum.WithdrawPending,
@@ -460,7 +515,8 @@ export class QwalletService {
         fee: txnData.fee,
         blockchainTxId: txnData.txid,
         reason: txnData.reason,
-        createdAt: new Date(txnData.created_at),
+        createdAt: toUTCDate(txnData.created_at),
+        updatedAt: toUTCDate(txnData.created_at),
         walletId: txnData.wallet.id,
         paymentStatus: PaymentStatus.Processing,
         sourceAddress: txnData.wallet.deposit_address,
@@ -468,8 +524,7 @@ export class QwalletService {
         walletName: txnData.wallet.name,
         type: PaymentType.OUTBOUND,
         feeLevel: FeeLevel.HIGH,
-        updatedAt: new Date(txnData.created_at),
-        paymentNetwork: createCryptoWithdralPaymentDto.network,
+        paymentNetwork: network,
         user,
       };
 
@@ -480,8 +535,10 @@ export class QwalletService {
 
       return transactionHistory;
     } catch (error) {
-      console.log(error);
-      //TODO: properly handle errors for 404 / 400 / 500
+      console.error(
+        'Withdrawal error:',
+        error?.response?.data || error.message,
+      );
       throw new CustomHttpException(
         WalletErrorEnum.CREATE_WITHDRAWAL_FAILED,
         HttpStatus.BAD_REQUEST,
@@ -501,12 +558,11 @@ export class QwalletService {
     }
 
     for (const wallet of profile.wallets) {
-      // Check if wallet supports the network
-      if (!wallet.networks?.includes(network)) continue;
+      const networkMeta = wallet.networkMetadata?.[network];
+      if (!networkMeta) continue;
 
-      // Check for token match
       const tokenMatch = wallet.tokens?.find(
-        (token) => token.assetCode === assetCode,
+        (token) => token.assetCode === assetCode && token.network === network,
       );
 
       if (tokenMatch) {
@@ -524,7 +580,7 @@ export class QwalletService {
   private getAuthHeaders() {
     return {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this.configService.get<string>('QWALLET_SECRET_KEY')}`,
+      Authorization: `Bearer ${getAppConfig().QWALLET.SECRET_KEY}`,
     };
   }
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { QwalletService } from './qwallet.service';
 import { QwalletController } from './qwallet.controller';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -15,10 +15,10 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
     TypeOrmModule.forFeature([UserEntity, AuthEntity, QWalletProfileEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<JwtModuleOptions> => ({ ...jwtConfigurations(configService) }),
-      inject: [ConfigService],
+      useFactory: async (): Promise<JwtModuleOptions> => ({
+        ...jwtConfigurations(),
+      }),
+      inject: [],
     }),
   ],
   controllers: [QwalletController],

@@ -2,7 +2,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { QWalletsEntity } from './qwallets.entity';
 import { BaseEntity } from '../../base.entity';
-import { WalletProviderEnum } from '@/config/settings';
+import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -15,6 +15,15 @@ export class QWalletProfileEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
+
+  @ApiProperty({ enum: SupportedWalletTypes, isArray: true })
+  @Column({
+    type: 'enum',
+    enum: SupportedWalletTypes,
+    array: true,
+    default: [SupportedWalletTypes.EVM, SupportedWalletTypes.BTC],
+  })
+  walletTypes: SupportedWalletTypes[];
 
   @Column({ name: 'qid', type: 'uuid', nullable: false, unique: true })
   qid: string;

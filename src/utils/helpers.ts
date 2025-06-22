@@ -3,16 +3,7 @@ import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { UserEntity } from './typeorm/entities/user.entity';
-import {
-  ALL_KNOWN_BLOCKCHAINS,
-  ChainTokens,
-  MAINNET_CHAINS,
-  OPTIONAL_BLOCKCHAINS,
-  SupportedBlockchainType,
-  TESTNET_CHAINS,
-  TokenEnum,
-  tokenIds,
-} from '@/config/settings';
+import {} from '@/config/settings';
 import * as crypto from 'crypto';
 import { ENV_TESTNET } from '@/models/settings.types';
 import { getEnv } from '@/constants/env';
@@ -113,120 +104,6 @@ export function getUtcExpiryDateMonthsFromNow(monthsToAdd: number): Date {
   );
 }
 
-export function getSupportedAssets() {
-  const assets: { token: TokenEnum; network: keyof typeof ChainTokens }[] = [];
-
-  for (const network in ChainTokens) {
-    const tokens = ChainTokens[network as keyof typeof ChainTokens];
-    for (const token of tokens) {
-      assets.push({ token, network: network as keyof typeof ChainTokens });
-    }
-  }
-
-  return assets;
-}
-
-export function isSupportedBlockchainToken(
-  network: SupportedBlockchainType,
-  token: TokenEnum,
-): boolean {
-  const tokens = ChainTokens[network];
-  return tokens?.includes(token) ?? false;
-}
-
-export function isSupportedBlockchainType(
-  value: string,
-): value is SupportedBlockchainType {
-  return Object.values(SupportedBlockchainType).includes(
-    value as SupportedBlockchainType,
-  );
-}
-
-export function normalizeBlockchains(
-  blockchains: SupportedBlockchainType[],
-): any[] {
-  return blockchains.map((bc) => {
-    switch (bc.toLowerCase()) {
-      case SupportedBlockchainType.MATIC:
-        return getEnv() === ENV_TESTNET ? 'MATIC-AMOY' : 'MATIC';
-      default:
-        throw new Error(`Unsupported blockchain type: ${bc}`);
-    }
-  });
-}
-
-export const cWalletNetworkNameGetter = (
-  network: SupportedBlockchainType,
-): string =>
-  network === SupportedBlockchainType.MATIC && getEnv() === ENV_TESTNET
-    ? 'MATIC-AMOY'
-    : 'MATIC';
-
-export function yellowCardAuthHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${process.env.YELLOWCARD_AUTH_KEY}`,
-  };
-}
-
-export function getTokenId({
-  token,
-  chain,
-  isTestnet = false,
-}: {
-  token: TokenEnum;
-  chain?: SupportedBlockchainType;
-  isTestnet?: boolean;
-}): string | undefined {
-  // If chain provided, use it directly
-  if (chain) {
-    return tokenIds[token]?.[chain];
-  }
-
-  // Otherwise pick first chain from mainnet or testnet arrays
-  const chains = isTestnet ? TESTNET_CHAINS[token] : MAINNET_CHAINS[token];
-  if (!chains || chains.length === 0) return undefined;
-
-  for (const c of chains) {
-    const id = tokenIds[token]?.[c];
-    if (id) return id;
-  }
-
-  return undefined;
-}
-
-// --- Utility functions ---
-export const isChainSupported = (chain: SupportedBlockchainType): boolean =>
-  ALL_KNOWN_BLOCKCHAINS.includes(chain);
-
-export const isChainOptional = (chain: SupportedBlockchainType): boolean =>
-  OPTIONAL_BLOCKCHAINS.includes(chain);
-
-export function toUTCDate(dateString: string): Date {
-  if (!dateString) {
-    // Return current UTC date/time
-    return new Date(new Date().toISOString());
-  }
-  if (!dateString.endsWith('Z')) {
-    dateString += 'Z';
-  }
-  const date = new Date(dateString);
-  return isNaN(date.getTime()) ? new Date(new Date().toISOString()) : date;
-}
-
-export function getTokensForNetworks(
-  networks: SupportedBlockchainType[],
-): TokenEnum[] {
-  const tokensSet = new Set<TokenEnum>();
-  networks.forEach((network) => {
-    const tokens = ChainTokens[network];
-    if (tokens) {
-      tokens.forEach((token) => tokensSet.add(token));
-    }
-  });
-  return Array.from(tokensSet);
-}
-
 export function calculateNameMatchScore(
   input: string,
   recordName: string,
@@ -281,4 +158,16 @@ export function generateYcSignature({
 export function generateAes256Key(): string {
   const keyBuffer = crypto.randomBytes(32); // 32 bytes = 256 bits
   return keyBuffer.toString('hex'); // convert to hex string
+}
+
+export function toUTCDate(dateString: string): Date {
+  if (!dateString) {
+    // Return current UTC date/time
+    return new Date(new Date().toISOString());
+  }
+  if (!dateString.endsWith('Z')) {
+    dateString += 'Z';
+  }
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? new Date(new Date().toISOString()) : date;
 }

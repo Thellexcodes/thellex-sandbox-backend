@@ -17,9 +17,9 @@ import { CwalletService } from '../wallets/cwallet/cwallet.service';
     TypeOrmModule.forFeature([UserEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<JwtModuleOptions> => ({ ...jwtConfigurations(configService) }),
+      useFactory: async (): Promise<JwtModuleOptions> => ({
+        ...jwtConfigurations(),
+      }),
       inject: [ConfigService],
     }),
   ],

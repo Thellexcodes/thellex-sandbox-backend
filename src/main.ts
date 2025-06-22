@@ -8,8 +8,8 @@ import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 // import * as path from 'path';
 import { writeFileSync } from 'fs';
-import { getEnvVarMap } from './models/settings.types';
-import { getAppConfig } from './constants/env';
+import { ENV_PRODUCTION, getEnvVarMap } from './models/settings.types';
+import { getAppConfig, getEnv } from './constants/env';
 
 // const certFolder = path.join(__dirname, '../cert');
 
@@ -28,7 +28,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {});
 
-  if (process.env.NODE_ENV === 'testnet') {
+  const isProd = getEnv() === ENV_PRODUCTION;
+
+  if (!isProd) {
     const config = new DocumentBuilder()
       .setTitle('Thellex API')
       .setDescription('Thellex API Documentation')

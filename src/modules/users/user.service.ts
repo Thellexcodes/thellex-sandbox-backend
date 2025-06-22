@@ -13,7 +13,7 @@ import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/models/user-error.enum';
-import { ChainTokens, SupportedBlockchainType } from '@/config/settings';
+import { SupportedBlockchainType } from '@/config/settings';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
@@ -63,6 +63,9 @@ export class UserService {
 
       // Send verification email once
       await this.emailVerificationComposer(user);
+
+      await this.qwalletService.ensureUserHasProfileAndWallets(user);
+      // await this.cwalletService.ensureUserHasProfileAndWallets(user);
 
       // Return token
       const access_token = await this.signToken({ id: user.id });
@@ -250,18 +253,16 @@ export class UserService {
   }
 
   async storeTokensForWallet(wallet: CwalletsEntity): Promise<void> {
-    const tokenSymbols =
-      ChainTokens[wallet.defaultNetwork as SupportedBlockchainType] || [];
-
-    const tokenEntities = tokenSymbols.map((symbol) => {
-      const token = new TokenEntity();
-      token.assetCode = symbol;
-      token.name = symbol;
-      token.cwallet = wallet;
-      return token;
-    });
-
-    await this.tokenRepo.save(tokenEntities);
+    // const tokenSymbols =
+    //   ChainTokens[wallet.defaultNetwork as SupportedBlockchainType] || [];
+    // const tokenEntities = tokenSymbols.map((symbol) => {
+    //   const token = new TokenEntity();
+    //   token.assetCode = symbol;
+    //   token.name = symbol;
+    //   token.cwallet = wallet;
+    //   return token;
+    // });
+    // await this.tokenRepo.save(tokenEntities);
   }
 
   async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {

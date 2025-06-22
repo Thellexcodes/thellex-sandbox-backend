@@ -48,8 +48,11 @@ export class QwalletHooksService {
       );
     }
 
-    const wallet = qwalletProfile.wallets.find(
-      (w) => w.address === 'no-address',
+    const wallet = qwalletProfile.wallets.find((w) =>
+      Object.entries(w.networkMetadata || {}).some(
+        ([network, meta]) =>
+          meta.address === 'no-address' && network === data.network,
+      ),
     );
 
     if (!wallet) {
@@ -57,9 +60,17 @@ export class QwalletHooksService {
       return;
     }
 
+    const updatedNetworkMetadata = {
+      ...wallet.networkMetadata,
+      [data.network]: {
+        ...(wallet.networkMetadata?.[data.network] || {}),
+        address: data.address,
+      },
+    };
+
     await this.qwalletService.updateWalletAddress({
       id: wallet.id,
-      address: data.address,
+      networkMetadata: updatedNetworkMetadata,
     });
   }
 
@@ -107,16 +118,16 @@ export class QwalletHooksService {
           HttpStatus.BAD_REQUEST,
         );
 
-      const wallet = qwalletProfile.wallets.find(
-        (w) => w.address === data.wallet.deposit_address,
-      );
+      // const wallet = qwalletProfile.wallets.find(
+      //   (w) => w.address === data.wallet.deposit_address,
+      // );
 
-      if (!wallet) {
-        throw new CustomHttpException(
-          WalletErrorEnum.GET_USER_WALLET_FAILED,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      // if (!wallet) {
+      //   throw new CustomHttpException(
+      //     WalletErrorEnum.GET_USER_WALLET_FAILED,
+      //     HttpStatus.NOT_FOUND,
+      //   );
+      // }
 
       const user = qwalletProfile.user;
       const txnData: TransactionHistoryDto = {
@@ -149,25 +160,25 @@ export class QwalletHooksService {
         data.currency,
       );
 
-      await this.qwalletService.updateWalletTokenBalance(
-        wallet,
-        data.currency,
-        latestWalletInfo.data.balance,
-      );
+      // await this.qwalletService.updateWalletTokenBalance(
+      //   wallet,
+      //   data.currency,
+      //   latestWalletInfo.data.balance,
+      // );
 
-      const notification =
-        await this.walletNotficationsService.createNotification({
-          user,
-          data,
-          title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-          message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-        });
+      // const notification =
+      //   await this.walletNotficationsService.createNotification({
+      //     user,
+      //     data,
+      //     title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+      //     message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+      //   });
 
-      await this.notificationsGateway.emitTransactionNotificationToUser(
-        qwalletProfile.user.alertID,
-        TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit,
-        { transaction, notification },
-      );
+      // await this.notificationsGateway.emitTransactionNotificationToUser(
+      //   qwalletProfile.user.alertID,
+      //   TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit,
+      //   { transaction, notification },
+      // );
     } catch (error) {
       console.error(error);
     }
@@ -207,55 +218,55 @@ export class QwalletHooksService {
         );
       }
 
-      const wallet = qwalletProfile.wallets.find(
-        (w) => w.address === data.wallet.deposit_address,
-      );
-      if (!wallet) {
-        throw new CustomHttpException(
-          WalletErrorEnum.GET_USER_WALLET_FAILED,
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      // const wallet = qwalletProfile.wallets.find(
+      //   (w) => w.address === data.wallet.deposit_address,
+      // );
+      // if (!wallet) {
+      //   throw new CustomHttpException(
+      //     WalletErrorEnum.GET_USER_WALLET_FAILED,
+      //     HttpStatus.NOT_FOUND,
+      //   );
+      // }
 
-      const token = wallet.tokens.find((t) => t.assetCode === data.currency);
-      if (!token) {
-        throw new CustomHttpException(
-          WalletErrorEnum.UNSUPPORTED_TOKEN,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // const token = wallet.tokens.find((t) => t.assetCode === data.currency);
+      // if (!token) {
+      //   throw new CustomHttpException(
+      //     WalletErrorEnum.UNSUPPORTED_TOKEN,
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
 
-      // 3. Update transaction record
-      const transaction =
-        await this.transactionHistoryService.updateQWalletTransactionByTransactionId(
-          data,
-        );
+      // // 3. Update transaction record
+      // const transaction =
+      //   await this.transactionHistoryService.updateQWalletTransactionByTransactionId(
+      //     data,
+      //   );
 
-      // 4. Update wallet token balance
-      const latestWalletInfo = await this.qwalletService.getUserWallet(
-        qwalletProfile.qid,
-        data.currency,
-      );
-      await this.qwalletService.updateWalletTokenBalance(
-        wallet,
-        data.currency,
-        latestWalletInfo.data.balance,
-      );
+      // // 4. Update wallet token balance
+      // const latestWalletInfo = await this.qwalletService.getUserWallet(
+      //   qwalletProfile.qid,
+      //   data.currency,
+      // );
+      // await this.qwalletService.updateWalletTokenBalance(
+      //   wallet,
+      //   data.currency,
+      //   latestWalletInfo.data.balance,
+      // );
 
       // 5. Notify user
-      const notification =
-        await this.walletNotficationsService.createNotification({
-          user: qwalletProfile.user,
-          data,
-          title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
-          message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
-        });
+      // const notification =
+      //   await this.walletNotficationsService.createNotification({
+      //     user: qwalletProfile.user,
+      //     data,
+      //     title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
+      //     message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
+      //   });
 
-      await this.notificationsGateway.emitTransactionNotificationToUser(
-        qwalletProfile.user.alertID,
-        TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
-        { transaction, notification },
-      );
+      // await this.notificationsGateway.emitTransactionNotificationToUser(
+      //   qwalletProfile.user.alertID,
+      //   TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
+      //   { transaction, notification },
+      // );
     } catch (error) {
       console.error('Withdrawal processing failed:', error);
     }

@@ -101,11 +101,14 @@ export const clientUrlMap = getEnvVarMap('CLIENT_URL');
 
 // APIs
 export const dojahApiMap = getEnvVarMap('DOJAH_KYC_API');
-export const qwalletApiMap = getEnvVarMap('QWALLET_API');
 export const ycPaymentApiMap = getEnvVarMap('YC_PAYMENT_API');
 export const alchemyApiMap = getEnvVarMap('ALCHEMY_API');
 export const kycEncryptionKeyMap = getEnvVarMap('KYC_ENCRYPTION_KEY');
 export const ycSecretKeyMap = getEnvVarMap('YC_SECRET_KEY');
+
+// Qwallet
+export const qwalletApiMap = getEnvVarMap('QWALLET_API');
+export const qwalletSecretMap = getEnvVarMap('QWALLET_SECRET_KEY');
 
 // CWallet
 export const cwalletApiKeyMap = getEnvVarMap('CWALLET_API_KEY');

@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { AuthController } from './auth.controller';
 import { AuthnService } from './auth.service';
@@ -28,10 +28,10 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<JwtModuleOptions> => ({ ...jwtConfigurations(configService) }),
-      inject: [ConfigService],
+      useFactory: async (): Promise<JwtModuleOptions> => ({
+        ...jwtConfigurations(),
+      }),
+      inject: [],
     }),
   ],
   controllers: [AuthController],

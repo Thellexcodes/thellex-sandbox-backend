@@ -1,7 +1,11 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { QWalletsEntity } from '../wallets/qwallet/qwallets.entity';
-import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
+import {
+  SupportedBlockchainType,
+  SupportedWalletTypes,
+  WalletProviderEnum,
+} from '@/config/settings';
 import { CwalletsEntity } from '../wallets/cwallet/cwallet.entity';
 import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -15,11 +19,6 @@ export class TokenEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty({ type: String, nullable: true })
-  @Column({ name: 'asset_code', type: 'varchar', nullable: true })
-  assetCode: string | null;
-
-  @Expose()
-  @ApiProperty({ type: String, nullable: true })
   @Column({ name: 'issuer', type: 'varchar', nullable: true })
   issuer: string | null;
 
@@ -27,11 +26,6 @@ export class TokenEntity extends BaseEntity {
   @ApiProperty({ type: Number, default: 18 })
   @Column({ name: 'decimals', type: 'int', default: 18 })
   decimals: number;
-
-  @Expose()
-  @ApiProperty({ type: String, default: '0' })
-  @Column({ name: 'balance', type: 'varchar', nullable: false, default: '0' })
-  balance: string | null;
 
   @Expose()
   @ApiProperty({ enum: SupportedWalletTypes })
@@ -66,6 +60,26 @@ export class TokenEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'qwallet_id' })
   qwallet?: QWalletsEntity;
+
+  @Expose()
+  @ApiProperty({ enum: SupportedBlockchainType })
+  @Column({
+    name: 'network',
+    type: 'enum',
+    enum: SupportedBlockchainType,
+    nullable: false,
+  })
+  network: SupportedBlockchainType;
+
+  @Expose()
+  @ApiProperty({ type: String, nullable: true })
+  @Column({ name: 'symbol', type: 'varchar', nullable: true })
+  assetCode: string | null;
+
+  @Expose()
+  @ApiProperty({ type: String, default: '0' })
+  @Column({ name: 'balance', type: 'varchar', nullable: false, default: '0' })
+  balance: string;
 }
 
 @Exclude()

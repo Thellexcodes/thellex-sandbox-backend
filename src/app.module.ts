@@ -52,10 +52,8 @@ import { AuthEntity } from './utils/typeorm/entities/auth.entity';
     ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<JwtModuleOptions> => ({
-        ...jwtConfigurations(configService),
+      useFactory: async (): Promise<JwtModuleOptions> => ({
+        ...jwtConfigurations(),
       }),
       inject: [ConfigService],
     }),

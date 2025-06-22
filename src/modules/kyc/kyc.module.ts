@@ -5,7 +5,7 @@ import { HttpService } from '@/middleware/http.service';
 import { UserService } from '../users/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../email/mail.service';
@@ -16,10 +16,10 @@ import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
     TypeOrmModule.forFeature([UserEntity, KycEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<JwtModuleOptions> => ({ ...jwtConfigurations(configService) }),
-      inject: [ConfigService],
+      useFactory: async (): Promise<JwtModuleOptions> => ({
+        ...jwtConfigurations(),
+      }),
+      inject: [],
     }),
   ],
   controllers: [DkycController],
