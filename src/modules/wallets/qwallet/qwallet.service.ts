@@ -138,7 +138,7 @@ export class QwalletService {
     network: string,
   ): IQCreatePaymentAddressResponse {
     return await this.httpService.post(
-      `${this.qwalletUrl}/${qid}/wallets/${assetCode}/addresses?network=${network}`,
+      `${this.qwalletUrl}/users/${qid}/wallets/${assetCode}/addresses?network=${network}`,
       {},
       { headers: this.getAuthHeaders() },
     );
@@ -167,15 +167,9 @@ export class QwalletService {
     const allWalletsResponses = [];
 
     for (const walletType of walletTypes) {
-      // Get networks and tokens from walletConfig for this walletType and provider
       const providerConfig =
         walletConfig[walletType]?.providers[walletProvider];
-      if (!providerConfig) {
-        console.warn(
-          `No provider config for walletType ${walletType} and provider ${walletProvider}`,
-        );
-        continue;
-      }
+      if (!providerConfig) continue;
 
       const networks = Object.keys(
         providerConfig.networks,
@@ -183,44 +177,88 @@ export class QwalletService {
 
       for (const network of networks) {
         const tokens = providerConfig.networks[network].tokens;
-        for (const token of tokens) {
-          const creationRes = await this.createPaymentAddress(
+
+        // 1. Check if wallet already exists in DB
+        const existingWallet = await this.qwalletsRepo.findOne({
+          where: {
+            walletType,
+            profile: { id: profile.id },
+          },
+          relations: ['tokens'],
+        });
+
+        const existingMetadata = existingWallet?.networkMetadata ?? {};
+        const isInDb = existingMetadata[network];
+
+        let remoteAddress = '';
+        let remoteFound = false;
+
+        if (!isInDb) {
+          // Check if wallet exists remotely (using one token is enough)
+          const tokenToCheck = tokens[0];
+          const walletDetails = await this.fetchPaymentAddress(
             qid,
-            token,
-            network,
+            tokenToCheck,
           );
+          remoteAddress = walletDetails?.data?.address ?? '';
 
-          if (creationRes?.data?.id) {
-            const walletId = creationRes.data.id;
+          if (remoteAddress) {
+            remoteFound = true;
+            allWalletsResponses.push({
+              address: remoteAddress,
+              network,
+              walletId: null,
+              walletType,
+              token: tokenToCheck,
+            });
+          }
+        }
 
-            const address = creationRes?.data?.address ?? 'no-address';
-
-            if (address) {
-              allWalletsResponses.push({
-                address,
-                network: creationRes.data.network,
-                walletId,
-                walletType,
-                token,
-              });
-            } else {
-              console.warn(`Wallet for ${network} created but address is null`);
-            }
-          } else {
-            console.warn(
-              `Failed to create wallet for ${qid} on network ${network} for token ${token}`,
-              creationRes,
+        // If not in DB and not found remotely, then create new wallet
+        if (!isInDb && !remoteFound) {
+          for (const token of tokens) {
+            const creationRes = await this.createPaymentAddress(
+              qid,
+              token,
+              network,
             );
+
+            if (creationRes?.data?.id) {
+              const walletId = creationRes.data.id;
+
+              const walletDetails = await this.fetchPaymentAddress(qid, token);
+              const address = walletDetails?.data?.address ?? 'no-address';
+
+              if (address) {
+                allWalletsResponses.push({
+                  address,
+                  network: creationRes.data.network,
+                  walletId,
+                  walletType,
+                  token,
+                });
+              } else {
+                console.warn(
+                  `Wallet for ${network} created but address is null`,
+                );
+              }
+            } else {
+              console.warn(
+                `Failed to create wallet for ${qid} on network ${network} for token ${token}`,
+                creationRes,
+              );
+            }
           }
         }
       }
     }
 
-    // Now map wallet responses to entities and save
+    // === Save wallets
     const newWallets: QWalletsEntity[] = [];
-    const networkMetadata: Record<string, any> = {};
 
     for (const walletData of allWalletsResponses) {
+      const address = walletData.address ?? 'no-address';
+
       const existing = await this.qwalletsRepo.findOne({
         where: {
           walletType: walletData.walletType,
@@ -230,20 +268,24 @@ export class QwalletService {
       });
 
       if (existing) {
-        const hasNetwork =
-          existing.networkMetadata &&
-          Object.keys(existing.networkMetadata).includes(walletData.network);
-        if (hasNetwork) continue;
+        const existingMetadata = existing.networkMetadata || ({} as any);
+
+        if (!existingMetadata[walletData.network]) {
+          existingMetadata[walletData.network] = { address };
+          existing.networkMetadata = existingMetadata;
+          await this.qwalletsRepo.save(existing);
+          newWallets.push(existing);
+        }
+
+        continue;
       }
-
-      const address = walletData.address ?? 'no-address';
-
-      networkMetadata[walletData.network] = { address };
 
       const newWallet = this.qwalletsRepo.create({
         walletType: walletData.walletType,
         walletProvider: walletProvider,
-        networkMetadata,
+        networkMetadata: {
+          [walletData.network]: { address },
+        },
         profile,
       });
 

@@ -54,34 +54,31 @@ export class PaymentsService {
    */
   async handleWithdrawCryptoPayment(
     withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ): Promise<TransactionHistoryEntity | null> {
-    if (
-      [SupportedBlockchainType.BEP20, SupportedBlockchainType.TRC20].includes(
-        withdrawCryptoPaymentDto.network,
-      )
-    ) {
-      const wallet = await this.qwalletService.lookupSubWallet(
-        withdrawCryptoPaymentDto.sourceAddress,
-      );
-
-      return await this.qwalletService.createCryptoWithdrawal(
-        withdrawCryptoPaymentDto,
-        wallet,
-      );
-    }
-
-    if (
-      [SupportedBlockchainType.MATIC].includes(withdrawCryptoPaymentDto.network)
-    ) {
-      const wallet = await this.cwalletService.lookupSubWallet(
-        withdrawCryptoPaymentDto.sourceAddress,
-      );
-
-      return await this.cwalletService.createCryptoWithdrawal(
-        withdrawCryptoPaymentDto,
-        wallet,
-      );
-    }
+  ): Promise<TransactionHistoryEntity | null | any> {
+    // if (
+    //   [SupportedBlockchainType.BEP20, SupportedBlockchainType.TRC20].includes(
+    //     withdrawCryptoPaymentDto.network,
+    //   )
+    // ) {
+    //   const wallet = await this.qwalletService.lookupSubWallet(
+    //     withdrawCryptoPaymentDto.sourceAddress,
+    //   );
+    //   return await this.qwalletService.createCryptoWithdrawal(
+    //     withdrawCryptoPaymentDto,
+    //     wallet,
+    //   );
+    // }
+    // if (
+    //   [SupportedBlockchainType.MATIC].includes(withdrawCryptoPaymentDto.network)
+    // ) {
+    //   const wallet = await this.cwalletService.lookupSubWallet(
+    //     withdrawCryptoPaymentDto.sourceAddress,
+    //   );
+    //   return await this.cwalletService.createCryptoWithdrawal(
+    //     withdrawCryptoPaymentDto,
+    //     wallet,
+    //   );
+    // }
   }
 
   async handleGetPaymentChannels(): Promise<IYCChannel[] | any> {

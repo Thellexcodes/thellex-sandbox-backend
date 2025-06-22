@@ -10,8 +10,24 @@ import { ValidationPipe } from '@nestjs/common';
 import { writeFileSync } from 'fs';
 import { ENV_PRODUCTION, getEnvVarMap } from './models/settings.types';
 import { getAppConfig, getEnv } from './constants/env';
+import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
 // const certFolder = path.join(__dirname, '../cert');
+
+// (async () => {
+//   const apiKey = getAppConfig().CWALLET.API_KEY;
+//   const walletSetName = 'My First Wallet Set';
+
+//   const manager = new CircleWalletManager(apiKey);
+
+//   try {
+//     const {} = await manager.setupWalletSet(walletSetName);
+//     // console.log('Wallet Set:', walletSet);
+//     // console.log('Recovery File:', recoveryFile);
+//   } catch (err) {
+//     console.error('Setup error:', err.message);
+//   }
+// })();
 
 async function bootstrap() {
   // let httpsOptions: any;

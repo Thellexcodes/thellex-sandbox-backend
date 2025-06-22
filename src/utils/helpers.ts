@@ -3,10 +3,16 @@ import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { UserEntity } from './typeorm/entities/user.entity';
-import {} from '@/config/settings';
+import {
+  SupportedBlockchainType,
+  SupportedWalletTypes,
+  TokenEnum,
+  WalletProviderEnum,
+} from '@/config/settings';
 import * as crypto from 'crypto';
 import { ENV_TESTNET } from '@/models/settings.types';
-import { getEnv } from '@/constants/env';
+import { getAppConfig, getEnv } from '@/constants/env';
+import { walletConfig } from './tokenChains';
 
 //TODO: handle errors with enums
 
@@ -170,4 +176,30 @@ export function toUTCDate(dateString: string): Date {
   }
   const date = new Date(dateString);
   return isNaN(date.getTime()) ? new Date(new Date().toISOString()) : date;
+}
+
+export function isSupportedBlockchainToken(
+  network: SupportedBlockchainType,
+  token: TokenEnum,
+): boolean {
+  for (const walletTypeKey in walletConfig) {
+    const walletType = walletConfig[walletTypeKey as SupportedWalletTypes];
+    for (const providerKey in walletType.providers) {
+      const provider = walletType.providers[providerKey as WalletProviderEnum];
+      for (const networkKey in provider.networks) {
+        if (networkKey.toLowerCase() === network.toLowerCase()) {
+          const supportedTokens =
+            provider.networks[networkKey as SupportedBlockchainType].tokens;
+          if (
+            supportedTokens
+              .map((t) => t.toLowerCase())
+              .includes(token.toLowerCase())
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
 }

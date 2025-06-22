@@ -64,9 +64,6 @@ export class UserService {
       // Send verification email once
       await this.emailVerificationComposer(user);
 
-      await this.qwalletService.ensureUserHasProfileAndWallets(user);
-      // await this.cwalletService.ensureUserHasProfileAndWallets(user);
-
       // Return token
       const access_token = await this.signToken({ id: user.id });
       return { access_token };

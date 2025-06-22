@@ -8,7 +8,7 @@ import {
 } from '@/config/settings';
 import { CwalletsEntity } from '../wallets/cwallet/cwallet.entity';
 import { Exclude, Expose } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Entity({ name: 'tokens' })
 export class TokenEntity extends BaseEntity {
@@ -23,9 +23,9 @@ export class TokenEntity extends BaseEntity {
   issuer: string | null;
 
   @Expose()
-  @ApiProperty({ type: Number, default: 18 })
+  @ApiPropertyOptional({ type: Number, default: 18 })
   @Column({ name: 'decimals', type: 'int', default: 18 })
-  decimals: number;
+  decimals?: number;
 
   @Expose()
   @ApiProperty({ enum: SupportedWalletTypes })

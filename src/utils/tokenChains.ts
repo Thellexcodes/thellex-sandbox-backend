@@ -19,31 +19,10 @@ export const walletConfig = {
       },
       [WalletProviderEnum.CIRCLE]: {
         networks: {
-          [SupportedBlockchainType.BASE]: {
+          [SupportedBlockchainType.MATIC]: {
             tokens: [TokenEnum.USDC],
             tokenIds: {
-              [TokenEnum.USDC]: 'usdc-circle-base-id',
-            },
-            mainnet: true,
-          },
-          [SupportedBlockchainType.SOLANA]: {
-            tokens: [TokenEnum.USDC],
-            tokenIds: {
-              [TokenEnum.USDC]: 'usdc-circle-solana-id',
-            },
-            mainnet: true,
-          },
-          [SupportedBlockchainType.SUI]: {
-            tokens: [TokenEnum.USDC],
-            tokenIds: {
-              [TokenEnum.USDC]: 'usdc-circle-sui-id',
-            },
-            mainnet: true,
-          },
-          [SupportedBlockchainType.CELO]: {
-            tokens: [TokenEnum.USDC],
-            tokenIds: {
-              [TokenEnum.USDC]: 'usdc-circle-celo-id',
+              [TokenEnum.USDC]: 'db6905b9-8bcd-5537-8b08-f5548bdf7925',
             },
             mainnet: true,
           },
@@ -51,19 +30,19 @@ export const walletConfig = {
       },
     },
   },
-  [SupportedWalletTypes.STELLAR]: {
-    providers: {
-      [WalletProviderEnum.CIRCLE]: {
-        networks: {
-          [SupportedBlockchainType.STELLAR]: {
-            tokens: [TokenEnum.XLM],
-            tokenIds: {
-              [TokenEnum.XLM]: 'xlm-circle-id',
-            },
-            mainnet: true,
-          },
-        },
-      },
-    },
-  },
+  // [SupportedWalletTypes.STELLAR]: {
+  //   providers: {
+  //     [WalletProviderEnum.CIRCLE]: {
+  //       networks: {
+  //         [SupportedBlockchainType.STELLAR]: {
+  //           tokens: [TokenEnum.XLM],
+  //           tokenIds: {
+  //             [TokenEnum.XLM]: 'xlm-circle-id',
+  //           },
+  //           mainnet: true,
+  //         },
+  //       },
+  //     },
+  //   },
+  // },
 };
