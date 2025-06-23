@@ -40,7 +40,7 @@ export class TransactionHistoryService {
 
   async updateQWalletTransactionByTransactionId(
     updates: IQWalletHookWithdrawSuccessfulEvent,
-  ): Promise<TransactionHistoryEntity | any> {
+  ): Promise<TransactionHistoryEntity> {
     const existing = await this.findTransactionByTransactionId(updates.id);
 
     if (!existing) {

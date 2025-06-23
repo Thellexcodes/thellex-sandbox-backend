@@ -1,4 +1,10 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { IUserDto, UserEntity } from './user.entity';
 import { PaymentStatus } from '@/models/payment.types';
 import {
@@ -118,7 +124,14 @@ export class TransactionHistoryEntity extends BaseEntity {
   @ApiProperty()
   @Column({ name: 'payment_network', type: 'varchar', nullable: false })
   paymentNetwork: string;
+
+  @Expose()
+  @ApiProperty()
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 }
 
 @Exclude()
-export class ITransactionHistoryDto extends TransactionHistoryEntity {}
+export class ITransactionHistoryDto extends TransactionHistoryEntity {
+  @Expose() createdAt: Date;
+}

@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../email/mail.service';
 import { StellarService } from '../stellar/stellar.service';
@@ -27,10 +27,10 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<JwtModuleOptions> => ({ ...jwtConfigurations(configService) }),
-      inject: [ConfigService],
+      useFactory: async (): Promise<JwtModuleOptions> => ({
+        ...jwtConfigurations(),
+      }),
+      inject: [],
     }),
   ],
   controllers: [CardManagementController],

@@ -4,32 +4,32 @@ import { MailController } from './mail.controller';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { ConfigService } from '@nestjs/config';
+import { getAppConfig } from '@/constants/env';
 
 @Module({
   controllers: [MailController],
   providers: [MailService],
   imports: [
     MailerModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async () => ({
         transport: {
           host: 'mail.privateemail.com',
           port: 465,
           secure: true,
           auth: {
-            user: configService.get('MAIL_USER'),
-            pass: configService.get('MAIL_APP_PASSWORD'),
+            user: getAppConfig().EMAIL.MAIL_USER,
+            pass: getAppConfig().EMAIL.MAIL_APP_PASSWORD,
           },
         },
         defaults: {
-          from: `"${configService.get('APPLICATION_NAME')}" <${configService.get('MAIL_USER')}>`,
+          from: `"${getAppConfig().EMAIL.APPLICATION_NAME}" <${getAppConfig().EMAIL.MAIL_USER}>`,
         },
         template: {
           dir: join(__dirname, '../..', '../src/modules/mail/templates'),
           adapter: new HandlebarsAdapter(),
         },
       }),
-      inject: [ConfigService],
+      inject: [],
     }),
   ],
 })

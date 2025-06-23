@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
-  AccountType,
   CircleDeveloperControlledWalletsClient,
   GetTokenInput,
   GetTransactionInput,
@@ -23,40 +21,36 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
-  ChainTokens,
   SupportedBlockchainType,
   SupportedWalletTypes,
   TokenEnum,
   WalletProviderEnum,
 } from '@/config/settings';
+import { getTokenId, toUTCDate } from '@/utils/helpers';
 import {
-  cWalletNetworkNameGetter,
-  getTokenId,
-  getTokensForNetworks,
-  normalizeBlockchains,
-  toUTCDate,
-} from '@/utils/helpers';
+  ITransactionHistoryDto,
+  TransactionHistoryEntity,
+} from '@/utils/typeorm/entities/transaction-history.entity';
+import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
+import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
+import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
+import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
+import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
+import { getAppConfig, getEnv } from '@/constants/env';
+import { walletConfig } from '@/utils/tokenChains';
 import { PaymentStatus, PaymentType } from '@/models/payment.types';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import {
   FeeLevel,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
-import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
-import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
-import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
-import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
-import { ENV_PRODUCTION } from '@/models/settings.types';
-import { getEnv } from '@/constants/env';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CwalletService {
   private circleClient: CircleDeveloperControlledWalletsClient;
 
   constructor(
-    private readonly configService: ConfigService,
     @InjectRepository(CwalletProfilesEntity)
     private readonly cWalletProfilesRepo: Repository<CwalletProfilesEntity>,
     @InjectRepository(CwalletsEntity)
@@ -66,23 +60,27 @@ export class CwalletService {
     private readonly transactionHistoryService: TransactionHistoryService,
   ) {
     this.circleClient = initiateDeveloperControlledWalletsClient({
-      apiKey: this.configService.get<string>('CWALLET_API_KEY'),
-      entitySecret: this.configService.get<string>('CWALLET_ENTITY_SECRET'),
+      apiKey: getAppConfig().CWALLET.API_KEY,
+      entitySecret: getAppConfig().CWALLET.ENTITY_SECRET,
     });
   }
 
   async lookupSubAccount(
     user: UserEntity,
   ): Promise<CwalletProfilesEntity | null> {
-    return await this.cWalletProfilesRepo.findOne({ where: { user } });
-  }
-
-  async lookupSubWallet(address: string): Promise<CwalletsEntity | null> {
-    return await this.cWalletsRepo.findOne({
-      where: { address },
-      relations: ['profile', 'profile.user'],
+    return await this.cWalletProfilesRepo.findOne({
+      where: { user: { id: user.id } },
     });
   }
+
+  async lookupSubWallet(address: string): Promise<CwalletsEntity | null | any> {
+    // return await this.cWalletsRepo.findOne({
+    //   where: { address },
+    //   relations: ['profile', 'profile.user'],
+    // });
+  }
+
+  async fetchPaymentAddress(id) {}
 
   async lookupSubWalletByID(id: string): Promise<CwalletsEntity | null> {
     return await this.cWalletsRepo.findOne({
@@ -116,68 +114,12 @@ export class CwalletService {
     }
   }
 
-  async createWallet(
-    walletSetId: string,
-    blockchains: SupportedBlockchainType[],
-    user: UserEntity,
-    accountType: AccountType,
-  ): Promise<CwalletsEntity> {
-    try {
-      const nBlockchains = normalizeBlockchains(blockchains);
-
-      const response = await this.circleClient.createWallets({
-        walletSetId,
-        blockchains: nBlockchains,
-        count: 1,
-        accountType,
-      });
-
-      const wallet = response.data.wallets[0] as Wallet & {
-        accountType: string;
-        scaCore: string;
-      };
-
-      const profile = await this.cWalletProfilesRepo.findOne({
-        where: { user: { id: user.id } },
-      });
-
-      if (!profile) throw new Error('Wallet profile not found for user.');
-
-      const newWallet = this.cWalletsRepo.create({
-        walletID: wallet.id,
-        profile,
-        address: wallet.address,
-        defaultNetwork: wallet.blockchain as SupportedBlockchainType,
-        custodyType: wallet.custodyType,
-        accountType: wallet.accountType,
-        state: wallet.state,
-        scaCore: wallet.scaCore,
-        createdAt: toUTCDate(wallet.createDate),
-        updatedAt: toUTCDate(wallet.updateDate),
-        currency: 'USD',
-        reference: null,
-        totalPayments: null,
-        networks: nBlockchains,
-      });
-
-      return await this.cWalletsRepo.save(newWallet);
-    } catch (error) {
-      console.error('Error creating wallet:', error);
-      throw new Error('Failed to create wallet');
-    }
-  }
-
   async createCryptoWithdrawal(
     dto: CreateCryptoWithdrawPaymentDto,
     wallet: CwalletsEntity,
-  ): Promise<TransactionHistoryEntity> {
+  ): Promise<ITransactionHistoryDto> {
     try {
-      const tokenId = getTokenId({
-        token: dto.assetCode,
-        isTestnet: !(getEnv() === ENV_PRODUCTION),
-      });
-
-      const paymentNetwork = cWalletNetworkNameGetter(dto.network);
+      const tokenId = getTokenId({ token: dto.assetCode });
 
       const transfer = await this.createTransaction(
         wallet.walletID,
@@ -200,22 +142,25 @@ export class CwalletService {
         amount: dto.amount,
         blockchainTxId: transaction.txHash,
         walletId: wallet.walletID,
-        sourceAddress: wallet.address,
+        sourceAddress: wallet.networkMetadata[dto.network]?.address,
         destinationAddress: transaction.destinationAddress,
-        paymentNetwork,
+        paymentNetwork: dto.network,
         reason: dto.transaction_note,
         feeLevel: FeeLevel.HIGH,
         updatedAt: toUTCDate(transaction.updateDate),
         createdAt: toUTCDate(transaction.createDate),
-        walletName: paymentNetwork,
         user: wallet.profile.user,
         paymentStatus: PaymentStatus.Processing,
       };
 
-      return await this.transactionHistoryService.create(
+      const txn = await this.transactionHistoryService.create(
         txnHistory,
         wallet.profile.user,
       );
+
+      return plainToInstance(ITransactionHistoryDto, txn, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       console.error('Error creating withdrawal transaction:', error);
       throw new Error('Failed to process withdrawal');
@@ -299,113 +244,71 @@ export class CwalletService {
     return (await this.circleClient.estimateTransferFee(data)).data;
   }
 
-  async storeTokensForWallet(
-    wallet: CwalletsEntity,
-    tokens?: TokenEnum[],
-  ): Promise<void> {
-    let tokenSymbols: TokenEnum[];
-
-    if (tokens && tokens.length > 0) {
-      tokenSymbols = tokens;
-    } else {
-      // Fallback: derive tokens from wallet.networks
-      const tokenSet = new Set<TokenEnum>();
-      for (const network of wallet.networks) {
-        const chainTokens = ChainTokens[network] || [];
-        chainTokens.forEach((token) => tokenSet.add(token));
-      }
-      tokenSymbols = Array.from(tokenSet);
-    }
-
-    const tokenEntities = tokenSymbols.map((symbol) =>
-      this.tokenRepo.create({
-        assetCode: symbol,
-        name: symbol,
-        balance: '0', //TODO: Fetch and update wallet balance
-        cwallet: wallet,
-        walletType: SupportedWalletTypes.EVM,
-        walletProvider: WalletProviderEnum.CIRCLE,
-      }),
-    );
-
-    await this.tokenRepo.save(tokenEntities);
-  }
-
-  async ensureUserHasProfileAndWallets(
-    user: UserEntity,
-  ): Promise<CwalletsEntity[]> {
-    // Lookup existing wallet profile
-    let cwalletProfile = await this.lookupSubAccount(user);
-
-    if (!cwalletProfile) {
-      // Create wallet set (profile) for user if missing
-      const walletSetResponse = await this.createWalletSet(user);
-      cwalletProfile = await this.cWalletProfilesRepo.findOne({
+  async ensureUserHasProfileAndWallets(user: UserEntity): Promise<void> {
+    let profile = await this.lookupSubAccount(user);
+    if (!profile) {
+      await this.createWalletSet(user);
+      profile = await this.cWalletProfilesRepo.findOne({
         where: { user: { id: user.id } },
       });
-      if (!cwalletProfile) {
-        throw new Error('Failed to create or retrieve wallet profile.');
-      }
     }
 
-    // Fetch wallets linked to the profile
     let wallets = await this.cWalletsRepo.find({
-      where: { profile: { id: cwalletProfile.id } },
+      where: { profile: { id: profile.id } },
     });
+    if (wallets.length > 0) return;
 
-    // If no wallets, create them based on supported networks
-    if (wallets.length === 0) {
-      const walletSetId = cwalletProfile.walletSetId;
+    const walletTypes = profile.walletTypes;
+    const walletProvider = profile.walletProvider;
+    const walletSetId = profile.walletSetId;
+    const newWallets: CwalletsEntity[] = [];
 
-      // Define supported chains, separate EVM & non-EVM
-      // Adjust this list dynamically if you want to support more chains
-      const supportedChains: SupportedBlockchainType[] = [
-        SupportedBlockchainType.MATIC,
-      ];
+    for (const walletType of walletTypes) {
+      const providerConfig =
+        walletConfig[walletType]?.providers[walletProvider];
+      if (!providerConfig) continue;
 
-      // EVM chains set (example, adjust as per your SupportedBlockchainType enum)
-      const evmChains = supportedChains.filter((c) =>
-        [SupportedBlockchainType.MATIC].includes(c),
-      );
+      const networks = Object.keys(
+        providerConfig.networks,
+      ) as SupportedBlockchainType[];
 
-      // Non-EVM chains
-      const nonEvmChains = supportedChains.filter(
-        (c) => !evmChains.includes(c),
-      );
+      for (const network of networks) {
+        const tokens = providerConfig.networks[network].tokens;
 
-      const newWallets: CwalletsEntity[] = [];
+        for (const token of tokens) {
+          const tokenExistsInDb = await this.walletExists(
+            profile.id,
+            walletType,
+            network,
+          );
+          if (tokenExistsInDb) continue;
 
-      // Create one EVM wallet with all EVM networks
-      if (evmChains.length > 0) {
-        const evmWallet = await this.createWallet(
-          walletSetId,
-          evmChains,
-          user,
-          'SCA',
-        );
-
-        const evmTokens = getTokensForNetworks(evmChains);
-        await this.storeTokensForWallet(evmWallet, evmTokens);
-        newWallets.push(evmWallet);
+          const createdWallet = await this.createAndStoreWallet(
+            token,
+            network,
+            walletType,
+            profile,
+            walletProvider,
+            walletSetId,
+          );
+          if (createdWallet) {
+            newWallets.push(createdWallet);
+          }
+        }
       }
-
-      // // Create individual wallets for each non-EVM chain
-      // for (const network of nonEvmChains) {
-      //   const wallet = await this.createWallet(
-      //     walletSetId,
-      //     [network],
-      //     user,
-      //     'SCA',
-      //   );
-      //   const tokens = ChainTokens[network] ?? [];
-      //   await this.storeTokensForWallet(wallet, tokens);
-      //   newWallets.push(wallet);
-      // }
-
-      wallets = newWallets;
     }
 
-    return wallets;
+    const allNewTokens = await Promise.all(
+      newWallets.map((wallet) =>
+        this.buildTokensForWallet(wallet, wallet.networkMetadata),
+      ),
+    );
+
+    const tokensToSave = allNewTokens.flat().filter(Boolean);
+
+    if (tokensToSave.length > 0) {
+      await this.tokenRepo.save(tokensToSave);
+    }
   }
 
   async updateWalletTokenBalance(
@@ -426,5 +329,122 @@ export class CwalletService {
     } catch (err) {
       console.error('Error updating wallet token balance:', err);
     }
+  }
+
+  private async walletExists(
+    profileId: string,
+    walletType: SupportedWalletTypes,
+    network: SupportedBlockchainType,
+  ): Promise<boolean> {
+    const existingWallet = await this.cWalletsRepo.findOne({
+      where: {
+        profile: { id: profileId },
+        walletType,
+      },
+    });
+
+    return !!existingWallet?.networkMetadata?.[network];
+  }
+
+  private async createAndStoreWallet(
+    token: string,
+    network: SupportedBlockchainType,
+    walletType: SupportedWalletTypes,
+    profile: CwalletProfilesEntity,
+    walletProvider: WalletProviderEnum,
+    walletSetId: string,
+  ): Promise<CwalletsEntity | null | any> {
+    const response = await this.circleClient.createWallets({
+      walletSetId,
+      blockchains: [network] as any,
+      count: 1,
+      accountType: 'SCA',
+    });
+
+    const wallet = response.data.wallets[0] as Wallet & {
+      accountType: string;
+      scaCore: string;
+    };
+
+    const newWallet = this.cWalletsRepo.create({
+      walletID: wallet.id,
+      currency: 'USD',
+      custodyType: 'custodial',
+      accountType: 'wallet',
+      walletType,
+      walletProvider,
+      profile,
+      scaCore: wallet.scaCore,
+      networkMetadata: {
+        [network]: {
+          address: wallet.address,
+          tokenId: '',
+          memo: '',
+          destinationTag: '',
+        },
+      },
+    });
+
+    return await this.cWalletsRepo.save(newWallet);
+  }
+
+  async buildTokensForWallet(
+    wallet: CwalletsEntity,
+    networkMetadata: Record<
+      SupportedBlockchainType,
+      {
+        address: string;
+        tokenId?: string;
+        memo?: string;
+        destinationTag?: string;
+      }
+    >,
+  ): Promise<TokenEntity[]> {
+    const tokensToSave: TokenEntity[] = [];
+
+    const providerConfig =
+      walletConfig[wallet.walletType]?.providers?.[wallet.walletProvider];
+    if (!providerConfig) return tokensToSave;
+
+    for (const network of Object.keys(
+      networkMetadata,
+    ) as SupportedBlockchainType[]) {
+      const networkConfig = providerConfig.networks?.[network];
+      if (!networkConfig) continue;
+
+      const tokenSymbols = networkConfig.tokens;
+
+      for (const symbol of tokenSymbols) {
+        const tokenIdFromConfig = networkConfig.tokenIds?.[symbol];
+        const tokenIdFromMetadata = networkMetadata[network]?.tokenId;
+
+        // Check if token already exists for this wallet + network + symbol
+        const existing = await this.tokenRepo.findOne({
+          where: {
+            qwallet: { id: wallet.id },
+            network,
+            assetCode: symbol,
+          },
+        });
+
+        if (existing) continue;
+
+        //[x] update issure
+        const token = this.tokenRepo.create({
+          name: symbol,
+          issuer: tokenIdFromMetadata ?? tokenIdFromConfig ?? null,
+          walletType: wallet.walletType,
+          walletProvider: wallet.walletProvider,
+          cwallet: wallet,
+          network,
+          assetCode: symbol,
+          balance: '0',
+        });
+
+        tokensToSave.push(token);
+      }
+    }
+
+    return tokensToSave;
   }
 }

@@ -8,10 +8,26 @@ import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 // import * as path from 'path';
 import { writeFileSync } from 'fs';
-import { getEnvVarMap } from './models/settings.types';
-import { getAppConfig } from './constants/env';
+import { ENV_PRODUCTION, getEnvVarMap } from './models/settings.types';
+import { getAppConfig, getEnv } from './constants/env';
+import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
 // const certFolder = path.join(__dirname, '../cert');
+
+// (async () => {
+//   const apiKey = getAppConfig().CWALLET.API_KEY;
+//   const walletSetName = 'My First Wallet Set';
+
+//   const manager = new CircleWalletManager(apiKey);
+
+//   try {
+//     const {} = await manager.setupWalletSet(walletSetName);
+//     // console.log('Wallet Set:', walletSet);
+//     // console.log('Recovery File:', recoveryFile);
+//   } catch (err) {
+//     console.error('Setup error:', err.message);
+//   }
+// })();
 
 async function bootstrap() {
   // let httpsOptions: any;
@@ -28,7 +44,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {});
 
-  if (process.env.NODE_ENV === 'testnet') {
+  const isProd = getEnv() === ENV_PRODUCTION;
+
+  if (!isProd) {
     const config = new DocumentBuilder()
       .setTitle('Thellex API')
       .setDescription('Thellex API Documentation')

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
@@ -18,12 +19,9 @@ export abstract class BaseEntity extends TypeOrmBase {
 }
 
 export class BaseDto {
-  @ApiProperty()
   id: string;
 
-  @ApiProperty()
   createdAt: Date;
 
-  @ApiProperty()
   updatedAt: Date;
 }

@@ -1,6 +1,6 @@
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
-import { SupportedBlockchainType } from '@/config/settings';
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
 
 export class WalletMapDto {
   @ApiProperty()
@@ -30,27 +30,16 @@ export class WalletMapRecord {
   usdt: WalletMapDto;
 }
 
-export class GetWalletBalanceSummaryResponse {
+@Exclude()
+export class WalletBalanceSummaryResponseDto {
+  @Expose()
   @ApiProperty()
   totalInUsd: number;
 
+  @Expose()
   @ApiProperty({ type: WalletMapRecord })
   wallets: {
     usdc: WalletMapDto;
     usdt: WalletMapDto;
   };
-}
-
-export interface IWalletMap {
-  totalBalance: string;
-  networks: SupportedBlockchainType[];
-  assetCode: string;
-  address: string;
-  transactionHistory: TransactionHistoryDto[];
-  [network: string]: any;
-}
-
-export interface IWalletBalanceSummary {
-  totalInUsd: number;
-  wallets: Record<string, IWalletMap>;
 }

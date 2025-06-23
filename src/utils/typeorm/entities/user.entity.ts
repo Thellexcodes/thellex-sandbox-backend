@@ -88,15 +88,18 @@ export class UserEntity extends BaseEntity {
   })
   verificationCodes: AuthVerificationCodesEntity[];
 
-  @OneToMany(() => AuthEntity, (auth) => auth.user)
+  @OneToMany(() => AuthEntity, (auth) => auth.user, { cascade: true })
   auth: AuthEntity[];
 
   @Type(() => IDeviceDto)
-  @OneToMany(() => DeviceEntity, (device) => device.user)
+  @OneToMany(() => DeviceEntity, (device) => device.user, { cascade: true })
   devices: DeviceEntity[];
 
   @Type(() => ICardManagementDto)
-  @OneToMany(() => CardManagementEntity, (card) => card.user, { eager: true })
+  @OneToMany(() => CardManagementEntity, (card) => card.user, {
+    cascade: true,
+    eager: true,
+  })
   electronic_cards: CardManagementEntity[];
 
   @Expose()

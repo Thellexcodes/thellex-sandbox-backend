@@ -10,6 +10,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -27,6 +28,7 @@ import {
   FiatCollectionResponseDto,
 } from './dto/fiat-collection-request.dto';
 import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
+import { CreateWithdrawalResponseDto } from './dto/payment.dto';
 
 ApiTags('Payments');
 @Controller('Payments')
@@ -40,27 +42,10 @@ export class PaymentsController {
     responseHandler(response, res, req);
   }
 
-  @Post('request-crypto')
-  @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Request a crypto payment' })
-  async requestCryptoPayment(
-    @Body() createRequestPaymentDto: CreateRequestPaymentDto,
-    @Req() req: CustomRequest,
-    @Res() res: CustomResponse,
-  ) {
-    const user = req.user;
-
-    const requestResponse = await this.paymentService.requestCryptoWallet(
-      createRequestPaymentDto,
-      user,
-    );
-
-    responseHandler(requestResponse, res, req);
-  }
-
   @Post('withdraw-crypto')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
+  @ApiOkResponse({ type: CreateWithdrawalResponseDto })
   async withdrawPayment(
     @Body() withdrawPaymentDto: CreateCryptoWithdrawPaymentDto,
     @Req() req: CustomRequest,
@@ -68,7 +53,6 @@ export class PaymentsController {
   ) {
     const response =
       await this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
-
     responseHandler(response, res, req);
   }
 

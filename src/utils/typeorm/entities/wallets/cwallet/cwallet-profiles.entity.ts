@@ -12,6 +12,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { UserEntity } from '../../user.entity';
 import { BaseEntity } from '../../base.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
 
 @Entity({ name: 'cwallet_profiles' })
 export class CwalletProfilesEntity extends BaseEntity {
@@ -22,6 +23,21 @@ export class CwalletProfilesEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
+
+  @Column({
+    type: 'enum',
+    enum: SupportedWalletTypes,
+    array: true,
+    default: [SupportedWalletTypes.EVM, SupportedWalletTypes.STELLAR],
+  })
+  walletTypes: SupportedWalletTypes[];
+
+  @Column({
+    type: 'enum',
+    enum: WalletProviderEnum,
+    default: WalletProviderEnum.CIRCLE,
+  })
+  walletProvider: WalletProviderEnum;
 
   @Expose()
   @ApiProperty({ description: 'Profile state', default: 'active' })

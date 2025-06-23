@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
+import { getAppConfig } from '@/constants/env';
 
 @Injectable()
 export class MailService {
-  constructor(
-    private readonly configService: ConfigService,
-    private mailerService: MailerService,
-  ) {}
+  constructor(private mailerService: MailerService) {}
 
   async sendEmail({
     to,
@@ -23,8 +20,8 @@ export class MailService {
     try {
       const mailData = {
         from: {
-          name: this.configService.get<string>('APPLICATION_NAME'),
-          address: this.configService.get<string>('MAIL_USER'),
+          name: getAppConfig().EMAIL.APPLICATION_NAME,
+          address: getAppConfig().EMAIL.MAIL_USER,
         },
         to,
         templateName,

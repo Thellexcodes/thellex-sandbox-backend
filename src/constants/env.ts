@@ -29,6 +29,7 @@ import {
   postgresPortMap,
   postgresUserMap,
   qwalletApiMap,
+  qwalletSecretMap,
   serverIpMap,
   serverPortMap,
   stellarRpcEndpointMap,
@@ -90,7 +91,7 @@ export function getAppConfig(): ApiConfig {
       ENTITY_CYPHER_TEXT: cwalletEntityCypherTextMap[env] || '',
     },
     QWALLET: {
-      SECRET_KEY: process.env.QWALLET_SECRET_KEY || '',
+      SECRET_KEY: qwalletSecretMap[env] || '',
       API: qwalletApiMap[env] || '',
     },
     YC: {

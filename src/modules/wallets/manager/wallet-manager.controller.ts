@@ -19,7 +19,7 @@ import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import {
-  GetWalletBalanceSummaryResponse,
+  WalletBalanceSummaryResponseDto,
   WalletMapDto,
 } from './dto/get-balance-response.dto';
 
@@ -33,7 +33,7 @@ export class WalletManagerController {
   @ApiExtraModels(WalletMapDto)
   @Get('balance')
   @UseGuards(AuthGuard)
-  @ApiOkResponse({ type: GetWalletBalanceSummaryResponse })
+  @ApiOkResponse({ type: WalletBalanceSummaryResponseDto })
   async getBalance(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
     const result = await this.walletManagerService.getBalance(user);

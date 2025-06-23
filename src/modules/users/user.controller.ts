@@ -1,10 +1,6 @@
 import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import {
-  AccessResponseDto,
-  CreateUserDto,
-  UserAuthenticateResponseDto,
-} from './dto/user.dto';
+import { AccessResponseDto, CreateUserDto } from './dto/user.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -15,7 +11,7 @@ import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { UserVerifyResponseDto, VerifyUserDto } from './dto/verify-user.dto';
+import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
 
 //TODO: middleware for outstanding verifications
 @ApiTags('User')
@@ -38,7 +34,7 @@ export class UserController {
 
   @Post('authenticate')
   @UseGuards(AuthGuard)
-  @ApiOkResponse({ type: UserAuthenticateResponseDto })
+  @ApiOkResponse({ type: VerifiedResponseDto })
   async tokenLogin(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
@@ -48,13 +44,14 @@ export class UserController {
       identifier: user.email,
     } as LoginUserDto);
 
-    responseHandler({ ...authRecords, user }, res, req);
+    console.log(authRecords);
+
+    responseHandler(authRecords, res, req);
   }
 
   @Post('verify')
   @UseGuards(AuthGuard)
-  @ApiBody({ description: 'Verifies user', type: VerifyUserDto })
-  @ApiOkResponse({ type: UserVerifyResponseDto })
+  @ApiOkResponse({ type: VerifiedResponseDto })
   async verify(
     @Body() verifyUserDto: VerifyUserDto,
     @Req() req: CustomRequest,

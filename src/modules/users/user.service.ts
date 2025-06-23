@@ -13,7 +13,7 @@ import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/models/user-error.enum';
-import { ChainTokens, SupportedBlockchainType } from '@/config/settings';
+import { SupportedBlockchainType } from '@/config/settings';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
@@ -96,9 +96,9 @@ export class UserService {
       );
     }
 
-    const token = await this.signToken({ id: user.id });
-
-    return { token, isAuthenticated: true };
+    return plainToInstance(IUserDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async findOneByEmail(email: string): Promise<UserEntity> {
@@ -204,14 +204,6 @@ export class UserService {
     if (user.emailVerified) {
       const verifiedUser = await this.userRepository.findOne({
         where: { id: user.id },
-        relations: [
-          'qWalletProfile',
-          'qWalletProfile.wallets',
-          'qWalletProfile.wallets.tokens',
-          'cWalletProfile',
-          'cWalletProfile.wallets',
-          'cWalletProfile.wallets.tokens',
-        ],
       });
 
       return plainToInstance(IUserDto, verifiedUser, {
@@ -232,14 +224,6 @@ export class UserService {
 
     const userData = await this.userRepository.findOne({
       where: { id: user.id },
-      relations: [
-        'qWalletProfile',
-        'qWalletProfile.wallets',
-        'qWalletProfile.wallets.tokens',
-        'cWalletProfile',
-        'cWalletProfile.wallets',
-        'cWalletProfile.wallets.tokens',
-      ],
     });
 
     const result = plainToInstance(IUserDto, userData, {
@@ -250,18 +234,16 @@ export class UserService {
   }
 
   async storeTokensForWallet(wallet: CwalletsEntity): Promise<void> {
-    const tokenSymbols =
-      ChainTokens[wallet.defaultNetwork as SupportedBlockchainType] || [];
-
-    const tokenEntities = tokenSymbols.map((symbol) => {
-      const token = new TokenEntity();
-      token.assetCode = symbol;
-      token.name = symbol;
-      token.cwallet = wallet;
-      return token;
-    });
-
-    await this.tokenRepo.save(tokenEntities);
+    // const tokenSymbols =
+    //   ChainTokens[wallet.defaultNetwork as SupportedBlockchainType] || [];
+    // const tokenEntities = tokenSymbols.map((symbol) => {
+    //   const token = new TokenEntity();
+    //   token.assetCode = symbol;
+    //   token.name = symbol;
+    //   token.cwallet = wallet;
+    //   return token;
+    // });
+    // await this.tokenRepo.save(tokenEntities);
   }
 
   async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {

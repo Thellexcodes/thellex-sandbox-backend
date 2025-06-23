@@ -8,7 +8,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CwalletProfilesEntity } from './cwallet-profiles.entity';
-import { SupportedBlockchainType } from '@/config/settings';
+import {
+  SupportedBlockchainType,
+  SupportedWalletTypes,
+  WalletProviderEnum,
+} from '@/config/settings';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { BaseEntity } from '../../base.entity';
 import { TokenEntity } from '../../token/token.entity';
@@ -31,11 +35,6 @@ export class CwalletsEntity extends BaseEntity {
   currency: string;
 
   @Expose()
-  @ApiProperty({ type: 'string', description: 'Wallet address' })
-  @Column({ type: 'varchar', name: 'address' })
-  address: string;
-
-  @Expose()
   @ApiProperty({
     type: 'string',
     nullable: true,
@@ -43,19 +42,6 @@ export class CwalletsEntity extends BaseEntity {
   })
   @Column({ type: 'varchar', nullable: true, name: 'total_payments' })
   totalPayments: string | null;
-
-  @Expose()
-  @ApiProperty({
-    enum: SupportedBlockchainType,
-    description: 'Default blockchain network',
-  })
-  @Column({
-    type: 'enum',
-    enum: SupportedBlockchainType,
-    name: 'default_network',
-    default: SupportedBlockchainType.MATIC,
-  })
-  defaultNetwork: SupportedBlockchainType;
 
   @Expose()
   @ApiProperty({
@@ -104,17 +90,38 @@ export class CwalletsEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true, name: 'sca_core' })
   scaCore: string | null;
 
+  @ApiProperty({ enum: WalletProviderEnum })
+  @Column({ type: 'enum', enum: WalletProviderEnum, nullable: false })
+  walletProvider: WalletProviderEnum;
+
+  @ApiProperty({ enum: SupportedWalletTypes })
+  @Column({
+    name: 'wallet_type',
+    enum: SupportedWalletTypes,
+    nullable: false,
+  })
+  walletType: SupportedWalletTypes;
+
   @Expose()
   @ApiProperty({
-    isArray: true,
-    enum: SupportedBlockchainType,
-    description: 'Supported blockchain networks',
+    type: () => Object,
+    description:
+      'Holds network-specific metadata like addresses, token IDs, memos, etc. Example: { ethereum: { address: "...", tokenId: "..." } }',
   })
   @Column({
-    type: 'simple-array',
-    name: 'networks',
+    name: 'network_metadata',
+    type: 'jsonb',
+    nullable: true,
   })
-  networks: SupportedBlockchainType[];
+  networkMetadata: Record<
+    SupportedBlockchainType,
+    {
+      address: string;
+      tokenId?: string;
+      memo?: string;
+      destinationTag?: string;
+    }
+  >;
 
   @Exclude()
   @ManyToOne(() => CwalletProfilesEntity, (profile) => profile.wallets, {

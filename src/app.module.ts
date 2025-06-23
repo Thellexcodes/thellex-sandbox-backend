@@ -29,12 +29,12 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { CronjobsModule } from './modules/crons/cronjobs.module';
 import { QwalletHooksModule } from './modules/wallets/qwallet-hooks/qwallet-hooks.module';
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
-import { WalletManagerModule } from './modules/wallets/wallet-manager/wallet-manager.module';
 import { SharedModule } from './modules/shared.module';
 import { GeoLocationMiddleware } from './middleware/geo-location.middleware';
 import { QwalletModule } from './modules/wallets/qwallet/qwallet.module';
 import { CwalletModule } from './modules/wallets/cwallet/cwallet.module';
 import { AuthEntity } from './utils/typeorm/entities/auth.entity';
+import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.module';
 
 @Module({
   imports: [
@@ -52,10 +52,8 @@ import { AuthEntity } from './utils/typeorm/entities/auth.entity';
     ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (
-        configService: ConfigService,
-      ): Promise<JwtModuleOptions> => ({
-        ...jwtConfigurations(configService),
+      useFactory: async (): Promise<JwtModuleOptions> => ({
+        ...jwtConfigurations(),
       }),
       inject: [ConfigService],
     }),

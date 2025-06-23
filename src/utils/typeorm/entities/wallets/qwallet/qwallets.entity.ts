@@ -1,8 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
-import {
-  IQWalletProfileDto,
-  QWalletProfileEntity,
-} from './qwallet-profile.entity';
+import { QWalletProfileEntity } from './qwallet-profile.entity';
 import { BaseEntity } from '../../base.entity';
 import { ITokenDto, TokenEntity } from '../../token/token.entity';
 import {
@@ -24,10 +21,6 @@ export class QWalletsEntity extends BaseEntity {
   @ApiProperty({ type: 'string', nullable: true })
   @Column({ type: 'varchar', nullable: true })
   reference: string | null;
-
-  @ApiProperty({ type: 'string' })
-  @Column({ type: 'varchar' })
-  address: string;
 
   @ApiProperty({ type: 'boolean', nullable: true })
   @Column({ name: 'is_crypto', type: 'boolean', nullable: true })
@@ -54,23 +47,24 @@ export class QWalletsEntity extends BaseEntity {
   walletType: SupportedWalletTypes;
 
   @ApiProperty({
-    enum: SupportedBlockchainType,
-    default: SupportedBlockchainType.BEP20,
+    type: () => Object,
+    description:
+      'Holds network-specific metadata like addresses, token IDs, memos, etc. Example: { ethereum: { address: "...", tokenId: "..." } }',
   })
   @Column({
-    name: 'default_network',
-    type: 'enum',
-    enum: SupportedBlockchainType,
-    default: SupportedBlockchainType.BEP20,
+    name: 'network_metadata',
+    type: 'jsonb',
+    nullable: true,
   })
-  defaultNetwork: SupportedBlockchainType;
-
-  @ApiProperty({ type: [String] })
-  @Column({
-    name: 'networks',
-    type: 'simple-array',
-  })
-  networks: SupportedBlockchainType[];
+  networkMetadata: Record<
+    SupportedBlockchainType,
+    {
+      address: string;
+      tokenId?: string;
+      memo?: string;
+      destinationTag?: string;
+    }
+  >;
 
   @ApiProperty({ type: () => [TokenEntity] })
   @OneToMany(() => TokenEntity, (token) => token.qwallet, { eager: true })
@@ -98,23 +92,12 @@ export class IQWalletDto extends QWalletsEntity {
   totalPayments: string | null;
 
   @Expose()
-  @ApiProperty({ enum: WalletProviderEnum })
+  @ApiProperty({ enum: WalletProviderEnum, default: WalletProviderEnum.QUIDAX })
   walletProvider: WalletProviderEnum;
 
   @Expose()
   @ApiProperty({ enum: SupportedWalletTypes })
   walletType: SupportedWalletTypes;
-
-  @Expose()
-  @ApiProperty({
-    enum: SupportedBlockchainType,
-    default: SupportedBlockchainType.BEP20,
-  })
-  defaultNetwork: SupportedBlockchainType;
-
-  @Expose()
-  @ApiProperty({ type: [String] })
-  networks: SupportedBlockchainType[];
 
   @Expose()
   @Type(() => TokenEntity)

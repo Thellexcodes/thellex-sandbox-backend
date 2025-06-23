@@ -1,14 +1,10 @@
-import { ConfigService } from '@nestjs/config';
+import { getAppConfig } from '@/constants/env';
 import { JwtModuleOptions } from '@nestjs/jwt';
 
-export const jwtConfigurations = (
-  configService: ConfigService,
-): JwtModuleOptions => {
+export const jwtConfigurations = (): JwtModuleOptions => {
   return {
-    secret: configService.get<string>('AUTH_JWT_SECRET'),
-    signOptions: {
-      expiresIn: '30d',
-    },
+    secret: getAppConfig().AUTH_JWT_SECRET,
+    signOptions: { expiresIn: '30d' },
   };
 };
 
