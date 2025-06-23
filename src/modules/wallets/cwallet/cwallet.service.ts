@@ -27,16 +27,13 @@ import {
   WalletProviderEnum,
 } from '@/config/settings';
 import { getTokenId, toUTCDate } from '@/utils/helpers';
-import {
-  ITransactionHistoryDto,
-  TransactionHistoryEntity,
-} from '@/utils/typeorm/entities/transaction-history.entity';
+import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
-import { getAppConfig, getEnv } from '@/constants/env';
+import { getAppConfig } from '@/constants/env';
 import { walletConfig } from '@/utils/tokenChains';
 import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import {
@@ -74,10 +71,19 @@ export class CwalletService {
   }
 
   async lookupSubWallet(address: string): Promise<CwalletsEntity | null | any> {
-    // return await this.cWalletsRepo.findOne({
-    //   where: { address },
-    //   relations: ['profile', 'profile.user'],
-    // });
+    return this.cWalletsRepo
+      .createQueryBuilder('wallet')
+      .leftJoinAndSelect('wallet.profile', 'profile')
+      .leftJoinAndSelect('wallet.tokens', 'tokens')
+      .leftJoinAndSelect('profile.user', 'user')
+      .where(
+        `EXISTS (
+        SELECT 1 FROM jsonb_each(wallet.networkMetadata) AS meta
+        WHERE meta.value ->> 'address' = :address
+      )`,
+        { address },
+      )
+      .getOne();
   }
 
   async fetchPaymentAddress(id) {}
