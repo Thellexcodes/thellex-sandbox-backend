@@ -96,9 +96,9 @@ export class UserService {
       );
     }
 
-    const token = await this.signToken({ id: user.id });
-
-    return { token, isAuthenticated: true };
+    return plainToInstance(IUserDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async findOneByEmail(email: string): Promise<UserEntity> {
@@ -204,14 +204,6 @@ export class UserService {
     if (user.emailVerified) {
       const verifiedUser = await this.userRepository.findOne({
         where: { id: user.id },
-        relations: [
-          'qWalletProfile',
-          'qWalletProfile.wallets',
-          'qWalletProfile.wallets.tokens',
-          'cWalletProfile',
-          'cWalletProfile.wallets',
-          'cWalletProfile.wallets.tokens',
-        ],
       });
 
       return plainToInstance(IUserDto, verifiedUser, {
@@ -232,14 +224,6 @@ export class UserService {
 
     const userData = await this.userRepository.findOne({
       where: { id: user.id },
-      relations: [
-        'qWalletProfile',
-        'qWalletProfile.wallets',
-        'qWalletProfile.wallets.tokens',
-        'cWalletProfile',
-        'cWalletProfile.wallets',
-        'cWalletProfile.wallets.tokens',
-      ],
     });
 
     const result = plainToInstance(IUserDto, userData, {
