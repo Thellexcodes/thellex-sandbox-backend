@@ -1,12 +1,18 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { RequestCryptoPaymentResponse } from '@/models/request.types';
-import { SupportedBlockchainType } from '@/config/settings';
+import {
+  SupportedBlockchainType,
+  SupportedWalletTypes,
+  WalletProviderEnum,
+} from '@/config/settings';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import {
+  ITransactionHistoryDto,
+  TransactionHistoryEntity,
+} from '@/utils/typeorm/entities/transaction-history.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
-import { CreateRequestPaymentDto } from './dto/create-payment.dto';
 import { YellowCardService } from './yellowcard.service';
 import { HttpService } from '@/middleware/http.service';
 import { IYCChannel } from '@/models/yellocard.models';
@@ -15,8 +21,8 @@ import { IdTypeEnum } from '@/models/kyc.types';
 import { ConfirmCollectionRequestDto } from './dto/confirm-collection-request.dto';
 import { FiatCollectionRequestDto } from './dto/fiat-collection-request.dto';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { WalletErrorEnum } from '@/models/wallet-manager.types';
 import { PaymentErrorEnum } from '@/models/payments.types';
+import { walletConfig } from '@/utils/tokenChains';
 
 @Injectable()
 export class PaymentsService {
@@ -28,57 +34,43 @@ export class PaymentsService {
   ) {}
 
   /**
-   * Creates a request for a crypto wallet payment from a user.
-   *
-   * @param {CreateRequestPaymentDto} createRequestPaymentDto - The payment request details (amount, currency, network, etc.).
-   * @param {UserEntity} user - The user who is making the request.
-   * @returns {Promise<RequestCryptoPaymentResponse>} A promise that resolves to the crypto payment request response.
-   */
-  async requestCryptoWallet(
-    createRequestPaymentDto: CreateRequestPaymentDto,
-    user: UserEntity,
-  ): Promise<RequestCryptoPaymentResponse> {
-    const wallet = await this.qwalletService.findWalletByUserAndNetwork(
-      user,
-      createRequestPaymentDto.network,
-      createRequestPaymentDto.assetCode,
-    );
-
-    return { wallet: wallet, assetCode: createRequestPaymentDto.assetCode };
-  }
-
-  /**
-   * Handles a cryptocurrency withdrawal request.
-   * @param {CreateCryptoWithdrawPaymentDto} withdrawCryptoPaymentDto - The withdrawal request details, including amount, currency, and blockchain network.
-   * @returns {Promise<TransactionHistoryEntity>} A promise that resolves to the withdrawal handling response.
+   * Handles a cryptocurrency withdrawal request dynamically based on walletConfig.
+   * @param {CreateCryptoWithdrawPaymentDto} withdrawCryptoPaymentDto - The withdrawal request details.
+   * @returns {Promise<TransactionHistoryEntity | null>} A promise that resolves to the withdrawal transaction record.
    */
   async handleWithdrawCryptoPayment(
     withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ): Promise<TransactionHistoryEntity | null | any> {
-    // if (
-    //   [SupportedBlockchainType.BEP20, SupportedBlockchainType.TRC20].includes(
-    //     withdrawCryptoPaymentDto.network,
-    //   )
-    // ) {
-    //   const wallet = await this.qwalletService.lookupSubWallet(
-    //     withdrawCryptoPaymentDto.sourceAddress,
-    //   );
-    //   return await this.qwalletService.createCryptoWithdrawal(
-    //     withdrawCryptoPaymentDto,
-    //     wallet,
-    //   );
-    // }
-    // if (
-    //   [SupportedBlockchainType.MATIC].includes(withdrawCryptoPaymentDto.network)
-    // ) {
-    //   const wallet = await this.cwalletService.lookupSubWallet(
-    //     withdrawCryptoPaymentDto.sourceAddress,
-    //   );
-    //   return await this.cwalletService.createCryptoWithdrawal(
-    //     withdrawCryptoPaymentDto,
-    //     wallet,
-    //   );
-    // }
+  ): Promise<TransactionHistoryEntity | null> {
+    const { network, assetCode, sourceAddress } = withdrawCryptoPaymentDto;
+
+    for (const walletTypeKey in walletConfig) {
+      const walletType = walletConfig[walletTypeKey as SupportedWalletTypes];
+      const providers = walletType.providers;
+
+      for (const providerKey in providers) {
+        const provider = providers[providerKey as WalletProviderEnum];
+        const networkConfig = provider.networks[network];
+
+        if (networkConfig && networkConfig.tokens.includes(assetCode)) {
+          const wallet =
+            providerKey === WalletProviderEnum.QUIDAX
+              ? await this.qwalletService.lookupSubWallet(sourceAddress)
+              : await this.cwalletService.lookupSubWallet(sourceAddress);
+
+          return providerKey === WalletProviderEnum.QUIDAX
+            ? await this.qwalletService.createCryptoWithdrawal(
+                withdrawCryptoPaymentDto,
+                wallet,
+              )
+            : await this.cwalletService.createCryptoWithdrawal(
+                withdrawCryptoPaymentDto,
+                wallet,
+              );
+        }
+      }
+    }
+
+    return null;
   }
 
   async handleGetPaymentChannels(): Promise<IYCChannel[] | any> {
@@ -135,8 +127,6 @@ export class PaymentsService {
       additionalIdType: IdTypeEnum.BVN,
       additionalIdNumber: userKycData.bvn,
     };
-
-    console.log(recipient);
 
     let request = {
       sequenceId: uuidV4(),

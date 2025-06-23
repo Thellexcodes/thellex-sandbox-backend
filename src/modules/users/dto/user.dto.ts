@@ -1,5 +1,4 @@
 import { BaseResponseDto } from '@/models/base-response.dto';
-import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 

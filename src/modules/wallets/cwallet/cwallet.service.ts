@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
-  AccountType,
   CircleDeveloperControlledWalletsClient,
   GetTokenInput,
   GetTransactionInput,
@@ -28,15 +26,25 @@ import {
   TokenEnum,
   WalletProviderEnum,
 } from '@/config/settings';
-import { toUTCDate } from '@/utils/helpers';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import { getTokenId, toUTCDate } from '@/utils/helpers';
+import {
+  ITransactionHistoryDto,
+  TransactionHistoryEntity,
+} from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
-import { getAppConfig } from '@/constants/env';
+import { getAppConfig, getEnv } from '@/constants/env';
 import { walletConfig } from '@/utils/tokenChains';
+import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import {
+  FeeLevel,
+  WalletWebhookEventEnum,
+} from '@/models/wallet-manager.types';
+import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CwalletService {
@@ -109,51 +117,54 @@ export class CwalletService {
   async createCryptoWithdrawal(
     dto: CreateCryptoWithdrawPaymentDto,
     wallet: CwalletsEntity,
-  ): Promise<TransactionHistoryEntity | any> {
-    // try {
-    //   const tokenId = getTokenId({
-    //     token: dto.assetCode,
-    //     isTestnet: !(getEnv() === ENV_PRODUCTION),
-    //   });
-    //   const paymentNetwork = cWalletNetworkNameGetter(dto.network);
-    //   const transfer = await this.createTransaction(
-    //     wallet.walletID,
-    //     tokenId,
-    //     dto.fund_uid,
-    //     [`${dto.amount}`],
-    //   );
-    //   const transaction = await this.getTransaction({
-    //     id: transfer.data.id,
-    //     txType: PaymentType.OUTBOUND,
-    //   });
-    //   const txnHistory: TransactionHistoryDto = {
-    //     event: WalletWebhookEventEnum.WithdrawPending,
-    //     tokenId: transaction.tokenId,
-    //     transactionId: transfer.data.id,
-    //     type: PaymentType.OUTBOUND,
-    //     assetCode: dto.assetCode,
-    //     amount: dto.amount,
-    //     blockchainTxId: transaction.txHash,
-    //     walletId: wallet.walletID,
-    //     sourceAddress: wallet.address,
-    //     destinationAddress: transaction.destinationAddress,
-    //     paymentNetwork,
-    //     reason: dto.transaction_note,
-    //     feeLevel: FeeLevel.HIGH,
-    //     updatedAt: toUTCDate(transaction.updateDate),
-    //     createdAt: toUTCDate(transaction.createDate),
-    //     walletName: paymentNetwork,
-    //     user: wallet.profile.user,
-    //     paymentStatus: PaymentStatus.Processing,
-    //   };
-    //   return await this.transactionHistoryService.create(
-    //     txnHistory,
-    //     wallet.profile.user,
-    //   );
-    // } catch (error) {
-    //   console.error('Error creating withdrawal transaction:', error);
-    //   throw new Error('Failed to process withdrawal');
-    // }
+  ): Promise<ITransactionHistoryDto> {
+    try {
+      const tokenId = getTokenId({ token: dto.assetCode });
+
+      const transfer = await this.createTransaction(
+        wallet.walletID,
+        tokenId,
+        dto.fund_uid,
+        [`${dto.amount}`],
+      );
+
+      const transaction = await this.getTransaction({
+        id: transfer.data.id,
+        txType: PaymentType.OUTBOUND,
+      });
+
+      const txnHistory: TransactionHistoryDto = {
+        event: WalletWebhookEventEnum.WithdrawPending,
+        tokenId: transaction.tokenId,
+        transactionId: transfer.data.id,
+        type: PaymentType.OUTBOUND,
+        assetCode: dto.assetCode,
+        amount: dto.amount,
+        blockchainTxId: transaction.txHash,
+        walletId: wallet.walletID,
+        sourceAddress: wallet.networkMetadata[dto.network]?.address,
+        destinationAddress: transaction.destinationAddress,
+        paymentNetwork: dto.network,
+        reason: dto.transaction_note,
+        feeLevel: FeeLevel.HIGH,
+        updatedAt: toUTCDate(transaction.updateDate),
+        createdAt: toUTCDate(transaction.createDate),
+        user: wallet.profile.user,
+        paymentStatus: PaymentStatus.Processing,
+      };
+
+      const txn = await this.transactionHistoryService.create(
+        txnHistory,
+        wallet.profile.user,
+      );
+
+      return plainToInstance(ITransactionHistoryDto, txn, {
+        excludeExtraneousValues: true,
+      });
+    } catch (error) {
+      console.error('Error creating withdrawal transaction:', error);
+      throw new Error('Failed to process withdrawal');
+    }
   }
 
   async getUserWallet(id: string): Promise<ICWalletResponse> {
@@ -334,45 +345,6 @@ export class CwalletService {
 
     return !!existingWallet?.networkMetadata?.[network];
   }
-
-  private async checkWalletRemote(
-    qid: string,
-    token: string,
-    network: SupportedBlockchainType,
-  ): Promise<string | null | any> {
-    // try {
-    //   const walletDetails = await this.fetchPaymentAddress(qid, token, network);
-    //   return walletDetails?.data?.address ?? null;
-    // } catch (err) {
-    //   console.warn(`Remote wallet check failed for ${qid} on ${network}`, err);
-    //   return null;
-    // }
-  }
-
-  // private async storeRemoteWallet(
-  //   address: string,
-  //   token: string,
-  //   network: SupportedBlockchainType,
-  //   walletType: SupportedWalletTypes,
-  //   profile: CwalletProfilesEntity,
-  //   walletProvider: WalletProviderEnum,
-  // ) {
-  //   const newWallet = this.cWalletsRepo.create({
-  //     address,
-  //     walletID: 'remote-import',
-  //     custodyType: 'external',
-  //     accountType: 'wallet',
-  //     walletType,
-  //     walletProvider,
-  //     profile,
-  //     currency: token,
-  //     networkMetadata: {
-  //       [network]: { address },
-  //     },
-  //   });
-
-  //   await this.cWalletsRepo.save(newWallet);
-  // }
 
   private async createAndStoreWallet(
     token: string,

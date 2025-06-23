@@ -1,4 +1,7 @@
-import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
+import {
+  INotificationDto,
+  NotificationEntity,
+} from '@/utils/typeorm/entities/notification.entity';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
@@ -10,6 +13,7 @@ import {
 } from '@/models/notifications.enum';
 import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class WalletNotificationsService {
@@ -37,20 +41,22 @@ export class WalletNotificationsService {
       const upperCurrency = data.assetCode?.toUpperCase() || '';
       const expiresAt = getUtcExpiryDateMonthsFromNow(3);
 
-      const notification: Partial<NotificationEntity> = {
+      const notificationData: Partial<NotificationEntity> = {
+        ...data,
         user,
         title: title.replace(/_/g, ' '),
         message: `${message} ${data.amount || ''} ${upperCurrency}`,
         expiresAt,
         consumed: false,
         assetCode: upperCurrency,
-        amount: data.amount,
-        txnID: data.txnID,
-        walletID: data.walletID,
       };
 
-      const entity = this.notificationRepo.create(notification);
-      return await this.notificationRepo.save(entity);
+      const entity = this.notificationRepo.create(notificationData);
+      const notification = await this.notificationRepo.save(entity);
+
+      return plainToInstance(INotificationDto, notification, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       this.logger.error('Failed to create notification', error);
       throw new CustomHttpException(

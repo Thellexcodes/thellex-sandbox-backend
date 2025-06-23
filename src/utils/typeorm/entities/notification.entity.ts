@@ -50,10 +50,12 @@ export class NotificationEntity extends BaseEntity {
   txnID: string;
 
   @Expose()
-  @ApiProperty()
+  @ApiPropertyOptional()
   @Column({ name: 'wallet_id', type: 'varchar', nullable: true })
-  walletID: string | null;
+  walletID?: string | null;
 }
 
 @Exclude()
-export class INotificationDto extends NotificationEntity {}
+export class INotificationDto extends NotificationEntity {
+  @Exclude() user: UserEntity;
+}

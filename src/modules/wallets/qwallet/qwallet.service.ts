@@ -30,7 +30,10 @@ import {
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
 import { PaymentStatus, PaymentType } from '@/models/payment.types';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
+import {
+  ITransactionHistoryDto,
+  TransactionHistoryEntity,
+} from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { ApiResponse } from '@/models/request.types';
 import { getAppConfig } from '@/constants/env';
@@ -39,6 +42,7 @@ import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-wi
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { walletConfig } from '@/utils/tokenChains';
 import { toUTCDate } from '@/utils/helpers';
+import { plainToInstance } from 'class-transformer';
 
 //TODO: handle errors with enum
 @Injectable()
@@ -98,10 +102,11 @@ export class QwalletService {
     );
   }
 
-  async lookupSubWallet(address: string): Promise<QWalletsEntity | null> {
+  async lookupSubWallet(address: string): Promise<QWalletsEntity | null | any> {
     return this.qwalletsRepo
       .createQueryBuilder('wallet')
       .leftJoinAndSelect('wallet.profile', 'profile')
+      .leftJoinAndSelect('wallet.tokens', 'tokens')
       .leftJoinAndSelect('profile.user', 'user')
       .where(
         `EXISTS (
@@ -504,13 +509,14 @@ export class QwalletService {
   // >>>>>>>>>>>>>>> Withdrawals <<<<<<<<<<<<<<<
 
   async createCryptoWithdrawal(
-    createCryptoWithdralPaymentDto: CreateCryptoWithdrawPaymentDto,
+    dto: CreateCryptoWithdrawPaymentDto,
     wallet: QWalletsEntity,
-  ): Promise<TransactionHistoryEntity> {
+  ): Promise<ITransactionHistoryDto> {
     try {
       const user = wallet.profile.user;
-      const uuid = user.qWalletProfile.qid;
-      const { network, assetCode, amount } = createCryptoWithdralPaymentDto;
+      const uuid = wallet.profile.qid;
+
+      const { network, assetCode, amount } = dto;
 
       const networkMeta = wallet.networkMetadata?.[network];
       if (!networkMeta) {
@@ -531,19 +537,16 @@ export class QwalletService {
         );
       }
 
-      if (parseFloat(token.balance) < parseFloat(amount.toString())) {
-        throw new CustomHttpException(
-          WalletErrorEnum.BALANCE_LOW,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // if (parseFloat(token.balance) < parseFloat(amount.toString())) {
+      //   throw new CustomHttpException(
+      //     WalletErrorEnum.BALANCE_LOW,
+      //     HttpStatus.BAD_REQUEST,
+      //   );
+      // }
 
       const response = await this.httpService.post<IQWithdrawPaymentResponse>(
         `${this.qwalletUrl}/users/${uuid}/withdraws`,
-        {
-          ...createCryptoWithdralPaymentDto,
-          currency: assetCode,
-        },
+        { ...dto, currency: assetCode },
         { headers: this.getAuthHeaders() },
       );
 
@@ -570,12 +573,14 @@ export class QwalletService {
         user,
       };
 
-      const transactionHistory = await this.transactionHistoryService.create(
+      const txn = await this.transactionHistoryService.create(
         transactionData,
         user,
       );
 
-      return transactionHistory;
+      return plainToInstance(ITransactionHistoryDto, txn, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       console.error(
         'Withdrawal error:',

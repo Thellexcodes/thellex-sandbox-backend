@@ -203,3 +203,42 @@ export function isSupportedBlockchainToken(
   }
   return false;
 }
+
+/**
+ * Dynamically retrieves the token ID from walletConfig based on token and chain.
+ */
+export function getTokenId({
+  token,
+  chain,
+  isTestnet = false,
+}: {
+  token: TokenEnum;
+  chain?: SupportedBlockchainType;
+  isTestnet?: boolean;
+}): string | undefined {
+  for (const walletTypeKey in walletConfig) {
+    const walletType = walletConfig[walletTypeKey as SupportedWalletTypes];
+    const providers = walletType.providers;
+
+    for (const providerKey in providers) {
+      const provider = providers[providerKey as WalletProviderEnum];
+      const networks = provider.networks;
+
+      for (const networkKey in networks) {
+        const network = networkKey as SupportedBlockchainType;
+        const config = networks[network];
+
+        // Check for mainnet/testnet match
+        const matchesNetwork = chain
+          ? chain === network
+          : config.mainnet !== isTestnet;
+
+        if (matchesNetwork && config.tokenIds?.[token]) {
+          return config.tokenIds[token];
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
