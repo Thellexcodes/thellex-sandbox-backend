@@ -12,7 +12,6 @@ import { WalletNotificationsService } from './notifications/wallet-notifications
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { NotificationsGateway } from './notifications/notifications.gateway';
 import { YellowCardService } from './payments/yellowcard.service';
-import { CwalletHooksModule } from './wallets/cwallet-hooks/cwallet-hooks.module';
 import { QwalletService } from './wallets/qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { SettingsModule } from './settings/settings.module';
@@ -22,6 +21,8 @@ import { JwtService } from '@nestjs/jwt';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
+import { CwalletHooksModule } from './wallets/webhooks/cwallet-hooks/cwallet-hooks.module';
+import { QwalletHooksModule } from './wallets/webhooks/qwallet-hooks/qwallet-hooks.module';
 
 @Global()
 @Module({
@@ -41,6 +42,7 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
       AuthVerificationCodesEntity,
     ]),
     CwalletHooksModule,
+    QwalletHooksModule,
     SettingsModule,
   ],
   providers: [

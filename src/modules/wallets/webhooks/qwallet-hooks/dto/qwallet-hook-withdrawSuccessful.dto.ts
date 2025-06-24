@@ -1,8 +1,8 @@
 import { PaymentStatus } from '@/models/payment.types';
 import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
+import { QwalletSubAccountDto } from '@/modules/wallets/qwallet/dto/qwallet-subaccount.dto';
+import { QwalletDto } from '@/modules/wallets/qwallet/dto/qwallet.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { QwalletDto } from '../../qwallet/dto/qwallet.dto';
-import { QwalletSubAccountDto } from '../../qwallet/dto/qwallet-subaccount.dto';
 
 class RecipientDetailsDto {
   @ApiProperty()

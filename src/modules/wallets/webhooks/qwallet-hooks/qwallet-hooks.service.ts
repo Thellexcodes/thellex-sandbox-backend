@@ -1,8 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { NotificationsGateway } from '../../notifications/notifications.gateway';
-import { TransactionHistoryService } from '../../transaction-history/transaction-history.service';
-import { TransactionHistoryDto } from '../../transaction-history/dto/create-transaction-history.dto';
 import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
 import { IQwalletHookDepositSuccessfulData } from './dto/qwallet-hook-depositSuccessful.dto';
 import { IQWalletHookWithdrawSuccessfulEvent } from './dto/qwallet-hook-withdrawSuccessful.dto';
@@ -15,13 +12,16 @@ import {
   WalletErrorEnum,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { QwalletService } from '../qwallet/qwallet.service';
 import { toUTCDate } from '@/utils/helpers';
 import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/models/socket.enums';
-import { PaymentStatus } from '@/models/payment.types';
-import { WalletNotificationsService } from '../../notifications/wallet-notifications.service';
-import { QWalletStatus } from '../qwallet/qwallet-status.enum';
+import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { IQWalletAddressGenerated } from './dto/qwallet-hook-walletUpdated.dto';
+import { QwalletService } from '../../qwallet/qwallet.service';
+import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
+import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
+import { WalletNotificationsService } from '@/modules/notifications/wallet-notifications.service';
+import { QWalletStatus } from '../../qwallet/qwallet-status.enum';
+import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 
 //TODO: handle errors with enum
 //TODO: Update logger
@@ -129,10 +129,11 @@ export class QwalletHooksService {
       }
 
       const user = qwalletProfile.user;
+
       const txnData: TransactionHistoryDto = {
         event: WalletWebhookEventEnum.DepositSuccessful,
         transactionId: data.id,
-        type: data.type,
+        type: PaymentType.INBOUND,
         assetCode: data.currency,
         amount: data.amount,
         fee: data.fee,

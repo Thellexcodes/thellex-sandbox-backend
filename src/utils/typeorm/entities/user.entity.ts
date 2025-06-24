@@ -179,7 +179,6 @@ export class UserEntity extends BaseEntity {
 @Exclude()
 export class IUserDto extends UserEntity {
   @Exclude() password: string;
-  @Exclude() alertID: string;
   @Exclude() idempotencyKey: string;
   @Exclude() verificationCodes: AuthVerificationCodesEntity[];
   @Exclude() electronic_cards: CardManagementEntity[];

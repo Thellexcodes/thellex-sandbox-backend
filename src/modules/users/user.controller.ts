@@ -44,7 +44,7 @@ export class UserController {
       identifier: user.email,
     } as LoginUserDto);
 
-    console.log(authRecords);
+    console.log(authRecords.uid);
 
     responseHandler(authRecords, res, req);
   }

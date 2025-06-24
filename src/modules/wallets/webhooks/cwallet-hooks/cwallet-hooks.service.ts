@@ -6,19 +6,19 @@ import {
 } from '@/models/wallet-manager.types';
 import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { toUTCDate } from '@/utils/helpers';
-import { CwalletService } from '../cwallet/cwallet.service';
 import {
   NotificationMessageEnum,
   NotificationsEnum,
 } from '@/models/notifications.enum';
 import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/models/socket.enums';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { QWalletStatus } from '../qwallet/qwallet-status.enum';
 import { TokenEnum } from '@/config/settings';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { WalletNotificationsService } from '@/modules/notifications/wallet-notifications.service';
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { CwalletService } from '../../cwallet/cwallet.service';
+import { QWalletStatus } from '../../qwallet/qwallet-status.enum';
 
 //TODO: handle errors with enums
 //TODO: update all date in system to UTC
@@ -82,7 +82,7 @@ export class CwalletHooksService {
           destinationAddress: notificationPayload.destinationAddress,
           paymentNetwork: notificationPayload.blockchain,
           user,
-          paymentStatus: PaymentStatus.Complete,
+          paymentStatus: PaymentStatus.Accepted,
         };
 
         const transaction = await this.transactionHistoryServie.create(
@@ -166,18 +166,18 @@ export class CwalletHooksService {
           );
         }
 
-        if (transaction.event === WalletWebhookEventEnum.WithdrawalSuccessful) {
-          throw new CustomHttpException(
-            QWalletStatus.TRANSACTION_ALREADY_PROCESSED,
-            HttpStatus.CONFLICT,
-          );
-        }
+        // if (transaction.event === WalletWebhookEventEnum.WithdrawalSuccessful) {
+        //   throw new CustomHttpException(
+        //     QWalletStatus.TRANSACTION_ALREADY_PROCESSED,
+        //     HttpStatus.CONFLICT,
+        //   );
+        // }
 
         // Update transaction to reflect successful withdrawal
         await this.transactionHistoryServie.updateCwalletTransaction({
           transactionId: txnID,
           updates: {
-            paymentStatus: PaymentStatus.Complete,
+            paymentStatus: PaymentStatus.Done,
             event: WalletWebhookEventEnum.WithdrawalSuccessful,
             blockchainTxId: notificationPayload.txHash,
             updatedAt: toUTCDate(notificationPayload.updateDate),
