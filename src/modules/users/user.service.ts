@@ -11,13 +11,12 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
-import { generateUniqueUid } from '@/utils/helpers';
+import { formatTier, generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/models/user-error.enum';
-import { SupportedBlockchainType } from '@/config/settings';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
-import { TierEnum } from '@/constants/tier.lists';
+import { TierEnum, tierOrder } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 
@@ -30,14 +29,25 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(AuthVerificationCodesEntity)
     private readonly authenticationRepository: Repository<AuthVerificationCodesEntity>,
-    @InjectRepository(TokenEntity)
-    private readonly tokenRepo: Repository<TokenEntity>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
   ) {}
+
+  private formatUserWithTiers(user: UserEntity) {
+    const userTier = user.tier || TierEnum.NONE;
+    const currentIndex = tierOrder.indexOf(userTier);
+    const nextTier =
+      currentIndex + 1 < tierOrder.length ? tierOrder[currentIndex + 1] : null;
+
+    return {
+      ...user,
+      currentTier: formatTier(userTier),
+      nextTier: nextTier ? formatTier(nextTier) : null,
+    };
+  }
 
   async create(
     createUserDto: CreateUserDto,
@@ -47,28 +57,24 @@ export class UserService {
       let user = await this.findOneByEmail(email);
 
       if (user) {
-        // Resend verification email (optional)
         await this.emailVerificationComposer(user);
-
-        // Existing user — return token only
         const access_token = await this.signToken({ id: user.id });
         return { access_token };
       }
 
       const uid = await generateUniqueUid(this.userRepository);
-      const newUser = new UserEntity();
-      newUser.email = email;
-      newUser.uid = uid;
-      user = await newUser.save();
+      const newUser = this.userRepository.create({
+        email,
+        uid,
+      });
 
-      // Send verification email once
+      user = await this.userRepository.save(newUser);
+
       await this.emailVerificationComposer(user);
-
-      // Return token
       const access_token = await this.signToken({ id: user.id });
       return { access_token };
     } catch (error: any) {
-      console.error('User creation failed:', error);
+      this.logger.error('User creation failed:', error);
       throw new CustomHttpException(
         error.message || 'Internal server error',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -76,19 +82,16 @@ export class UserService {
     }
   }
 
-  async login(loginUserDto: LoginUserDto) {
-    let user: UserEntity;
-    const identifier = loginUserDto.identifier.trim().toLocaleLowerCase();
+  async login(loginUserDto: LoginUserDto): Promise<IUserDto> {
+    const identifier = loginUserDto.identifier.trim().toLowerCase();
 
-    user = await this.findOneByEmail(identifier);
-
+    const user = await this.findOneByEmail(identifier);
     if (!user) {
       throw new CustomHttpException(
         UserErrorEnum.INVALID_CREDENTIAL,
         HttpStatus.BAD_REQUEST,
       );
     }
-
     if (!user.emailVerified) {
       throw new CustomHttpException(
         UserErrorEnum.EMAIL_NOT_VERIFIED,
@@ -96,19 +99,33 @@ export class UserService {
       );
     }
 
-    return plainToInstance(IUserDto, user, {
+    const userPlain = this.formatUserWithTiers(user);
+
+    console.log(userPlain);
+
+    return plainToInstance(IUserDto, userPlain, {
       excludeExtraneousValues: true,
     });
   }
 
-  async findOneByEmail(email: string): Promise<UserEntity> {
+  async findOneByEmail(email: string): Promise<UserEntity | null> {
     try {
-      const user = await this.userRepository.findOne({
-        where: { email },
-      });
-      return user;
-    } catch (err) {
-      //TODO: HANDLE ERRORS
+      return await this.userRepository.findOne({ where: { email } });
+    } catch (error) {
+      this.logger.error('Error finding user by email:', error);
+      return null;
+    }
+  }
+
+  async findOneById(id: string): Promise<UserEntity> {
+    try {
+      return await this.userRepository.findOne({ where: { id } });
+    } catch (error) {
+      this.logger.error('Error finding user by ID', error);
+      throw new CustomHttpException(
+        'Error retrieving user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -131,39 +148,21 @@ export class UserService {
     user: UserEntity,
   ): Promise<number> {
     let code: number;
-    let exists: any = true;
+    let exists: Boolean | AuthVerificationCodesEntity = true;
 
     while (exists) {
       code = Math.floor(100000 + Math.random() * 900000);
-
-      exists = await AuthVerificationCodesEntity.findOne({
-        where: { code },
-      });
+      exists = await this.authenticationRepository.findOne({ where: { code } });
     }
 
-    const newCode = new AuthVerificationCodesEntity();
-    newCode.user = user;
-    newCode.code = code;
-
-    await newCode.save();
+    const newCode = this.authenticationRepository.create({ user, code });
+    await this.authenticationRepository.save(newCode);
 
     return code;
   }
 
   async signToken(payload: JwtPayload): Promise<string> {
     return this.jwtService.signAsync(payload);
-  }
-
-  async findOneById(id: string): Promise<UserEntity> {
-    try {
-      const user = await this.userRepository.findOne({
-        where: { id },
-      });
-
-      return user;
-    } catch (err) {
-      console.log(err);
-    }
   }
 
   async verifyUser(
@@ -185,14 +184,12 @@ export class UserService {
         HttpStatus.NOT_FOUND,
       );
     }
-
     if (auth.expired) {
       throw new CustomHttpException(
         'Verification code has expired',
         HttpStatus.BAD_REQUEST,
       );
     }
-
     if (auth.code !== code) {
       throw new CustomHttpException(
         UserErrorEnum.REJECTED_AGREEMENT,
@@ -200,13 +197,16 @@ export class UserService {
       );
     }
 
-    // If already verified, return transformed result directly
     if (user.emailVerified) {
+      // Already verified, return current user data with tiers
       const verifiedUser = await this.userRepository.findOne({
         where: { id: user.id },
       });
+      if (!verifiedUser)
+        throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
 
-      return plainToInstance(IUserDto, verifiedUser, {
+      const userPlain = this.formatUserWithTiers(verifiedUser);
+      return plainToInstance(IUserDto, userPlain, {
         excludeExtraneousValues: true,
       });
     }
@@ -222,28 +222,20 @@ export class UserService {
       this.cwalletService.ensureUserHasProfileAndWallets(user),
     ]);
 
-    const userData = await this.userRepository.findOne({
+    const updatedUser = await this.userRepository.findOne({
       where: { id: user.id },
     });
 
-    const result = plainToInstance(IUserDto, userData, {
+    if (!updatedUser)
+      throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
+
+    const userPlain = this.formatUserWithTiers(updatedUser);
+
+    console.log(userPlain);
+
+    return plainToInstance(IUserDto, userPlain, {
       excludeExtraneousValues: true,
     });
-
-    return result;
-  }
-
-  async storeTokensForWallet(wallet: CwalletsEntity): Promise<void> {
-    // const tokenSymbols =
-    //   ChainTokens[wallet.defaultNetwork as SupportedBlockchainType] || [];
-    // const tokenEntities = tokenSymbols.map((symbol) => {
-    //   const token = new TokenEntity();
-    //   token.assetCode = symbol;
-    //   token.name = symbol;
-    //   token.cwallet = wallet;
-    //   return token;
-    // });
-    // await this.tokenRepo.save(tokenEntities);
   }
 
   async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {

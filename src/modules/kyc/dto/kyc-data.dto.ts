@@ -1,5 +1,7 @@
+import { BaseResponseDto } from '@/models/base-response.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import {
   IsNotEmpty,
   IsString,
@@ -14,6 +16,14 @@ export class BasicTierKycDto {
   @IsEnum(IdTypeEnum, { message: 'idType/invalid' })
   idType: IdTypeEnum;
 
+  @ApiProperty({
+    enum: IdTypeEnum,
+    description: 'Type of ID provided',
+    example: `${IdTypeEnum.BVN}`,
+  })
+  @IsEnum(IdTypeEnum, { message: 'idType/invalid' })
+  additionalIdType: IdTypeEnum;
+
   @ApiProperty({ description: 'First name of the user' })
   @IsString({ message: 'firstName/not-string' })
   firstName: string;
@@ -26,6 +36,10 @@ export class BasicTierKycDto {
   @ApiProperty({ description: 'Last name of the user' })
   @IsString({ message: 'lastName/not-string' })
   lastName: string;
+
+  @ApiProperty({ description: 'Phone number' })
+  @IsString({ message: 'phone/empty' })
+  phoneNumber: string;
 
   @ApiProperty({ description: 'Date of birth of BVN holder (yyyy-mm-dd)' })
   @IsOptional()
@@ -62,4 +76,18 @@ export class BasicTierKycDto {
   @IsOptional()
   @IsString({ message: 'lga/not-string' })
   lga: string;
+}
+
+export class KycResultDto {
+  @Expose()
+  @ApiProperty({
+    example: true,
+    description: 'Indicates whether the user has completed KYC verification.',
+  })
+  isVerified: boolean;
+}
+
+export class KycResponseDto extends BaseResponseDto<KycResultDto> {
+  @ApiProperty({ type: () => KycResultDto })
+  result: KycResultDto;
 }

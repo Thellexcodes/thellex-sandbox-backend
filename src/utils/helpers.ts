@@ -13,6 +13,8 @@ import * as crypto from 'crypto';
 import { ENV_TESTNET } from '@/models/settings.types';
 import { getAppConfig, getEnv } from '@/constants/env';
 import { walletConfig } from './tokenChains';
+import { thellexTiers, TierEnum } from '@/config/tier.lists';
+import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 
 //TODO: handle errors with enums
 
@@ -241,4 +243,21 @@ export function getTokenId({
   }
 
   return undefined;
+}
+
+export function formatTier(tierKey: TierEnum): TierInfoDto {
+  const data = thellexTiers[tierKey];
+  return {
+    name: data.name,
+    target: data.target,
+    description: data.description,
+    transactionLimits: data.transactionLimits,
+    txnFees: Object.entries(data.txnFees || {}).map(([type, fee]) => ({
+      type,
+      min: fee.min,
+      max: fee.max,
+      feePercentage: fee.feePercentage,
+    })),
+    requirements: data.requirements,
+  };
 }

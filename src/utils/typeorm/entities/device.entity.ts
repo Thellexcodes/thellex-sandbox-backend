@@ -1,5 +1,5 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { IUserDto, UserEntity } from './user.entity';
+import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 import { Exclude, Expose } from 'class-transformer';

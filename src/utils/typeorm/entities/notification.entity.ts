@@ -5,7 +5,7 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { IUserDto, UserEntity } from './user.entity';
+import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';

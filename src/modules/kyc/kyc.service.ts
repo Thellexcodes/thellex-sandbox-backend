@@ -11,13 +11,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { BasicTierKycDto } from './dto/kyc-data.dto';
+import { BasicTierKycDto, KycResultDto } from './dto/kyc-data.dto';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { getAppConfig } from '@/constants/env';
 import { calculateNameMatchScore } from '@/utils/helpers';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
-import { TierEnum } from '@/constants/tier.lists';
+import { TierEnum } from '@/config/tier.lists';
 import { UserService } from '../users/user.service';
+import { plainToInstance } from 'class-transformer';
 
 //TODO: Handle errors with enum
 @Injectable()
@@ -37,7 +38,7 @@ export class KycService {
   async createBasicKyc(
     kydataDto: BasicTierKycDto,
     user: UserEntity,
-  ): Promise<boolean> {
+  ): Promise<KycResultDto> {
     try {
       if (user.tier !== TierEnum.NONE) {
         throw new CustomHttpException(
@@ -121,7 +122,11 @@ export class KycService {
 
       await this.userService.updateUserTier(user.id, TierEnum.BASIC);
 
-      return true;
+      return plainToInstance(
+        KycResultDto,
+        { isVerfied: true },
+        { excludeExtraneousValues: true },
+      );
     } catch (error) {
       console.log(error);
     }
