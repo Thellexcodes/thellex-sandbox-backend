@@ -5,8 +5,8 @@ import { IUserDto, UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import { CustomerTypesEnum } from '@/config/settings';
 import { getAppConfig } from '@/constants/env';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 
 //TODO: Handle errors with enum
 //TODO: INCLUDE iv for randomness

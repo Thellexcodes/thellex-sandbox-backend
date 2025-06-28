@@ -10,7 +10,7 @@ import { Type } from 'class-transformer';
 import {
   IQwalletSubAccount,
   QwalletSubAccountDto,
-} from '../../qwallet/dto/qwallet-subaccount.dto';
+} from '@/modules/wallets/qwallet/dto/qwallet-subaccount.dto';
 
 class WalletAddressDataDto {
   @IsString()

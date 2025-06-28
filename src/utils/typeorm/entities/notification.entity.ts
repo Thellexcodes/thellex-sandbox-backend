@@ -1,5 +1,11 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { IUserDto, UserEntity } from './user.entity';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
+import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
@@ -53,6 +59,11 @@ export class NotificationEntity extends BaseEntity {
   @ApiPropertyOptional()
   @Column({ name: 'wallet_id', type: 'varchar', nullable: true })
   walletID?: string | null;
+
+  @Expose()
+  @ApiProperty()
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 }
 
 @Exclude()

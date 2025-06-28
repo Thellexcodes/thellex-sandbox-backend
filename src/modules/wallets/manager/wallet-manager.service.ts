@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
+  NAIRA_RATE,
   SupportedBlockchainType,
   SupportedWalletTypes,
   TokenEnum,
@@ -101,6 +102,7 @@ export class WalletManagerService {
                   if (!walletMap[tokenLower]) {
                     walletMap[tokenLower] = {
                       totalBalance: total.toString(),
+                      valueInLocal: (total * NAIRA_RATE).toString(),
                       networks: [network],
                       address,
                       assetCode: tokenLower,
@@ -194,10 +196,10 @@ export class WalletManagerService {
     const balance = Number(matchingToken?.balance ?? 0);
     return isNaN(balance) || balance <= 0 ? 0 : balance;
   }
-  getTransactionHistory(a, b) {}
-  getWalletAddresses(a) {}
-  syncWallet(a) {}
-  getRewards(a) {}
-  getAssets(a) {}
-  getSingleAssetBalance(a, b) {}
+  async getTransactionHistory(a, b) {}
+  async getWalletAddresses(a) {}
+  async syncWallet(a) {}
+  async getRewards(a) {}
+  async getAssets(a) {}
+  async getSingleAssetBalance(a, b) {}
 }

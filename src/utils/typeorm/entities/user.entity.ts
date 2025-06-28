@@ -14,7 +14,7 @@ import {
   QWalletProfileEntity,
 } from './wallets/qwallet/qwallet-profile.entity';
 import { IKycDto, KycEntity } from './kyc/kyc.entity';
-import { TierEnum } from '@/constants/tier.lists';
+import { TierEnum } from '@/config/tier.lists';
 import { UserSettingEntity } from './settings/user.settings.entity';
 import { BankAccountEntity } from './settings/bank-account.entity';
 import { PayoutSettingEntity } from './settings/payout-settings.entity';
@@ -25,6 +25,7 @@ import {
 } from './wallets/cwallet/cwallet-profiles.entity';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -71,8 +72,6 @@ export class UserEntity extends BaseEntity {
   })
   alertID: string;
 
-  @ApiProperty({ enum: TierEnum, default: TierEnum.NONE })
-  @Expose()
   @Column({
     type: 'enum',
     enum: TierEnum,
@@ -179,7 +178,6 @@ export class UserEntity extends BaseEntity {
 @Exclude()
 export class IUserDto extends UserEntity {
   @Exclude() password: string;
-  @Exclude() alertID: string;
   @Exclude() idempotencyKey: string;
   @Exclude() verificationCodes: AuthVerificationCodesEntity[];
   @Exclude() electronic_cards: CardManagementEntity[];
@@ -189,4 +187,20 @@ export class IUserDto extends UserEntity {
   @Exclude() qWalletProfile: QWalletProfileEntity;
   @Exclude() auth: AuthEntity[];
   @Exclude() devices: DeviceEntity[];
+  @Exclude() tier: TierEnum;
+
+  @Expose()
+  @ApiProperty({
+    type: () => TierInfoDto,
+    description: 'Current user tier info',
+  })
+  currentTier: TierInfoDto;
+
+  @Expose()
+  @ApiProperty({
+    type: () => TierInfoDto,
+    nullable: true,
+    description: 'Next user tier info',
+  })
+  nextTier: TierInfoDto | null;
 }

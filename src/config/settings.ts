@@ -42,6 +42,9 @@ export const DEV_MODE_TOOLS = {
   enableWebhookLogging: true,
 };
 
+// --- Payments Only ---
+export const NAIRA_RATE = 1650;
+
 // ==============================
 // ENUMS & TYPES
 // ==============================

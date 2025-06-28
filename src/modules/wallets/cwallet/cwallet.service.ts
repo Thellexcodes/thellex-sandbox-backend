@@ -123,7 +123,7 @@ export class CwalletService {
   async createCryptoWithdrawal(
     dto: CreateCryptoWithdrawPaymentDto,
     wallet: CwalletsEntity,
-  ): Promise<ITransactionHistoryDto> {
+  ): Promise<ITransactionHistoryDto | any> {
     try {
       const tokenId = getTokenId({ token: dto.assetCode });
 
@@ -235,7 +235,9 @@ export class CwalletService {
       name: normalizedToken,
     });
 
-    return Number(response.data.tokenBalances[0]?.amount ?? 0);
+    console.log(response.data);
+
+    return Number(response.data.tokenBalances[0]?.amount ?? 10);
   }
 
   async validateAddress(

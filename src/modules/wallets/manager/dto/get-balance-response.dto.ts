@@ -6,6 +6,9 @@ export class WalletMapDto {
   @ApiProperty()
   totalBalance: string;
 
+  @ApiProperty()
+  valueInLocal: string;
+
   @ApiProperty({
     type: [String],
     description: 'Supported blockchain networks',

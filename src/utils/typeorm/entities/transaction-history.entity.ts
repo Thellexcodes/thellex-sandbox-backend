@@ -5,7 +5,7 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { IUserDto, UserEntity } from './user.entity';
+import { UserEntity } from './user.entity';
 import { PaymentStatus } from '@/models/payment.types';
 import {
   FeeLevel,

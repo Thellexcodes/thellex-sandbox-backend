@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseResponseDto } from '@/models/base-response.dto';
 import { IUserDto } from '@/utils/typeorm/entities/user.entity';
-import { Exclude } from 'class-transformer';
 
 export class VerifyUserDto {
   @ApiProperty()

@@ -27,7 +27,6 @@ import { KycModule } from './modules/kyc/kyc.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CronjobsModule } from './modules/crons/cronjobs.module';
-import { QwalletHooksModule } from './modules/wallets/qwallet-hooks/qwallet-hooks.module';
 import { TransactionHistoryModule } from './modules/transaction-history/transaction-history.module';
 import { SharedModule } from './modules/shared.module';
 import { GeoLocationMiddleware } from './middleware/geo-location.middleware';
@@ -71,7 +70,6 @@ import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.mo
     PaymentsModule,
     NotificationsModule,
     CronjobsModule,
-    QwalletHooksModule,
     TransactionHistoryModule,
     WalletManagerModule,
     CwalletModule,
