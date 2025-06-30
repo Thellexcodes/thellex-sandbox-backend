@@ -8,9 +8,9 @@ import { ValidationPipe } from '@nestjs/common';
 // import * as fs from 'fs';
 // import * as path from 'path';
 import { writeFileSync } from 'fs';
-import { ENV_PRODUCTION, getEnvVarMap } from './models/settings.types';
+import { ENV_PRODUCTION } from './models/settings.types';
 import { getAppConfig, getEnv } from './constants/env';
-import { CircleWalletManager } from './utils/services/circle-wallet.manager';
+// import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
 // const certFolder = path.join(__dirname, '../cert');
 

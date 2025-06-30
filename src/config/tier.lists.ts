@@ -24,10 +24,12 @@ export const tierOrder = [
   TierEnum.ENTERPRISE,
 ];
 
-enum TxnType {
+export enum TxnTypeEnum {
   FIAT_TO_FIAT = 'fiat-to-fiat',
   CRYPTO_TO_FIAT = 'crypto-to-fiat',
   FIAT_TO_CRYPTO = 'fiat-to-crypto',
+  WITHDRAWAL = 'withdrawal',
+  DEPOSIT = 'deposit',
 }
 
 type TxnFeeDetails = {
@@ -37,7 +39,7 @@ type TxnFeeDetails = {
 };
 
 type TxnFeeMap = {
-  [key in TxnType]: TxnFeeDetails;
+  [TxnTypeEnum.WITHDRAWAL]: TxnFeeDetails;
 };
 
 type Tier = {
@@ -46,10 +48,10 @@ type Tier = {
   description: string;
   requirements: UserRequirement[];
   transactionLimits: TransactionLimits;
-  txnFees?: TxnFeeMap;
+  txnFee?: TxnFeeMap;
 };
 
-export const thellexTiers: Record<TierEnum, Tier> = {
+export const thellexTiers: Partial<Record<TierEnum, Tier>> = {
   [TierEnum.BASIC]: {
     name: TierEnum.BASIC,
     target: 'First-Time Users',
@@ -64,35 +66,24 @@ export const thellexTiers: Record<TierEnum, Tier> = {
       UserRequirement.DateOfBirth,
       UserRequirement.NIN,
       UserRequirement.BVN,
-      UserRequirement.HouseNumber,
-      UserRequirement.StreetName,
-      UserRequirement.State,
-      UserRequirement.LGA,
+      // UserRequirement.HouseNumber,
+      // UserRequirement.StreetName,
+      // UserRequirement.State,
+      // UserRequirement.LGA,
     ],
     transactionLimits: {
       dailyCreditLimit: 50_000,
       dailyDebitLimit: 50_000,
       singleDebitLimit: 50_000,
     },
-    txnFees: {
-      [TxnType.FIAT_TO_FIAT]: {
-        min: 1,
-        max: 300,
-        feePercentage: 1.5,
-      },
-      [TxnType.CRYPTO_TO_FIAT]: {
-        min: 1,
-        max: 300,
-        feePercentage: 2.5,
-      },
-      [TxnType.FIAT_TO_CRYPTO]: {
+    txnFee: {
+      [TxnTypeEnum.WITHDRAWAL]: {
         min: 1,
         max: 300,
         feePercentage: 2.0,
       },
     },
   },
-
   [TierEnum.PERSONAL]: {
     name: TierEnum.PERSONAL,
     target: 'Verified Individuals',
@@ -107,8 +98,14 @@ export const thellexTiers: Record<TierEnum, Tier> = {
       dailyDebitLimit: 500_000,
       singleDebitLimit: 100_000,
     },
+    txnFee: {
+      [TxnTypeEnum.WITHDRAWAL]: {
+        min: 1,
+        max: 300,
+        feePercentage: 2.0,
+      },
+    },
   },
-
   [TierEnum.PROFESSIONAL]: {
     name: TierEnum.PROFESSIONAL,
     target: 'Crypto-Savvy Professionals',
@@ -122,8 +119,14 @@ export const thellexTiers: Record<TierEnum, Tier> = {
       dailyDebitLimit: 1_000_000,
       singleDebitLimit: 500_000,
     },
+    txnFee: {
+      [TxnTypeEnum.WITHDRAWAL]: {
+        min: 1,
+        max: 300,
+        feePercentage: 2.0,
+      },
+    },
   },
-
   [TierEnum.BUSINESS]: {
     name: TierEnum.BUSINESS,
     target: 'SMEs & Startups',
@@ -139,8 +142,14 @@ export const thellexTiers: Record<TierEnum, Tier> = {
       dailyDebitLimit: 3_000_000,
       singleDebitLimit: 1_000_000,
     },
+    txnFee: {
+      [TxnTypeEnum.WITHDRAWAL]: {
+        min: 1,
+        max: 300,
+        feePercentage: 2.0,
+      },
+    },
   },
-
   [TierEnum.ENTERPRISE]: {
     name: TierEnum.ENTERPRISE,
     target: 'Corporates & Aggregators',
@@ -154,8 +163,14 @@ export const thellexTiers: Record<TierEnum, Tier> = {
       dailyDebitLimit: 5_000_000,
       singleDebitLimit: 5_000_000,
     },
+    txnFee: {
+      [TxnTypeEnum.WITHDRAWAL]: {
+        min: 1,
+        max: 300,
+        feePercentage: 2.0,
+      },
+    },
   },
-
   [TierEnum.NONE]: {
     name: TierEnum.NONE,
     target: 'Unverified Users',

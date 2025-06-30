@@ -1,16 +1,6 @@
 import { BaseResponseDto } from '@/models/base-response.dto';
-import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
-import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
-import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
-import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
-import { PayoutSettingEntity } from '@/utils/typeorm/entities/settings/payout-settings.entity';
-import { TaxSettingEntity } from '@/utils/typeorm/entities/settings/tax.entity';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
-import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
-import { TierInfoDto } from './tier-info.dto';
+import { Expose } from 'class-transformer';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'The email of the user', type: String })

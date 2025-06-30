@@ -11,14 +11,16 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
-import { formatTier, generateUniqueUid } from '@/utils/helpers';
+import {
+  formatTier,
+  formatUserWithTiers,
+  generateUniqueUid,
+} from '@/utils/helpers';
 import { UserErrorEnum } from '@/models/user-error.enum';
-import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { TierEnum, tierOrder } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
-import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 
 @Injectable()
 export class UserService {
@@ -35,19 +37,6 @@ export class UserService {
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
   ) {}
-
-  private formatUserWithTiers(user: UserEntity) {
-    const userTier = user.tier || TierEnum.NONE;
-    const currentIndex = tierOrder.indexOf(userTier);
-    const nextTier =
-      currentIndex + 1 < tierOrder.length ? tierOrder[currentIndex + 1] : null;
-
-    return {
-      ...user,
-      currentTier: formatTier(userTier),
-      nextTier: nextTier ? formatTier(nextTier) : null,
-    };
-  }
 
   async create(
     createUserDto: CreateUserDto,
@@ -99,9 +88,9 @@ export class UserService {
       );
     }
 
-    const userPlain = this.formatUserWithTiers(user);
+    const userPlain = formatUserWithTiers(user);
 
-    console.log(userPlain);
+    console.log(userPlain.currentTier, userPlain.nextTier);
 
     return plainToInstance(IUserDto, userPlain, {
       excludeExtraneousValues: true,
@@ -205,7 +194,7 @@ export class UserService {
       if (!verifiedUser)
         throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
 
-      const userPlain = this.formatUserWithTiers(verifiedUser);
+      const userPlain = formatUserWithTiers(verifiedUser);
       return plainToInstance(IUserDto, userPlain, {
         excludeExtraneousValues: true,
       });
@@ -229,9 +218,7 @@ export class UserService {
     if (!updatedUser)
       throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
 
-    const userPlain = this.formatUserWithTiers(updatedUser);
-
-    console.log(userPlain);
+    const userPlain = formatUserWithTiers(updatedUser);
 
     return plainToInstance(IUserDto, userPlain, {
       excludeExtraneousValues: true,

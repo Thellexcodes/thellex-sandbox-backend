@@ -1,5 +1,6 @@
 import { BaseResponseDto } from '@/models/base-response.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
+import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
@@ -62,7 +63,6 @@ export class BasicTierKycDto {
   houseNumber: string;
 
   @ApiProperty({ description: 'Street name of the user' })
-  @IsNotEmpty({ message: 'streetName/empty' })
   @IsString({ message: 'streetName/not-string' })
   @IsOptional()
   streetName: string;
@@ -81,10 +81,25 @@ export class BasicTierKycDto {
 export class KycResultDto {
   @Expose()
   @ApiProperty({
-    example: true,
+    example: 'true or false',
     description: 'Indicates whether the user has completed KYC verification.',
   })
   isVerified: boolean;
+
+  @Expose()
+  @ApiProperty({
+    type: () => TierInfoDto,
+    description: 'Current user tier info',
+  })
+  currentTier: TierInfoDto;
+
+  @Expose()
+  @ApiProperty({
+    type: () => TierInfoDto,
+    nullable: true,
+    description: 'Next user tier info',
+  })
+  nextTier: TierInfoDto | null;
 }
 
 export class KycResponseDto extends BaseResponseDto<KycResultDto> {

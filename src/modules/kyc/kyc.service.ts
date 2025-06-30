@@ -1,6 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@/middleware/http.service';
-import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { KycErrorEnum } from '@/models/kyc-error.enum';
 import {
@@ -14,7 +13,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { BasicTierKycDto, KycResultDto } from './dto/kyc-data.dto';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { getAppConfig } from '@/constants/env';
-import { calculateNameMatchScore } from '@/utils/helpers';
+import { calculateNameMatchScore, formatUserWithTiers } from '@/utils/helpers';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { TierEnum } from '@/config/tier.lists';
 import { UserService } from '../users/user.service';
@@ -27,7 +26,6 @@ export class KycService {
     @InjectRepository(KycEntity)
     private readonly kycRepo: Repository<KycEntity>,
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
     private readonly userService: UserService,
   ) {}
 
@@ -38,7 +36,7 @@ export class KycService {
   async createBasicKyc(
     kydataDto: BasicTierKycDto,
     user: UserEntity,
-  ): Promise<KycResultDto> {
+  ): Promise<KycResultDto | any> {
     try {
       if (user.tier !== TierEnum.NONE) {
         throw new CustomHttpException(
@@ -121,10 +119,13 @@ export class KycService {
       await this.kycRepo.save(kycRecord);
 
       await this.userService.updateUserTier(user.id, TierEnum.BASIC);
+      const updatedUser = await this.userService.findOneById(user.id);
+
+      const { nextTier, currentTier } = formatUserWithTiers(updatedUser);
 
       return plainToInstance(
         KycResultDto,
-        { isVerfied: true },
+        { isVerified: true, currentTier, nextTier },
         { excludeExtraneousValues: true },
       );
     } catch (error) {
@@ -138,8 +139,8 @@ export class KycService {
         `${this.dojahUrl}/api/v1/kyc/nin`,
         {
           headers: {
-            AppId: this.configService.get<string>('DOJAH_APPID'),
-            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+            AppId: getAppConfig().DOJAH.APP_ID,
+            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
           },
           params: { nin },
         },
@@ -172,8 +173,8 @@ export class KycService {
         `${this.dojahUrl}/api/v1/kyc/bvn/full`,
         {
           headers: {
-            AppId: this.configService.get<string>('DOJAH_APPID'),
-            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+            AppId: getAppConfig().DOJAH.APP_ID,
+            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
           },
           params: { bvn },
         },
@@ -209,8 +210,8 @@ export class KycService {
           `${this.dojahUrl}/api/v1/kyc/phone_number/basic`,
           {
             headers: {
-              AppId: this.configService.get<string>('DOJAH_APPID'),
-              Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+              AppId: getAppConfig().DOJAH.APP_ID,
+              Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
             },
             params: { phone_number },
           },
@@ -306,8 +307,8 @@ export class KycService {
         `${this.dojahUrl}/api/v1/fraud/email`,
         {
           headers: {
-            AppId: this.configService.get<string>('DOJAH_APPID'),
-            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+            AppId: getAppConfig().DOJAH.APP_ID,
+            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
           },
           params: { email_address },
         },
@@ -339,8 +340,8 @@ export class KycService {
         `${this.dojahUrl}/api/v1/fraud/phone`,
         {
           headers: {
-            AppId: this.configService.get<string>('DOJAH_APPID'),
-            Authorization: `${this.configService.get<string>('DOJAH_AUTHORIZATION_PUBLIC_KEY')}`,
+            AppId: getAppConfig().DOJAH.APP_ID,
+            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
           },
           params: { phone_number },
         },
