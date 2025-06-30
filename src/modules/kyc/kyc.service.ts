@@ -36,7 +36,7 @@ export class KycService {
   async createBasicKyc(
     kydataDto: BasicTierKycDto,
     user: UserEntity,
-  ): Promise<KycResultDto | any> {
+  ): Promise<KycResultDto> {
     try {
       if (user.tier !== TierEnum.NONE) {
         throw new CustomHttpException(
@@ -68,7 +68,7 @@ export class KycService {
         }
       }
 
-      const matchThreshold = 0.4;
+      const matchThreshold = 0.5;
 
       if (ninResponse?.entity) {
         const firstNameScore = calculateNameMatchScore(
