@@ -11,15 +11,11 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from '../email/mail.service';
 import { VerifyUserDto } from './dto/verify-user.dto';
-import {
-  formatTier,
-  formatUserWithTiers,
-  generateUniqueUid,
-} from '@/utils/helpers';
+import { formatUserWithTiers, generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/models/user-error.enum';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
-import { TierEnum, tierOrder } from '@/config/tier.lists';
+import { TierEnum } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -40,15 +36,16 @@ export class UserService {
 
   async create(
     createUserDto: CreateUserDto,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ access_token: string; expires_at?: Date }> {
     try {
       const email = createUserDto.email.toLowerCase();
       let user = await this.findOneByEmail(email);
 
       if (user) {
-        await this.emailVerificationComposer(user);
+        // Resend verification code only if no valid code exists
+        const expires_at = await this.resendVerification(user); // throws if code still valid
         const access_token = await this.signToken({ id: user.id });
-        return { access_token };
+        return { access_token, expires_at };
       }
 
       const uid = await generateUniqueUid(this.userRepository);
@@ -59,9 +56,9 @@ export class UserService {
 
       user = await this.userRepository.save(newUser);
 
-      await this.emailVerificationComposer(user);
+      const { expires_at } = await this.emailVerificationComposer(user);
       const access_token = await this.signToken({ id: user.id });
-      return { access_token };
+      return { access_token, expires_at };
     } catch (error: any) {
       this.logger.error('User creation failed:', error);
       throw new CustomHttpException(
@@ -69,6 +66,30 @@ export class UserService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  /**
+   * Resends verification code only if no valid unexpired and unused code exists.
+   * Throws error if a valid code is still active and unused.
+   */
+  private async resendVerification(user: UserEntity): Promise<Date> {
+    const existingCode = await this.authenticationRepository.findOne({
+      where: {
+        user: { id: user.id },
+        expired: false,
+      },
+      order: { expires_at: 'DESC' },
+    });
+
+    if (existingCode && existingCode.expires_at > new Date()) {
+      throw new CustomHttpException(
+        UserErrorEnum.CODE_ALREADY_SENT,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const { expires_at } = await this.emailVerificationComposer(user);
+    return expires_at;
   }
 
   async login(loginUserDto: LoginUserDto): Promise<IUserDto> {
@@ -116,8 +137,13 @@ export class UserService {
     }
   }
 
-  async emailVerificationComposer(user: UserEntity): Promise<void> {
-    const code = await this.generateAuthVerificationCode('email', user);
+  async emailVerificationComposer(
+    user: UserEntity,
+  ): Promise<{ expires_at: Date }> {
+    const { code, expires_at } = await this.generateAuthVerificationCode(
+      'email',
+      user,
+    );
 
     const emailOptions = {
       to: user.email,
@@ -128,14 +154,15 @@ export class UserService {
     };
 
     await this.mailService.sendEmail(emailOptions);
+    return { expires_at };
   }
 
   async generateAuthVerificationCode(
     type: 'email' | 'phone',
     user: UserEntity,
-  ): Promise<number> {
+  ): Promise<{ code: number; expires_at: Date }> {
     let code: number;
-    let exists: Boolean | AuthVerificationCodesEntity = true;
+    let exists: boolean | AuthVerificationCodesEntity = true;
 
     while (exists) {
       code = Math.floor(100000 + Math.random() * 900000);
@@ -143,9 +170,9 @@ export class UserService {
     }
 
     const newCode = this.authenticationRepository.create({ user, code });
-    await this.authenticationRepository.save(newCode);
+    const res = await this.authenticationRepository.save(newCode);
 
-    return code;
+    return { code, expires_at: res.expires_at };
   }
 
   async signToken(payload: JwtPayload): Promise<string> {

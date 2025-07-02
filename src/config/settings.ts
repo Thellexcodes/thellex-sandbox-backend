@@ -110,3 +110,5 @@ export enum SupportedFiatCurrency {
   // GBP = 'GBP',
   NGN = 'NGN',
 }
+
+export const AUTH_VERIFICATION_CODE_TTL = 30; // TTL = Time To Live
