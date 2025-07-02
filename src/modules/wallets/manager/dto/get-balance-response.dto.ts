@@ -9,11 +9,8 @@ export class WalletMapDto {
   @ApiProperty()
   valueInLocal: string;
 
-  @ApiProperty({
-    type: [String],
-    description: 'Supported blockchain networks',
-  })
-  networks: string[];
+  @ApiProperty({ description: 'Supported blockchain network' })
+  network: string;
 
   @ApiProperty()
   assetCode: string;

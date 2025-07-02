@@ -10,8 +10,6 @@ import {
   WalletProviderEnum,
 } from '@/config/settings';
 import * as crypto from 'crypto';
-import { ENV_TESTNET } from '@/models/settings.types';
-import { getAppConfig, getEnv } from '@/constants/env';
 import { walletConfig } from './tokenChains';
 import {
   thellexTiers,

@@ -33,10 +33,8 @@ export class WalletManagerService {
       const qwalletId = user.qWalletProfile?.qid;
 
       const walletMap: Record<string, WalletMapDto> = {};
-      let totalInUsd = 0;
-
       const queue = new PQueue({ concurrency: 3 });
-      const tasks: Promise<void>[] = [];
+      const tasks: Promise<any>[] = [];
 
       for (const [walletTypeKey, walletTypeConfig] of Object.entries(
         walletConfig,
@@ -93,8 +91,6 @@ export class WalletManagerService {
                   }
 
                   const total = qbalanceUsd + cbalanceUsd;
-                  totalInUsd += total;
-
                   const address =
                     qwallet?.networkMetadata?.[network]?.address ||
                     cwallet?.networkMetadata?.[network]?.address;
@@ -103,7 +99,7 @@ export class WalletManagerService {
                     walletMap[tokenLower] = {
                       totalBalance: total.toString(),
                       valueInLocal: (total * NAIRA_RATE).toString(),
-                      networks: [network],
+                      network,
                       address,
                       assetCode: tokenLower,
                       transactionHistory: [],
@@ -113,10 +109,13 @@ export class WalletManagerService {
                       parseFloat(walletMap[tokenLower].totalBalance) + total
                     ).toString();
 
-                    if (!walletMap[tokenLower].networks.includes(network)) {
-                      walletMap[tokenLower].networks.push(network);
+                    // Only replace network if it's different
+                    if (walletMap[tokenLower].network !== network) {
+                      walletMap[tokenLower].network = network;
                     }
                   }
+
+                  return total;
                 }),
               );
             }
@@ -124,7 +123,8 @@ export class WalletManagerService {
         }
       }
 
-      await Promise.all(tasks);
+      const balances = await Promise.all(tasks);
+      const totalInUsd = balances.reduce((sum, value) => sum + value, 0);
 
       return plainToInstance(
         WalletBalanceSummaryResponseDto,
@@ -137,8 +137,8 @@ export class WalletManagerService {
     } catch (error) {
       console.error('getBalance error:', error);
       throw new CustomHttpException(
-        'Failed to get balance',
-        HttpStatus.BAD_REQUEST,
+        `Failed to get balance: ${error?.message || 'Unknown error'}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

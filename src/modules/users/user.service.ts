@@ -90,8 +90,6 @@ export class UserService {
 
     const userPlain = formatUserWithTiers(user);
 
-    console.log(userPlain.currentTier, userPlain.nextTier);
-
     return plainToInstance(IUserDto, userPlain, {
       excludeExtraneousValues: true,
     });
