@@ -10,8 +10,6 @@ Thellex POS is a modern merchant payment platform that enables seamless USDC and
 
 Thellex POS is designed for flexibility, allowing merchants to accept both crypto and fiat while we handle wallet management, transaction security, and local bank withdrawals.
 
-For Circle-specific details, see our [Circle README](CIRCLE_README.md).
-
 ## Key Features
 
 - **Circle DCW Integration**: Create and manage USDC wallets for users/merchants on Stellar and Polygon, with gas sponsorship via Circle’s Gas Station.
