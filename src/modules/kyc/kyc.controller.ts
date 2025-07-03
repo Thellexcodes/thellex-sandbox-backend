@@ -14,7 +14,7 @@ import { BasicTierKycDto, KycResponseDto } from './dto/kyc-data.dto';
 @ApiTags('Kyc')
 @Controller('kyc')
 @ApiBearerAuth('access-token')
-export class DkycController {
+export class kycController {
   constructor(private readonly kycService: KycService) {}
 
   @Post('basic')
@@ -22,13 +22,13 @@ export class DkycController {
   @ApiBody({ type: BasicTierKycDto, description: 'Basic KYC information' })
   @ApiOkResponse({ type: KycResponseDto })
   async createBasicTierKyc(
-    @Body() basicKycDto: BasicTierKycDto,
+    @Body() basicKycDto: any,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const basicKycRes = await this.kycService.createBasicKyc(basicKycDto, user);
+    const data = await this.kycService.createBasicKyc(basicKycDto, user);
 
-    responseHandler(basicKycRes, res, req);
+    responseHandler(data, res, req);
   }
 }

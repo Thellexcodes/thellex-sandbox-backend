@@ -10,10 +10,13 @@ import {
   WalletProviderEnum,
 } from '@/config/settings';
 import * as crypto from 'crypto';
-import { ENV_TESTNET } from '@/models/settings.types';
-import { getAppConfig, getEnv } from '@/constants/env';
 import { walletConfig } from './tokenChains';
-import { thellexTiers, TierEnum } from '@/config/tier.lists';
+import {
+  thellexTiers,
+  TierEnum,
+  tierOrder,
+  TxnTypeEnum,
+} from '@/config/tier.lists';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 
 //TODO: handle errors with enums
@@ -247,17 +250,35 @@ export function getTokenId({
 
 export function formatTier(tierKey: TierEnum): TierInfoDto {
   const data = thellexTiers[tierKey];
+  const withdrawalFee = data.txnFee?.[TxnTypeEnum.WITHDRAWAL];
+
   return {
     name: data.name,
     target: data.target,
     description: data.description,
     transactionLimits: data.transactionLimits,
-    txnFees: Object.entries(data.txnFees || {}).map(([type, fee]) => ({
-      type,
-      min: fee.min,
-      max: fee.max,
-      feePercentage: fee.feePercentage,
-    })),
+    txnFee: withdrawalFee
+      ? {
+          [TxnTypeEnum.WITHDRAWAL]: {
+            min: withdrawalFee.min,
+            max: withdrawalFee.max,
+            feePercentage: withdrawalFee.feePercentage,
+          },
+        }
+      : {},
     requirements: data.requirements,
+  };
+}
+
+export function formatUserWithTiers(user: UserEntity) {
+  const userTier = user.tier || TierEnum.NONE;
+  const currentIndex = tierOrder.indexOf(userTier);
+  const nextTier =
+    currentIndex + 1 < tierOrder.length ? tierOrder[currentIndex + 1] : null;
+
+  return {
+    ...user,
+    currentTier: formatTier(userTier),
+    nextTier: nextTier ? formatTier(nextTier) : null,
   };
 }

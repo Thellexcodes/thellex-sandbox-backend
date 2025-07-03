@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { KycService } from './kyc.service';
-import { DkycController } from './kyc.controller';
 import { HttpService } from '@/middleware/http.service';
 import { UserService } from '../users/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,6 +9,7 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { MailService } from '../email/mail.service';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
+import { kycController } from './kyc.controller';
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
       inject: [],
     }),
   ],
-  controllers: [DkycController],
+  controllers: [kycController],
   providers: [KycService, HttpService, UserService, MailService, HttpService],
 })
 export class KycModule {}

@@ -1,24 +1,7 @@
-import { TierEnum, TransactionLimits } from '@/config/tier.lists';
+import { TierEnum, TxnTypeEnum } from '@/config/tier.lists';
 import { UserRequirement } from '@/models/user.requirements.enum';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-
-export class TxnFeeDto {
-  @ApiProperty({ description: 'Transaction type, e.g. fiat-fiat, crypto-fiat' })
-  type: string;
-
-  @ApiProperty({ description: 'Minimum transaction amount for this fee' })
-  min: number;
-
-  @ApiProperty({
-    description: 'Maximum transaction amount for this fee',
-    required: false,
-  })
-  max?: number;
-
-  @ApiProperty({ description: 'Fee percentage applied to the transaction' })
-  feePercentage: number;
-}
 
 export class TransactionLimitsDto {
   @ApiProperty({ description: 'Maximum allowed credit per day' })
@@ -49,19 +32,39 @@ export class TierInfoDto {
     description: 'Limits for transactions allowed in this tier',
     type: () => TransactionLimitsDto,
   })
-  transactionLimits: TransactionLimits;
+  @Expose()
+  transactionLimits: TransactionLimitsDto;
 
   @ApiProperty({
-    description: 'Transaction fees applicable for this tier',
-    isArray: true,
+    description: 'Transaction fee applicable for this tier (only withdrawal)',
     type: () => TxnFeeDto,
+    isArray: false,
   })
-  txnFees: TxnFeeDto[];
+  @Expose()
+  txnFee: Partial<Record<TxnTypeEnum, TxnFeeDto>>;
 
   @ApiProperty({
     description: 'User requirements to reach this tier',
     isArray: true,
     enum: UserRequirement,
   })
+  @Expose()
   requirements: UserRequirement[];
+}
+
+export class TxnFeeDto {
+  @Expose()
+  @ApiProperty({ description: 'Minimum transaction amount for this fee' })
+  min: number;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Maximum transaction amount for this fee',
+    required: false,
+  })
+  max?: number;
+
+  @Expose()
+  @ApiProperty({ description: 'Fee percentage applied to the transaction' })
+  feePercentage: number;
 }

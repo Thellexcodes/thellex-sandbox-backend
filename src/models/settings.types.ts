@@ -100,7 +100,6 @@ export const clientRpIdMap = getEnvVarMap('CLIENT_RP_ID');
 export const clientUrlMap = getEnvVarMap('CLIENT_URL');
 
 // APIs
-export const dojahApiMap = getEnvVarMap('DOJAH_KYC_API');
 export const ycPaymentApiMap = getEnvVarMap('YC_PAYMENT_API');
 export const alchemyApiMap = getEnvVarMap('ALCHEMY_API');
 export const kycEncryptionKeyMap = getEnvVarMap('KYC_ENCRYPTION_KEY');
@@ -129,6 +128,11 @@ export const stellarRpcEndpointMap = getEnvVarMap('STELLAR_RPC_ENDPOINT');
 export const emailUserMap = getEnvVarMap('EMAIL_USER');
 export const emailAppPasswordMap = getEnvVarMap('EMAIL_APP_PASSWORD');
 export const emailAppNameMap = getEnvVarMap('EMAIL_APPLICATION_NAME');
+
+//Dojah
+export const dojahApiMap = getEnvVarMap('DOJAH_KYC_API');
+export const dojahAppIdMap = getEnvVarMap('DOJAH_APP_ID');
+export const dojahPublicKeyMap = getEnvVarMap('DOJAH_AUTH_PUBLIC_KEY');
 
 // Other
 export const ipinfoTokenMap = getEnvVarMap('IPINFO_TOKEN');

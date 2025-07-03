@@ -10,6 +10,8 @@ import {
   cwalletEntityPublicKeyMap,
   cwalletEntitySecretMap,
   dojahApiMap,
+  dojahAppIdMap,
+  dojahPublicKeyMap,
   emailAppNameMap,
   emailAppPasswordMap,
   emailUserMap,
@@ -80,8 +82,8 @@ export function getAppConfig(): ApiConfig {
       STELLAR_RPC_ENDPOINT: stellarRpcEndpointMap[env] || '',
     },
     DOJAH: {
-      APP_ID: process.env.DOJAH_APP_ID || '',
-      AUTH_PUBLIC_KEY: process.env.DOJAH_AUTH_PUBLIC_KEY || '',
+      APP_ID: dojahAppIdMap[env] || '',
+      AUTH_PUBLIC_KEY: dojahPublicKeyMap[env] || '',
       API: dojahApiMap[env] || '',
     },
     CWALLET: {

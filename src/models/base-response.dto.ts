@@ -6,7 +6,7 @@ export class BaseResponseDto<T> {
   @ApiProperty({ example: true })
   status: boolean;
 
-  @ApiProperty({ example: '/user/access' })
+  @ApiProperty()
   path: string;
 
   @ApiProperty({ example: 201 })

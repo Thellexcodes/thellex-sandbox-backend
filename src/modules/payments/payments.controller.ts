@@ -15,7 +15,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CreateRequestPaymentDto } from './dto/create-payment.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { PaymentsService } from './payments.service';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
@@ -31,7 +30,7 @@ import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-pay
 import { CreateWithdrawalResponseDto } from './dto/payment.dto';
 
 ApiTags('Payments');
-@Controller('Payments')
+@Controller('payments')
 @ApiBearerAuth('access-token')
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
@@ -53,7 +52,7 @@ export class PaymentsController {
   ) {
     const response =
       await this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
-    responseHandler(response, res, req);
+    responseHandler('', res, req);
   }
 
   @Post('fiat-collection-request')

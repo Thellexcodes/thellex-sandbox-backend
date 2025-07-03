@@ -1,20 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { RequestCryptoPaymentResponse } from '@/models/request.types';
-import {
-  SupportedBlockchainType,
-  SupportedWalletTypes,
-  WalletProviderEnum,
-} from '@/config/settings';
+import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
-import {
-  ITransactionHistoryDto,
-  TransactionHistoryEntity,
-} from '@/utils/typeorm/entities/transaction-history.entity';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { YellowCardService } from './yellowcard.service';
-import { HttpService } from '@/middleware/http.service';
 import { IYCChannel } from '@/models/yellocard.models';
 import { v4 as uuidV4 } from 'uuid';
 import { IdTypeEnum } from '@/models/kyc.types';
@@ -23,13 +14,13 @@ import { FiatCollectionRequestDto } from './dto/fiat-collection-request.dto';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { PaymentErrorEnum } from '@/models/payments.types';
 import { walletConfig } from '@/utils/tokenChains';
+import { UserErrorEnum } from '@/models/user-error.enum';
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
-    private readonly httpService: HttpService,
     private readonly ycService: YellowCardService,
   ) {}
 
