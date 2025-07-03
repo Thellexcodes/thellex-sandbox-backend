@@ -574,31 +574,6 @@ Thellex POS enables merchants to:
 
 ---
 
-## Budget (Circle Grant Allocation)
-
-| Category           | Amount  |
-| ------------------ | ------- |
-| Development        | $25,000 |
-| Marketing          | $20,000 |
-| Onboarding/Support | $10,000 |
-| Partnerships       | $5,000  |
-| **Total**          | $60,000 |
-
-> We're open to Circle offer, support is mainly to accelarate enhancements and market penetration
-
----
-
-## Risks & Mitigation
-
-| Risk               | Mitigation                                    |
-| ------------------ | --------------------------------------------- |
-| Low pilot adoption | Incentives, hands-on support                  |
-| KYC delays         | Optimize Dojah SDK, streamline verification   |
-| Fiat payout delays | Partner with reliable providers (Yellow Card) |
-| Regulatory changes | Monitor compliance, work with Circle partners |
-
----
-
 ## Estimation of Amount Processed by End of Q4 2025
 
 **Pilot Phase (Q3 2025):**
