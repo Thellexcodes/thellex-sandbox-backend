@@ -191,6 +191,13 @@ export class IUserDto extends UserEntity {
 
   @Expose()
   @ApiProperty({
+    type: [String],
+    description: 'List of outstanding KYC requirements.',
+  })
+  outstandingKyc: string[];
+
+  @Expose()
+  @ApiProperty({
     type: () => TierInfoDto,
     description: 'Current user tier info',
   })

@@ -1,9 +1,12 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EncryptionTransformer } from 'typeorm-encrypted';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { IUserDto, UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
-import { CustomerTypesEnum } from '@/config/settings';
+import {
+  CustomerTypesEnum,
+  KYC_EXPIRATION_DURATION_MS,
+} from '@/config/settings';
 import { getAppConfig } from '@/constants/env';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
@@ -31,11 +34,21 @@ export class KycEntity extends BaseEntity {
   })
   dob: string;
 
-  @Column({ name: 'bvn', type: 'text', transformer: KycEntity.encryption })
+  @Column({
+    name: 'bvn',
+    type: 'text',
+    transformer: KycEntity.encryption,
+    nullable: true,
+  })
   bvn: string;
 
-  @Column({ name: 'nin', type: 'text', transformer: KycEntity.encryption })
-  nin: string;
+  // @Column({
+  //   name: 'nin',
+  //   type: 'text',
+  //   transformer: KycEntity.encryption,
+  //   nullable: true,
+  // })
+  // nin: string;
 
   @Column({ name: 'provider', type: 'enum', enum: KycProviderEnum })
   provider: KycProviderEnum;
@@ -108,7 +121,6 @@ export class KycEntity extends BaseEntity {
   @Column({
     name: 'id_number',
     type: 'text',
-    nullable: true,
     transformer: KycEntity.encryption,
   })
   idNumber: string;
@@ -132,10 +144,15 @@ export class KycEntity extends BaseEntity {
 
   @Column({
     type: 'timestamptz',
-    nullable: true,
     default: () => "CURRENT_TIMESTAMP + INTERVAL '18 months'",
   })
   kycExpiresAt: Date;
+
+  @BeforeInsert()
+  setExpiresAt() {
+    const now = new Date();
+    this.kycExpiresAt = new Date(now.getTime() + KYC_EXPIRATION_DURATION_MS);
+  }
 
   @Column({
     name: 'house_number',

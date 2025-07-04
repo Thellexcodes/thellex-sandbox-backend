@@ -10,6 +10,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { writeFileSync } from 'fs';
 import { ENV_PRODUCTION } from './models/settings.types';
 import { getAppConfig, getEnv } from './constants/env';
+import * as bodyParser from 'body-parser';
+import { FILE_UPLOAD_LIMIT } from './config/settings';
 // import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
 // const certFolder = path.join(__dirname, '../cert');
@@ -74,6 +76,9 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new ErrorInterceptor());
+
+  app.use(bodyParser.json({ limit: FILE_UPLOAD_LIMIT }));
+  app.use(bodyParser.urlencoded({ limit: FILE_UPLOAD_LIMIT, extended: true }));
 
   await app.listen(serverPort, serverIp);
 

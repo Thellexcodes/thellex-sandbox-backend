@@ -2,8 +2,9 @@ import { RateDto } from '@/modules/aggregators/swap/dto/rate.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
-import { UserEntity } from './typeorm/entities/user.entity';
+import { IUserDto, UserEntity } from './typeorm/entities/user.entity';
 import {
+  SUPPORTED_RAMP_COUNTRIES,
   SupportedBlockchainType,
   SupportedWalletTypes,
   TokenEnum,
@@ -18,6 +19,7 @@ import {
   TxnTypeEnum,
 } from '@/config/tier.lists';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
+import { IdTypeEnum } from '@/models/kyc.types';
 
 //TODO: handle errors with enums
 
@@ -270,15 +272,47 @@ export function formatTier(tierKey: TierEnum): TierInfoDto {
   };
 }
 
-export function formatUserWithTiers(user: UserEntity) {
+export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
   const userTier = user.tier || TierEnum.NONE;
   const currentIndex = tierOrder.indexOf(userTier);
   const nextTier =
     currentIndex + 1 < tierOrder.length ? tierOrder[currentIndex + 1] : null;
 
+  const idTypes = user.kyc?.idTypes || [];
+  const country = user.kyc?.country || '';
+  const outstandingKyc: string[] = [];
+
+  if (
+    isCountrySupportedForOfframp(country) &&
+    !idTypes.includes(IdTypeEnum.BVN)
+  ) {
+    outstandingKyc.push(IdTypeEnum.BVN);
+  }
+
   return {
     ...user,
     currentTier: formatTier(userTier),
     nextTier: nextTier ? formatTier(nextTier) : null,
+    outstandingKyc,
   };
 }
+
+export function keyByFieldKey(array: any[]): Record<string, any> {
+  return array.reduce((acc, item) => {
+    if (item?.field_key) acc[item.field_key] = item;
+    return acc;
+  }, {});
+}
+
+export const normalize = (str: string) =>
+  str
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
+
+export const isCountrySupportedForOfframp = (country: string): boolean => {
+  const normalized = normalize(country);
+  return SUPPORTED_RAMP_COUNTRIES.some(
+    (supported) => normalize(supported) === normalized,
+  );
+};

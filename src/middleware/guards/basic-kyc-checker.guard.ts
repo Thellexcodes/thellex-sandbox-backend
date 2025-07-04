@@ -20,9 +20,9 @@ export class BasicKycCheckerGuard implements CanActivate {
 
     const isEligible =
       !!kyc &&
-      !!kyc.nin &&
+      !!kyc.idNumber &&
       !!kyc.bvn &&
-      kyc.nin.trim() !== '' &&
+      kyc.idNumber.trim() !== '' &&
       kyc.bvn.trim() !== '';
 
     if (!isEligible) {
