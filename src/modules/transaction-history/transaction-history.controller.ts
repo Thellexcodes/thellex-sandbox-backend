@@ -1,7 +1,8 @@
 import { Controller } from '@nestjs/common';
 import { TransactionHistoryService } from './transaction-history.service';
+import { VersionedController001 } from '../controller/base.controller';
 
-@Controller('transaction-history')
+@VersionedController001('transaction-history')
 export class TransactionHistoryController {
   constructor(
     private readonly transactionHistoryService: TransactionHistoryService,

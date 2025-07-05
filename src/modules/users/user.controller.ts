@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
+import { Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AccessResponseDto, CreateUserDto } from './dto/user.dto';
 import {
@@ -12,10 +12,11 @@ import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
+import { VersionedController001 } from '../controller/base.controller';
 
 //TODO: middleware for outstanding verifications
 @ApiTags('User')
-@Controller('user')
+@VersionedController001('user')
 @ApiBearerAuth('access-token')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -35,10 +36,7 @@ export class UserController {
   @Post('authenticate')
   @UseGuards(AuthGuard)
   @ApiOkResponse({ type: VerifiedResponseDto })
-  async tokenLogin(
-    @Req() req: CustomRequest,
-    @Res() res: CustomResponse,
-  ): Promise<any> {
+  async tokenLogin(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
     const authRecords = await this.userService.login({
       identifier: user.email,

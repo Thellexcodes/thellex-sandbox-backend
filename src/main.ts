@@ -4,7 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ErrorInterceptor } from '@/middleware/error.interceptor';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 // import * as fs from 'fs';
 // import * as path from 'path';
 import { writeFileSync } from 'fs';
@@ -12,6 +12,7 @@ import { ENV_PRODUCTION } from './models/settings.types';
 import { getAppConfig, getEnv } from './constants/env';
 import * as bodyParser from 'body-parser';
 import { FILE_UPLOAD_LIMIT } from './config/settings';
+import { API_VERSIONS } from './config/versions';
 // import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
 // const certFolder = path.join(__dirname, '../cert');
@@ -45,6 +46,11 @@ async function bootstrap() {
   // }
 
   const app = await NestFactory.create(AppModule, {});
+  app.setGlobalPrefix('api');
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+  });
 
   const isProd = getEnv() === ENV_PRODUCTION;
 
@@ -52,7 +58,6 @@ async function bootstrap() {
     const config = new DocumentBuilder()
       .setTitle('Thellex API')
       .setDescription('Thellex API Documentation')
-      .setVersion('1.0')
       .addBearerAuth(
         {
           type: 'http',
@@ -62,9 +67,12 @@ async function bootstrap() {
         },
         'access-token',
       )
+      .setVersion(API_VERSIONS.V100)
+      .addServer(`/`)
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
+
     SwaggerModule.setup('doc', app, document);
 
     writeFileSync('./openapi.json', JSON.stringify(document));

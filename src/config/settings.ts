@@ -116,3 +116,5 @@ export const FILE_UPLOAD_LIMIT = '10mb'; // Use string for bodyParser
 export const FILE_UPLOAD_LIMIT_BYTES = 10 * 1024 * 1024; // For Fastify or byte-level limits
 export const KYC_EXPIRATION_DURATION_MS = 18 * 30 * 24 * 60 * 60 * 1000;
 export const SUPPORTED_RAMP_COUNTRIES: string[] = ['Nigeria'];
+
+// versions.ts

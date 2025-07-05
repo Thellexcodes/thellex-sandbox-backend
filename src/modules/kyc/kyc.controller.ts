@@ -14,9 +14,10 @@ import {
   KycResponseDto,
   VerifySelfieWithPhotoIdDto,
 } from './dto/kyc-data.dto';
+import { VersionedController001 } from '../controller/base.controller';
 
 @ApiTags('Kyc')
-@Controller('kyc')
+@VersionedController001('kyc')
 @ApiBearerAuth('access-token')
 export class kycController {
   constructor(private readonly kycService: KycService) {}

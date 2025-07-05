@@ -134,6 +134,7 @@ export class KycService {
         houseNumber: kydataDto.houseNumber,
         streetName: kydataDto.streetName,
         state: kydataDto.state,
+        country: 'Nigeria',
         lga: kydataDto.lga,
         provider: KycProviderEnum.DOJAH,
       };
