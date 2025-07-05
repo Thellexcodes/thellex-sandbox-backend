@@ -1,9 +1,13 @@
-import { Controller, Get, Patch, Param, UseGuards, Req } from '@nestjs/common';
+import { Get, Patch, Param, UseGuards, Req, Res } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import { VersionedController001 } from '../controller/base.controller';
+import { responseHandler } from '@/utils/helpers';
+import { CustomRequest, CustomResponse } from '@/models/request.types';
+import { NoficationConsumeResponse } from './dto/notification.dto';
 
-@Controller('notifications')
+@VersionedController001('notifications')
 @UseGuards(AuthGuard)
 @ApiBearerAuth('access-token')
 export class NotificationsController {
@@ -21,16 +25,13 @@ export class NotificationsController {
 
   // Mark notification as consumed
   @Patch(':id/consume')
-  async consumeNotification(@Param('id') id: string, @Req() req: Request) {
-    // const userId = req.user.id;
-    // const notification =
-    //   await this.notificationsService.notificationRepo.findOne({
-    //     where: { id, user: { id: userId } },
-    //   });
-    // if (!notification) {
-    //   throw new NotFoundException('Notification not found');
-    // }
-    // await this.notificationsService.markAsConsumed(id);
-    // return { message: 'Notification consumed' };
+  @ApiOkResponse({ type: NoficationConsumeResponse })
+  async consumeNotification(
+    @Param('id') id: string,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const response = await this.notificationsService.markAsConsumed(id);
+    responseHandler(response, res, req);
   }
 }

@@ -8,7 +8,12 @@ import {
 import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
+
+export enum NotificationKindEnum {
+  Transaction = 'txn',
+  General = 'general',
+}
 
 @Entity({ name: 'notifications' })
 export class NotificationEntity extends BaseEntity {
@@ -40,8 +45,7 @@ export class NotificationEntity extends BaseEntity {
   @Column({ name: 'asset_code', type: 'varchar' })
   assetCode: string;
 
-  @Expose()
-  @ApiProperty()
+  @Exclude()
   @Column({ name: 'expires_at', type: 'timestamp' })
   expiresAt: Date;
 
@@ -54,6 +58,16 @@ export class NotificationEntity extends BaseEntity {
   @ApiProperty()
   @Column({ name: 'txn_id', type: 'varchar', nullable: false })
   txnID: string;
+
+  @Expose()
+  @ApiProperty({ enum: NotificationKindEnum })
+  @Column({
+    type: 'enum',
+    enum: NotificationKindEnum,
+    nullable: false,
+    default: NotificationKindEnum.Transaction,
+  })
+  kind: NotificationKindEnum;
 
   @Expose()
   @ApiPropertyOptional()
@@ -69,4 +83,5 @@ export class NotificationEntity extends BaseEntity {
 @Exclude()
 export class INotificationDto extends NotificationEntity {
   @Exclude() user: UserEntity;
+  @Exclude() expiresAt: Date;
 }

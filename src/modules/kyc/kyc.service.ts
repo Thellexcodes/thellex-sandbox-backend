@@ -10,14 +10,34 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { BasicTierKycDto, KycResultDto } from './dto/kyc-data.dto';
+import {
+  BasicTierKycDto,
+  DocumentAnalysisEntityDto,
+  DocumentAnalysisResponse,
+  EntityDto,
+  KycResultDto,
+  SelfieDto,
+  UploadDocumentInputTypeEnum,
+  VerificationResponseDto,
+  VerifySelfieWithPhotoIdDto,
+} from './dto/kyc-data.dto';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { getAppConfig } from '@/constants/env';
-import { calculateNameMatchScore, formatUserWithTiers } from '@/utils/helpers';
+import {
+  calculateNameMatchScore,
+  formatUserWithTiers,
+  keyByFieldKey,
+} from '@/utils/helpers';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { TierEnum } from '@/config/tier.lists';
 import { UserService } from '../users/user.service';
 import { plainToInstance } from 'class-transformer';
+
+interface CachedUserData {
+  photoIdFrontImageBase64: string;
+  documentAnalysisResult?: any;
+  selfieVerificationResult?: any;
+}
 
 //TODO: Handle errors with enum
 @Injectable()
@@ -31,6 +51,10 @@ export class KycService {
 
   private get dojahUrl(): string {
     return getAppConfig().DOJAH.API;
+  }
+
+  private stripBase64Prefix(data: string) {
+    return data.replace(/^data:image\/\w+;base64,/, '');
   }
 
   async createBasicKyc(
@@ -99,7 +123,7 @@ export class KycService {
       }
 
       const userKycData: Partial<KycEntity> = {
-        nin: kydataDto.nin,
+        idNumber: kydataDto.nin,
         bvn: kydataDto.bvn,
         user,
         firstName: ninResponse?.entity?.first_name ?? kydataDto.firstName,
@@ -110,6 +134,7 @@ export class KycService {
         houseNumber: kydataDto.houseNumber,
         streetName: kydataDto.streetName,
         state: kydataDto.state,
+        country: 'Nigeria',
         lga: kydataDto.lga,
         provider: KycProviderEnum.DOJAH,
       };
@@ -374,5 +399,156 @@ export class KycService {
     return await this.kycRepo.findOne({
       where: { user: { id: userId } },
     });
+  }
+
+  // Simulate external document analysis API call
+  async handleDocumentAnalysis(
+    input_type: UploadDocumentInputTypeEnum,
+    frontBase64: string,
+    backBase64?: string,
+  ): Promise<DocumentAnalysisEntityDto> {
+    try {
+      const payload: Record<string, any> = {
+        input_type,
+        imagefrontside: frontBase64,
+      };
+
+      if (backBase64) {
+        payload.imagebackside = backBase64;
+      }
+
+      const response$: DocumentAnalysisResponse = await this.httpService.post(
+        `${this.dojahUrl}/api/v1/document/analysis`,
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            AppId: getAppConfig().DOJAH.APP_ID,
+            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+          },
+        },
+      );
+
+      return response$.entity;
+    } catch (error: any) {
+      console.log(error);
+      if (error.response?.status === 404) {
+        throw new CustomHttpException(
+          KycErrorEnum.BVN_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (error.response?.status === 400) {
+        throw new CustomHttpException(
+          KycErrorEnum.INVALID_BVN,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      throw new CustomHttpException(
+        `${KycErrorEnum.INTERNAL_ERROR}-${error.response?.data?.error || error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    // return {
+    //   status: 'ANALYZED',
+    //   document_type: 'passport',
+    //   front_image_base64: frontBase64,
+    //   back_image_base64: backBase64,
+    // };
+  }
+
+  // Simulate external selfie + photoID verification API call
+  async handleSelfieVerification(
+    payload: Partial<VerifySelfieWithPhotoIdDto>,
+  ): Promise<EntityDto> {
+    try {
+      const response$: VerificationResponseDto = await this.httpService.post(
+        `${this.dojahUrl}/api/v1/kyc/photoid/verify`,
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            AppId: getAppConfig().DOJAH.APP_ID,
+            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+          },
+        },
+      );
+      return response$.entity;
+    } catch (error: any) {
+      throw new CustomHttpException(
+        `${KycErrorEnum.INTERNAL_ERROR}-${error.response?.data?.error || error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async createBasicSelfieWithPhotoKyc(
+    user: UserEntity,
+    dto: VerifySelfieWithPhotoIdDto,
+  ): Promise<any> {
+    try {
+      const selfieBase64 = this.stripBase64Prefix(dto.selfie_image);
+      const photoIdBase64 = this.stripBase64Prefix(dto.photoid_image);
+
+      const analysis = await this.handleDocumentAnalysis(
+        UploadDocumentInputTypeEnum.Base64,
+        photoIdBase64,
+      );
+
+      const keyed = keyByFieldKey(analysis.text_data);
+
+      const result = await this.handleSelfieVerification({
+        selfie_image: selfieBase64,
+        photoid_image: photoIdBase64,
+      });
+
+      if (!(result.selfie.match && result.selfie.confidence_value > 70))
+        throw new CustomHttpException(
+          KycErrorEnum.KYC_LOOKUP_FAILED,
+          HttpStatus.FORBIDDEN,
+        );
+
+      const documentNumber = keyed['document_number']?.value || null;
+      const country =
+        keyed['nationality']?.value ||
+        keyed['issuing_state_name']?.value ||
+        null;
+      const firstName = keyed['first_name']?.value || null;
+      const lastName = keyed['last_name']?.value || null;
+      const dob = keyed['dob']?.value || '';
+
+      const userKycData: Partial<KycEntity> = {
+        user,
+        firstName,
+        lastName,
+        dob,
+        idTypes: [result.selfie.card_type],
+        idNumber: documentNumber,
+        country,
+        provider: KycProviderEnum.DOJAH,
+      };
+
+      await this.kycRepo.save(userKycData);
+
+      await this.userService.updateUserTier(user.id, TierEnum.BASIC);
+      const updatedUser = await this.userService.findOneById(user.id);
+
+      const userPlain = formatUserWithTiers(updatedUser);
+
+      return plainToInstance(
+        KycResultDto,
+        { isVerified: true, ...userPlain },
+        { excludeExtraneousValues: true },
+      );
+    } catch (error) {
+      console.log(error);
+      throw error instanceof CustomHttpException
+        ? error
+        : new CustomHttpException(
+            KycErrorEnum.KYC_LOOKUP_FAILED,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+    }
   }
 }

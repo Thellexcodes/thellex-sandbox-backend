@@ -6,10 +6,11 @@ import { responseHandler } from '@/utils/helpers';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
 import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
+import { VersionedController001 } from '../controller/base.controller';
 
 @ApiTags('Auth')
 @ApiBearerAuth('access-token')
-@Controller('auth')
+@VersionedController001('auth')
 export class AuthController {
   constructor(private readonly authNService: AuthnService) {}
 

@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -28,9 +20,10 @@ import {
 } from './dto/fiat-collection-request.dto';
 import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
 import { CreateWithdrawalResponseDto } from './dto/payment.dto';
+import { VersionedController001 } from '../controller/base.controller';
 
 ApiTags('Payments');
-@Controller('payments')
+@VersionedController001('payments')
 @ApiBearerAuth('access-token')
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}

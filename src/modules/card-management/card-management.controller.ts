@@ -18,10 +18,11 @@ import { ApiBody, ApiExcludeController, ApiTags } from '@nestjs/swagger';
 import { StellarService } from '../stellar/stellar.service';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
+import { VersionedController001 } from '../controller/base.controller';
 
 @ApiExcludeController()
 @ApiTags('Card Management')
-@Controller('card-management')
+@VersionedController001('card-management')
 export class CardManagementController {
   constructor(
     private cardManagementService: CardManagementService,

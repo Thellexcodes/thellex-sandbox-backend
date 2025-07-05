@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  UseGuards,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Get, Post, Param, Query, UseGuards, Req, Res } from '@nestjs/common';
 import { WalletManagerService } from './wallet-manager.service';
 import {
   ApiBearerAuth,
@@ -22,10 +13,11 @@ import {
   WalletBalanceSummaryResponseDto,
   WalletMapDto,
 } from './dto/get-balance-response.dto';
+import { VersionedController001 } from '@/modules/controller/base.controller';
 
 @ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
-@Controller('wallet-manager')
+@VersionedController001('wallet-manager')
 export class WalletManagerController {
   constructor(private readonly walletManagerService: WalletManagerService) {}
 

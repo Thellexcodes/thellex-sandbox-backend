@@ -9,15 +9,21 @@ import {
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { KycService } from './kyc.service';
-import { BasicTierKycDto, KycResponseDto } from './dto/kyc-data.dto';
+import {
+  BasicTierKycDto,
+  KycResponseDto,
+  VerifySelfieWithPhotoIdDto,
+} from './dto/kyc-data.dto';
+import { VersionedController001 } from '../controller/base.controller';
 
 @ApiTags('Kyc')
-@Controller('kyc')
+@VersionedController001('kyc')
 @ApiBearerAuth('access-token')
 export class kycController {
   constructor(private readonly kycService: KycService) {}
 
-  @Post('basic')
+  //[x] implement guard check for ensure user can't make this request again
+  @Post('basic-nin-bvn')
   @UseGuards(AuthGuard)
   @ApiBody({ type: BasicTierKycDto, description: 'Basic KYC information' })
   @ApiOkResponse({ type: KycResponseDto })
@@ -28,6 +34,24 @@ export class kycController {
   ) {
     const user = req.user;
     const data = await this.kycService.createBasicKyc(basicKycDto, user);
+
+    responseHandler(data, res, req);
+  }
+
+  //[x] implement guard check for ensure user can't make this request again
+  @Post('basic-document-verify-selfie')
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({ type: KycResponseDto })
+  async verifySelfieWithPhotoIdDto(
+    @Body() body: VerifySelfieWithPhotoIdDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
+    const data = await this.kycService.createBasicSelfieWithPhotoKyc(
+      user,
+      body,
+    );
 
     responseHandler(data, res, req);
   }

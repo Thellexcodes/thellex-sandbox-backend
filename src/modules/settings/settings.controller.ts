@@ -4,8 +4,9 @@ import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { CreateBankAccountDto } from './dto/payment-settings';
 import { responseHandler } from '@/utils/helpers';
+import { VersionedController001 } from '../controller/base.controller';
 
-@Controller('settings')
+@VersionedController001('settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 

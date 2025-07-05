@@ -113,7 +113,7 @@ export class PaymentsService {
       address: userKycData.address ?? '',
       dob: userKycData.dob ?? '',
       email: user.email,
-      idNumber: userKycData.nin,
+      idNumber: userKycData.idNumber,
       idType: IdTypeEnum.NIN,
       additionalIdType: IdTypeEnum.BVN,
       additionalIdNumber: userKycData.bvn,
