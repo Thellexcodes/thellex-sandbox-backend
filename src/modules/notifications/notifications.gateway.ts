@@ -72,6 +72,8 @@ export class NotificationsGateway {
         ? NOTIFICATION_SOCKETS.DEPOSIT_SUCCESSFUL
         : NOTIFICATION_SOCKETS.WITHDRAWAL_SUCCESSFUL;
 
+    console.log({ event });
+
     sockets?.forEach((socketId) => {
       this.server.to(socketId).emit(event, payload);
     });

@@ -180,7 +180,7 @@ export class QwalletHooksService {
         });
 
       await this.notificationsGateway.emitTransactionNotificationToUser(
-        qwalletProfile.user.alertID,
+        user.alertID,
         TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit,
         { transaction, notification },
       );
@@ -220,6 +220,7 @@ export class QwalletHooksService {
       const qwalletProfile = await this.qwalletService.lookupSubAccountByQid(
         data.user.id,
       );
+
       if (!qwalletProfile) {
         throw new CustomHttpException(
           QWalletStatus.INVALID_USER,
@@ -248,7 +249,7 @@ export class QwalletHooksService {
         );
       }
 
-      const transaction =
+      const updatedTransaction =
         await this.transactionHistoryService.updateQWalletTransactionByTransactionId(
           data,
         );
@@ -270,7 +271,7 @@ export class QwalletHooksService {
           data: {
             amount: data.amount,
             assetCode: data.currency,
-            txnID: transaction.id,
+            txnID: updatedTransaction.id,
             walletID: data.wallet.id,
           },
           title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
@@ -280,7 +281,7 @@ export class QwalletHooksService {
       await this.notificationsGateway.emitTransactionNotificationToUser(
         qwalletProfile.user.alertID,
         TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
-        { transaction, notification },
+        { transaction: updatedTransaction, notification },
       );
     } catch (error) {
       console.error('Withdrawal processing failed:', error);

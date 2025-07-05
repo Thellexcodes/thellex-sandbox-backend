@@ -43,7 +43,7 @@ export const DEV_MODE_TOOLS = {
 };
 
 // --- Payments Only ---
-export const NAIRA_RATE = 1650;
+export const NAIRA_RATE = 0.0;
 
 // ==============================
 // ENUMS & TYPES

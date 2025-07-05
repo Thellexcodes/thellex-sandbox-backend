@@ -31,7 +31,7 @@ export class PaymentsService {
    */
   async handleWithdrawCryptoPayment(
     withdrawCryptoPaymentDto: CreateCryptoWithdrawPaymentDto,
-  ): Promise<TransactionHistoryEntity | null> {
+  ): Promise<TransactionHistoryEntity> {
     const { network, assetCode, sourceAddress } = withdrawCryptoPaymentDto;
 
     for (const walletTypeKey in walletConfig) {
@@ -60,8 +60,6 @@ export class PaymentsService {
         }
       }
     }
-
-    return null;
   }
 
   async handleGetPaymentChannels(): Promise<IYCChannel[] | any> {

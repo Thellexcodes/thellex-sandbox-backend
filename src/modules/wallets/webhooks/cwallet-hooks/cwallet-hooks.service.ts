@@ -166,23 +166,24 @@ export class CwalletHooksService {
           );
         }
 
-        // if (transaction.event === WalletWebhookEventEnum.WithdrawalSuccessful) {
-        //   throw new CustomHttpException(
-        //     QWalletStatus.TRANSACTION_ALREADY_PROCESSED,
-        //     HttpStatus.CONFLICT,
-        //   );
-        // }
+        if (transaction.event === WalletWebhookEventEnum.WithdrawalSuccessful) {
+          throw new CustomHttpException(
+            QWalletStatus.TRANSACTION_ALREADY_PROCESSED,
+            HttpStatus.CONFLICT,
+          );
+        }
 
         // Update transaction to reflect successful withdrawal
-        await this.transactionHistoryServie.updateCwalletTransaction({
-          transactionId: txnID,
-          updates: {
-            paymentStatus: PaymentStatus.Done,
-            event: WalletWebhookEventEnum.WithdrawalSuccessful,
-            blockchainTxId: notificationPayload.txHash,
-            updatedAt: toUTCDate(notificationPayload.updateDate),
-          },
-        });
+        const updatedTransaction =
+          await this.transactionHistoryServie.updateCwalletTransaction({
+            transactionId: txnID,
+            updates: {
+              paymentStatus: PaymentStatus.Done,
+              event: WalletWebhookEventEnum.WithdrawalSuccessful,
+              blockchainTxId: notificationPayload.txHash,
+              updatedAt: toUTCDate(notificationPayload.updateDate),
+            },
+          });
 
         const user = transaction.user;
 
@@ -221,7 +222,7 @@ export class CwalletHooksService {
         await this.notificationsGateway.emitTransactionNotificationToUser(
           user.alertID,
           TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
-          { transaction, notification },
+          { transaction: updatedTransaction, notification },
         );
       }
     } catch (error) {

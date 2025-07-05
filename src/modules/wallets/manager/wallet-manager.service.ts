@@ -63,10 +63,15 @@ export class WalletManagerService {
                       w.networkMetadata?.[network],
                   );
 
-                  const qbalanceUsd =
-                    qwallet && qwalletId
-                      ? await this.getQWalletBalance(token, network, qwallet.id)
-                      : 0;
+                  let qbalanceUsd = 0;
+
+                  if (qwallet) {
+                    const az = await this.qwalletService
+                      .getUserWallet(qwalletId, TokenEnum.USDT)
+                      .then((d) => d.data);
+
+                    qbalanceUsd += Number(az.balance);
+                  }
 
                   const cwallet = cwallets.find(
                     (w) =>
@@ -76,18 +81,15 @@ export class WalletManagerService {
                   );
 
                   let cbalanceUsd = 0;
+
                   if (cwallet) {
-                    const cwalletToken = (cwallet.tokens ?? []).find(
-                      (t) =>
-                        t.assetCode.toLowerCase() === tokenLower &&
-                        t.network.toLowerCase() === network,
-                    );
-                    if (cwalletToken) {
-                      cbalanceUsd +=
-                        typeof cwalletToken.balance === 'string'
-                          ? parseFloat(cwalletToken.balance)
-                          : cwalletToken.balance;
-                    }
+                    const cwalletBalanceRecord =
+                      await this.cwalletService.getBalanceByAddress(
+                        cwallet?.walletID,
+                        TokenEnum.USDC,
+                      );
+
+                    cbalanceUsd += cwalletBalanceRecord;
                   }
 
                   const total = qbalanceUsd + cbalanceUsd;
@@ -97,7 +99,7 @@ export class WalletManagerService {
 
                   if (!walletMap[tokenLower]) {
                     walletMap[tokenLower] = {
-                      totalBalance: total.toString(),
+                      totalBalance: total.toFixed(3),
                       valueInLocal: (total * NAIRA_RATE).toString(),
                       network,
                       address,
@@ -124,7 +126,9 @@ export class WalletManagerService {
       }
 
       const balances = await Promise.all(tasks);
-      const totalInUsd = balances.reduce((sum, value) => sum + value, 0);
+      const totalInUsd = balances
+        .reduce((sum, value) => sum + value, 0)
+        .toFixed(2);
 
       return plainToInstance(
         WalletBalanceSummaryResponseDto,
@@ -143,31 +147,31 @@ export class WalletManagerService {
     }
   }
 
-  private async getQWalletBalance(
-    token: TokenEnum,
-    network: SupportedBlockchainType,
-    qwalletId: string,
-  ): Promise<number> {
-    return this.getWalletTokenBalance({
-      token,
-      network,
-      walletId: qwalletId,
-      type: WalletProviderEnum.QUIDAX,
-    });
-  }
+  // private async getQWalletBalance(
+  //   token: TokenEnum,
+  //   network: SupportedBlockchainType,
+  //   qwalletId: string,
+  // ): Promise<number> {
+  //   return this.getWalletTokenBalance({
+  //     token,
+  //     network,
+  //     walletId: qwalletId,
+  //     type: WalletProviderEnum.QUIDAX,
+  //   });
+  // }
 
-  private async getCWalletBalance(
-    token: TokenEnum,
-    network: SupportedBlockchainType,
-    walletId: string,
-  ): Promise<number> {
-    return this.getWalletTokenBalance({
-      token,
-      network,
-      walletId,
-      type: WalletProviderEnum.CIRCLE,
-    });
-  }
+  // private async getCWalletBalance(
+  //   token: TokenEnum,
+  //   network: SupportedBlockchainType,
+  //   walletId: string,
+  // ): Promise<number> {
+  //   return this.getWalletTokenBalance({
+  //     token,
+  //     network,
+  //     walletId,
+  //     type: WalletProviderEnum.CIRCLE,
+  //   });
+  // }
 
   private async getWalletTokenBalance({
     token,

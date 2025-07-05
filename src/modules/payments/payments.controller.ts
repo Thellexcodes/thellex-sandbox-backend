@@ -45,7 +45,7 @@ export class PaymentsController {
   ) {
     const response =
       await this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
-    responseHandler('', res, req);
+    responseHandler(response, res, req);
   }
 
   @Post('fiat-collection-request')
