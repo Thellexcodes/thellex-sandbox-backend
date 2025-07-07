@@ -16,9 +16,6 @@ export class AuthVerificationCodesEntity extends BaseEntity {
   @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.verificationCodes, {
     nullable: false,
-  })
-  @ManyToOne(() => UserEntity, (user) => user.verificationCodes, {
-    nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
@@ -30,7 +27,7 @@ export class AuthVerificationCodesEntity extends BaseEntity {
   @Column({ nullable: true, default: false })
   expired: boolean;
 
-  @CreateDateColumn({
+  @Column({
     name: 'expires_at',
     type: 'timestamptz',
     nullable: false,
