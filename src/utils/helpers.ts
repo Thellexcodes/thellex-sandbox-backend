@@ -289,11 +289,16 @@ export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
     outstandingKyc.push(IdTypeEnum.BVN);
   }
 
+  const remainingTiers = tierOrder
+    .slice(currentIndex + 1)
+    .map((tierKey) => formatTier(tierKey));
+
   return {
     ...user,
     currentTier: formatTier(userTier),
     nextTier: nextTier ? formatTier(nextTier) : null,
     outstandingKyc,
+    remainingTiers,
   };
 }
 

@@ -1,4 +1,3 @@
-// import { CHAINS } from '@/thellex-sdk/src';
 import { DocumentAnalysisEntityDto } from '@/modules/kyc/dto/kyc-data.dto';
 import { LRUCache } from 'lru-cache';
 

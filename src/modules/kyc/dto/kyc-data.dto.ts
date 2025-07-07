@@ -2,7 +2,7 @@ import { BaseResponseDto } from '@/models/base-response.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsString,
@@ -46,7 +46,8 @@ export class BasicTierKycDto {
 
   @ApiProperty({ description: 'Phone number' })
   @IsString({ message: 'phone/empty' })
-  phoneNumber: string;
+  @IsOptional()
+  phoneNumbe: string;
 
   @ApiProperty({ description: 'Date of birth of BVN holder (yyyy-mm-dd)' })
   @IsOptional()
@@ -114,6 +115,29 @@ export class KycResultDto {
     description: 'List of outstanding KYC requirements.',
   })
   outstandingKyc: string[] = [];
+
+  @Expose()
+  @ApiProperty({
+    type: [TierInfoDto],
+    description: 'List of tiers remaining for the user to progress through',
+    example: [
+      {
+        name: 'PERSONAL',
+        target: 'Verified Individuals',
+        description:
+          'Users with face and address verification — ideal for POS/crypto usage.',
+        transactionLimits: {
+          dailyCreditLimit: 500000,
+          dailyDebitLimit: 500000,
+          singleDebitLimit: 100000,
+        },
+        txnFee: { WITHDRAWAL: { min: 1, max: 300, feePercentage: 2.0 } },
+        requirements: ['FaceVerification', 'ResidentialAddress'],
+      },
+    ],
+  })
+  @Type(() => TierInfoDto)
+  remainingTiers: TierInfoDto[];
 }
 
 export class KycResponseDto extends BaseResponseDto<KycResultDto> {

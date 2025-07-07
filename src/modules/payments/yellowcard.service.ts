@@ -5,27 +5,16 @@ import {
   IYCAcceptCollectionRequestPayload,
   IYCChannelsResponseType,
   IYCNetworksResponseType,
-  IYCPaymentRequestResponse,
   IYCPaymentRequestResponseType,
   IYellowCardWebhookConfig,
 } from '@/models/yellocard.models';
 
 import { generateYcSignature } from '@/utils/helpers';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class YellowCardService {
-  private readonly publicKey: string;
-  private readonly secretKey: string;
-
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-  ) {
-    this.publicKey = this.configService.get<string>('YC_PUBLIC_KEY')!;
-    this.secretKey = this.configService.get<string>('YC_SECRET_KEY')!;
-  }
+  constructor(private readonly httpService: HttpService) {}
 
   // --- Payments API ---
 
@@ -297,8 +286,8 @@ export class YellowCardService {
     const { headers } = generateYcSignature({
       method,
       path,
-      publicKey: this.publicKey,
-      secretKey: this.secretKey,
+      publicKey: getAppConfig().YC.PUBLIC_KEY,
+      secretKey: getAppConfig().YC.SECRET_KEY,
       body,
     });
     return headers;

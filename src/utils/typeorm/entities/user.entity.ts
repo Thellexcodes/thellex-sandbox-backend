@@ -107,6 +107,7 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => KycEntity, (kyc) => kyc.user, {
     nullable: true,
     cascade: true,
+    eager: true,
   })
   kyc: KycEntity;
 
@@ -210,4 +211,27 @@ export class IUserDto extends UserEntity {
     description: 'Next user tier info',
   })
   nextTier: TierInfoDto | null;
+
+  @Expose()
+  @ApiProperty({
+    type: [TierInfoDto],
+    description: 'List of tiers remaining for the user to progress through',
+    example: [
+      {
+        name: 'PERSONAL',
+        target: 'Verified Individuals',
+        description:
+          'Users with face and address verification — ideal for POS/crypto usage.',
+        transactionLimits: {
+          dailyCreditLimit: 500000,
+          dailyDebitLimit: 500000,
+          singleDebitLimit: 100000,
+        },
+        txnFee: { WITHDRAWAL: { min: 1, max: 300, feePercentage: 2.0 } },
+        requirements: ['FaceVerification', 'ResidentialAddress'],
+      },
+    ],
+  })
+  @Type(() => TierInfoDto)
+  remainingTiers: TierInfoDto[];
 }

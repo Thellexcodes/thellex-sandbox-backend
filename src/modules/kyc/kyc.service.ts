@@ -60,7 +60,7 @@ export class KycService {
   async createBasicKyc(
     kydataDto: BasicTierKycDto,
     user: UserEntity,
-  ): Promise<KycResultDto> {
+  ): Promise<KycResultDto | any> {
     try {
       if (user.tier !== TierEnum.NONE) {
         throw new CustomHttpException(
@@ -530,15 +530,21 @@ export class KycService {
       };
 
       await this.kycRepo.save(userKycData);
-
       await this.userService.updateUserTier(user.id, TierEnum.BASIC);
       const updatedUser = await this.userService.findOneById(user.id);
 
-      const userPlain = formatUserWithTiers(updatedUser);
+      const { currentTier, nextTier, remainingTiers, outstandingKyc } =
+        formatUserWithTiers(updatedUser);
 
       return plainToInstance(
         KycResultDto,
-        { isVerified: true, ...userPlain },
+        {
+          isVerified: true,
+          currentTier,
+          nextTier,
+          outstandingKyc,
+          remainingTiers,
+        },
         { excludeExtraneousValues: true },
       );
     } catch (error) {

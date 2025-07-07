@@ -53,6 +53,8 @@ export class kycController {
       body,
     );
 
+    console.log(data);
+
     responseHandler(data, res, req);
   }
 }
