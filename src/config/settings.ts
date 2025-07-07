@@ -43,7 +43,7 @@ export const DEV_MODE_TOOLS = {
 };
 
 // --- Payments Only ---
-export const NAIRA_RATE = 1650;
+export const NAIRA_RATE = 0.0;
 
 // ==============================
 // ENUMS & TYPES
@@ -62,7 +62,7 @@ export enum SupportedBlockchainType {
   // STELLAR = 'stellar',
   // CELO = 'celo',
   // BITCOIN = 'btc',
-  // ETHEREUM = 'erc20',
+  ETHEREUM = 'erc20',
   // SUI = 'sui',
   // SOLANA = 'solana',
   // BASE = 'base',
@@ -111,7 +111,7 @@ export enum SupportedFiatCurrency {
   NGN = 'NGN',
 }
 
-export const AUTH_VERIFICATION_CODE_TTL = 30; // TTL = Time To Live
+export const AUTH_VERIFICATION_CODE_TTL = 120; // TTL = Time To Live
 export const FILE_UPLOAD_LIMIT = '10mb'; // Use string for bodyParser
 export const FILE_UPLOAD_LIMIT_BYTES = 10 * 1024 * 1024; // For Fastify or byte-level limits
 export const KYC_EXPIRATION_DURATION_MS = 18 * 30 * 24 * 60 * 60 * 1000;

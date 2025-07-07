@@ -18,12 +18,15 @@ import {
   WalletMapDto,
 } from './dto/get-balance-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { EtherService } from '@/utils/services/ethers.service';
 
+//TODO: for each hook, you're to update the balance of the wallet in db and sue that here instead of making request everythime to fetch wallet addresses
 @Injectable()
 export class WalletManagerService {
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
+    private readonly ethersService: EtherService,
   ) {}
 
   async getBalance(user: UserEntity): Promise<WalletBalanceSummaryResponseDto> {
@@ -63,10 +66,15 @@ export class WalletManagerService {
                       w.networkMetadata?.[network],
                   );
 
-                  const qbalanceUsd =
-                    qwallet && qwalletId
-                      ? await this.getQWalletBalance(token, network, qwallet.id)
-                      : 0;
+                  let qbalanceUsd = 0;
+
+                  if (qwallet) {
+                    const az = await this.qwalletService
+                      .getUserWallet(qwalletId, TokenEnum.USDT)
+                      .then((d) => d.data);
+
+                    qbalanceUsd += Number(az.balance);
+                  }
 
                   const cwallet = cwallets.find(
                     (w) =>
@@ -76,28 +84,26 @@ export class WalletManagerService {
                   );
 
                   let cbalanceUsd = 0;
+
                   if (cwallet) {
-                    const cwalletToken = (cwallet.tokens ?? []).find(
-                      (t) =>
-                        t.assetCode.toLowerCase() === tokenLower &&
-                        t.network.toLowerCase() === network,
-                    );
-                    if (cwalletToken) {
-                      cbalanceUsd +=
-                        typeof cwalletToken.balance === 'string'
-                          ? parseFloat(cwalletToken.balance)
-                          : cwalletToken.balance;
-                    }
+                    const cwalletBalanceRecord =
+                      await this.cwalletService.getBalanceByAddress(
+                        cwallet?.walletID,
+                        TokenEnum.USDC,
+                      );
+
+                    cbalanceUsd += cwalletBalanceRecord;
                   }
 
                   const total = qbalanceUsd + cbalanceUsd;
+
                   const address =
                     qwallet?.networkMetadata?.[network]?.address ||
                     cwallet?.networkMetadata?.[network]?.address;
 
                   if (!walletMap[tokenLower]) {
                     walletMap[tokenLower] = {
-                      totalBalance: total.toString(),
+                      totalBalance: total.toFixed(3),
                       valueInLocal: (total * NAIRA_RATE).toString(),
                       network,
                       address,
@@ -124,7 +130,11 @@ export class WalletManagerService {
       }
 
       const balances = await Promise.all(tasks);
-      const totalInUsd = balances.reduce((sum, value) => sum + value, 0);
+      const validBalances = balances.filter(
+        (v) => typeof v === 'number' && !isNaN(v),
+      );
+      const totalSum = validBalances.reduce((sum, value) => sum + value, 0);
+      const totalInUsd = totalSum.toFixed(2);
 
       return plainToInstance(
         WalletBalanceSummaryResponseDto,

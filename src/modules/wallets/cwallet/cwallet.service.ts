@@ -228,16 +228,14 @@ export class CwalletService {
   }
 
   async getBalanceByAddress(id: string, token: TokenEnum): Promise<number> {
-    const normalizedToken = token.toUpperCase();
+    const normalizedTokenName = this.normalizeTokenName(token);
 
     const response = await this.circleClient.getWalletTokenBalance({
-      id,
-      name: normalizedToken,
+      id: id,
+      name: normalizedTokenName,
     });
 
-    console.log(response.data);
-
-    return Number(response.data.tokenBalances[0]?.amount ?? 10);
+    return Number(response.data.tokenBalances?.[0]?.amount ?? 0);
   }
 
   async validateAddress(
@@ -454,5 +452,16 @@ export class CwalletService {
     }
 
     return tokensToSave;
+  }
+
+  private normalizeTokenName(token: string): string {
+    const tokenMap: Record<string, string> = {
+      USDC: 'USD Coin',
+      ETH: 'Ethereum',
+      BTC: 'Bitcoin',
+      MATIC: 'Polygon',
+    };
+
+    return tokenMap[token.toUpperCase()] ?? token;
   }
 }

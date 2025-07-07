@@ -537,16 +537,22 @@ export class QwalletService {
         );
       }
 
-      // if (parseFloat(token.balance) < parseFloat(amount.toString())) {
-      //   throw new CustomHttpException(
-      //     WalletErrorEnum.BALANCE_LOW,
-      //     HttpStatus.BAD_REQUEST,
-      //   );
-      // }
+      if (parseFloat(token.balance) < parseFloat(amount.toString())) {
+        throw new CustomHttpException(
+          WalletErrorEnum.BALANCE_LOW,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       const response = await this.httpService.post<IQWithdrawPaymentResponse>(
         `${this.qwalletUrl}/users/${uuid}/withdraws`,
-        { ...dto, currency: assetCode },
+        {
+          currency: dto.assetCode,
+          amount: dto.amount,
+          transaction_note: 'Payment for freinds and family',
+          narration: 'Payment for freinds and family',
+          fund_uid: dto.fund_uid,
+        },
         { headers: this.getAuthHeaders() },
       );
 
@@ -582,10 +588,7 @@ export class QwalletService {
         excludeExtraneousValues: true,
       });
     } catch (error) {
-      console.error(
-        'Withdrawal error:',
-        error?.response?.data || error.message,
-      );
+      console.log('Withdrawal error:', error?.response?.data || error.message);
       throw new CustomHttpException(
         WalletErrorEnum.CREATE_WITHDRAWAL_FAILED,
         HttpStatus.BAD_REQUEST,

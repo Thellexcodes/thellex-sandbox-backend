@@ -1,7 +1,11 @@
-import { NotificationPayload } from '@/models/notification.types';
+import {
+  TransactionNotificationDto,
+  WalletUpdatedNotificationDto,
+} from '@/models/notification.types';
 import {
   NOTIFICATION_SOCKETS,
   TRANSACTION_NOTIFICATION_TYPES_ENUM,
+  WALLET_NOTIFICAITON_TYPES_ENUM,
 } from '@/models/socket.enums';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -63,14 +67,29 @@ export class NotificationsGateway {
 
   async emitTransactionNotificationToUser(
     alertID: string,
-    eventType: TRANSACTION_NOTIFICATION_TYPES_ENUM,
-    payload: NotificationPayload,
+    eventType:
+      | TRANSACTION_NOTIFICATION_TYPES_ENUM
+      | WALLET_NOTIFICAITON_TYPES_ENUM,
+    payload: WalletUpdatedNotificationDto | TransactionNotificationDto,
   ) {
     const sockets = this.userSockets.get(alertID);
-    const event =
-      eventType === 'deposit'
-        ? NOTIFICATION_SOCKETS.DEPOSIT_SUCCESSFUL
-        : NOTIFICATION_SOCKETS.WITHDRAWAL_SUCCESSFUL;
+
+    let event: NOTIFICATION_SOCKETS | undefined;
+
+    switch (eventType) {
+      case TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit:
+        event = NOTIFICATION_SOCKETS.DEPOSIT_SUCCESSFUL;
+        break;
+      case TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal:
+        event = NOTIFICATION_SOCKETS.WITHDRAWAL_SUCCESSFUL;
+        break;
+      case WALLET_NOTIFICAITON_TYPES_ENUM.WalletAddressGenerated:
+        event = NOTIFICATION_SOCKETS.WALLET_ADDRESS_GENERATED;
+        break;
+      default:
+        console.warn(`Unknown eventType: ${eventType}`);
+        return;
+    }
 
     sockets?.forEach((socketId) => {
       this.server.to(socketId).emit(event, payload);

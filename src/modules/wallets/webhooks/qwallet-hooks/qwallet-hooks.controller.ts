@@ -43,7 +43,7 @@ export class QwalletHooksController {
         await this.qwalletHooksService.handleWithdrawSuccessful(payload);
         break;
       case WalletWebhookEventEnum.WalletAddressGenerated:
-        await this.qwalletHooksService.handleWalletUpdated(payload);
+        await this.qwalletHooksService.handleWalletAddressGenerated(payload);
         break;
       default:
         return responseHandler('', res, req);
