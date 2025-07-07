@@ -18,12 +18,15 @@ import {
   WalletMapDto,
 } from './dto/get-balance-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { EtherService } from '@/utils/services/ethers.service';
 
+//TODO: for each hook, you're to update the balance of the wallet in db and sue that here instead of making request everythime to fetch wallet addresses
 @Injectable()
 export class WalletManagerService {
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
+    private readonly ethersService: EtherService,
   ) {}
 
   async getBalance(user: UserEntity): Promise<WalletBalanceSummaryResponseDto> {
@@ -93,6 +96,7 @@ export class WalletManagerService {
                   }
 
                   const total = qbalanceUsd + cbalanceUsd;
+
                   const address =
                     qwallet?.networkMetadata?.[network]?.address ||
                     cwallet?.networkMetadata?.[network]?.address;
@@ -126,9 +130,11 @@ export class WalletManagerService {
       }
 
       const balances = await Promise.all(tasks);
-      const totalInUsd = balances
-        .reduce((sum, value) => sum + value, 0)
-        .toFixed(2);
+      const validBalances = balances.filter(
+        (v) => typeof v === 'number' && !isNaN(v),
+      );
+      const totalSum = validBalances.reduce((sum, value) => sum + value, 0);
+      const totalInUsd = totalSum.toFixed(2);
 
       return plainToInstance(
         WalletBalanceSummaryResponseDto,
@@ -147,31 +153,31 @@ export class WalletManagerService {
     }
   }
 
-  // private async getQWalletBalance(
-  //   token: TokenEnum,
-  //   network: SupportedBlockchainType,
-  //   qwalletId: string,
-  // ): Promise<number> {
-  //   return this.getWalletTokenBalance({
-  //     token,
-  //     network,
-  //     walletId: qwalletId,
-  //     type: WalletProviderEnum.QUIDAX,
-  //   });
-  // }
+  private async getQWalletBalance(
+    token: TokenEnum,
+    network: SupportedBlockchainType,
+    qwalletId: string,
+  ): Promise<number> {
+    return this.getWalletTokenBalance({
+      token,
+      network,
+      walletId: qwalletId,
+      type: WalletProviderEnum.QUIDAX,
+    });
+  }
 
-  // private async getCWalletBalance(
-  //   token: TokenEnum,
-  //   network: SupportedBlockchainType,
-  //   walletId: string,
-  // ): Promise<number> {
-  //   return this.getWalletTokenBalance({
-  //     token,
-  //     network,
-  //     walletId,
-  //     type: WalletProviderEnum.CIRCLE,
-  //   });
-  // }
+  private async getCWalletBalance(
+    token: TokenEnum,
+    network: SupportedBlockchainType,
+    walletId: string,
+  ): Promise<number> {
+    return this.getWalletTokenBalance({
+      token,
+      network,
+      walletId,
+      type: WalletProviderEnum.CIRCLE,
+    });
+  }
 
   private async getWalletTokenBalance({
     token,

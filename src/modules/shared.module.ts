@@ -1,4 +1,3 @@
-import { Web3Service } from '@/utils/services/web3.service';
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionHistoryService } from './transaction-history/transaction-history.service';
@@ -23,6 +22,7 @@ import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet
 import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 import { CwalletHooksModule } from './wallets/webhooks/cwallet-hooks/cwallet-hooks.module';
 import { QwalletHooksModule } from './wallets/webhooks/qwallet-hooks/qwallet-hooks.module';
+import { EtherService } from '@/utils/services/ethers.service';
 
 @Global()
 @Module({
@@ -46,7 +46,7 @@ import { QwalletHooksModule } from './wallets/webhooks/qwallet-hooks/qwallet-hoo
     SettingsModule,
   ],
   providers: [
-    Web3Service,
+    EtherService,
     NotificationsGateway,
     TransactionHistoryService,
     WalletNotificationsService,
@@ -56,7 +56,7 @@ import { QwalletHooksModule } from './wallets/webhooks/qwallet-hooks/qwallet-hoo
     HttpService,
   ],
   exports: [
-    Web3Service,
+    EtherService,
     TypeOrmModule,
     NotificationsGateway,
     TransactionHistoryService,

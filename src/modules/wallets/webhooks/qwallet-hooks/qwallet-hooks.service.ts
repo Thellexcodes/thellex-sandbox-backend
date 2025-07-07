@@ -13,7 +13,10 @@ import {
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
 import { toUTCDate } from '@/utils/helpers';
-import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/models/socket.enums';
+import {
+  TRANSACTION_NOTIFICATION_TYPES_ENUM,
+  WALLET_NOTIFICAITON_TYPES_ENUM,
+} from '@/models/socket.enums';
 import { PaymentStatus, PaymentType } from '@/models/payment.types';
 import { IQWalletAddressGenerated } from './dto/qwallet-hook-walletUpdated.dto';
 import { QwalletService } from '../../qwallet/qwallet.service';
@@ -34,7 +37,9 @@ export class QwalletHooksService {
     private readonly walletNotficationsService: WalletNotificationsService,
   ) {}
 
-  async handleWalletUpdated(payload: QWalletWebhookPayloadDto): Promise<void> {
+  async handleWalletAddressGenerated(
+    payload: QWalletWebhookPayloadDto,
+  ): Promise<void> {
     const data = payload.data as IQWalletAddressGenerated;
 
     const qwalletProfile = await this.qwalletService.lookupSubAccountByQid(
@@ -68,14 +73,18 @@ export class QwalletHooksService {
       },
     };
 
+    const user = qwalletProfile.user;
+
     await this.qwalletService.updateWalletAddress({
       id: wallet.id,
       networkMetadata: updatedNetworkMetadata,
     });
-  }
 
-  handleWalletAddressGenerated(payload: any) {
-    return { message: 'Wallet address generated', payload };
+    await this.notificationsGateway.emitTransactionNotificationToUser(
+      user.alertID,
+      WALLET_NOTIFICAITON_TYPES_ENUM.WalletAddressGenerated,
+      { updated: true },
+    );
   }
 
   handleDepositConfirmation(payload: any) {

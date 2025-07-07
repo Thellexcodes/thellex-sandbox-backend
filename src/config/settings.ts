@@ -62,7 +62,7 @@ export enum SupportedBlockchainType {
   // STELLAR = 'stellar',
   // CELO = 'celo',
   // BITCOIN = 'btc',
-  // ETHEREUM = 'erc20',
+  ETHEREUM = 'erc20',
   // SUI = 'sui',
   // SOLANA = 'solana',
   // BASE = 'base',
