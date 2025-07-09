@@ -255,7 +255,6 @@ export class UserService {
   }
 
   async updateUserAlertId(userId: string, token: string): Promise<void> {
-    console.log({ token, userId });
     try {
       await this.userRepository.update(userId, { alertID: token });
       console.log('updated');

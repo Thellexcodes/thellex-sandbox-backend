@@ -16,7 +16,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { CreateSubAccountDto } from './dto/create-qwallet.dto';
 import {
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   TokenEnum,
   WalletProviderEnum,
 } from '@/config/settings';
@@ -178,7 +178,7 @@ export class QwalletService {
 
       const networks = Object.keys(
         providerConfig.networks,
-      ) as SupportedBlockchainType[];
+      ) as SupportedBlockchainTypeEnum[];
 
       for (const network of networks) {
         const tokens = providerConfig.networks[network].tokens;
@@ -317,7 +317,7 @@ export class QwalletService {
   async buildTokensForWallet(
     wallet: QWalletsEntity,
     networkMetadata: Record<
-      SupportedBlockchainType,
+      SupportedBlockchainTypeEnum,
       {
         address: string;
         tokenId?: string;
@@ -334,7 +334,7 @@ export class QwalletService {
 
     for (const network of Object.keys(
       networkMetadata,
-    ) as SupportedBlockchainType[]) {
+    ) as SupportedBlockchainTypeEnum[]) {
       const networkConfig = providerConfig.networks?.[network];
       if (!networkConfig) continue;
 
@@ -598,7 +598,7 @@ export class QwalletService {
 
   async findWalletByUserAndNetwork(
     user: UserEntity,
-    network: SupportedBlockchainType,
+    network: SupportedBlockchainTypeEnum,
     assetCode: TokenEnum,
   ): Promise<QWalletsEntity | null> {
     const profile = user.qWalletProfile;

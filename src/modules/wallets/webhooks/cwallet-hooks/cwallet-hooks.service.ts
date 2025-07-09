@@ -4,7 +4,7 @@ import {
   WalletErrorEnum,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import { PaymentStatus } from '@/models/payment.types';
 import { toUTCDate } from '@/utils/helpers';
 import {
   NotificationMessageEnum,

@@ -1,4 +1,4 @@
-import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import { PaymentDirection, PaymentStatus } from '@/models/payment.types';
 import {
   FeeLevel,
   WalletWebhookEventEnum,
@@ -8,7 +8,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 export class TransactionHistoryDto {
   event?: WalletWebhookEventEnum;
   transactionId: string;
-  type: PaymentType;
+  paymentDirection: PaymentDirection;
   assetCode: string;
   amount: string;
   fee?: string;

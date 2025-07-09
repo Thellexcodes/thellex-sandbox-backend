@@ -5,9 +5,10 @@ import { Repository } from 'typeorm';
 import { IUserDto, UserEntity } from './typeorm/entities/user.entity';
 import {
   SUPPORTED_RAMP_COUNTRIES,
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   TokenEnum,
+  TransactionSettingsDto,
   WalletProviderEnum,
 } from '@/config/settings';
 import * as crypto from 'crypto';
@@ -20,6 +21,7 @@ import {
 } from '@/config/tier.lists';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
+import { compareTwoStrings } from 'string-similarity';
 
 //TODO: handle errors with enums
 
@@ -142,7 +144,7 @@ export function generateYcSignature({
   const timestamp = new Date().toISOString();
   let bodyHash = '';
 
-  if (method === 'POST' || method === 'PUT') {
+  if (['POST', 'PUT'].includes(method.toUpperCase())) {
     const rawBody =
       typeof body === 'string' ? body : JSON.stringify(body || {});
     const hash = crypto.createHash('sha256').update(rawBody).digest();
@@ -186,7 +188,7 @@ export function toUTCDate(dateString: string): Date {
 }
 
 export function isSupportedBlockchainToken(
-  network: SupportedBlockchainType,
+  network: SupportedBlockchainTypeEnum,
   token: TokenEnum,
 ): boolean {
   for (const walletTypeKey in walletConfig) {
@@ -196,7 +198,7 @@ export function isSupportedBlockchainToken(
       for (const networkKey in provider.networks) {
         if (networkKey.toLowerCase() === network.toLowerCase()) {
           const supportedTokens =
-            provider.networks[networkKey as SupportedBlockchainType].tokens;
+            provider.networks[networkKey as SupportedBlockchainTypeEnum].tokens;
           if (
             supportedTokens
               .map((t) => t.toLowerCase())
@@ -220,7 +222,7 @@ export function getTokenId({
   isTestnet = false,
 }: {
   token: TokenEnum;
-  chain?: SupportedBlockchainType;
+  chain?: SupportedBlockchainTypeEnum;
   isTestnet?: boolean;
 }): string | undefined {
   for (const walletTypeKey in walletConfig) {
@@ -232,7 +234,7 @@ export function getTokenId({
       const networks = provider.networks;
 
       for (const networkKey in networks) {
-        const network = networkKey as SupportedBlockchainType;
+        const network = networkKey as SupportedBlockchainTypeEnum;
         const config = networks[network];
 
         // Check for mainnet/testnet match
@@ -282,10 +284,7 @@ export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
   const country = user.kyc?.country || '';
   const outstandingKyc: string[] = [];
 
-  if (
-    isCountrySupportedForOfframp(country) &&
-    !idTypes.includes(IdTypeEnum.BVN)
-  ) {
+  if (isCountrySupportedForOfframp(country) && !user.kyc.bvn) {
     outstandingKyc.push(IdTypeEnum.BVN);
   }
 
@@ -299,6 +298,7 @@ export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
     nextTier: nextTier ? formatTier(nextTier) : null,
     outstandingKyc,
     remainingTiers,
+    transactionSettings: new TransactionSettingsDto(),
   };
 }
 
@@ -315,9 +315,14 @@ export const normalize = (str: string) =>
     .toLowerCase()
     .replace(/[^a-z]/g, '');
 
-export const isCountrySupportedForOfframp = (country: string): boolean => {
+export const isCountrySupportedForOfframp = (
+  country: string,
+  threshold = 0.8,
+): boolean => {
   const normalized = normalize(country);
-  return SUPPORTED_RAMP_COUNTRIES.some(
-    (supported) => normalize(supported) === normalized,
-  );
+
+  return SUPPORTED_RAMP_COUNTRIES.some((supported) => {
+    const similarity = compareTwoStrings(normalize(supported), normalized);
+    return similarity >= threshold;
+  });
 };

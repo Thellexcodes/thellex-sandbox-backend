@@ -28,12 +28,6 @@ ApiTags('Payments');
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
 
-  @Get('channels')
-  async channels(@Req() req: CustomRequest, @Res() res: CustomResponse) {
-    const response = await this.paymentService.handleGetPaymentChannels();
-    responseHandler(response, res, req);
-  }
-
   @Post('withdraw-crypto')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })

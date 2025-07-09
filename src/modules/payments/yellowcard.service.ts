@@ -11,6 +11,11 @@ import {
 
 import { generateYcSignature } from '@/utils/helpers';
 import { Injectable } from '@nestjs/common';
+import { rateCache } from '@/utils/constants';
+import {
+  IYellowCardRateDto,
+  IYellowCardRatesResponseDto,
+} from './dto/yellocard.dto';
 
 @Injectable()
 export class YellowCardService {
@@ -25,9 +30,7 @@ export class YellowCardService {
     const url = crypto
       ? `${this.ycUrl}${path}`
       : `${this.ycUrl}${path}?country=NG`;
-
     const headers = this.generateAuthHeaders(method, path);
-
     return await this.httpService.get<IYCChannelsResponseType>(url, {
       headers,
     });
@@ -45,7 +48,7 @@ export class YellowCardService {
   }
 
   // Get Rates
-  async getRates() {
+  async getRates(): Promise<IYellowCardRatesResponseDto> {
     const method = 'GET';
     const path = '/business/rates';
     const url = `${this.ycUrl}${path}`;
@@ -274,8 +277,30 @@ export class YellowCardService {
     // return await firstValueFrom(response$);
   }
 
-  private get ycUrl(): string {
-    return getAppConfig().YC.PAYMENT_API;
+  async convertFiatToCrypto(
+    fiatCode: string,
+    cryptoCode: string,
+    amount: number,
+  ): Promise<number | null> {
+    const fiatRate = await this.getRateFromCache(fiatCode);
+    const cryptoRate = await this.getRateFromCache(cryptoCode);
+
+    if (!fiatRate || !cryptoRate) return null;
+
+    // Assume using the sell rate for fiat (to convert to USDT)
+    const fiatSell = fiatRate.sell;
+    const cryptoSell = cryptoRate.sell;
+
+    // How much crypto you get for your fiat
+    const result = amount / fiatSell / cryptoSell;
+
+    return Number(result.toFixed(6));
+  }
+
+  async getRateFromCache(code: string): Promise<IYellowCardRateDto> {
+    const rates = rateCache.get('yellowcard_rates');
+    if (!rates) return null;
+    return rates.find((rate: any) => rate.code === code.toUpperCase()) || null;
   }
 
   private generateAuthHeaders(
@@ -291,5 +316,9 @@ export class YellowCardService {
       body,
     });
     return headers;
+  }
+
+  private get ycUrl(): string {
+    return getAppConfig().YC.PAYMENT_API;
   }
 }

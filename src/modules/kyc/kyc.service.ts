@@ -5,6 +5,7 @@ import { KycErrorEnum } from '@/models/kyc-error.enum';
 import {
   BvnLookupResponse,
   NinLookupResponse,
+  BvnVerificationResponse,
   PhoneNumberLookupResponse,
 } from '@/models/identifications.types';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,6 +18,7 @@ import {
   EntityDto,
   KycResultDto,
   UploadDocumentInputTypeEnum,
+  ValidateBvnResponseDto,
   VerificationResponseDto,
   VerifySelfieWithPhotoIdDto,
 } from './dto/kyc-data.dto';
@@ -31,8 +33,10 @@ import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { TierEnum } from '@/config/tier.lists';
 import { UserService } from '../users/user.service';
 import { plainToInstance } from 'class-transformer';
+import { VerifyBvnDto } from './dto/validate-bvn.dto';
 
 //TODO: Handle errors with enum
+//[x]: Move the Dojah services out
 @Injectable()
 export class KycService {
   constructor(
@@ -256,9 +260,39 @@ export class KycService {
   }
 
   // Nigeria specific verifications
-  async validateBVN(bvn: string): Promise<boolean> {
-    // Implement BVN validation logic here
-    return true;
+  async validateBVN(
+    userId: string,
+    dto: VerifyBvnDto,
+  ): Promise<ValidateBvnResponseDto> {
+    try {
+      const response = await this.httpService.get<BvnVerificationResponse>(
+        `${this.dojahUrl}/api/v1/kyc/bvn`,
+        {
+          headers: {
+            AppId: getAppConfig().DOJAH.APP_ID,
+            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+          },
+          params: { bvn: dto.bvnNumber },
+        },
+      );
+
+      const isValid = response.entity?.bvn?.status ?? false;
+
+      if (isValid) {
+        const userKycRecord = await this.getUserKyc(userId);
+
+        if (!userKycRecord) {
+          return { isValid };
+        }
+
+        userKycRecord.bvn = String(dto.bvnNumber);
+        await this.kycRepo.save(userKycRecord);
+      }
+
+      return { isValid };
+    } catch (error) {
+      console.error('BVN validation failed:', error?.message || error);
+    }
   }
 
   async verifyNINWithSelfie(nin: string, selfieImage: any): Promise<boolean> {

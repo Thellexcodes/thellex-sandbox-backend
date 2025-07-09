@@ -12,9 +12,11 @@ import { KycService } from './kyc.service';
 import {
   BasicTierKycDto,
   KycResponseDto,
+  ValidateBvnResponseDto,
   VerifySelfieWithPhotoIdDto,
 } from './dto/kyc-data.dto';
 import { VersionedController001 } from '../controller/base.controller';
+import { VerifyBvnDto } from './dto/validate-bvn.dto';
 
 @ApiTags('Kyc')
 @VersionedController001('kyc')
@@ -52,9 +54,19 @@ export class kycController {
       user,
       body,
     );
+    responseHandler(data, res, req);
+  }
 
-    console.log(data);
-
+  @Post('verify-bvn')
+  @UseGuards(AuthGuard)
+  @ApiOkResponse({ type: ValidateBvnResponseDto })
+  async verifyBvn(
+    @Body() body: VerifyBvnDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
+    const data = await this.kycService.validateBVN(user.id, body);
     responseHandler(data, res, req);
   }
 }

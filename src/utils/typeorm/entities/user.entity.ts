@@ -26,6 +26,8 @@ import {
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
+import { FiatCryptoRampTransactionEntity } from './fiat-crypto-ramp-transaction.entity';
+import { TransactionSettingsDto } from '@/config/settings';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -174,6 +176,13 @@ export class UserEntity extends BaseEntity {
     cascade: true,
   })
   taxSettings: TaxSettingEntity;
+
+  @Type(() => FiatCryptoRampTransactionEntity)
+  @OneToOne(() => FiatCryptoRampTransactionEntity, (t) => t.user, {
+    eager: true,
+    cascade: true,
+  })
+  fiatCryptoRampTransactions: FiatCryptoRampTransactionEntity;
 }
 
 @Exclude()
@@ -234,4 +243,7 @@ export class IUserDto extends UserEntity {
   })
   @Type(() => TierInfoDto)
   remainingTiers: TierInfoDto[];
+
+  @Type(() => TransactionSettingsDto)
+  transactionSettings: TransactionSettingsDto = new TransactionSettingsDto();
 }

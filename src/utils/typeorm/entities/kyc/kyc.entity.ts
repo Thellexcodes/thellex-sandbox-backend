@@ -42,14 +42,6 @@ export class KycEntity extends BaseEntity {
   })
   bvn: string;
 
-  // @Column({
-  //   name: 'nin',
-  //   type: 'text',
-  //   transformer: KycEntity.encryption,
-  //   nullable: true,
-  // })
-  // nin: string;
-
   @Column({ name: 'provider', type: 'enum', enum: KycProviderEnum })
   provider: KycProviderEnum;
 

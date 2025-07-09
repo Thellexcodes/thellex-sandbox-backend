@@ -76,7 +76,7 @@ export interface IYCPaymentRequestResponse {
   country: string;
   reference: string;
   recipient: IYCRecipient;
-  expiresAt: string;
+  expiresAt: Date;
   requestSource: string;
   directSettlement: boolean;
   refundRetry: number;

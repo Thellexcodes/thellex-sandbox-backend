@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { QWalletProfileEntity } from './qwallet-profile.entity';
 import { BaseEntity } from '../../base.entity';
-import { ITokenDto, TokenEntity } from '../../token/token.entity';
+import { TokenEntity } from '../../token/token.entity';
 import {
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
@@ -57,7 +57,7 @@ export class QWalletsEntity extends BaseEntity {
     nullable: true,
   })
   networkMetadata: Record<
-    SupportedBlockchainType,
+    SupportedBlockchainTypeEnum,
     {
       address: string;
       tokenId?: string;

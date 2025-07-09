@@ -78,9 +78,9 @@ export const thellexTiers: Partial<Record<TierEnum, Tier>> = {
     },
     txnFee: {
       [TxnTypeEnum.WITHDRAWAL]: {
-        min: 1,
-        max: 300,
-        feePercentage: 2.0,
+        min: 100,
+        max: 150,
+        feePercentage: 200,
       },
     },
   },

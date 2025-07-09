@@ -36,6 +36,7 @@ import {
   serverPortMap,
   stellarRpcEndpointMap,
   ycPaymentApiMap,
+  ycPublicKeyMap,
   ycSecretKeyMap,
 } from '@/models/settings.types';
 
@@ -97,7 +98,7 @@ export function getAppConfig(): ApiConfig {
       API: qwalletApiMap[env] || '',
     },
     YC: {
-      PUBLIC_KEY: process.env.YC_PUBLIC_KEY || '',
+      PUBLIC_KEY: ycPublicKeyMap[env] || '',
       SECRET_KEY: ycSecretKeyMap[env] || '',
       PAYMENT_API: ycPaymentApiMap[env] || '',
     },

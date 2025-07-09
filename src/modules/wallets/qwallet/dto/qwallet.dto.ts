@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { QwalletSubAccountDto } from './qwallet-subaccount.dto';
 import { QWalletNetworkDto } from './qwallet-network.dto';
-import { SupportedBlockchainType } from '@/config/settings';
+import { SupportedBlockchainTypeEnum } from '@/config/settings';
 
 export class QwalletDto {
   @ApiProperty()
@@ -44,7 +44,7 @@ export class QwalletDto {
   blockchain_enabled: boolean;
 
   @ApiProperty()
-  default_network: SupportedBlockchainType;
+  default_network: SupportedBlockchainTypeEnum;
 
   @ApiProperty({ type: [QWalletNetworkDto] })
   networks: QWalletNetworkDto[];

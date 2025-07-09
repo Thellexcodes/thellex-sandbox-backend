@@ -1,6 +1,6 @@
 import {
   SUPPORTED_BLOCKCHAINS,
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   TokenEnum,
 } from '@/config/settings';
 import { PaymentType } from '@/models/payment.types';
@@ -45,5 +45,5 @@ export class CreateRequestPaymentDto {
     example: 'polygon',
   })
   @IsIn(SUPPORTED_BLOCKCHAINS, { message: 'network/invalid' })
-  network: SupportedBlockchainType;
+  network: SupportedBlockchainTypeEnum;
 }

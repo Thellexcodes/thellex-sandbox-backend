@@ -21,7 +21,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   TokenEnum,
   WalletProviderEnum,
@@ -276,7 +276,7 @@ export class CwalletService {
 
       const networks = Object.keys(
         providerConfig.networks,
-      ) as SupportedBlockchainType[];
+      ) as SupportedBlockchainTypeEnum[];
 
       for (const network of networks) {
         const tokens = providerConfig.networks[network].tokens;
@@ -340,7 +340,7 @@ export class CwalletService {
   private async walletExists(
     profileId: string,
     walletType: SupportedWalletTypes,
-    network: SupportedBlockchainType,
+    network: SupportedBlockchainTypeEnum,
   ): Promise<boolean> {
     const existingWallet = await this.cWalletsRepo.findOne({
       where: {
@@ -354,7 +354,7 @@ export class CwalletService {
 
   private async createAndStoreWallet(
     token: string,
-    network: SupportedBlockchainType,
+    network: SupportedBlockchainTypeEnum,
     walletType: SupportedWalletTypes,
     profile: CwalletProfilesEntity,
     walletProvider: WalletProviderEnum,
@@ -397,7 +397,7 @@ export class CwalletService {
   async buildTokensForWallet(
     wallet: CwalletsEntity,
     networkMetadata: Record<
-      SupportedBlockchainType,
+      SupportedBlockchainTypeEnum,
       {
         address: string;
         tokenId?: string;
@@ -414,7 +414,7 @@ export class CwalletService {
 
     for (const network of Object.keys(
       networkMetadata,
-    ) as SupportedBlockchainType[]) {
+    ) as SupportedBlockchainTypeEnum[]) {
       const networkConfig = providerConfig.networks?.[network];
       if (!networkConfig) continue;
 

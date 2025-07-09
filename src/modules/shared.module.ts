@@ -24,10 +24,13 @@ import { CwalletHooksModule } from './wallets/webhooks/cwallet-hooks/cwallet-hoo
 import { QwalletHooksModule } from './wallets/webhooks/qwallet-hooks/qwallet-hooks.module';
 import { EtherService } from '@/utils/services/ethers.service';
 import { FirebaseMessagingService } from '@/utils/services/firebase-admin.service';
+import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Global()
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       AuthEntity,
       TokenEntity,
@@ -41,6 +44,7 @@ import { FirebaseMessagingService } from '@/utils/services/firebase-admin.servic
       CwalletProfilesEntity,
       TransactionHistoryEntity,
       AuthVerificationCodesEntity,
+      FiatCryptoRampTransactionEntity,
     ]),
     CwalletHooksModule,
     QwalletHooksModule,

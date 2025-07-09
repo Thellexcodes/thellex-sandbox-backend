@@ -1,6 +1,10 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
+import {
+  SupportedWalletTypes,
+  TokenEnum,
+  WalletProviderEnum,
+} from '@/config/settings';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
@@ -12,9 +16,17 @@ import { IdTypeEnum } from '@/models/kyc.types';
 import { ConfirmCollectionRequestDto } from './dto/confirm-collection-request.dto';
 import { FiatCollectionRequestDto } from './dto/fiat-collection-request.dto';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { PaymentErrorEnum } from '@/models/payments.types';
+import { PaymentErrorEnum, PaymentPartnerEnum } from '@/models/payments.types';
 import { walletConfig } from '@/utils/tokenChains';
-import { UserErrorEnum } from '@/models/user-error.enum';
+import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { formatUserWithTiers, toUTCDate } from '@/utils/helpers';
+import {
+  calculateAdjustedAmount,
+  calculateNetCryptoAmount,
+} from '@/utils/fee.utils';
+import { PaymentStatus } from '@/models/payment.types';
 
 @Injectable()
 export class PaymentsService {
@@ -22,6 +34,9 @@ export class PaymentsService {
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
     private readonly ycService: YellowCardService,
+
+    @InjectRepository(FiatCryptoRampTransactionEntity)
+    private readonly fiatCryptoRampTransactionRepo: Repository<FiatCryptoRampTransactionEntity>,
   ) {}
 
   /**
@@ -63,78 +78,127 @@ export class PaymentsService {
   }
 
   async handleGetPaymentChannels(): Promise<IYCChannel[] | any> {
-    //[x] check the supported channels with settings
     const paymentChannelResponse = await this.ycService.getChannels();
     return paymentChannelResponse.channels;
   }
 
   async handleGetCryptoChannels(): Promise<any> {}
 
-  async handleYcOnRamp(
-    user: UserEntity,
-    fiatCollectionRequestDto: FiatCollectionRequestDto,
-  ) {
-    const { channels } = await this.ycService.getChannels();
-    const { networks } = await this.ycService.getNetworks();
+  async handleYcOnRamp(user: UserEntity, dto: FiatCollectionRequestDto) {
+    try {
+      const fiatRate = await this.ycService.getRateFromCache(dto.fiatCode);
+      if (!fiatRate)
+        throw new CustomHttpException(
+          PaymentErrorEnum.RATES_NOT_YET_ACTIVE,
+          HttpStatus.FORBIDDEN,
+        );
 
-    let activeChannels = channels.filter(
-      (c) => c.status === 'active' && c.rampType === 'deposit',
-    );
-    let supportedCountries = [...new Set(activeChannels.map((c) => c.country))];
+      const userPlain = formatUserWithTiers(user);
+      const { channels } = await this.ycService.getChannels();
+      const { networks } = await this.ycService.getNetworks();
 
-    if (!supportedCountries.includes(fiatCollectionRequestDto.country))
-      throw new CustomHttpException(
-        PaymentErrorEnum.COUNTRY_NOT_ACTIVE,
-        HttpStatus.FORBIDDEN,
+      let activeChannels = channels.filter(
+        (c) => c.status === 'active' && c.rampType === 'deposit',
       );
+      let supportedCountries = [
+        ...new Set(activeChannels.map((c) => c.country)),
+      ];
 
-    // Select channel
-    let channel = activeChannels[0];
-    let supportedNetworks = networks.filter(
-      (n) => n.status === 'active' && n.channelIds.includes(channel.id),
-    );
-    let network = supportedNetworks[0];
+      if (!supportedCountries.includes(dto.country))
+        throw new CustomHttpException(
+          PaymentErrorEnum.COUNTRY_NOT_ACTIVE,
+          HttpStatus.FORBIDDEN,
+        );
 
-    const userKycData = user.kyc;
+      let channel = activeChannels[0];
+      let supportedNetworks = networks.filter(
+        (n) => n.status === 'active' && n.channelIds.includes(channel.id),
+      );
+      let network = supportedNetworks[0];
 
-    const localAmount = 500;
-    // const amountUSD = 50;
+      const userKycData = userPlain.kyc;
+      const [year, month, day] = userKycData.dob.split('-');
+      userKycData.dob = `${month}/${day}/${year}`;
 
-    const [year, month, day] = userKycData.dob.split('-');
-    userKycData.dob = `${month}/${day}/${year}`;
+      const recipient = {
+        name: `${userKycData.firstName} ${userKycData.lastName}`,
+        country: dto.country,
+        phone: userKycData.phone ?? '+2348140979877',
+        address: userKycData.address ?? '',
+        dob: userKycData.dob ?? '',
+        email: userPlain.email,
+        idNumber: userKycData.idNumber,
+        idType: IdTypeEnum.NIN,
+        additionalIdType: IdTypeEnum.BVN,
+        additionalIdNumber: userKycData.bvn,
+      };
 
-    //[x] enforce user phone number setup
-    const recipient = {
-      name: `${userKycData.firstName} ${userKycData.lastName}`,
-      country: fiatCollectionRequestDto.country,
-      phone: userKycData.phone ?? '+2348140979877',
-      address: userKycData.address ?? '',
-      dob: userKycData.dob ?? '',
-      email: user.email,
-      idNumber: userKycData.idNumber,
-      idType: IdTypeEnum.NIN,
-      additionalIdType: IdTypeEnum.BVN,
-      additionalIdNumber: userKycData.bvn,
-    };
+      const sequenceId = uuidV4();
 
-    let request = {
-      sequenceId: uuidV4(),
-      channelId: channel.id,
-      currency: channel.currency,
-      country: channel.country,
-      reason: 'other', //[x] enable reason
-      // amount: amountUSD, //Amount in USD to transact or
-      localAmount,
-      recipient,
-      forceAccept: false,
-      source: { accountType: 'bank' },
-      customerType: 'retail',
-    };
+      // Submit dummy request with original user amount just to get rate
+      const tempRateRequest = {
+        sequenceId,
+        channelId: channel.id,
+        currency: channel.currency,
+        country: channel.country,
+        reason: 'other',
+        localAmount: dto.userAmount,
+        recipient,
+        forceAccept: true,
+        source: { accountType: 'bank' },
+        customerType: user.kyc.customerType,
+      };
 
-    const collectionResponse =
-      await this.ycService.submitCollectionRequest(request);
+      const yellowCardResponse =
+        await this.ycService.submitCollectionRequest(tempRateRequest);
 
-    return collectionResponse;
+      const { adjustedNaira, feeAmount, feeLabel, cryptoAmount } =
+        calculateNetCryptoAmount(
+          dto.userAmount,
+          userPlain.currentTier.txnFee.withdrawal.feePercentage,
+          fiatRate.buy,
+        );
+
+      // console.log({ cryptoAmount, fiatRate, rate: yellowCardResponse.rate });
+
+      const newTxn = new FiatCryptoRampTransactionEntity();
+      newTxn.user = user;
+      newTxn.userId = user.id;
+      newTxn.type = 'onramp';
+      newTxn.status = PaymentStatus.Processing;
+      newTxn.userAmount = dto.userAmount;
+      newTxn.adjustedFiatAmount = adjustedNaira;
+      newTxn.serviceFeeAmountLocal = feeAmount;
+      newTxn.serviceFeeAmountUSD = parseFloat(
+        (feeAmount / fiatRate.buy).toFixed(2),
+      );
+      newTxn.cryptoAmount = cryptoAmount;
+      newTxn.fiatCurrency = channel.currency;
+      newTxn.assetCode = TokenEnum.USDT;
+      newTxn.currency = channel.currency;
+      newTxn.rate = fiatRate.buy;
+      newTxn.feePercentage = feeLabel;
+      newTxn.recipientDetails = recipient;
+      newTxn.channelId = channel.id;
+      newTxn.partnerId = PaymentPartnerEnum.YELLOWCARD;
+      newTxn.sequenceId = sequenceId;
+      newTxn.fiatCode = dto.fiatCode;
+      newTxn.country = dto.country;
+      newTxn.expiresAt = yellowCardResponse.expiresAt;
+      newTxn.directSettlement = true;
+
+      // await this.fiatCryptoRampTransactionRepo.save(newTxn);
+      //       {
+      //   userAmount: 15000,
+      //   feePercentage: '2.00%',
+      //   feeAmount: 300,
+      //   adjustedFiatAmount: 15300,
+      //   rate: 1567.89, // Example rate from Yellow Card
+      //   expectedCryptoAmount: parseFloat((15300 / 1567.89).toFixed(6)) // e.g. 9.76 USDT
+      // }
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async handleConfirmCollectionRequest(

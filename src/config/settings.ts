@@ -1,3 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
+
 // --- Basic Settings ---
 export const ENVIRONMENT = 'beta';
 export const DEBUG_MODE = true;
@@ -50,7 +53,7 @@ export const NAIRA_RATE = 0.0;
 // ==============================
 
 // --- Supported blockchain types in the system ---
-export enum SupportedBlockchainType {
+export enum SupportedBlockchainTypeEnum {
   BEP20 = 'bep20',
   TRC20 = 'trc20',
   MATIC = 'matic',
@@ -78,15 +81,15 @@ export enum TokenEnum {
 }
 
 // --- Alias for blockchain type used across the app ---
-export type BLOCKCHAIN_TYPE = SupportedBlockchainType;
+export type BLOCKCHAIN_TYPE = SupportedBlockchainTypeEnum;
 
 // --- Types of fee calculation supported in the system ---
 export type FEEType = 'flat' | 'percentage';
 
 // --- Blockchains currently used in production environments ---
-export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainType[] = [
-  SupportedBlockchainType.BEP20,
-  SupportedBlockchainType.TRC20,
+export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainTypeEnum[] = [
+  SupportedBlockchainTypeEnum.BEP20,
+  SupportedBlockchainTypeEnum.TRC20,
 ];
 export enum SupportedWalletTypes {
   EVM = 'evm',
@@ -117,5 +120,49 @@ export const FILE_UPLOAD_LIMIT_BYTES = 10 * 1024 * 1024; // For Fastify or byte-
 export const KYC_EXPIRATION_DURATION_MS = 18 * 30 * 24 * 60 * 60 * 1000;
 export const SUPPORTED_RAMP_COUNTRIES: string[] = ['NIGERIAN'];
 export const SERVER_REQUEST_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes in milliseconds
+export const EVERY_15_SECONDS_CRON = '*/15 * * * * *';
+export class TransactionSettingsDto {
+  @Expose()
+  @ApiProperty()
+  CRYPTO = {
+    DEPOSIT: {
+      ALLOWED: true,
+      REQUIRES_KYC: false,
+    },
+    WITHDRAWAL: {
+      ALLOWED: true,
+      REQUIRES_KYC: true,
+    },
+  };
 
-// versions.ts
+  @Expose()
+  @ApiProperty()
+  FIAT_TO_CRYPTO = {
+    DEPOSIT: {
+      ALLOWED: true,
+      REQUIRES_KYC: true,
+    },
+  };
+
+  @Expose()
+  @ApiProperty()
+  CRYPTO_TO_FIAT = {
+    WITHDRAWAL: {
+      ALLOWED: true,
+      REQUIRES_KYC: true,
+    },
+  };
+
+  @Expose()
+  @ApiProperty()
+  FIAT_TO_FIAT = {
+    DEPOSIT: {
+      ALLOWED: true,
+      REQUIRES_KYC: true,
+    },
+    WITHDRAWAL: {
+      ALLOWED: true,
+      REQUIRES_KYC: true,
+    },
+  };
+}

@@ -1,23 +1,57 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsOptional } from 'class-validator';
+import {
+  IsNumber,
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
+import { SupportedBlockchainTypeEnum } from '@/config/settings';
 
 export class FiatCollectionRequestDto {
-  @ApiProperty({ description: 'Amount to collect', example: 5000 })
+  @ApiProperty({
+    description: 'Amount to collect in the selected fiat currency',
+    example: 5000,
+    minimum: 1,
+  })
   @IsNumber()
-  localAmount: number;
+  @IsNotEmpty()
+  userAmount: number;
 
-  @ApiProperty({ description: 'Country code', example: 'NG' })
+  @ApiProperty({
+    description: '3-letter fiat currency code (e.g., NGN, GHS)',
+    example: 'NGN',
+  })
   @IsString()
+  @IsNotEmpty()
+  fiatCode: string;
+
+  @ApiProperty({
+    description: '2-letter ISO country code (e.g., NG, GH)',
+    example: 'NG',
+  })
+  @IsString()
+  @IsNotEmpty()
   country: string;
 
   @ApiProperty({
-    description: 'Optional description or purpose of payment',
+    description: 'Optional reason or purpose for the payment',
+    example: 'Payment to friend',
     required: false,
   })
   @IsOptional()
   @IsString()
-  description?: string;
+  reason?: string;
+
+  @ApiProperty({
+    description: 'Blockchain network to use for processing the transaction',
+    enum: SupportedBlockchainTypeEnum,
+    example: SupportedBlockchainTypeEnum.TRC20,
+  })
+  @IsEnum(SupportedBlockchainTypeEnum)
+  @IsNotEmpty()
+  network: SupportedBlockchainTypeEnum;
 }
 
 export class RecipientInfoDto {

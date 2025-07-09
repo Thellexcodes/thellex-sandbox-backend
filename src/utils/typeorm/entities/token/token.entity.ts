@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { QWalletsEntity } from '../wallets/qwallet/qwallets.entity';
 import {
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
@@ -62,14 +62,14 @@ export class TokenEntity extends BaseEntity {
   qwallet?: QWalletsEntity;
 
   @Expose()
-  @ApiProperty({ enum: SupportedBlockchainType })
+  @ApiProperty({ enum: SupportedBlockchainTypeEnum })
   @Column({
     name: 'network',
     type: 'enum',
-    enum: SupportedBlockchainType,
+    enum: SupportedBlockchainTypeEnum,
     nullable: false,
   })
-  network: SupportedBlockchainType;
+  network: SupportedBlockchainTypeEnum;
 
   @Expose()
   @ApiProperty({ type: String, nullable: true })

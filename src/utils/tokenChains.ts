@@ -1,5 +1,5 @@
 import {
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   TokenEnum,
   WalletProviderEnum,
@@ -10,7 +10,7 @@ export const walletConfig = {
     providers: {
       [WalletProviderEnum.QUIDAX]: {
         networks: {
-          [SupportedBlockchainType.BEP20]: {
+          [SupportedBlockchainTypeEnum.BEP20]: {
             tokens: [TokenEnum.USDT],
             tokenIds: { [TokenEnum.USDT]: 'usdt-quidax-bep20-id' },
             mainnet: true,
@@ -19,7 +19,7 @@ export const walletConfig = {
       },
       [WalletProviderEnum.CIRCLE]: {
         networks: {
-          [SupportedBlockchainType.MATIC]: {
+          [SupportedBlockchainTypeEnum.MATIC]: {
             tokens: [TokenEnum.USDC],
             tokenIds: {
               [TokenEnum.USDC]: 'db6905b9-8bcd-5537-8b08-f5548bdf7925',
@@ -34,7 +34,7 @@ export const walletConfig = {
   //   providers: {
   //     [WalletProviderEnum.CIRCLE]: {
   //       networks: {
-  //         [SupportedBlockchainType.STELLAR]: {
+  //         [SupportedBlockchainTypeEnum.STELLAR]: {
   //           tokens: [TokenEnum.XLM],
   //           tokenIds: {
   //             [TokenEnum.XLM]: 'xlm-circle-id',

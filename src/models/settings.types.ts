@@ -100,10 +100,13 @@ export const clientRpIdMap = getEnvVarMap('CLIENT_RP_ID');
 export const clientUrlMap = getEnvVarMap('CLIENT_URL');
 
 // APIs
-export const ycPaymentApiMap = getEnvVarMap('YC_PAYMENT_API');
 export const alchemyApiMap = getEnvVarMap('ALCHEMY_API');
 export const kycEncryptionKeyMap = getEnvVarMap('KYC_ENCRYPTION_KEY');
+
+//Yellow card
+export const ycPaymentApiMap = getEnvVarMap('YC_PAYMENT_API');
 export const ycSecretKeyMap = getEnvVarMap('YC_SECRET_KEY');
+export const ycPublicKeyMap = getEnvVarMap('YC_PUBLIC_KEY');
 
 // Qwallet
 export const qwalletApiMap = getEnvVarMap('QWALLET_API');

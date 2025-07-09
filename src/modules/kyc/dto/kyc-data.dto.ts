@@ -316,3 +316,9 @@ export class VerificationResponseDto {
   @ApiProperty({ type: () => EntityDto })
   entity: EntityDto;
 }
+
+export class ValidateBvnResponseDto {
+  @ApiProperty()
+  @Expose()
+  isValid: boolean;
+}
