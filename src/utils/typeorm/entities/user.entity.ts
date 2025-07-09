@@ -65,7 +65,7 @@ export class UserEntity extends BaseEntity {
   @Expose()
   @Column({
     name: 'alert_id',
-    type: 'uuid',
+    type: 'text',
     unique: true,
     nullable: false,
     default: () => 'uuid_generate_v4()',

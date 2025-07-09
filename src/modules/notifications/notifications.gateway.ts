@@ -7,6 +7,7 @@ import {
   TRANSACTION_NOTIFICATION_TYPES_ENUM,
   WALLET_NOTIFICAITON_TYPES_ENUM,
 } from '@/models/socket.enums';
+import { FirebaseMessagingService } from '@/utils/services/firebase-admin.service';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -17,6 +18,8 @@ export class NotificationsGateway {
   server: Server;
 
   private userSockets = new Map<string, Set<string>>();
+
+  constructor(private readonly firebaseService: FirebaseMessagingService) {}
 
   handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;

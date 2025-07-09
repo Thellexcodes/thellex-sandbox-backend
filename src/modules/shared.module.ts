@@ -23,6 +23,7 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 import { CwalletHooksModule } from './wallets/webhooks/cwallet-hooks/cwallet-hooks.module';
 import { QwalletHooksModule } from './wallets/webhooks/qwallet-hooks/qwallet-hooks.module';
 import { EtherService } from '@/utils/services/ethers.service';
+import { FirebaseMessagingService } from '@/utils/services/firebase-admin.service';
 
 @Global()
 @Module({
@@ -54,6 +55,7 @@ import { EtherService } from '@/utils/services/ethers.service';
     QwalletService,
     JwtService,
     HttpService,
+    FirebaseMessagingService,
   ],
   exports: [
     EtherService,
@@ -65,6 +67,7 @@ import { EtherService } from '@/utils/services/ethers.service';
     QwalletService,
     HttpService,
     JwtService,
+    FirebaseMessagingService,
   ],
 })
 export class SharedModule {}

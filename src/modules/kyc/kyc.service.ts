@@ -16,7 +16,6 @@ import {
   DocumentAnalysisResponse,
   EntityDto,
   KycResultDto,
-  SelfieDto,
   UploadDocumentInputTypeEnum,
   VerificationResponseDto,
   VerifySelfieWithPhotoIdDto,
@@ -32,12 +31,6 @@ import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { TierEnum } from '@/config/tier.lists';
 import { UserService } from '../users/user.service';
 import { plainToInstance } from 'class-transformer';
-
-interface CachedUserData {
-  photoIdFrontImageBase64: string;
-  documentAnalysisResult?: any;
-  selfieVerificationResult?: any;
-}
 
 //TODO: Handle errors with enum
 @Injectable()
