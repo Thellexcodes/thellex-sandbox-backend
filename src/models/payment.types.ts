@@ -15,12 +15,12 @@ export enum PaymentStatus {
   Sent = 'SENT',
 }
 
-export enum PaymentDirection {
-  OUTBOUND = 'OUTBOUND',
+export enum TransactionDirectionEnum {
   INBOUND = 'INBOUND',
+  OUTBOUND = 'OUTBOUND',
 }
 
-export enum PaymentTypeEnum {
+export enum TransactionTypeEnum {
   CRYPTO_DEPOSIT = 'CRYPTO_DEPOSIT',
   CRYPTO_WITHDRAWAL = 'CRYPTO_WITHDRAWAL',
   FIAT_TO_CRYPTO_DEPOSIT = 'FIAT_TO_CRYPTO_DEPOSIT',

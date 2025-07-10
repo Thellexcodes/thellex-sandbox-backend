@@ -80,6 +80,16 @@ export enum TokenEnum {
   // ETH = 'eth',
 }
 
+export enum FiatEnum {
+  NGN = 'ngn',
+  GHC = 'ghc',
+}
+
+export enum CountryEnum {
+  NG = 'ng',
+  GH = 'gh',
+}
+
 // --- Alias for blockchain type used across the app ---
 export type BLOCKCHAIN_TYPE = SupportedBlockchainTypeEnum;
 
@@ -108,10 +118,10 @@ export enum CustomerTypesEnum {
 }
 
 export enum SupportedFiatCurrency {
-  USD = 'USD',
+  USD = 'usd',
   // EUR = 'EUR',
   // GBP = 'GBP',
-  NGN = 'NGN',
+  NGN = 'ngn',
 }
 
 export const AUTH_VERIFICATION_CODE_TTL = 120; // TTL = Time To Live

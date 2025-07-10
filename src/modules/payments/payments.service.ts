@@ -21,12 +21,9 @@ import { walletConfig } from '@/utils/tokenChains';
 import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { formatUserWithTiers, toUTCDate } from '@/utils/helpers';
-import {
-  calculateAdjustedAmount,
-  calculateNetCryptoAmount,
-} from '@/utils/fee.utils';
-import { PaymentStatus } from '@/models/payment.types';
+import { formatUserWithTiers } from '@/utils/helpers';
+import { calculateNetCryptoAmount } from '@/utils/fee.utils';
+import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
 
 @Injectable()
 export class PaymentsService {
@@ -86,7 +83,10 @@ export class PaymentsService {
 
   async handleYcOnRamp(user: UserEntity, dto: FiatCollectionRequestDto) {
     try {
-      const fiatRate = await this.ycService.getRateFromCache(dto.fiatCode);
+      const fiatRate = await this.ycService.getRateFromCache(
+        dto.fiatCode.toUpperCase(),
+      );
+
       if (!fiatRate)
         throw new CustomHttpException(
           PaymentErrorEnum.RATES_NOT_YET_ACTIVE,
@@ -104,7 +104,7 @@ export class PaymentsService {
         ...new Set(activeChannels.map((c) => c.country)),
       ];
 
-      if (!supportedCountries.includes(dto.country))
+      if (!supportedCountries.includes(dto.country.toUpperCase()))
         throw new CustomHttpException(
           PaymentErrorEnum.COUNTRY_NOT_ACTIVE,
           HttpStatus.FORBIDDEN,
@@ -152,50 +152,64 @@ export class PaymentsService {
       const yellowCardResponse =
         await this.ycService.submitCollectionRequest(tempRateRequest);
 
-      const { adjustedNaira, feeAmount, feeLabel, cryptoAmount } =
+      const { adjustedNaira, feeAmount, feeLabel, netCryptoAmount } =
         calculateNetCryptoAmount(
           dto.userAmount,
           userPlain.currentTier.txnFee.withdrawal.feePercentage,
           fiatRate.buy,
         );
 
-      // console.log({ cryptoAmount, fiatRate, rate: yellowCardResponse.rate });
+      const serviceFeeAmountUsd = parseFloat(
+        (feeAmount / fiatRate.buy).toFixed(2),
+      );
 
+      console.log({
+        userAmount: dto.userAmount,
+        feeAmount,
+        netCryptoAmount,
+        fiatRate,
+        serviceFeeAmountUsd,
+      });
+
+      // Assign to entity
       const newTxn = new FiatCryptoRampTransactionEntity();
       newTxn.user = user;
       newTxn.userId = user.id;
-      newTxn.type = 'onramp';
+      newTxn.transactionType = TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT;
       newTxn.status = PaymentStatus.Processing;
-      newTxn.userAmount = dto.userAmount;
-      newTxn.adjustedFiatAmount = adjustedNaira;
-      newTxn.serviceFeeAmountLocal = feeAmount;
-      newTxn.serviceFeeAmountUSD = parseFloat(
-        (feeAmount / fiatRate.buy).toFixed(2),
-      );
-      newTxn.cryptoAmount = cryptoAmount;
-      newTxn.fiatCurrency = channel.currency;
-      newTxn.assetCode = TokenEnum.USDT;
-      newTxn.currency = channel.currency;
+
+      newTxn.userAmount = dto.userAmount; // original fiat amount
+      newTxn.feePercentage = feeLabel; // e.g. "2.00%"
+      newTxn.serviceFeeAmountLocal = feeAmount; // fee in fiat (local currency)
+      newTxn.adjustedFiatAmount = adjustedNaira; // fiat after adding/removing fees
+      newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd; // fee converted to USD
+
       newTxn.rate = fiatRate.buy;
-      newTxn.feePercentage = feeLabel;
+      newTxn.netCryptoAmount = netCryptoAmount;
+
+      newTxn.assetCode = TokenEnum.USDT;
+      newTxn.fiatCode = dto.fiatCode;
+      newTxn.currency = channel.currency;
       newTxn.recipientDetails = recipient;
       newTxn.channelId = channel.id;
-      newTxn.partnerId = PaymentPartnerEnum.YELLOWCARD;
+      newTxn.paymentProvider = PaymentPartnerEnum.YELLOWCARD;
       newTxn.sequenceId = sequenceId;
-      newTxn.fiatCode = dto.fiatCode;
       newTxn.country = dto.country;
       newTxn.expiresAt = yellowCardResponse.expiresAt;
       newTxn.directSettlement = true;
+      newTxn.bankAccountNumber = yellowCardResponse.bankInfo.accountNumber;
 
-      // await this.fiatCryptoRampTransactionRepo.save(newTxn);
-      //       {
-      //   userAmount: 15000,
-      //   feePercentage: '2.00%',
-      //   feeAmount: 300,
-      //   adjustedFiatAmount: 15300,
-      //   rate: 1567.89, // Example rate from Yellow Card
-      //   expectedCryptoAmount: parseFloat((15300 / 1567.89).toFixed(6)) // e.g. 9.76 USDT
-      // }
+      await this.fiatCryptoRampTransactionRepo.save(newTxn);
+
+      return {
+        userAmount: dto.userAmount,
+        feePercentage: feeLabel,
+        feeAmount,
+        adjustedFiatAmount: adjustedNaira,
+        rate: fiatRate.buy,
+        netCryptoAmount,
+        serviceFeeAmountUsd,
+      };
     } catch (err) {
       console.log(err);
     }

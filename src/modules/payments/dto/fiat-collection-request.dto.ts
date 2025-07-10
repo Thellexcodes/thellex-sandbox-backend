@@ -7,7 +7,12 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { SupportedBlockchainTypeEnum } from '@/config/settings';
+import {
+  CountryEnum,
+  FiatEnum,
+  SupportedBlockchainTypeEnum,
+  TokenEnum,
+} from '@/config/settings';
 
 export class FiatCollectionRequestDto {
   @ApiProperty({
@@ -20,20 +25,31 @@ export class FiatCollectionRequestDto {
   userAmount: number;
 
   @ApiProperty({
-    description: '3-letter fiat currency code (e.g., NGN, GHS)',
-    example: 'NGN',
+    description: 'Fiat currency code (ISO 4217 format, e.g., ngn, ghs)',
+    example: 'ngn',
+    enum: FiatEnum,
   })
-  @IsString()
+  @IsEnum(FiatEnum)
   @IsNotEmpty()
-  fiatCode: string;
+  fiatCode: FiatEnum;
 
   @ApiProperty({
-    description: '2-letter ISO country code (e.g., NG, GH)',
-    example: 'NG',
+    description: 'Crypto asset code (e.g., usdt, usdc)',
+    example: 'usdt',
+    enum: TokenEnum,
+  })
+  @IsEnum(TokenEnum)
+  @IsNotEmpty()
+  assetCode: TokenEnum;
+
+  @ApiProperty({
+    description: '2-letter ISO country code (e.g., ng, gh)',
+    example: 'ng',
+    enum: CountryEnum,
   })
   @IsString()
   @IsNotEmpty()
-  country: string;
+  country: CountryEnum;
 
   @ApiProperty({
     description: 'Optional reason or purpose for the payment',

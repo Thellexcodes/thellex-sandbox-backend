@@ -4,7 +4,11 @@ import {
   WalletErrorEnum,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { PaymentStatus } from '@/models/payment.types';
+import {
+  TransactionDirectionEnum,
+  PaymentStatus,
+  TransactionTypeEnum,
+} from '@/models/payment.types';
 import { toUTCDate } from '@/utils/helpers';
 import {
   NotificationMessageEnum,
@@ -71,7 +75,7 @@ export class CwalletHooksService {
         const txnData: TransactionHistoryDto = {
           event: WalletWebhookEventEnum.DepositSuccessful,
           transactionId: txnID,
-          type: PaymentType.INBOUND,
+          transactionDirection: TransactionDirectionEnum.INBOUND,
           assetCode,
           amount: notificationPayload.amounts[0],
           fee: notificationPayload.networkFee,
@@ -83,6 +87,7 @@ export class CwalletHooksService {
           paymentNetwork: notificationPayload.blockchain,
           user,
           paymentStatus: PaymentStatus.Accepted,
+          transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
         };
 
         const transaction = await this.transactionHistoryServie.create(
@@ -159,7 +164,10 @@ export class CwalletHooksService {
             txnID,
           );
 
-        if (!transaction || transaction.type !== PaymentType.OUTBOUND) {
+        if (
+          !transaction ||
+          transaction.transactionDirection !== TransactionDirectionEnum.OUTBOUND
+        ) {
           throw new CustomHttpException(
             QWalletStatus.TRANSACTION_NOT_FOUND,
             HttpStatus.NOT_FOUND,

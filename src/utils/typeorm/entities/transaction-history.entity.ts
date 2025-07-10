@@ -6,7 +6,11 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { PaymentStatus } from '@/models/payment.types';
+import {
+  PaymentStatus,
+  TransactionDirectionEnum,
+  TransactionTypeEnum,
+} from '@/models/payment.types';
 import {
   FeeLevel,
   WalletWebhookEventEnum,
@@ -39,8 +43,17 @@ export class TransactionHistoryEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ name: 'type', type: 'varchar', nullable: false })
-  type: string;
+  @Column({
+    name: 'type',
+    type: 'enum',
+    nullable: false,
+    enum: TransactionDirectionEnum,
+  })
+  transactionDirection: TransactionDirectionEnum;
+
+  @Expose()
+  @ApiProperty()
+  transactionType: TransactionTypeEnum;
 
   @Expose()
   @ApiProperty()

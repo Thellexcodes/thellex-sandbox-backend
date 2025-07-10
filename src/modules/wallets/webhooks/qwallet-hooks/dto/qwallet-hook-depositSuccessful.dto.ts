@@ -1,4 +1,7 @@
-import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import {
+  PaymentStatus,
+  TransactionDirectionEnum,
+} from '@/models/payment.types';
 import { QWalletPaymentAddressDto } from '@/modules/wallets/qwallet/dto/qwallet-address.dto';
 import { QwalletPaymentTransactionDto } from '@/modules/wallets/qwallet/dto/qwallet-payment.dto';
 import { QwalletSubAccountDto } from '@/modules/wallets/qwallet/dto/qwallet-subaccount.dto';
@@ -10,11 +13,11 @@ export class QwalletHookDepositSuccessfulEventDto {
   @ApiProperty() id: string;
   @ApiProperty({
     description: 'Type of transaction',
-    enum: PaymentType,
-    example: PaymentType.INBOUND,
+    enum: TransactionDirectionEnum,
+    example: TransactionDirectionEnum.INBOUND,
   })
-  @IsEnum(PaymentType)
-  type: PaymentType;
+  @IsEnum(TransactionDirectionEnum)
+  type: TransactionDirectionEnum;
   @ApiProperty() currency: string;
   @ApiProperty() amount: string;
   @ApiProperty() fee: string;
@@ -34,7 +37,7 @@ export class QwalletHookDepositSuccessfulEventDto {
 export interface IQwalletHookDepositSuccessfulData {
   id: string;
   event?: string;
-  type: PaymentType;
+  type: TransactionDirectionEnum;
   currency: string;
   amount: string;
   fee: string;

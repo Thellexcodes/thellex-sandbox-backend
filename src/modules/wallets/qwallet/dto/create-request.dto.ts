@@ -3,7 +3,7 @@ import {
   SupportedBlockchainTypeEnum,
   TokenEnum,
 } from '@/config/settings';
-import { PaymentType } from '@/models/payment.types';
+import { TransactionDirectionEnum } from '@/models/payment.types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
 
@@ -12,8 +12,8 @@ export class CreateRequestPaymentDto {
     description: 'Type of the payment request',
     example: 'crypto',
   })
-  @IsEnum(PaymentType)
-  paymentType: PaymentType;
+  @IsEnum(TransactionDirectionEnum)
+  TransactionDirectionEnum: TransactionDirectionEnum;
 
   @ApiProperty({
     description: 'Asset code (e.g., USDC, USDT)',

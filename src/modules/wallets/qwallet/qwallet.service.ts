@@ -29,7 +29,11 @@ import {
   WalletErrorEnum,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import {
+  PaymentStatus,
+  TransactionDirectionEnum,
+  TransactionTypeEnum,
+} from '@/models/payment.types';
 import {
   ITransactionHistoryDto,
   TransactionHistoryEntity,
@@ -573,10 +577,11 @@ export class QwalletService {
         sourceAddress: txnData.wallet.deposit_address,
         destinationAddress: txnData.recipient.details.address,
         walletName: txnData.wallet.name,
-        type: PaymentType.OUTBOUND,
+        transactionDirection: TransactionDirectionEnum.OUTBOUND,
         feeLevel: FeeLevel.HIGH,
         paymentNetwork: network,
         user,
+        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
       };
 
       const txn = await this.transactionHistoryService.create(

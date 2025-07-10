@@ -17,7 +17,11 @@ import {
   TRANSACTION_NOTIFICATION_TYPES_ENUM,
   WALLET_NOTIFICAITON_TYPES_ENUM,
 } from '@/models/socket.enums';
-import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import {
+  PaymentStatus,
+  TransactionDirectionEnum,
+  TransactionTypeEnum,
+} from '@/models/payment.types';
 import { IQWalletAddressGenerated } from './dto/qwallet-hook-walletUpdated.dto';
 import { QwalletService } from '../../qwallet/qwallet.service';
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
@@ -142,7 +146,7 @@ export class QwalletHooksService {
       const txnData: TransactionHistoryDto = {
         event: WalletWebhookEventEnum.DepositSuccessful,
         transactionId: data.id,
-        type: PaymentType.INBOUND,
+        transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: data.currency,
         amount: data.amount,
         fee: data.fee,
@@ -157,6 +161,7 @@ export class QwalletHooksService {
         sourceAddress: data.payment_address.address,
         feeLevel: FeeLevel.HIGH,
         user,
+        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
       };
 
       const transaction = await this.transactionHistoryService.create(

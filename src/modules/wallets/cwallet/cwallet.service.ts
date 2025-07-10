@@ -35,7 +35,11 @@ import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { getAppConfig } from '@/constants/env';
 import { walletConfig } from '@/utils/tokenChains';
-import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import {
+  PaymentStatus,
+  TransactionDirectionEnum,
+  TransactionTypeEnum,
+} from '@/models/payment.types';
 import {
   FeeLevel,
   WalletWebhookEventEnum,
@@ -136,14 +140,14 @@ export class CwalletService {
 
       const transaction = await this.getTransaction({
         id: transfer.data.id,
-        txType: PaymentType.OUTBOUND,
+        txType: TransactionDirectionEnum.OUTBOUND,
       });
 
       const txnHistory: TransactionHistoryDto = {
         event: WalletWebhookEventEnum.WithdrawPending,
         tokenId: transaction.tokenId,
         transactionId: transfer.data.id,
-        type: PaymentType.OUTBOUND,
+        transactionDirection: TransactionDirectionEnum.OUTBOUND,
         assetCode: dto.assetCode,
         amount: dto.amount,
         blockchainTxId: transaction.txHash,
@@ -157,6 +161,7 @@ export class CwalletService {
         createdAt: toUTCDate(transaction.createDate),
         user: wallet.profile.user,
         paymentStatus: PaymentStatus.Processing,
+        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
       };
 
       const txn = await this.transactionHistoryService.create(
