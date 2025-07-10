@@ -13,8 +13,9 @@ import {
   SupportedBlockchainTypeEnum,
   TokenEnum,
 } from '@/config/settings';
+import { IFiatToCryptoQuoteResponseDto } from './payment.dto';
 
-export class FiatCollectionRequestDto {
+export class FiatToCryptoOnRampRequestDto {
   @ApiProperty({
     description: 'Amount to collect in the selected fiat currency',
     example: 5000,
@@ -54,11 +55,9 @@ export class FiatCollectionRequestDto {
   @ApiProperty({
     description: 'Optional reason or purpose for the payment',
     example: 'Payment to friend',
-    required: false,
   })
-  @IsOptional()
   @IsString()
-  reason?: string;
+  reason: string;
 
   @ApiProperty({
     description: 'Blockchain network to use for processing the transaction',
@@ -201,10 +200,10 @@ export class FiatCollectionResultDto {
   depositId: string;
 }
 
-export class FiatCollectionResponseDto {
-  @ApiProperty({ type: () => FiatCollectionResultDto })
-  @Type(() => FiatCollectionResultDto)
-  result: FiatCollectionResultDto;
+export class IFiatToCryptoOnRampResponseDto {
+  @ApiProperty({ type: () => IFiatToCryptoQuoteResponseDto })
+  @Type(() => IFiatToCryptoQuoteResponseDto)
+  result: IFiatToCryptoQuoteResponseDto;
 
   @ApiProperty()
   status: boolean;

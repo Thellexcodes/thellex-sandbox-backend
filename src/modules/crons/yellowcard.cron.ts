@@ -14,11 +14,19 @@ export class YellowCardCron {
   async cacheRates() {
     try {
       const { rates } = await this.yellowCardService.getRates();
+
       if (rates) {
-        rateCache.set('yellowcard_rates', rates);
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 15 * 1000);
+
+        rateCache.set('y_rates', {
+          expiresAt: expiresAt.toISOString(),
+          data: rates,
+        });
+
         this.logger.log(`✅ Cached Yellow Card rates successfully`);
       } else {
-        // this.logger.warn(`⚠️ Yellow Card rates fetch returned no data`);
+        this.logger.warn(`⚠️ Yellow Card rates fetch returned no data`);
       }
     } catch (error) {
       this.logger.error(`❌ Failed to fetch Yellow Card rates`, error);

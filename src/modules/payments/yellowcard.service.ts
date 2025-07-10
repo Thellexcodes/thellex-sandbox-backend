@@ -281,26 +281,70 @@ export class YellowCardService {
     fiatCode: string,
     cryptoCode: string,
     amount: number,
-  ): Promise<number | null> {
+  ): Promise<{
+    convertedAmount: number | null;
+    rateUsed?: {
+      fiatSell: number;
+      cryptoSell: number;
+    };
+    expiresAt?: string;
+  }> {
     const fiatRate = await this.getRateFromCache(fiatCode);
     const cryptoRate = await this.getRateFromCache(cryptoCode);
 
-    if (!fiatRate || !cryptoRate) return null;
+    // If either is an array (unexpected here), return null
+    if (Array.isArray(fiatRate) || Array.isArray(cryptoRate)) {
+      return { convertedAmount: null };
+    }
 
-    // Assume using the sell rate for fiat (to convert to USDT)
-    const fiatSell = fiatRate.sell;
-    const cryptoSell = cryptoRate.sell;
+    if (!fiatRate?.rate.sell || !cryptoRate?.rate.sell) {
+      return { convertedAmount: null };
+    }
 
-    // How much crypto you get for your fiat
-    const result = amount / fiatSell / cryptoSell;
+    const fiatSell = fiatRate.rate.sell;
+    const cryptoSell = cryptoRate.rate.sell;
 
-    return Number(result.toFixed(6));
+    const converted = amount / fiatSell / cryptoSell;
+
+    return {
+      convertedAmount: Number(converted.toFixed(6)),
+      rateUsed: {
+        fiatSell,
+        cryptoSell,
+      },
+      expiresAt: fiatRate.expiresAt,
+    };
   }
 
-  async getRateFromCache(code: string): Promise<IYellowCardRateDto> {
-    const rates = rateCache.get('yellowcard_rates');
-    if (!rates) return null;
-    return rates.find((rate: any) => rate.code === code.toUpperCase()) || null;
+  async getRateFromCache(code?: string): Promise<{
+    expiresAt: string;
+    rate: IYellowCardRateDto | any;
+  }> {
+    const cached = rateCache.get('y_rates') as
+      | { expiresAt: string; data: IYellowCardRateDto[] }
+      | undefined;
+
+    if (!cached || !cached.data) {
+      return { expiresAt: null, rate: null };
+    }
+
+    if (!code) {
+      console.log('stopped here');
+      return {
+        expiresAt: cached.expiresAt,
+        rate: cached.data,
+      };
+    }
+
+    const rate = cached.data.find(
+      (rate: IYellowCardRateDto) =>
+        rate.code.toUpperCase() === code.toUpperCase(),
+    );
+
+    return {
+      expiresAt: cached.expiresAt,
+      rate: rate || null,
+    };
   }
 
   private generateAuthHeaders(

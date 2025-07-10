@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
+  FiatEnum,
   SupportedWalletTypes,
   TokenEnum,
   WalletProviderEnum,
@@ -14,7 +15,6 @@ import { IYCChannel } from '@/models/yellocard.models';
 import { v4 as uuidV4 } from 'uuid';
 import { IdTypeEnum } from '@/models/kyc.types';
 import { ConfirmCollectionRequestDto } from './dto/confirm-collection-request.dto';
-import { FiatCollectionRequestDto } from './dto/fiat-collection-request.dto';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { PaymentErrorEnum, PaymentPartnerEnum } from '@/models/payments.types';
 import { walletConfig } from '@/utils/tokenChains';
@@ -24,6 +24,10 @@ import { Repository } from 'typeorm';
 import { formatUserWithTiers } from '@/utils/helpers';
 import { calculateNetCryptoAmount } from '@/utils/fee.utils';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
+import { plainToInstance } from 'class-transformer';
+import { IFiatToCryptoQuoteResponseDto } from './dto/payment.dto';
+import { FiatToCryptoOnRampRequestDto } from './dto/fiat-collection-request.dto';
+import { IYellowCardRateDto } from './dto/yellocard.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -35,6 +39,37 @@ export class PaymentsService {
     @InjectRepository(FiatCryptoRampTransactionEntity)
     private readonly fiatCryptoRampTransactionRepo: Repository<FiatCryptoRampTransactionEntity>,
   ) {}
+
+  async handleRates(fiatCode: FiatEnum | undefined): Promise<any> {
+    try {
+      const cached = await this.ycService.getRateFromCache(fiatCode);
+
+      if (
+        !cached ||
+        !cached.rate ||
+        (Array.isArray(cached.rate) && cached.rate.length === 0)
+      ) {
+        return null;
+      }
+
+      const formatRate = (rate: IYellowCardRateDto) => ({
+        fiatCode: rate.code,
+        rate: rate.buy,
+      });
+
+      const ratesFormatted = Array.isArray(cached.rate)
+        ? cached.rate.map(formatRate)
+        : formatRate(cached.rate);
+
+      return {
+        rates: ratesFormatted,
+        expiresAt: cached.expiresAt,
+      };
+    } catch (err) {
+      console.error('Error in handleRates:', err);
+      return null;
+    }
+  }
 
   /**
    * Handles a cryptocurrency withdrawal request dynamically based on walletConfig.
@@ -79,9 +114,7 @@ export class PaymentsService {
     return paymentChannelResponse.channels;
   }
 
-  async handleGetCryptoChannels(): Promise<any> {}
-
-  async handleYcOnRamp(user: UserEntity, dto: FiatCollectionRequestDto) {
+  async handleYcOnRamp(user: UserEntity, dto: FiatToCryptoOnRampRequestDto) {
     try {
       const fiatRate = await this.ycService.getRateFromCache(
         dto.fiatCode.toUpperCase(),
@@ -115,6 +148,7 @@ export class PaymentsService {
         (n) => n.status === 'active' && n.channelIds.includes(channel.id),
       );
       let network = supportedNetworks[0];
+      console.log(network);
 
       const userKycData = userPlain.kyc;
       const [year, month, day] = userKycData.dob.split('-');
@@ -156,11 +190,11 @@ export class PaymentsService {
         calculateNetCryptoAmount(
           dto.userAmount,
           userPlain.currentTier.txnFee.withdrawal.feePercentage,
-          fiatRate.buy,
+          fiatRate.rate.buy,
         );
 
       const serviceFeeAmountUsd = parseFloat(
-        (feeAmount / fiatRate.buy).toFixed(2),
+        (feeAmount / fiatRate.rate.buy).toFixed(2),
       );
 
       console.log({
@@ -184,7 +218,7 @@ export class PaymentsService {
       newTxn.adjustedFiatAmount = adjustedNaira; // fiat after adding/removing fees
       newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd; // fee converted to USD
 
-      newTxn.rate = fiatRate.buy;
+      newTxn.rate = fiatRate.rate.buy;
       newTxn.netCryptoAmount = netCryptoAmount;
 
       newTxn.assetCode = TokenEnum.USDT;
@@ -201,15 +235,19 @@ export class PaymentsService {
 
       await this.fiatCryptoRampTransactionRepo.save(newTxn);
 
-      return {
-        userAmount: dto.userAmount,
-        feePercentage: feeLabel,
-        feeAmount,
-        adjustedFiatAmount: adjustedNaira,
-        rate: fiatRate.buy,
-        netCryptoAmount,
-        serviceFeeAmountUsd,
-      };
+      return plainToInstance(
+        IFiatToCryptoQuoteResponseDto,
+        {
+          userAmount: dto.userAmount,
+          feePercentage: feeLabel,
+          feeAmount,
+          adjustedFiatAmount: adjustedNaira,
+          rate: fiatRate.rate.buy,
+          netCryptoAmount,
+          serviceFeeAmountUsd,
+        },
+        { excludeExtraneousValues: true },
+      );
     } catch (err) {
       console.log(err);
     }
@@ -226,8 +264,6 @@ export class PaymentsService {
       console.log(error);
     }
   }
-
-  async handleCryptoFeeEstimator() {}
 
   async handleActivateYcWebhook() {
     try {
