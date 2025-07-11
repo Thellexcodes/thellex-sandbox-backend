@@ -23,12 +23,12 @@ import {
   TransactionTypeEnum,
 } from '@/models/payment.types';
 import { IQWalletAddressGenerated } from './dto/qwallet-hook-walletUpdated.dto';
-import { QwalletService } from '../../qwallet/qwallet.service';
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { WalletNotificationsService } from '@/modules/notifications/wallet-notifications.service';
-import { QWalletStatus } from '../../qwallet/qwallet-status.enum';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
+import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
+import { QWalletStatus } from '@/modules/wallets/qwallet/qwallet-status.enum';
 
 //TODO: handle errors with enum
 //TODO: Update logger

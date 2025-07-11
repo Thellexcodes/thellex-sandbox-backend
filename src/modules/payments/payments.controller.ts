@@ -1,13 +1,4 @@
-import {
-  Body,
-  Get,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -25,13 +16,14 @@ import { BasicKycCheckerGuard } from '@/middleware/guards/basic-kyc-checker.guar
 import {
   FiatToCryptoOnRampRequestDto,
   IFiatToCryptoOnRampResponseDto,
-} from './dto/fiat-collection-request.dto';
+} from './dto/fiat-to-crypto-request.dto';
 import {
   CreateWithdrawalResponseDto,
   IFiatToCryptoQuoteResponseDto,
 } from './dto/payment.dto';
 import { VersionedController001 } from '../controller/base.controller';
 import { FiatEnum } from '@/config/settings';
+import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
 
 ApiTags('Payments');
 @VersionedController001('payments')
@@ -68,36 +60,28 @@ export class PaymentsController {
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const response = await this.paymentService.handleYcOnRamp(user, dto);
+    const response = await this.paymentService.handleCryptoToFiatOnRamp(
+      user,
+      dto,
+    );
     responseHandler(response, res, req);
   }
 
-  // @Post('confirm-collection-request')
-  // @UseGuards(AuthGuard, BasicKycCheckerGuard)
-  // @ApiOperation({ summary: 'Request a fiat payment' })
-  // async confirmFiatCollectionRequest(
-  //   @Body() createRequestPaymentDto: ConfirmCollectionRequestDto,
-  //   @Req() req: CustomRequest,
-  //   @Res() res: CustomResponse,
-  // ) {
-  //   const user = req.user;
-  //   const response = await this.paymentService.handleConfirmCollectionRequest(
-  //     createRequestPaymentDto,
-  //     user,
-  //   );
-  //   responseHandler(response, res, req);
-  // }
-
-  // @Post('offramp-crypto')
-  // @UseGuards(AuthGuard, BasicKycCheckerGuard)
-  // @ApiOperation({ summary: 'Request a fiat payment (off-ramp)' })
-  // async requestOffRampFiatPayment(
-  //   @Body() requestOffRampDto: RequestCryptoOffRampPaymentDto,
-  //   @Req() req: CustomRequest,
-  //   @Res() res: CustomResponse,
-  // ) {
-  //   console.log({ requestOffRampDto });
-  // }
+  @Post('fiat-to-crypto/offramp')
+  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @ApiOperation({ summary: 'Request a fiat payment (off-ramp)' })
+  async requestOffRampFiatPayment(
+    @Body() dto: RequestCryptoOffRampPaymentDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
+    const response = await this.paymentService.handleCryptoToFiatOffRamp(
+      user,
+      dto,
+    );
+    responseHandler(response, res, req);
+  }
 
   @Get('rates/:fiatCode?')
   @ApiOkResponse({ type: IFiatToCryptoQuoteResponseDto })

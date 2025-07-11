@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { AuthEntity } from './auth.entity';
 import { AuthVerificationCodesEntity } from './auth-verification-codes.entity';
@@ -29,6 +29,7 @@ import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { FiatCryptoRampTransactionEntity } from './fiat-crypto-ramp-transaction.entity';
 import { TransactionSettingsDto } from '@/config/settings';
 
+@Index(['email'])
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
   @ApiProperty()

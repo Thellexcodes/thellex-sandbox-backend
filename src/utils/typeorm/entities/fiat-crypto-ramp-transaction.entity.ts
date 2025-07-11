@@ -1,56 +1,58 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { FiatCryptoRampDirection } from '@/models/fiat-crypto';
 import { Exclude } from 'class-transformer';
 import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
 import { PaymentPartnerEnum } from '@/models/payments.types';
-import { CountryEnum, TokenEnum } from '@/config/settings';
+import {
+  CountryEnum,
+  CustomerTypesEnum,
+  SupportedBlockchainTypeEnum,
+  TokenEnum,
+} from '@/config/settings';
 
+@Index('idx_user_id', ['userId'])
 @Entity('fiat_crypto_ramp_transaction')
 export class FiatCryptoRampTransactionEntity extends BaseEntity {
   // ===== Relations =====
   @Exclude()
-  @ManyToOne(() => UserEntity, (user) => user.devices)
+  @ManyToOne(() => UserEntity, (user) => user.fiatCryptoRampTransactions)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Index()
-  @Column()
+  @Column({ name: 'user_id' })
   userId: string;
 
   // ===== Identifiers & References =====
   @Column({ type: 'uuid', nullable: false })
   sequenceId: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  //[x]
+  @Column({ type: 'uuid', nullable: false })
   providerTransactionId: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  providerReference?: string;
+  @Column({ type: 'varchar', nullable: false })
+  providerReference: string;
 
   @Column({ type: 'varchar', nullable: true })
-  requestSource: string;
+  providerDepositId: string;
 
   @Column({ type: 'varchar', nullable: true })
   channelId: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  networkId: string;
+  @Column({ type: 'enum', nullable: false, enum: CustomerTypesEnum })
+  customerType: CustomerTypesEnum;
 
   // ===== Transaction Types & Status =====
   @Column({ type: 'enum', enum: TransactionTypeEnum, nullable: false })
   transactionType: TransactionTypeEnum;
-
-  @Column({ type: 'enum', enum: FiatCryptoRampDirection })
-  direction: FiatCryptoRampDirection;
 
   @Column({
     type: 'enum',
     enum: PaymentStatus,
     default: PaymentStatus.Processing,
   })
-  status: PaymentStatus;
+  paymentStatus: PaymentStatus;
 
   @Column({ type: 'boolean', default: false })
   directSettlement: boolean;
@@ -62,20 +64,14 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   adjustedFiatAmount: number;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
-  feeAmount: number;
-
   @Column({ type: 'varchar', nullable: true })
-  feePercentage: string;
-
-  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
-  serviceFeeAmountUSD: number;
+  feeLabel: string;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
   serviceFeeAmountLocal: number;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
-  convertedAmount: number;
+  serviceFeeAmountUSD: number;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
   rate: number;
@@ -84,8 +80,6 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   netCryptoAmount: number;
 
   // ===== Asset & Currency Codes =====
-  @Column({ enum: TokenEnum, nullable: false, type: 'enum' })
-  assetCode: TokenEnum;
 
   @Column({ type: 'varchar', nullable: true })
   fiatCode: string;
@@ -93,32 +87,36 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   currency: string;
 
-  @Column({ type: 'varchar', nullable: false, enum: CountryEnum })
+  @Column({ type: 'enum', nullable: false, enum: CountryEnum })
   country: CountryEnum;
 
   // ===== Recipient & Payment Details =====
-  @Column({ type: 'jsonb', nullable: true })
-  recipientDetails: any;
-
-  @Column({ type: 'varchar', nullable: true })
-  walletAddress?: string;
-
-  @Column({ type: 'varchar', nullable: false })
-  bankAccountNumber: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  bankName: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  phoneNumber?: string;
-
-  @Column({ type: 'varchar', nullable: false, enum: PaymentPartnerEnum })
+  @Column({ type: 'enum', nullable: false, enum: PaymentPartnerEnum })
   paymentProvider: PaymentPartnerEnum;
 
-  // ===== Metadata & Expiry =====
   @Column({ type: 'jsonb', nullable: true })
-  metadata?: any;
+  recipientInfo: RecipientInfo;
+
+  @Column({ type: 'varchar', nullable: true })
+  phoneNumber: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  bankInfo: BankInfo;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   expiresAt: Date;
+}
+
+export interface RecipientInfo {
+  walletAddress: string;
+  network: SupportedBlockchainTypeEnum;
+  assetCode: TokenEnum;
+}
+
+export interface BankInfo {
+  bankName: string;
+  iban?: string;
+  swiftCode?: string;
+  accountNumber?: string;
+  accountHolder?: string;
 }

@@ -20,12 +20,13 @@ import { JwtService } from '@nestjs/jwt';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
-import { CwalletHooksModule } from './wallets/webhooks/cwallet-hooks/cwallet-hooks.module';
-import { QwalletHooksModule } from './wallets/webhooks/qwallet-hooks/qwallet-hooks.module';
+import { CwalletHooksModule } from './webhooks/cwallet-hooks/cwallet-hooks.module';
+import { QwalletHooksModule } from './webhooks/qwallet-hooks/qwallet-hooks.module';
 import { EtherService } from '@/utils/services/ethers.service';
 import { FirebaseMessagingService } from '@/utils/services/firebase-admin.service';
 import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { ScheduleModule } from '@nestjs/schedule';
+import { YcPaymentHookModule } from './webhooks/payments-hooks/yc-payments-hooks.module';
 
 @Global()
 @Module({
@@ -49,6 +50,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     CwalletHooksModule,
     QwalletHooksModule,
     SettingsModule,
+    YcPaymentHookModule,
   ],
   providers: [
     EtherService,

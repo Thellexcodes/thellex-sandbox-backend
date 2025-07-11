@@ -2,9 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNumber,
   IsString,
-  IsOptional,
   IsNotEmpty,
   IsEnum,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+  Validate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -14,6 +17,18 @@ import {
   TokenEnum,
 } from '@/config/settings';
 import { IFiatToCryptoQuoteResponseDto } from './payment.dto';
+import { ethers } from 'ethers';
+
+@ValidatorConstraint({ name: 'IsEvmAddress', async: false })
+export class IsEvmAddressConstraint implements ValidatorConstraintInterface {
+  validate(address: string, args: ValidationArguments) {
+    return ethers.isAddress(address);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'walletAddress must be a valid Ethereum (EVM) address';
+  }
+}
 
 export class FiatToCryptoOnRampRequestDto {
   @ApiProperty({
@@ -67,6 +82,15 @@ export class FiatToCryptoOnRampRequestDto {
   @IsEnum(SupportedBlockchainTypeEnum)
   @IsNotEmpty()
   network: SupportedBlockchainTypeEnum;
+
+  @ApiProperty({
+    description: 'EVM wallet address where crypto will be sent',
+    example: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Validate(IsEvmAddressConstraint)
+  destinationAddress: string;
 }
 
 export class RecipientInfoDto {

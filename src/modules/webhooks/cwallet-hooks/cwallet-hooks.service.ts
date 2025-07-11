@@ -21,8 +21,8 @@ import { TransactionHistoryService } from '@/modules/transaction-history/transac
 import { WalletNotificationsService } from '@/modules/notifications/wallet-notifications.service';
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
-import { CwalletService } from '../../cwallet/cwallet.service';
-import { QWalletStatus } from '../../qwallet/qwallet-status.enum';
+import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
+import { QWalletStatus } from '@/modules/wallets/qwallet/qwallet-status.enum';
 
 //TODO: handle errors with enums
 //TODO: update all date in system to UTC

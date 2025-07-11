@@ -11,10 +11,10 @@ import { NotificationsGateway } from '@/modules/notifications/notifications.gate
 import { UserService } from '@/modules/users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '@/modules/email/mail.service';
-import { QwalletService } from '../../qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
-import { CwalletService } from '../../cwallet/cwallet.service';
+import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
+import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
 
 @Module({
   imports: [

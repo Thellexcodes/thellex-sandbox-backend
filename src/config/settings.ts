@@ -1,3 +1,4 @@
+import { NetworkSettings } from '@/models/network-settings';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
@@ -131,6 +132,8 @@ export const KYC_EXPIRATION_DURATION_MS = 18 * 30 * 24 * 60 * 60 * 1000;
 export const SUPPORTED_RAMP_COUNTRIES: string[] = ['NIGERIAN'];
 export const SERVER_REQUEST_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes in milliseconds
 export const EVERY_15_SECONDS_CRON = '*/15 * * * * *';
+export const DIRECT_SETTLEMENT_THRESHOLD = 100;
+
 export class TransactionSettingsDto {
   @Expose()
   @ApiProperty()
@@ -176,3 +179,33 @@ export class TransactionSettingsDto {
     },
   };
 }
+
+export const BlockchainNetworkSettings: Record<
+  SupportedBlockchainTypeEnum,
+  NetworkSettings
+> = {
+  [SupportedBlockchainTypeEnum.BEP20]: {
+    name: 'Binance Smart Chain',
+    treasuryAddress: '0xYourBEP20TreasuryAddressHere',
+    explorerUrl: 'https://bscscan.com/address/',
+    decimals: 18,
+  },
+  [SupportedBlockchainTypeEnum.TRC20]: {
+    name: 'Tron TRC20',
+    treasuryAddress: 'TYourTRC20TreasuryAddressHere',
+    explorerUrl: 'https://tronscan.org/#/address/',
+    decimals: 6,
+  },
+  [SupportedBlockchainTypeEnum.MATIC]: {
+    name: 'Polygon',
+    treasuryAddress: '0xYourMATICAddressHere',
+    explorerUrl: 'https://polygonscan.com/address/',
+    decimals: 18,
+  },
+  [SupportedBlockchainTypeEnum.ETHEREUM]: {
+    name: 'Ethereum ERC20',
+    treasuryAddress: '0xYourERC20TreasuryAddressHere',
+    explorerUrl: 'https://etherscan.io/address/',
+    decimals: 18,
+  },
+};

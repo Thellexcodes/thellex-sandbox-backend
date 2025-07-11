@@ -4,6 +4,7 @@ import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { IUserDto, UserEntity } from './typeorm/entities/user.entity';
 import {
+  BlockchainNetworkSettings,
   SUPPORTED_RAMP_COUNTRIES,
   SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
@@ -326,3 +327,9 @@ export const isCountrySupportedForOfframp = (
     return similarity >= threshold;
   });
 };
+
+export function getTreasuryAddress(
+  network: SupportedBlockchainTypeEnum,
+): string {
+  return BlockchainNetworkSettings[network].treasuryAddress;
+}
