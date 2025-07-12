@@ -7,7 +7,6 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
-import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { UserService } from '@/modules/users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '@/modules/email/mail.service';
@@ -29,7 +28,6 @@ import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
   controllers: [QwalletHooksController],
   providers: [
     QwalletHooksService,
-    NotificationsGateway,
     UserService,
     JwtService,
     MailService,

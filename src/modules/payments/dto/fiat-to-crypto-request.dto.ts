@@ -8,6 +8,7 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
   Validate,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -18,6 +19,7 @@ import {
 } from '@/config/settings';
 import { IFiatToCryptoQuoteResponseDto } from './payment.dto';
 import { ethers } from 'ethers';
+import { PaymentReasonEnum } from '@/models/payment.types';
 
 @ValidatorConstraint({ name: 'IsEvmAddress', async: false })
 export class IsEvmAddressConstraint implements ValidatorConstraintInterface {
@@ -68,16 +70,18 @@ export class FiatToCryptoOnRampRequestDto {
   country: CountryEnum;
 
   @ApiProperty({
-    description: 'Optional reason or purpose for the payment',
-    example: 'Payment to friend',
+    example: PaymentReasonEnum.TRAVEL,
+    description: 'Reason for the off-ramp payment',
+    enum: PaymentReasonEnum,
   })
-  @IsString()
-  reason: string;
+  @IsEnum(PaymentReasonEnum)
+  @IsNotEmpty()
+  paymentReason: PaymentReasonEnum;
 
   @ApiProperty({
     description: 'Blockchain network to use for processing the transaction',
     enum: SupportedBlockchainTypeEnum,
-    example: SupportedBlockchainTypeEnum.TRC20,
+    example: SupportedBlockchainTypeEnum.BEP20,
   })
   @IsEnum(SupportedBlockchainTypeEnum)
   @IsNotEmpty()
@@ -121,13 +125,22 @@ export class RecipientInfoDto {
 
 export class BankInfoDto {
   @ApiProperty()
-  name: string;
+  bankName: string;
 
   @ApiProperty()
   accountNumber: string;
 
   @ApiProperty()
-  accountName: string;
+  @IsOptional()
+  accountName?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  swiftCode?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  accountHolder?: string;
 }
 
 export class SourceInfoDto {

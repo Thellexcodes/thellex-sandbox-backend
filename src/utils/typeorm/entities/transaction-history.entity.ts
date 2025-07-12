@@ -10,6 +10,7 @@ import {
   PaymentStatus,
   TransactionDirectionEnum,
   TransactionTypeEnum,
+  YCPaymentEventEnum,
 } from '@/models/payment.types';
 import {
   FeeLevel,
@@ -17,7 +18,10 @@ import {
 } from '@/models/wallet-manager.types';
 import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
+import { IsEnum } from 'class-validator';
+
+type CombinedEventEnum = WalletWebhookEventEnum | YCPaymentEventEnum;
 
 @Entity({ name: 'transaction_history' })
 export class TransactionHistoryEntity extends BaseEntity {
@@ -28,13 +32,9 @@ export class TransactionHistoryEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({
-    name: 'event',
-    type: 'enum',
-    enum: WalletWebhookEventEnum,
-    nullable: false,
-  })
-  event: WalletWebhookEventEnum;
+  @IsEnum(WalletWebhookEventEnum, { each: false })
+  @IsEnum(YCPaymentEventEnum, { each: false })
+  event: CombinedEventEnum;
 
   @Expose()
   @ApiProperty()

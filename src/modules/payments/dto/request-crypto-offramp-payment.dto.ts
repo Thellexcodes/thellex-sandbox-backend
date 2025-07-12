@@ -16,6 +16,7 @@ import {
 } from 'class-validator';
 import { IsEvmAddressConstraint } from './fiat-to-crypto-request.dto';
 import { BankInfoRequestDto } from './bank-info-request.dto';
+import { PaymentReasonEnum } from '@/models/payment.types';
 
 export class RequestCryptoOffRampPaymentDto {
   // ===== Crypto Asset Details =====
@@ -45,7 +46,7 @@ export class RequestCryptoOffRampPaymentDto {
   })
   @IsNumber({ maxDecimalPlaces: 8 })
   @IsNotEmpty()
-  amount: number;
+  userAmount: number;
 
   // ===== Fiat & Payment Preferences =====
 
@@ -66,6 +67,15 @@ export class RequestCryptoOffRampPaymentDto {
   @IsOptional()
   @IsString()
   paymentMethod?: string;
+
+  @ApiProperty({
+    example: PaymentReasonEnum.TRAVEL,
+    description: 'Reason for the off-ramp payment',
+    enum: PaymentReasonEnum,
+  })
+  @IsEnum(PaymentReasonEnum)
+  @IsNotEmpty()
+  paymentReason: PaymentReasonEnum;
 
   // ===== Crypto Sender Info =====
 

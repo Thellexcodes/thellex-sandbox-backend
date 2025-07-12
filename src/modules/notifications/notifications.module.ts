@@ -6,7 +6,6 @@ import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QWalletRequestPaymentsCronService } from '../crons/qwallet/qwalletRequesPayments.cron';
 import { QWalletWidthrawPaymentsCronService } from '../crons/qwallet/qWalletWithdrawPayments.cron';
-import { NotificationsGateway } from './notifications.gateway';
 import { UserService } from '../users/user.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
@@ -33,7 +32,6 @@ import { CwalletService } from '../wallets/cwallet/cwallet.service';
     QWalletWidthrawPaymentsCronService,
     AuthNotificationCronService,
     QwalletService,
-    NotificationsGateway,
     UserService,
     JwtService,
     MailService,

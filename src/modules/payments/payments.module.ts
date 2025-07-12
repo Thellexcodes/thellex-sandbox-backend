@@ -9,7 +9,6 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../email/mail.service';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
-import { YellowCardCron } from '../crons/yellowcard.cron';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
@@ -22,7 +21,6 @@ import { YellowCardCron } from '../crons/yellowcard.cron';
     JwtService,
     MailService,
     CwalletService,
-    YellowCardCron,
   ],
 })
 export class PaymentsModule {}

@@ -2,6 +2,7 @@ import {
   TransactionDirectionEnum,
   PaymentStatus,
   TransactionTypeEnum,
+  YCPaymentEventEnum,
 } from '@/models/payment.types';
 import {
   FeeLevel,
@@ -10,7 +11,7 @@ import {
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 export class TransactionHistoryDto {
-  event?: WalletWebhookEventEnum;
+  event?: WalletWebhookEventEnum | YCPaymentEventEnum;
   transactionId: string;
   transactionDirection: TransactionDirectionEnum;
   transactionType: TransactionTypeEnum;
@@ -25,7 +26,7 @@ export class TransactionHistoryDto {
   walletId: string;
   walletName?: string;
   paymentStatus?: PaymentStatus;
-  sourceAddress: string;
+  sourceAddress?: string;
   destinationAddress: string;
   paymentNetwork: string;
   tokenId?: string;

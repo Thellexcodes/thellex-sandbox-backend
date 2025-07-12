@@ -46,7 +46,7 @@ export class NotificationEntity extends BaseEntity {
   assetCode: string;
 
   @Exclude()
-  @Column({ name: 'expires_at', type: 'timestamp' })
+  @Column({ name: 'expires_at', type: 'timestamptz' })
   expiresAt: Date;
 
   @Expose()

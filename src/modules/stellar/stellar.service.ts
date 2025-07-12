@@ -12,7 +12,7 @@ export class StellarService {
   private server: Horizon.Server;
 
   constructor(private configService: ConfigService) {
-    this.rpcUrl = getAppConfig().BLOCKCHAIN.STELLAR_RPC_ENDPOINT;
+    this.rpcUrl = getAppConfig().BLOCKCHAIN.STELLAR_RPC_URL;
 
     this.server = new Horizon.Server(this.rpcUrl, {
       allowHttp:

@@ -34,10 +34,7 @@ import {
   TransactionDirectionEnum,
   TransactionTypeEnum,
 } from '@/models/payment.types';
-import {
-  ITransactionHistoryDto,
-  TransactionHistoryEntity,
-} from '@/utils/typeorm/entities/transaction-history.entity';
+import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { ApiResponse } from '@/models/request.types';
 import { getAppConfig } from '@/constants/env';
@@ -106,7 +103,7 @@ export class QwalletService {
     );
   }
 
-  async lookupSubWallet(address: string): Promise<QWalletsEntity | null | any> {
+  async lookupSubWallet(address: string): Promise<QWalletsEntity | null> {
     return this.qwalletsRepo
       .createQueryBuilder('wallet')
       .leftJoinAndSelect('wallet.profile', 'profile')

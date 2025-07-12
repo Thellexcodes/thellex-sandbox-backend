@@ -48,7 +48,10 @@ export type ApiConfig = {
   BLOCKCHAIN: {
     ETHEREUM_RPC_URL: string;
     BASE_RPC_URL: string;
-    STELLAR_RPC_ENDPOINT: string;
+    STELLAR_RPC_URL: string;
+    TRON_RPC_URL: string;
+    BEP20_RPC_URL: string;
+    MATIC_POL_RPC_URL: string;
   };
   DOJAH: {
     APP_ID: string;
@@ -126,6 +129,9 @@ export const cwalletEntityCypherTextMap = getEnvVarMap(
 export const ethereumRpcUrlMap = getEnvVarMap('ETHEREUM_RPC_URL');
 export const baseRpcUrlMap = getEnvVarMap('BASE_RPC_URL');
 export const stellarRpcEndpointMap = getEnvVarMap('STELLAR_RPC_ENDPOINT');
+export const tronRpcUrlMap = getEnvVarMap('TRON_FULL_NODE');
+export const bscRpcUrlMap = getEnvVarMap('BSC_RPC_URL');
+export const maticPolRpcUrlMap = getEnvVarMap('MATIC_POL_RPC_URL');
 
 // Email
 export const emailUserMap = getEnvVarMap('EMAIL_USER');

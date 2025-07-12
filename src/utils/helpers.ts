@@ -23,6 +23,7 @@ import {
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
 import { compareTwoStrings } from 'string-similarity';
+import { Injectable, PipeTransform } from '@nestjs/common';
 
 //TODO: handle errors with enums
 
@@ -332,4 +333,41 @@ export function getTreasuryAddress(
   network: SupportedBlockchainTypeEnum,
 ): string {
   return BlockchainNetworkSettings[network].treasuryAddress;
+}
+
+export function normalizeEnumValue<T extends Record<string, string>>(
+  value: string,
+  enumObj: T,
+): T[keyof T] {
+  const normalize = (val: string) => val.toLowerCase().replace(/[_\s]/g, '');
+  const normalizedInput = normalize(value);
+
+  const match = Object.values(enumObj).find(
+    (enumValue) => normalize(enumValue) === normalizedInput,
+  );
+
+  if (!match) {
+    throw new Error(`Invalid enum value: ${value}`);
+  }
+
+  // Assert that match is of type T[keyof T]
+  return match as T[keyof T];
+}
+
+export function toUTCString(timestamp: number): Date {
+  return new Date(timestamp);
+}
+
+@Injectable()
+export class NormalizeEnumPipe implements PipeTransform {
+  constructor(private readonly enumType: Record<string, string>) {}
+
+  transform(value: any) {
+    if (typeof value === 'string') {
+      return normalizeEnumValue(value, this.enumType);
+    }
+    console.log({ value });
+
+    return value;
+  }
 }

@@ -1,6 +1,10 @@
-import { ethers, JsonRpcProvider } from 'ethers';
+import { ethers, JsonRpcProvider, Wallet } from 'ethers';
 import type { AbiItem } from 'web3-utils';
-import { SupportedBlockchainTypeEnum } from '@/config/settings';
+import {
+  BlockchainNetworkSettings,
+  SupportedBlockchainTypeEnum,
+  TokenAddresses,
+} from '@/config/settings';
 
 const ERC20_ABI: AbiItem[] = [
   {
@@ -21,29 +25,20 @@ const ERC20_ABI: AbiItem[] = [
 
 const DEFAULT_DECIMALS = 18;
 
-const NETWORK_RPC_MAP: Record<Partial<SupportedBlockchainTypeEnum>, string> = {
-  [SupportedBlockchainTypeEnum.ETHEREUM]: 'https://rpc.ankr.com/eth',
-  [SupportedBlockchainTypeEnum.BEP20]: '',
-  [SupportedBlockchainTypeEnum.TRC20]: '',
-  [SupportedBlockchainTypeEnum.MATIC]: '',
-};
-
 export class EtherService {
-  private providers: Map<SupportedBlockchainTypeEnum, JsonRpcProvider>;
+  private providers: Record<SupportedBlockchainTypeEnum, JsonRpcProvider> =
+    {} as any;
 
   constructor() {
-    this.providers = new Map();
-
-    for (const [chain, rpcUrl] of Object.entries(NETWORK_RPC_MAP)) {
-      this.providers.set(
-        chain as SupportedBlockchainTypeEnum,
-        new JsonRpcProvider(rpcUrl),
-      );
+    for (const chain of Object.values(SupportedBlockchainTypeEnum)) {
+      const config = BlockchainNetworkSettings[chain];
+      if (!config || !config.rpcUrl) continue;
+      this.providers[chain] = new JsonRpcProvider(config.rpcUrl);
     }
   }
 
   getProvider(chain: SupportedBlockchainTypeEnum): JsonRpcProvider {
-    const provider = this.providers.get(chain);
+    const provider = this.providers[chain];
     if (!provider) throw new Error(`No provider configured for ${chain}`);
     return provider;
   }
@@ -90,7 +85,7 @@ export class EtherService {
       const formatted = Number(ethers.formatUnits(rawBalance, decimals));
       return formatted.toFixed(4);
     } catch (error) {
-      console.error(`Error fetching token balance:`, error);
+      console.error(`Error fetching token balance on ${chain}:`, error);
       return '0';
     }
   }
@@ -103,35 +98,85 @@ export class EtherService {
     return ethers.formatEther(wei);
   }
 
-  /**
-   * Estimate the gas cost for an ERC-20 token transfer
-   */
-  async estimateTransferFee(params: {
+  async transferNative(params: {
+    privateKey: string;
+    to: string;
+    amount: string; // in ETH/MATIC/BNB
+    chain: SupportedBlockchainTypeEnum;
+  }): Promise<{ txHash: string }> {
+    const { privateKey, to, amount, chain } = params;
+
+    if (!this.isValidAddress(to)) {
+      throw new Error('Invalid recipient address');
+    }
+
+    const provider = this.getProvider(chain);
+    const wallet = new Wallet(privateKey, provider);
+
+    const tx = await wallet.sendTransaction({
+      to,
+      value: ethers.parseEther(amount),
+    });
+
+    await tx.wait();
+    return { txHash: tx.hash };
+  }
+
+  async transferToken(params: {
+    to: string;
+    amount: string;
+    assetCode: string;
+    chain: SupportedBlockchainTypeEnum;
+  }): Promise<{ txHash: string; sourceAddress: string }> {
+    const { to, amount, chain } = params;
+
+    const tokenAddress = TokenAddresses[chain]?.[params.assetCode];
+    if (!tokenAddress) {
+      throw new Error(
+        `Token address not found for ${params.assetCode.toUpperCase()} on ${chain}`,
+      );
+    }
+
+    if (!this.isValidAddress(to) || !this.isValidAddress(tokenAddress)) {
+      throw new Error('Invalid recipient or token address');
+    }
+
+    const network = BlockchainNetworkSettings[chain];
+
+    const provider = this.getProvider(chain);
+    const wallet = new Wallet(network.secretKey, provider);
+
+    const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, wallet);
+
+    const decimals = await tokenContract
+      .decimals()
+      .catch(() => DEFAULT_DECIMALS);
+    const amountInUnits = ethers.parseUnits(amount, decimals);
+
+    // const tx = await tokenContract.transfer(to, amountInUnits);
+    // await tx.wait();
+
+    return { txHash: 'tx-hash', sourceAddress: 'source' };
+  }
+
+  async estimateTokenTransferFee(params: {
     from: string;
     to: string;
     tokenAddress: string;
     chain: SupportedBlockchainTypeEnum;
   }): Promise<number | any> {
-    const { from, to, tokenAddress, chain } = params;
-    const provider = this.getProvider(chain);
-
-    const tokenContract = new ethers.Contract(
-      tokenAddress,
-      ERC20_ABI,
-      provider,
-    );
+    // const { from, to, tokenAddress, chain } = params;
+    // const provider = this.getProvider(chain);
+    // const tokenContract = new ethers.Contract(
+    //   tokenAddress,
+    //   ERC20_ABI,
+    //   provider,
+    // );
     // const gasPrice = await provider.getGasPrice();
-
-    // // Simulate a transfer for estimating gas
     // const estimatedGas = await tokenContract.estimateGas.transfer(to, 1n, {
     //   from,
     // });
-
-    // // Total fee in ETH or MATIC (gasPrice * estimatedGas)
-    // const gasFeeInNative = gasPrice * estimatedGas;
-
-    // // Convert to Ether/Matic and return as number
-    // const formattedFee = parseFloat(ethers.formatEther(gasFeeInNative));
-    // return formattedFee;
+    // const totalFee = gasPrice * estimatedGas;
+    // return parseFloat(ethers.formatEther(totalFee));
   }
 }

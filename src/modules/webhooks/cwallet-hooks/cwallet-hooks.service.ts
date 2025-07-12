@@ -10,16 +10,9 @@ import {
   TransactionTypeEnum,
 } from '@/models/payment.types';
 import { toUTCDate } from '@/utils/helpers';
-import {
-  NotificationMessageEnum,
-  NotificationsEnum,
-} from '@/models/notifications.enum';
-import { TRANSACTION_NOTIFICATION_TYPES_ENUM } from '@/models/socket.enums';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { TokenEnum } from '@/config/settings';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
-import { WalletNotificationsService } from '@/modules/notifications/wallet-notifications.service';
-import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
 import { QWalletStatus } from '@/modules/wallets/qwallet/qwallet-status.enum';
@@ -31,8 +24,6 @@ export class CwalletHooksService {
   constructor(
     private readonly transactionHistoryServie: TransactionHistoryService,
     private readonly cwalletService: CwalletService,
-    private readonly walletNotficationsService: WalletNotificationsService,
-    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async handleDepositSuccessful(payload: CwalletHookDto) {
@@ -107,24 +98,24 @@ export class CwalletHooksService {
           latestWalletBalance.toString(),
         );
 
-        const notification =
-          await this.walletNotficationsService.createNotification({
-            user,
-            title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-            message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-            data: {
-              amount: notificationPayload.amounts[0],
-              assetCode,
-              txnID: transaction.id,
-              walletID: notificationPayload.walletId,
-            },
-          });
+        // const notification =
+        //   await this.walletNotficationsService.createNotification({
+        //     user,
+        //     title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+        //     message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
+        //     data: {
+        //       amount: notificationPayload.amounts[0],
+        //       assetCode,
+        //       txnID: transaction.id,
+        //       walletID: notificationPayload.walletId,
+        //     },
+        //   });
 
-        await this.notificationsGateway.emitTransactionNotificationToUser(
-          user.alertID,
-          TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit,
-          { transaction, notification },
-        );
+        // await this.notificationsGateway.emitTransactionNotificationToUser(
+        //   user.alertID,
+        //   TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit,
+        //   { transaction, notification },
+        // );
       }
     } catch (error) {
       if (error instanceof CustomHttpException) {
@@ -214,24 +205,24 @@ export class CwalletHooksService {
         );
 
         // Send notification
-        const notification =
-          await this.walletNotficationsService.createNotification({
-            user,
-            title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
-            message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
-            data: {
-              amount: transaction.amount,
-              assetCode: transaction.assetCode,
-              txnID: transaction.transactionId,
-              walletID: transaction.walletId,
-            },
-          });
+        // const notification =
+        //   await this.walletNotficationsService.createNotification({
+        //     user,
+        //     title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
+        //     message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
+        //     data: {
+        //       amount: transaction.amount,
+        //       assetCode: transaction.assetCode,
+        //       txnID: transaction.transactionId,
+        //       walletID: transaction.walletId,
+        //     },
+        //   });
 
-        await this.notificationsGateway.emitTransactionNotificationToUser(
-          user.alertID,
-          TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
-          { transaction: updatedTransaction, notification },
-        );
+        // await this.notificationsGateway.emitTransactionNotificationToUser(
+        //   user.alertID,
+        //   TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
+        //   { transaction: updatedTransaction, notification },
+        // );
       }
     } catch (error) {
       if (error instanceof CustomHttpException) {

@@ -4,31 +4,26 @@ import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
 import { IQwalletHookDepositSuccessfulData } from './dto/qwallet-hook-depositSuccessful.dto';
 import { IQWalletHookWithdrawSuccessfulEvent } from './dto/qwallet-hook-withdrawSuccessful.dto';
 import {
-  NotificationMessageEnum,
-  NotificationsEnum,
-} from '@/models/notifications.enum';
-import {
   FeeLevel,
   WalletErrorEnum,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { toUTCDate } from '@/utils/helpers';
-import {
-  TRANSACTION_NOTIFICATION_TYPES_ENUM,
-  WALLET_NOTIFICAITON_TYPES_ENUM,
-} from '@/models/socket.enums';
+import { normalizeEnumValue, toUTCDate } from '@/utils/helpers';
 import {
   PaymentStatus,
   TransactionDirectionEnum,
   TransactionTypeEnum,
 } from '@/models/payment.types';
 import { IQWalletAddressGenerated } from './dto/qwallet-hook-walletUpdated.dto';
-import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
-import { WalletNotificationsService } from '@/modules/notifications/wallet-notifications.service';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
 import { QWalletStatus } from '@/modules/wallets/qwallet/qwallet-status.enum';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import {
+  NotificationEventEnum,
+  NotificationStatusEnum,
+} from '@/models/notifications.enum';
 
 //TODO: handle errors with enum
 //TODO: Update logger
@@ -36,9 +31,8 @@ import { QWalletStatus } from '@/modules/wallets/qwallet/qwallet-status.enum';
 export class QwalletHooksService {
   constructor(
     private readonly qwalletService: QwalletService,
-    private readonly notificationsGateway: NotificationsGateway,
+    private readonly notificationService: NotificationsService,
     private readonly transactionHistoryService: TransactionHistoryService,
-    private readonly walletNotficationsService: WalletNotificationsService,
   ) {}
 
   async handleWalletAddressGenerated(
@@ -84,11 +78,15 @@ export class QwalletHooksService {
       networkMetadata: updatedNetworkMetadata,
     });
 
-    await this.notificationsGateway.emitTransactionNotificationToUser(
-      user.alertID,
-      WALLET_NOTIFICAITON_TYPES_ENUM.WalletAddressGenerated,
-      { updated: true },
-    );
+    await this.notificationService.createAndSendNotification({
+      user,
+      data: { updated: true },
+      event: normalizeEnumValue(
+        WalletWebhookEventEnum.WalletAddressGenerated,
+        WalletWebhookEventEnum,
+      ),
+      status: NotificationStatusEnum.SUCCESS,
+    });
   }
 
   handleDepositConfirmation(payload: any) {
@@ -144,7 +142,10 @@ export class QwalletHooksService {
       const user = qwalletProfile.user;
 
       const txnData: TransactionHistoryDto = {
-        event: WalletWebhookEventEnum.DepositSuccessful,
+        event: normalizeEnumValue(
+          WalletWebhookEventEnum.DepositSuccessful,
+          WalletWebhookEventEnum,
+        ),
         transactionId: data.id,
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: data.currency,
@@ -180,24 +181,21 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
-      const notification =
-        await this.walletNotficationsService.createNotification({
-          user,
-          data: {
-            amount: data.amount,
-            assetCode: data.currency,
-            txnID: transaction.id,
-            walletID: data.wallet.id,
-          },
-          title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-          message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-        });
-
-      await this.notificationsGateway.emitTransactionNotificationToUser(
-        user.alertID,
-        TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit,
-        { transaction, notification },
-      );
+      await this.notificationService.createAndSendNotification({
+        user,
+        data: {
+          amount: data.amount,
+          assetCode: data.currency,
+          txnID: transaction.id,
+          walletID: data.wallet.id,
+          transaction,
+        },
+        event: normalizeEnumValue(
+          NotificationEventEnum.CRYPTO_DEPOSIT,
+          NotificationEventEnum,
+        ),
+        status: NotificationStatusEnum.SUCCESS,
+      });
     } catch (error) {
       console.error(error);
     }
@@ -263,6 +261,8 @@ export class QwalletHooksService {
         );
       }
 
+      const user = qwalletProfile.user;
+
       const updatedTransaction =
         await this.transactionHistoryService.updateQWalletTransactionByTransactionId(
           data,
@@ -279,24 +279,21 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
-      const notification =
-        await this.walletNotficationsService.createNotification({
-          user: qwalletProfile.user,
-          data: {
-            amount: data.amount,
-            assetCode: data.currency,
-            txnID: updatedTransaction.id,
-            walletID: data.wallet.id,
-          },
-          title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
-          message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
-        });
-
-      await this.notificationsGateway.emitTransactionNotificationToUser(
-        qwalletProfile.user.alertID,
-        TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
-        { transaction: updatedTransaction, notification },
-      );
+      await this.notificationService.createAndSendNotification({
+        user,
+        data: {
+          amount: data.amount,
+          assetCode: data.currency,
+          txnID: updatedTransaction.id,
+          walletID: data.wallet.id,
+          transaction: updatedTransaction,
+        },
+        event: normalizeEnumValue(
+          NotificationEventEnum.CRYPTO_WITHDRAWAL,
+          NotificationEventEnum,
+        ),
+        status: NotificationStatusEnum.SUCCESS,
+      });
     } catch (error) {
       console.error('Withdrawal processing failed:', error);
     }

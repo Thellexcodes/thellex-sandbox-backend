@@ -7,9 +7,7 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verif
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
-import { WalletNotificationsService } from './notifications/wallet-notifications.service';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
-import { NotificationsGateway } from './notifications/notifications.gateway';
 import { YellowCardService } from './payments/yellowcard.service';
 import { QwalletService } from './wallets/qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
@@ -23,10 +21,13 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 import { CwalletHooksModule } from './webhooks/cwallet-hooks/cwallet-hooks.module';
 import { QwalletHooksModule } from './webhooks/qwallet-hooks/qwallet-hooks.module';
 import { EtherService } from '@/utils/services/ethers.service';
-import { FirebaseMessagingService } from '@/utils/services/firebase-admin.service';
 import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { ScheduleModule } from '@nestjs/schedule';
-import { YcPaymentHookModule } from './webhooks/payments-hooks/yc-payments-hooks.module';
+import { YcPaymentHookModule } from './webhooks/yc-payments-hooks/yc-payments-hooks.module';
+import { PaymentsService } from './payments/payments.service';
+import { NotificationsService } from './notifications/notifications.service';
+import { NotificationsGateway } from './notifications/notifications.gateway';
+import { TronService } from '@/utils/services/tron.service';
 
 @Global()
 @Module({
@@ -54,26 +55,28 @@ import { YcPaymentHookModule } from './webhooks/payments-hooks/yc-payments-hooks
   ],
   providers: [
     EtherService,
-    NotificationsGateway,
     TransactionHistoryService,
-    WalletNotificationsService,
     YellowCardService,
     QwalletService,
     JwtService,
     HttpService,
-    FirebaseMessagingService,
+    PaymentsService,
+    NotificationsService,
+    NotificationsGateway,
+    TronService,
   ],
   exports: [
     EtherService,
     TypeOrmModule,
-    NotificationsGateway,
     TransactionHistoryService,
-    WalletNotificationsService,
     YellowCardService,
     QwalletService,
     HttpService,
     JwtService,
-    FirebaseMessagingService,
+    PaymentsService,
+    NotificationsService,
+    NotificationsGateway,
+    TronService,
   ],
 })
 export class SharedModule {}

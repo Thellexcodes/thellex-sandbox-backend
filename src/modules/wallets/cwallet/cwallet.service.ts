@@ -74,7 +74,7 @@ export class CwalletService {
     });
   }
 
-  async lookupSubWallet(address: string): Promise<CwalletsEntity | null | any> {
+  async lookupSubWallet(address: string): Promise<CwalletsEntity | null> {
     return this.cWalletsRepo
       .createQueryBuilder('wallet')
       .leftJoinAndSelect('wallet.profile', 'profile')
@@ -89,8 +89,6 @@ export class CwalletService {
       )
       .getOne();
   }
-
-  async fetchPaymentAddress(id) {}
 
   async lookupSubWalletByID(id: string): Promise<CwalletsEntity | null> {
     return await this.cWalletsRepo.findOne({
@@ -140,7 +138,7 @@ export class CwalletService {
 
       const transaction = await this.getTransaction({
         id: transfer.data.id,
-        txType: TransactionDirectionEnum.OUTBOUND,
+        txType: 'OUTBOUND',
       });
 
       const txnHistory: TransactionHistoryDto = {

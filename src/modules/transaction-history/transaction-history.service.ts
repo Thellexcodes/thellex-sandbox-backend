@@ -21,11 +21,7 @@ export class TransactionHistoryService {
     txData: TransactionHistoryDto,
     user: UserEntity,
   ): Promise<TransactionHistoryEntity> {
-    const transactionRecord = this.transactionRepo.create({
-      user,
-      ...txData,
-    });
-
+    const transactionRecord = this.transactionRepo.create({ user, ...txData });
     return this.transactionRepo.save(transactionRecord);
   }
 
