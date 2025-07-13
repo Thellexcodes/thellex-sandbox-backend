@@ -15,21 +15,6 @@ export class YellowCardCron {
   async cacheRates() {
     try {
       const { rates } = await this.yellowCardService.getRates();
-      // await this.firebaseService.sendMessage(
-      //   '',
-      //   {
-      //     type: 'WITHDRAWAL_SUCCESSFUL',
-      //     amount: '100',
-      //     asset: 'USDT',
-      //     status: 'completed',
-      //     txHash: '0xabc123...',
-      //   },
-      //   {
-      //     title: 'Withdrawal Successful ✅',
-      //     body: 'Your withdrawal of 100 USDT has been completed.',
-      //   },
-      // );
-
       if (rates) {
         const now = new Date();
         const expiresAt = new Date(now.getTime() + 15 * 1000);
@@ -48,30 +33,30 @@ export class YellowCardCron {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async handleSettlement(): Promise<void> {
-    try {
-      const accountInfo = await this.yellowCardService.getAccount();
-      // console.log(accountInfo);
+  // @Cron(CronExpression.EVERY_10_SECONDS)
+  // async handleSettlement(): Promise<void> {
+  //   try {
+  //     const accountInfo = await this.yellowCardService.getAccount();
+  //     // console.log(accountInfo);
 
-      const payload = {
-        amount: 100000,
-        walletAddress: '0xRecipientWalletAddress',
-        cryptoCurrency: 'USDC',
-        cryptoNetwork: 'ETH',
-        sequenceId: uuidV4(),
-        travelRuleInfo: {
-          name: 'My Business Name',
-          businessRegistrationNumber: '1234567890',
-        },
-      };
+  //     const payload = {
+  //       amount: 100000,
+  //       walletAddress: '0xRecipientWalletAddress',
+  //       cryptoCurrency: 'USDC',
+  //       cryptoNetwork: 'ETH',
+  //       sequenceId: uuidV4(),
+  //       travelRuleInfo: {
+  //         name: 'My Business Name',
+  //         businessRegistrationNumber: '1234567890',
+  //       },
+  //     };
 
-      // const { data } =
-      //   await this.yellowCardService.submitSettlementRequest(payload);
+  //     // const { data } =
+  //     //   await this.yellowCardService.submitSettlementRequest(payload);
 
-      //   this.logger.log(`✅ Settlement submitted: ${JSON.stringify(data)}`);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  //     //   this.logger.log(`✅ Settlement submitted: ${JSON.stringify(data)}`);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
 }

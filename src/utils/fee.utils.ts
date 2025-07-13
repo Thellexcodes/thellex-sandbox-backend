@@ -44,3 +44,21 @@ export function calculateNetCryptoAmount(
     netCryptoAmount,
   };
 }
+
+export function calculateNetFiatAmount(
+  cryptoAmount: number,
+  feeValue: number, // e.g., 200 for 2%
+  rate: number,
+) {
+  const feeDecimal = feeValue / 10000; // e.g. 200 -> 0.02
+  const grossFiat = cryptoAmount * rate; // e.g. 10 * 1615 = ₦16,150
+  const feeAmount = grossFiat * feeDecimal; // e.g. ₦16,150 * 0.02 = ₦323
+  const netFiatAmount = parseFloat((grossFiat - feeAmount).toFixed(2)); // e.g. ₦15,827.00
+
+  return {
+    grossFiat,
+    feeAmount,
+    feeLabel: `${(feeDecimal * 100).toFixed(2)}%`,
+    netFiatAmount,
+  };
+}

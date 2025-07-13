@@ -1,9 +1,9 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
+  BlockchainNetworkSettings,
   DIRECT_SETTLEMENT_THRESHOLD,
   FiatEnum,
-  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
@@ -21,7 +21,10 @@ import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-c
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { formatUserWithTiers } from '@/utils/helpers';
-import { calculateNetCryptoAmount } from '@/utils/fee.utils';
+import {
+  calculateNetCryptoAmount,
+  calculateNetFiatAmount,
+} from '@/utils/fee.utils';
 import {
   PaymentStatus,
   TransactionDirectionEnum,
@@ -146,7 +149,8 @@ export class PaymentsService {
     }
   }
 
-  async handleCryptoToFiatOnRamp(
+  // Crypto to fiat on ramp
+  async handleFiatToCryptoOnRamp(
     user: UserEntity,
     dto: FiatToCryptoOnRampRequestDto,
   ): Promise<IFiatToCryptoQuoteResponseDto> {
@@ -214,12 +218,12 @@ export class PaymentsService {
         name: `${userKycData.firstName} ${userKycData.lastName}`,
         country: dto.country.toUpperCase(),
         phone: userKycData.phone ?? '+2341111111111',
-        address: userKycData.address ?? '',
-        dob: userKycData.dob ?? '',
+        address: userKycData.address,
+        dob: userKycData.dob,
         email: userPlain.email,
         idNumber: userKycData.idNumber,
-        idType: IdTypeEnum.NIN,
-        additionalIdType: IdTypeEnum.BVN,
+        idType: userKycData.idTypes[0],
+        additionalIdType: userKycData.idTypes[1],
         additionalIdNumber: userKycData.bvn,
       };
 
@@ -294,7 +298,7 @@ export class PaymentsService {
         accountHolder: yellowCardResponse.bankInfo.accountName,
       };
       newTxn.recipientInfo = {
-        walletAddress: dto.destinationAddress,
+        destnationAddress: dto.destinationAddress,
         network: dto.network,
         assetCode: dto.assetCode,
       };
@@ -326,7 +330,8 @@ export class PaymentsService {
     }
   }
 
-  async handleCryptoToFiatOffRamp(
+  // Crypto to fiat off ramp
+  async handleCryptotoFiatOffRamp(
     user: UserEntity,
     dto: RequestCryptoOffRampPaymentDto,
   ) {
@@ -341,6 +346,19 @@ export class PaymentsService {
       );
 
     const userPlain = formatUserWithTiers(user);
+
+    //[x] get user wallet info
+    const [cwallet, qwallet] = await Promise.all([
+      this.cwalletService.lookupSubWallet(dto.sourceAddress),
+      this.qwalletService.lookupSubWallet(dto.sourceAddress),
+    ]);
+
+    if (!cwallet && !qwallet)
+      throw new CustomHttpException(
+        WalletErrorEnum.MISSING_WALLET_ID,
+        HttpStatus.NOT_FOUND,
+      );
+
     const { channels } = await this.ycService.getChannels();
     const { networks } = await this.ycService.getNetworks();
 
@@ -359,25 +377,25 @@ export class PaymentsService {
     );
     let network = supportedNetworks[0];
 
-    const currency = fiatRate.rate.filter(
-      (r: IYellowCardRateDto) => r.code === 'NGN',
-    );
-
-    const reason = 'entertainment';
+    const userKycData = { ...userPlain.kyc };
+    if (userKycData.dob) {
+      const [year, month, day] = userKycData.dob.split('-');
+      userKycData.dob = `${month}/${day}/${year}`;
+    }
 
     const sender = {
       name: `${userPlain.kyc.firstName} ${userPlain.kyc.lastName}`,
-      country: 'US',
-      phone: '+12222222222',
-      address: 'Sample Address',
-      dob: 'mm/dd/yyyy',
-      email: 'email@domain.com',
-      idNumber: '0123456789',
-      idType: 'license',
+      country: dto.country.toUpperCase(),
+      phone: userKycData.phone ?? '+2341111111111',
+      address: userKycData.address,
+      dob: userKycData.dob,
+      email: userPlain.email,
+      idNumber: userKycData.idNumber,
+      idType: userKycData.idTypes[0],
     };
 
     const destination = {
-      accountNumber: '1111111111',
+      accountNumber: dto.bankInfo.accountNumber,
       accountType: network.accountNumberType,
       country: network.country,
       networkId: network.id,
@@ -399,7 +417,7 @@ export class PaymentsService {
       currency: channel.currency,
       country: channel.country,
       localAmount: dto.userAmount,
-      reason,
+      reason: dto.paymentReason,
       destination,
       sender,
       forceAccept: false,
@@ -408,108 +426,70 @@ export class PaymentsService {
     const yellowCardResponse =
       await this.ycService.submitPaymentRequest(request);
 
-    // const { adjustedNaira, feeAmount, feeLabel, netCryptoAmount } =
-    //   calculateNetCryptoAmount(
-    //     dto.userAmount,
-    //     userPlain.currentTier.txnFee.withdrawal.feePercentage,
-    //     fiatRate.rate.buy,
-    //   );
+    const { grossFiat, feeAmount, feeLabel, netFiatAmount } =
+      calculateNetFiatAmount(
+        dto.userAmount,
+        userPlain.currentTier.txnFee.withdrawal.feePercentage,
+        fiatRate.rate.buy,
+      );
 
-    // const serviceFeeAmountUsd = parseFloat(
-    //   (feeAmount / fiatRate.rate.buy).toFixed(2),
-    // );
+    const serviceFeeAmountUsd = parseFloat(
+      (feeAmount / fiatRate.rate.sell).toFixed(2),
+    );
 
-    // // Assign to entity
-    // const newTxn = new FiatCryptoRampTransactionEntity();
-    // newTxn.user = user;
-    // newTxn.userId = user.id;
-    // newTxn.sequenceId = sequenceId;
-    // newTxn.channelId = channel.id;
-    // newTxn.transactionType = TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT;
-    // newTxn.paymentStatus = PaymentStatus.Processing;
-    // if (this.shouldSettleDirectly(dto.userAmount)) {
-    //   newTxn.directSettlement = true;
-    // }
-    // newTxn.providerReference = yellowCardResponse.reference;
-    // newTxn.providerTransactionId = yellowCardResponse.id;
-    // newTxn.providerDepositId = yellowCardResponse.depositId;
-    // newTxn.customerType = userPlain.kyc.customerType;
-
-    // newTxn.userAmount = dto.userAmount; // original fiat amount
-    // newTxn.adjustedFiatAmount = adjustedNaira; // fiat after adding/removing fees
-    // newTxn.feeLabel = feeLabel; // e.g. "2.00%"
-    // newTxn.serviceFeeAmountLocal = feeAmount; // fee in fiat (local currency)
-    // newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd; // fee converted to USD
-
-    // newTxn.rate = fiatRate.rate.buy;
-    // newTxn.netCryptoAmount = netCryptoAmount;
-
-    // newTxn.fiatCode = dto.fiatCode;
-    // newTxn.currency = channel.currency;
-    // newTxn.country = dto.country;
-
-    // newTxn.paymentProvider = PaymentPartnerEnum.YELLOWCARD;
-    // newTxn.bankInfo = {
-    //   bankName: yellowCardResponse.bankInfo.name,
-    //   accountNumber: yellowCardResponse.bankInfo.accountNumber,
-    //   accountHolder: yellowCardResponse.bankInfo.accountName,
-    // };
-    // newTxn.recipientInfo = {
-    //   walletAddress: dto.destinationAddress,
-    //   network: dto.network,
-    //   assetCode: dto.assetCode,
-    // };
-
-    // newTxn.expiresAt = yellowCardResponse.expiresAt;
-
-    // await this.fiatCryptoRampTransactionRepo.save(newTxn);
-
-    // return plainToInstance(
-    //   IFiatToCryptoQuoteResponseDto,
-    //   {
-    //     userAmount: dto.userAmount,
-    //     feePercentage: feeLabel,
-    //     feeAmount,
-    //     adjustedFiatAmount: adjustedNaira,
-    //     rate: fiatRate.rate.buy,
-    //     netCryptoAmount,
-    //     serviceFeeAmountUsd,
-    //   },
-    //   { excludeExtraneousValues: true },
-    // );
-  }
-
-  async disburseToBank(payload: {
-    amount: number;
-    currency: string;
-    destination: {
-      accountNumber: string;
-      accountType: string;
-      networkId: string;
-      accountName?: string;
+    // Assign to entity
+    const newTxn = new FiatCryptoRampTransactionEntity();
+    newTxn.user = user;
+    newTxn.userId = user.id;
+    newTxn.sequenceId = sequenceId;
+    newTxn.channelId = channel.id;
+    newTxn.transactionType = TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL;
+    newTxn.paymentStatus = PaymentStatus.Processing;
+    newTxn.providerReference = yellowCardResponse.reference;
+    newTxn.providerTransactionId = yellowCardResponse.id;
+    newTxn.providerDepositId = yellowCardResponse.depositId;
+    newTxn.customerType = userPlain.kyc.customerType;
+    newTxn.userAmount = dto.userAmount; // original fiat amount
+    newTxn.adjustedFiatAmount = netFiatAmount; // fiat after adding/removing fees
+    newTxn.feeLabel = feeLabel; // e.g. "2.00%"
+    newTxn.serviceFeeAmountLocal = feeAmount; // fee in fiat (local currency)
+    newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd; // fee converted to USD
+    newTxn.grossFiat = grossFiat;
+    newTxn.rate = fiatRate.rate.sell;
+    newTxn.fiatCode = dto.fiatCode;
+    newTxn.currency = channel.currency;
+    newTxn.country = dto.country;
+    newTxn.paymentProvider = PaymentPartnerEnum.YELLOWCARD;
+    newTxn.sourceAddress = dto.sourceAddress;
+    newTxn.bankInfo = {
+      bankName: dto.bankInfo.bankName,
+      accountNumber: dto.bankInfo.accountNumber,
+      accountHolder: dto.bankInfo.accountHolder,
     };
-  }) {
-    // simulate API call
-    return {
-      status: 'success',
-      txHash: 'bank_tx_123456',
+    const networkInfo = BlockchainNetworkSettings[dto.network];
+    newTxn.recipientInfo = {
+      destnationAddress: networkInfo.treasuryAddress,
+      sourceAddress: dto.sourceAddress,
+      network: dto.network,
+      assetCode: dto.assetCode,
     };
-  }
-  async disburseToWallet(payload: {
-    amount: number;
-    currency: string;
-    destination: {
-      accountNumber: string;
-      accountType: string;
-      networkId: string;
-      accountName?: string;
-    };
-  }) {
-    // simulate API call
-    return {
-      status: 'success',
-      txHash: 'wallet_tx_654321',
-    };
+    newTxn.expiresAt = yellowCardResponse.expiresAt;
+
+    await this.fiatCryptoRampTransactionRepo.save(newTxn);
+
+    return plainToInstance(
+      IFiatToCryptoQuoteResponseDto,
+      {
+        userAmount: dto.userAmount,
+        feePercentage: feeLabel,
+        feeAmount,
+        adjustedFiatAmount: netFiatAmount,
+        rate: fiatRate.rate.buy,
+        netFiatAmount,
+        serviceFeeAmountUsd,
+      },
+      { excludeExtraneousValues: true },
+    );
   }
 
   async payout(params: FiatCryptoRampTransactionEntity) {
@@ -527,19 +507,21 @@ export class PaymentsService {
       const { recipientInfo, netCryptoAmount, userId, user } = params;
 
       const [cwallet, qwallet] = await Promise.all([
-        this.cwalletService.lookupSubWallet(recipientInfo.walletAddress),
-        this.qwalletService.lookupSubWallet(recipientInfo.walletAddress),
+        this.cwalletService.lookupSubWallet(recipientInfo.destnationAddress),
+        this.qwalletService.lookupSubWallet(recipientInfo.destnationAddress),
       ]);
 
       if (!cwallet && !qwallet) {
         this.logger.warn(
-          `❗ No wallet found for address ${recipientInfo.walletAddress} - skipping payout.`,
+          `❗ No wallet found for address ${recipientInfo.destnationAddress} - skipping payout.`,
         );
         return;
       }
 
+      //[x] check balance of treasurer
+
       const tx = await this.ethersService.transferToken({
-        to: recipientInfo.walletAddress,
+        to: recipientInfo.destnationAddress,
         amount: netCryptoAmount.toString(),
         assetCode: recipientInfo.assetCode,
         chain: recipientInfo.network,
@@ -567,7 +549,7 @@ export class PaymentsService {
         blockchainTxId: tx.txHash,
         walletId,
         sourceAddress: tx.sourceAddress,
-        destinationAddress: recipientInfo.walletAddress,
+        destinationAddress: recipientInfo.destnationAddress,
         paymentNetwork: recipientInfo.network,
         user,
         paymentStatus: PaymentStatus.Accepted,
@@ -580,7 +562,7 @@ export class PaymentsService {
       // await this.fiatCryptoRampTransactionRepo.save(params);
 
       // TODO: [x] Emit transaction/notification to user
-      this.logger.log(`✅ Crypto payout successful for user ${userId}`);
+      // this.logger.log(`✅ Crypto payout successful for user ${userId}`);
 
       return { success: true, txHash: tx.txHash };
     } catch (error) {
@@ -597,6 +579,21 @@ export class PaymentsService {
     params: FiatCryptoRampTransactionEntity,
   ): Promise<{ success: boolean; txHash?: string }> {
     try {
+      //[x] move token from user wallet to treasurer wallet
+
+      //[x] get user wallet info
+      const [cwallet, qwallet] = await Promise.all([
+        this.cwalletService.lookupSubWallet(params.sourceAddress),
+        this.qwalletService.lookupSubWallet(params.sourceAddress),
+      ]);
+
+      if (!cwallet && !qwallet)
+        throw new CustomHttpException(
+          WalletErrorEnum.MISSING_WALLET_ID,
+          HttpStatus.NOT_FOUND,
+        );
+
+      //[x] once confirmed confirm payout on YC to user account
       // const { amount, currency, recipientInfo } = params;
       // const payload = {
       //   amount,
@@ -612,10 +609,9 @@ export class PaymentsService {
       //   recipientInfo.accountType === 'bank'
       //     ? await this.disburseToBank(payload)
       //     : await this.disburseToWallet(payload);
-      // return {
-      //   success: response.status === 'success',
-      //   txHash: response.txHash || response.transactionReference || undefined,
-      // };
+      //[x] create transaction history
+      //[x] emit notification and transaction to user
+      //[x] track failed transactions
     } catch (error) {
       this.logger.error(
         `❌ Fiat payout failed for user ${params.userId}`,

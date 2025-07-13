@@ -1,10 +1,20 @@
-import { ethers, JsonRpcProvider, Wallet } from 'ethers';
+import {
+  Contract,
+  ethers,
+  formatEther,
+  JsonRpcProvider,
+  parseUnits,
+  Wallet,
+} from 'ethers';
 import type { AbiItem } from 'web3-utils';
 import {
   BlockchainNetworkSettings,
   SupportedBlockchainTypeEnum,
   TokenAddresses,
 } from '@/config/settings';
+import { HttpStatus, Logger } from '@nestjs/common';
+import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { WalletErrorEnum } from '@/models/wallet-manager.types';
 
 const ERC20_ABI: AbiItem[] = [
   {
@@ -21,11 +31,23 @@ const ERC20_ABI: AbiItem[] = [
     outputs: [{ name: '', type: 'uint8' }],
     type: 'function',
   },
+  {
+    constant: false,
+    inputs: [
+      { name: '_to', type: 'address' },
+      { name: '_value', type: 'uint256' },
+    ],
+    name: 'transfer',
+    outputs: [{ name: '', type: 'bool' }],
+    type: 'function',
+  },
 ];
 
 const DEFAULT_DECIMALS = 18;
 
 export class EtherService {
+  private readonly logger = new Logger(EtherService.name);
+
   private providers: Record<SupportedBlockchainTypeEnum, JsonRpcProvider> =
     {} as any;
 
@@ -127,25 +149,33 @@ export class EtherService {
     amount: string;
     assetCode: string;
     chain: SupportedBlockchainTypeEnum;
-  }): Promise<{ txHash: string; sourceAddress: string }> {
-    const { to, amount, chain } = params;
+  }): Promise<{
+    txHash: string;
+    sourceAddress: string;
+    estimatedFee: string;
+    destinationAddress: string;
+  }> {
+    const { to, amount, assetCode, chain } = params;
 
-    const tokenAddress = TokenAddresses[chain]?.[params.assetCode];
+    const provider = this.getProvider(chain);
+    const networkInfo = BlockchainNetworkSettings[chain];
+    const tokenAddress = TokenAddresses[chain]?.[assetCode];
+
     if (!tokenAddress) {
+      this.logger.error(
+        `Token address not found for ${assetCode.toUpperCase()} on ${chain}`,
+      );
       throw new Error(
-        `Token address not found for ${params.assetCode.toUpperCase()} on ${chain}`,
+        `Token address not found for ${assetCode.toUpperCase()} on ${chain}`,
       );
     }
 
     if (!this.isValidAddress(to) || !this.isValidAddress(tokenAddress)) {
+      this.logger.error('Invalid recipient or token address');
       throw new Error('Invalid recipient or token address');
     }
 
-    const network = BlockchainNetworkSettings[chain];
-
-    const provider = this.getProvider(chain);
-    const wallet = new Wallet(network.secretKey, provider);
-
+    const wallet = new Wallet(networkInfo.secretKey, provider);
     const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, wallet);
 
     const decimals = await tokenContract
@@ -153,30 +183,174 @@ export class EtherService {
       .catch(() => DEFAULT_DECIMALS);
     const amountInUnits = ethers.parseUnits(amount, decimals);
 
+    const balance = await this.getTokenBalance(
+      tokenAddress,
+      wallet.address,
+      chain,
+    );
+    const balanceInUnits = ethers.parseUnits(balance.toString(), decimals);
+
+    if (balanceInUnits < amountInUnits) {
+      this.logger.error(
+        `Insufficient balance: Wallet ${wallet.address} has ${balance}, needs ${amount} ${assetCode}`,
+      );
+      throw new CustomHttpException(
+        WalletErrorEnum.BALANCE_LOW,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const estimatedFee = await this.estimateTokenTransferFee({
+      from: wallet.address,
+      to,
+      tokenAddress,
+      chain,
+      amount,
+    });
+
     // const tx = await tokenContract.transfer(to, amountInUnits);
     // await tx.wait();
 
-    return { txHash: 'tx-hash', sourceAddress: 'source' };
+    return {
+      txHash: 'tx-hash',
+      sourceAddress: wallet.address,
+      estimatedFee,
+      destinationAddress: to,
+    };
   }
 
+  // async transferToken(params: {
+  //   to: string;
+  //   amount: string;
+  //   assetCode: string;
+  //   chain: SupportedBlockchainTypeEnum;
+  // }): Promise<{ txHash: string; sourceAddress: string }> {
+  //   const { to, amount, assetCode, chain } = params;
+
+  //   const provider = this.getProvider(chain);
+  //   const networkInfo = BlockchainNetworkSettings[chain];
+  //   const tokenAddress = TokenAddresses[chain]?.[assetCode];
+
+  //   if (!tokenAddress) {
+  //     this.logger.error(
+  //       `Token address not found for ${assetCode.toUpperCase()} on ${chain}`,
+  //     );
+  //     throw new Error(
+  //       `Token address not found for ${assetCode.toUpperCase()} on ${chain}`,
+  //     );
+  //   }
+
+  //   if (!this.isValidAddress(to) || !this.isValidAddress(tokenAddress)) {
+  //     this.logger.error('Invalid recipient or token address');
+  //     throw new Error('Invalid recipient or token address');
+  //   }
+
+  //   const wallet = new Wallet(networkInfo.secretKey, provider);
+  //   const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, wallet);
+
+  //   const decimals = await tokenContract
+  //     .decimals()
+  //     .catch(() => DEFAULT_DECIMALS);
+  //   const amountInUnits = ethers.parseUnits(amount, decimals);
+
+  //   const balance = await this.getTokenBalance(
+  //     tokenAddress,
+  //     wallet.address,
+  //     chain,
+  //   );
+
+  //   const balanceInUnits = ethers.parseUnits(balance.toString(), decimals);
+
+  //   if (balanceInUnits < amountInUnits) {
+  //     this.logger.error(
+  //       `Insufficient balance: Wallet ${wallet.address} has ${balance}, needs ${amount} ${assetCode}`,
+  //     );
+  //     throw new CustomHttpException(
+  //       WalletErrorEnum.BALANCE_LOW,
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+
+  //   // const tx = await tokenContract.transfer(to, amountInUnits);
+  //   // await tx.wait();
+
+  //   return {
+  //     txHash: 'tx-hash',
+  //     sourceAddress: wallet.address,
+  //   };
+  // }
+
+  // async estimateTokenTransferFee(params: {
+  //   from: string;
+  //   to: string;
+  //   tokenAddress: string;
+  //   chain: SupportedBlockchainTypeEnum;
+  // }): Promise<number> {
+  //   const { from, to, tokenAddress, chain } = params;
+
+  //   const provider = this.getProvider(chain) as JsonRpcProvider;
+
+  //   const tokenContract = new Contract(tokenAddress, ERC20_ABI, provider);
+
+  //   const gasPrice = await provider.send('eth_gasPrice', []);
+
+  //   const estimatedGas = await tokenContract.estimateGas[
+  //     'transfer(address,uint256)'
+  //   ](to, 1n, {
+  //     from,
+  //   });
+
+  //   const totalFee = BigInt(gasPrice) * estimatedGas;
+
+  //   return parseFloat(formatEther(totalFee));
+  // }
   async estimateTokenTransferFee(params: {
     from: string;
     to: string;
     tokenAddress: string;
     chain: SupportedBlockchainTypeEnum;
-  }): Promise<number | any> {
-    // const { from, to, tokenAddress, chain } = params;
-    // const provider = this.getProvider(chain);
-    // const tokenContract = new ethers.Contract(
-    //   tokenAddress,
-    //   ERC20_ABI,
-    //   provider,
-    // );
-    // const gasPrice = await provider.getGasPrice();
-    // const estimatedGas = await tokenContract.estimateGas.transfer(to, 1n, {
-    //   from,
-    // });
-    // const totalFee = gasPrice * estimatedGas;
-    // return parseFloat(ethers.formatEther(totalFee));
+    amount: string;
+  }): Promise<string> {
+    const { from, to, amount, tokenAddress, chain } = params;
+
+    const provider = this.getProvider(chain);
+    const networkInfo = BlockchainNetworkSettings[chain];
+
+    const wallet = new ethers.Wallet(networkInfo.secretKey, provider);
+    const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, wallet);
+
+    const decimals = await tokenContract
+      .decimals()
+      .catch(() => DEFAULT_DECIMALS);
+
+    const amountInUnits = ethers.parseUnits(amount, decimals);
+
+    const gasPrice = await provider.getFeeData().then((fee) => fee.gasPrice);
+
+    if (!gasPrice) throw new Error('Failed to fetch gas price');
+
+    const estimatedGas = await tokenContract.transfer.estimateGas(
+      to,
+      amountInUnits,
+    );
+
+    const totalFee = gasPrice * estimatedGas;
+
+    const totalFeeInEth = ethers.formatEther(totalFee);
+
+    this.logger.log(
+      `Estimated gas fee for transferring ${amount} tokens: ${totalFeeInEth} ETH (gasPrice: ${gasPrice.toString()}, gasLimit: ${estimatedGas.toString()})`,
+    );
+
+    return totalFeeInEth;
+  }
+
+  getPrivateKeyFromMnemonic(mnemonic: string): string {
+    try {
+      const wallet = Wallet.fromPhrase(mnemonic);
+      return wallet.privateKey;
+    } catch (error) {
+      throw new Error('Invalid mnemonic or derivation path');
+    }
   }
 }

@@ -14,17 +14,18 @@ import {
   SupportedBlockchainTypeEnum,
   TokenEnum,
 } from '@/config/settings';
-import {
-  BankInfoDto,
-  RecipientInfoDto,
-} from '@/modules/payments/dto/fiat-to-crypto-request.dto';
+import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
 export class RampReciepientInfoDto {
   @ApiProperty()
   @IsOptional()
-  walletAddress: string;
+  sourceAddress?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  destnationAddress: string;
 
   @ApiProperty()
   @IsOptional()
@@ -38,7 +39,7 @@ export class RampReciepientInfoDto {
 @Index('idx_user_id', ['userId'])
 @Entity('fiat_crypto_ramp_transaction')
 export class FiatCryptoRampTransactionEntity extends BaseEntity {
-  // ===== Relations =====
+  // ========== RELATIONS ==========
   @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.fiatCryptoRampTransactions)
   @JoinColumn({ name: 'user_id' })
@@ -47,11 +48,10 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
-  // ===== Identifiers & References =====
+  // ========== IDENTIFIERS ==========
   @Column({ type: 'uuid', nullable: false })
   sequenceId: string;
 
-  //[x]
   @Column({ type: 'uuid', nullable: false })
   providerTransactionId: string;
 
@@ -64,15 +64,16 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   channelId: string;
 
+  // ========== USER DETAILS ==========
   @Column({ type: 'enum', nullable: false, enum: CustomerTypesEnum })
   customerType: CustomerTypesEnum;
 
-  // ===== Transaction Types & Status =====
+  @Column({ type: 'varchar', nullable: true })
+  phoneNumber: string;
+
+  // ========== TRANSACTION META ==========
   @Column({ type: 'enum', enum: TransactionTypeEnum, nullable: false })
   transactionType: TransactionTypeEnum;
-
-  @Column({ default: false })
-  sentCrypto: boolean;
 
   @Column({
     type: 'enum',
@@ -88,7 +89,20 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   })
   paymentReason: PaymentReasonEnum;
 
-  // ===== Amounts & Rates =====
+  @Column({ default: false })
+  sentCrypto: boolean;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  expiresAt: Date;
+
+  // ========== PAYMENT PROVIDER ==========
+  @Column({ type: 'enum', nullable: false, enum: PaymentPartnerEnum })
+  paymentProvider: PaymentPartnerEnum;
+
+  @Column({ type: 'varchar', nullable: true })
+  walletId: string;
+
+  // ========== AMOUNTS ==========
   @Expose()
   @ApiProperty()
   @Column({ type: 'decimal', precision: 18, scale: 2 })
@@ -121,11 +135,15 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ type: 'decimal', precision: 18, scale: 8 })
+  @Column({ type: 'decimal', precision: 18, scale: 8, nullable: true })
   netCryptoAmount: number;
 
-  // ===== Asset & Currency Codes =====
+  @Expose()
+  @ApiProperty()
+  @Column({ type: 'decimal', precision: 18, scale: 8, nullable: true })
+  grossFiat: number;
 
+  // ========== CURRENCY / COUNTRY ==========
   @Column({ type: 'varchar', nullable: true })
   fiatCode: string;
 
@@ -135,26 +153,18 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'enum', nullable: false, enum: CountryEnum })
   country: CountryEnum;
 
-  // ===== Recipient & Payment Details =====
-  @Column({ type: 'enum', nullable: false, enum: PaymentPartnerEnum })
-  paymentProvider: PaymentPartnerEnum;
-
+  // ========== PAYMENT DETAILS ==========
   @Expose()
   @ApiProperty()
   @Column({ type: 'jsonb', nullable: true })
   recipientInfo: RampReciepientInfoDto;
-
-  @Column({ type: 'varchar', nullable: true })
-  phoneNumber: string;
 
   @Expose()
   @ApiProperty()
   @Column({ type: 'jsonb', nullable: true })
   bankInfo: BankInfoDto;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  expiresAt: Date;
-
-  @Column({ type: 'varchar', nullable: true })
-  walletId: string;
+  // ========== COMPUTED / INTERNAL ==========
+  @Column({ nullable: true })
+  sourceAddress: string;
 }

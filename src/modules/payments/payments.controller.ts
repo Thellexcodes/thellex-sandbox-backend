@@ -24,6 +24,10 @@ import {
 import { VersionedController001 } from '../controller/base.controller';
 import { FiatEnum } from '@/config/settings';
 import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
+import { SuperAdminGuard } from '@/middleware/guards/super-admin.guard';
+import { PoliciesGuard } from '../auth/guards/policies.guard';
+import { CheckPolicies } from '../auth/decorators/check-policy.decorator';
+import { CanManageCompany } from '../auth/policies/company-admin.policy';
 
 ApiTags('Payments');
 @VersionedController001('payments')
@@ -60,23 +64,28 @@ export class PaymentsController {
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const response = await this.paymentService.handleCryptoToFiatOnRamp(
+    const response = await this.paymentService.handleFiatToCryptoOnRamp(
       user,
       dto,
     );
     responseHandler(response, res, req);
   }
 
-  @Post('fiat-to-crypto/offramp')
+  @Post('crypto-to-fiat/offramp')
   @UseGuards(AuthGuard, BasicKycCheckerGuard)
   @ApiOperation({ summary: 'Request a fiat payment (off-ramp)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Fiat-to-crypto onramp request created successfully',
+    type: IFiatToCryptoOnRampResponseDto,
+  })
   async requestOffRampFiatPayment(
     @Body() dto: RequestCryptoOffRampPaymentDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const response = await this.paymentService.handleCryptoToFiatOffRamp(
+    const response = await this.paymentService.handleCryptotoFiatOffRamp(
       user,
       dto,
     );
@@ -95,9 +104,10 @@ export class PaymentsController {
     responseHandler(result, res, req);
   }
 
-  //[x] ensure admin
-  //[x] update payload
+  @UseGuards(PoliciesGuard, SuperAdminGuard)
+  @CheckPolicies(CanManageCompany)
   @Post('set-yc-hook')
+  @UseGuards(AuthGuard)
   async setYcWebhookConfig(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,

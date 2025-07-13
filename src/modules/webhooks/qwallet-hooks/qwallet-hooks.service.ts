@@ -71,22 +71,22 @@ export class QwalletHooksService {
       },
     };
 
-    const user = qwalletProfile.user;
+    // const user = qwalletProfile.user;
 
     await this.qwalletService.updateWalletAddress({
       id: wallet.id,
       networkMetadata: updatedNetworkMetadata,
     });
 
-    await this.notificationService.createAndSendNotification({
-      user,
-      data: { updated: true },
-      event: normalizeEnumValue(
-        WalletWebhookEventEnum.WalletAddressGenerated,
-        WalletWebhookEventEnum,
-      ),
-      status: NotificationStatusEnum.SUCCESS,
-    });
+    // await this.notificationService.createAndSendNotification({
+    //   user,
+    //   data: { updated: true },
+    //   event: normalizeEnumValue(
+    //     WalletWebhookEventEnum.WalletAddressGenerated,
+    //     WalletWebhookEventEnum,
+    //   ),
+    //   status: NotificationStatusEnum.SUCCESS,
+    // });
   }
 
   handleDepositConfirmation(payload: any) {

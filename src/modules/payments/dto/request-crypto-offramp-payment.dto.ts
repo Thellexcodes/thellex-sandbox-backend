@@ -1,4 +1,5 @@
 import {
+  CountryEnum,
   SupportedBlockchainTypeEnum,
   SupportedFiatCurrency,
   TokenEnum,
@@ -58,6 +59,15 @@ export class RequestCryptoOffRampPaymentDto {
   @IsEnum(SupportedFiatCurrency)
   @IsNotEmpty()
   fiatCode: SupportedFiatCurrency;
+
+  @ApiProperty({
+    description: '2-letter ISO country code (e.g., ng, gh)',
+    example: 'ng',
+    enum: CountryEnum,
+  })
+  @IsString()
+  @IsNotEmpty()
+  country: CountryEnum;
 
   @ApiProperty({
     example: 'bank_transfer',

@@ -2,7 +2,7 @@ import { BaseResponseDto } from '@/models/base-response.dto';
 import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transaction-history.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { BankInfoDto } from './fiat-to-crypto-request.dto';
 import { RampReciepientInfoDto } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 
@@ -11,7 +11,7 @@ export class CreateWithdrawalResponseDto extends BaseResponseDto<ITransactionHis
   result: ITransactionHistoryDto;
 }
 
-export class IFiatToCryptoQuoteResponseDto {
+export class QuoteSummaryDto {
   @Expose()
   @ApiProperty({ example: 15000 })
   @IsNumber()
@@ -38,23 +38,33 @@ export class IFiatToCryptoQuoteResponseDto {
   adjustedFiatAmount: number;
 
   @Expose()
-  @ApiProperty({ example: 1567.89, description: 'Fiat buy rate' })
+  @ApiProperty({ example: 1567.89, description: 'Fiat buy/sell rate' })
   @IsNumber()
   rate: number;
 
   @Expose()
-  @ApiProperty({ example: 9.76 })
+  @ApiProperty({ example: 9.76, required: false })
+  @IsOptional()
   @IsNumber()
-  netCryptoAmount: number;
+  netCryptoAmount?: number;
 
   @Expose()
-  @ApiProperty({ type: () => BankInfoDto })
-  bankInfo: BankInfoDto;
+  @ApiProperty({ type: () => BankInfoDto, required: false })
+  @IsOptional()
+  bankInfo?: BankInfoDto;
 
   @Expose()
-  @ApiProperty({ type: () => RampReciepientInfoDto })
-  recipientInfo: RampReciepientInfoDto;
+  @ApiProperty({ type: () => RampReciepientInfoDto, required: false })
+  @IsOptional()
+  recipientInfo?: RampReciepientInfoDto;
 
   @Expose()
-  expiresAt: Date;
+  @ApiProperty({ required: false })
+  @IsOptional()
+  expiresAt?: Date;
+}
+
+export class IFiatToCryptoQuoteResponseDto extends BaseResponseDto<QuoteSummaryDto> {
+  @ApiProperty({ type: QuoteSummaryDto })
+  result: QuoteSummaryDto;
 }
