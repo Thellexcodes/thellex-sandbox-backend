@@ -28,6 +28,7 @@ import { PaymentsService } from './payments/payments.service';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationsGateway } from './notifications/notifications.gateway';
 import { TronService } from '@/utils/services/tron.service';
+import { ConfigService } from '@/config/config.service';
 
 @Global()
 @Module({
@@ -64,6 +65,7 @@ import { TronService } from '@/utils/services/tron.service';
     NotificationsService,
     NotificationsGateway,
     TronService,
+    // ConfigService,
   ],
   exports: [
     EtherService,
@@ -77,6 +79,7 @@ import { TronService } from '@/utils/services/tron.service';
     NotificationsService,
     NotificationsGateway,
     TronService,
+    // ConfigService,
   ],
 })
 export class SharedModule {}

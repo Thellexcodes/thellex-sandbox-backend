@@ -27,8 +27,13 @@ export enum TransactionDirectionEnum {
 export enum TransactionTypeEnum {
   CRYPTO_DEPOSIT = 'crypto_deposit',
   CRYPTO_WITHDRAWAL = 'crypto_withdrawal',
+
   FIAT_TO_CRYPTO_DEPOSIT = 'fiat_to_crypto_deposit',
+  FIAT_TO_CRYPTO_WITHDRAWAL = 'fiat_to_crypto_withdrawal',
+
+  CRYPTO_TO_FIAT_DEPOSIT = 'crypto_to_fiat_deposit',
   CRYPTO_TO_FIAT_WITHDRAWAL = 'crypto_to_fiat_withdrawal',
+
   FIAT_TO_FIAT_DEPOSIT = 'fiat_to_fiat_deposit',
   FIAT_TO_FIAT_WITHDRAWAL = 'fiat_to_fiat_withdrawal',
 }

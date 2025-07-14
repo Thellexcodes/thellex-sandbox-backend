@@ -1,18 +1,32 @@
+import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { AnyObject } from '@/models/any.types';
 import {
+  NotificationErrorEnum,
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
 import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
-import { Injectable, Logger } from '@nestjs/common';
+import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
+import {
+  INotificationDto,
+  NotificationEntity,
+} from '@/utils/typeorm/entities/notification.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import * as admin from 'firebase-admin';
 import * as serviceAccount from 'firebase/serviceAccountKey.json';
+import { LessThan, Repository } from 'typeorm';
 
 @Injectable()
 export class NotificationsGateway {
   private readonly logger = new Logger(NotificationsGateway.name);
 
-  constructor() {
+  constructor(
+    @InjectRepository(NotificationEntity)
+    private readonly notificationRepo: Repository<NotificationEntity>,
+  ) {
     if (!admin.apps.length) {
       admin.initializeApp({
         credential: admin.credential.cert(
@@ -52,12 +66,12 @@ export class NotificationsGateway {
       this.logger.log(`✅ Notification sent: ${response}`);
       return response;
     } catch (error) {
-      this.logger.error(`❌ Failed to send notification`, error.stack || error);
+      this.logger.error('❌ Failed to send notification', error.stack || error);
       throw error;
     }
   }
 
-  getTitle(
+  private getTitle(
     event: NotificationEventEnum | WalletWebhookEventEnum,
     status: NotificationStatusEnum,
   ): string {
@@ -69,7 +83,7 @@ export class NotificationsGateway {
     return `${statusTitleMap[status]}: ${this.formatEvent(event)}`;
   }
 
-  getMessage(
+  private getMessage(
     event: NotificationEventEnum | WalletWebhookEventEnum,
     status: NotificationStatusEnum,
   ): string {
@@ -84,6 +98,77 @@ export class NotificationsGateway {
       .split('_')
       .map((word) => word[0].toUpperCase() + word.slice(1))
       .join(' ');
+  }
+
+  async createNotification({
+    user,
+    title,
+    message,
+    data,
+  }: {
+    user: UserEntity;
+    title: string;
+    message: string;
+    data: Partial<
+      Pick<
+        NotificationEntity,
+        'amount' | 'assetCode' | 'txnID' | 'walletID' | 'transactionType'
+      >
+    >;
+  }): Promise<NotificationEntity> {
+    try {
+      const upperCurrency = data.assetCode?.toUpperCase() || '';
+      const expiresAt = getUtcExpiryDateMonthsFromNow(3);
+
+      const notificationData: Partial<NotificationEntity> = {
+        ...data,
+        user,
+        title: title.replace(/_/g, ' '),
+        message: `${message} ${data.amount || ''} ${upperCurrency}`,
+        expiresAt,
+        consumed: false,
+        assetCode: upperCurrency,
+      };
+
+      const entity = this.notificationRepo.create(notificationData);
+      const notification = await this.notificationRepo.save(entity);
+
+      return plainToInstance(INotificationDto, notification, {
+        excludeExtraneousValues: true,
+      });
+    } catch (error) {
+      this.logger.error('Failed to create notification', error);
+      throw new CustomHttpException(
+        NotificationErrorEnum.CREATE_FAILED,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async markAsConsumed(id: string): Promise<void> {
+    try {
+      await this.notificationRepo.update(id, { consumed: true });
+    } catch (error) {
+      this.logger.error(`Failed to mark notification ${id} as consumed`, error);
+      throw new CustomHttpException(
+        NotificationErrorEnum.CREATE_FAILED,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteExpiredNotifications(): Promise<void> {
+    try {
+      await this.notificationRepo.delete({
+        expiresAt: LessThan(new Date()),
+      });
+    } catch (error) {
+      this.logger.error('Failed to delete expired notifications', error);
+      throw new CustomHttpException(
+        NotificationErrorEnum.CREATE_FAILED,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   private messages: Record<string, string> = {

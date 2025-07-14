@@ -16,6 +16,7 @@ import {
   SERVER_REQUEST_TIMEOUT_MS,
 } from './config/settings';
 import { API_VERSIONS } from './config/versions';
+import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
 // import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
 // const certFolder = path.join(__dirname, '../cert');
@@ -48,7 +49,7 @@ async function bootstrap() {
   //   };
   // }
 
-  const app = await NestFactory.create(AppModule, {});
+  const app = await NestFactory.create(AppModule, { logger: false });
   app.setGlobalPrefix('api');
 
   app.enableVersioning({
@@ -87,6 +88,7 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new ErrorInterceptor());
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.use(bodyParser.json({ limit: FILE_UPLOAD_LIMIT }));
   app.use(bodyParser.urlencoded({ limit: FILE_UPLOAD_LIMIT, extended: true }));

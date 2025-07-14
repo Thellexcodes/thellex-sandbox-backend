@@ -181,21 +181,21 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
-      await this.notificationService.createAndSendNotification({
-        user,
-        data: {
-          amount: data.amount,
-          assetCode: data.currency,
-          txnID: transaction.id,
-          walletID: data.wallet.id,
-          transaction,
-        },
-        event: normalizeEnumValue(
-          NotificationEventEnum.CRYPTO_DEPOSIT,
-          NotificationEventEnum,
-        ),
-        status: NotificationStatusEnum.SUCCESS,
-      });
+      // await this.notificationService.createAndSendNotification({
+      //   user,
+      //   data: {
+      //     amount: data.amount,
+      //     assetCode: data.currency,
+      //     txnID: transaction.id,
+      //     walletID: data.wallet.id,
+      //     transaction,
+      //   },
+      //   event: normalizeEnumValue(
+      //     NotificationEventEnum.CRYPTO_DEPOSIT,
+      //     NotificationEventEnum,
+      //   ),
+      //   status: NotificationStatusEnum.SUCCESS,
+      // });
     } catch (error) {
       console.error(error);
     }
@@ -279,21 +279,21 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
-      await this.notificationService.createAndSendNotification({
-        user,
-        data: {
-          amount: data.amount,
-          assetCode: data.currency,
-          txnID: updatedTransaction.id,
-          walletID: data.wallet.id,
-          transaction: updatedTransaction,
-        },
-        event: normalizeEnumValue(
-          NotificationEventEnum.CRYPTO_WITHDRAWAL,
-          NotificationEventEnum,
-        ),
-        status: NotificationStatusEnum.SUCCESS,
-      });
+      // await this.notificationService.createAndSendNotification({
+      //   user,
+      //   data: {
+      //     amount: data.amount,
+      //     assetCode: data.currency,
+      //     txnID: updatedTransaction.id,
+      //     walletID: data.wallet.id,
+      //     transaction: updatedTransaction,
+      //   },
+      //   event: normalizeEnumValue(
+      //     NotificationEventEnum.CRYPTO_WITHDRAWAL,
+      //     NotificationEventEnum,
+      //   ),
+      //   status: NotificationStatusEnum.SUCCESS,
+      // });
     } catch (error) {
       console.error('Withdrawal processing failed:', error);
     }

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { NotificationErrorEnum } from '@/models/notification-error.enum';
 import { plainToInstance } from 'class-transformer';
 import { INotificationConsumeResponseDto } from './dto/notification.dto';
 import { NotificationsGateway } from './notifications.gateway';
@@ -11,6 +10,7 @@ import { THIRTY_DAYS_IN_MS } from '@/config/settings';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AnyObject } from '@/models/any.types';
 import {
+  NotificationErrorEnum,
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
@@ -26,46 +26,6 @@ export class NotificationsService {
     private readonly notificationRepo: Repository<NotificationEntity>,
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
-
-  async createAndSendNotification({
-    user,
-    data,
-    event,
-    status,
-  }: {
-    user: UserEntity;
-    data: AnyObject;
-    event: NotificationEventEnum | WalletWebhookEventEnum;
-    status: NotificationStatusEnum;
-  }) {
-    const expiresAt = new Date(Date.now() + THIRTY_DAYS_IN_MS);
-
-    const notification = new NotificationEntity();
-    notification.user = user;
-    notification.title = this.notificationsGateway.getTitle(event, status);
-    notification.message = this.notificationsGateway.getMessage(event, status);
-    notification.expiresAt = expiresAt;
-
-    const savedNotification = await this.notificationRepo.save(notification);
-
-    try {
-      await this.notificationsGateway.emitNotificationToUser({
-        token: user.alertID,
-        event,
-        status,
-        data: {
-          ...data,
-          notification: savedNotification,
-        },
-      });
-
-      await this.notificationRepo.save(savedNotification);
-    } catch (error) {
-      this.logger.error('Failed to emit notification', error);
-    }
-
-    return savedNotification;
-  }
 
   async markAsConsumed(id: string): Promise<INotificationConsumeResponseDto> {
     try {

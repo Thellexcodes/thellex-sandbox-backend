@@ -9,6 +9,7 @@ import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
+import { TransactionTypeEnum } from '@/models/payment.types';
 
 export enum NotificationKindEnum {
   Transaction = 'txn',
@@ -73,6 +74,10 @@ export class NotificationEntity extends BaseEntity {
   @ApiPropertyOptional()
   @Column({ name: 'wallet_id', type: 'varchar', nullable: true })
   walletID?: string | null;
+
+  @Expose()
+  @Column({ name: 'transaction_type' })
+  transactionType: TransactionTypeEnum;
 
   @Expose()
   @ApiProperty()

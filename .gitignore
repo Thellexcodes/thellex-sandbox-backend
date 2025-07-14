@@ -4,7 +4,7 @@
 /build
 openapi.json
 tsconfig.build.tsbuildinfo
-/firebase
+/firebase/serviceAccountKey.json
 
 # Logs
 logs

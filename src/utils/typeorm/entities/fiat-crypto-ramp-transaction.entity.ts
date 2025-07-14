@@ -136,7 +136,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Expose()
   @ApiProperty()
   @Column({ type: 'decimal', precision: 18, scale: 8, nullable: true })
-  netCryptoAmount: number;
+  grossCrypto: number;
 
   @Expose()
   @ApiProperty()

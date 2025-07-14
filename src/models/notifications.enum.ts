@@ -58,3 +58,13 @@ export enum NotificationStatusEnum {
   FAILED = 'failed',
   PENDING = 'pending',
 }
+
+export enum NotificationErrorEnum {
+  NOTIFICATION_NOT_FOUND = 'notification/NOTIFICATION_NOT_FOUND',
+  NOTIFICATION_ALREADY_CONSUMED = 'notification/NOTIFICATION_ALREADY_CONSUMED',
+  INVALID_NOTIFICATION_ID = 'notification/INVALID_NOTIFICATION_ID',
+  UNAUTHORIZED_ACCESS = 'notification/UNAUTHORIZED_ACCESS',
+  INVALID_NOTIFICATION_KIND = 'notification/INVALID_NOTIFICATION_KIND',
+  INTERNAL_ERROR = 'notification/INTERNAL_ERROR',
+  CREATE_FAILED = 'notification/CREATE_FAILED',
+}

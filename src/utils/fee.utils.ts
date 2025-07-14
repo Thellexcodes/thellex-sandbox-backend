@@ -35,13 +35,13 @@ export function calculateNetCryptoAmount(
   const feeAmount = amount * feeDecimal; // e.g. ₦15,000 * 0.02 = ₦300
   const adjustedNaira = amount - feeAmount; // e.g. ₦14,700
 
-  const netCryptoAmount = parseFloat((adjustedNaira / rate).toFixed(6)); // e.g. 14,700 / 1615 ≈ 9.105
+  const grossCrypto = parseFloat((adjustedNaira / rate).toFixed(6)); // e.g. 14,700 / 1615 ≈ 9.105
 
   return {
     adjustedNaira,
     feeAmount,
     feeLabel: `${(feeDecimal * 100).toFixed(2)}%`,
-    netCryptoAmount,
+    grossCrypto,
   };
 }
 

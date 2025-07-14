@@ -66,7 +66,7 @@ export class YellowCardService {
   }
 
   // Resolve Bank Account
-  async resolveBankAccount(body: object) {
+  async resolveBankAccount(body: AnyObject) {
     const method = 'POST';
     const path = '/business/bank/resolve';
     const url = `${this.ycUrl}/bank/resolve`;
@@ -75,7 +75,7 @@ export class YellowCardService {
   }
 
   // Widget Quote
-  async widgetQuote(body: object) {
+  async widgetQuote(body: AnyObject) {
     // const method = 'POST';
     // const path = '/business/widget/quote';
     // const url = `${this.ycUrl}/widget/quote`;
@@ -85,7 +85,7 @@ export class YellowCardService {
 
   // --- Payments ---
 
-  async submitPaymentRequest(body: object) {
+  async submitPaymentRequest(body: AnyObject) {
     const method = 'POST';
     const path = '/payments/submit';
     const url = `${this.ycUrl}/payments/submit`;
@@ -93,31 +93,31 @@ export class YellowCardService {
     return await this.httpService.post(url, body, { headers });
   }
 
-  async acceptPaymentRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/payments/accept';
-    // const url = `${this.ycUrl}/payments/accept`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // return  this.httpService.post(url, body, { headers });
+  async acceptPaymentRequest(body: AnyObject) {
+    const method = 'POST';
+    const path = '/payments/accept';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
-  async denyPaymentRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/payments/deny';
-    // const url = `${this.ycUrl}/payments/deny`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // return  this.httpService.post(url, body, { headers });
+  async denyPaymentRequest(body: AnyObject) {
+    const method = 'POST';
+    const path = '/payments/deny';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
   async lookupPayment(queryParams: Record<string, any>) {
-    // const method = 'GET';
-    // const path = '/payments/lookup';
-    // const url = new URL(`${this.ycUrl}/payments/lookup`);
-    // Object.entries(queryParams).forEach(([key, val]) =>
-    //   url.searchParams.append(key, String(val)),
-    // );
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url.toString(), { headers });
+    const method = 'GET';
+    const path = '/payments/lookup';
+    const url = new URL(`${this.ycUrl}${path}`);
+    Object.entries(queryParams).forEach(([key, val]) =>
+      url.searchParams.append(key, String(val)),
+    );
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.get(url.toString(), { headers });
   }
 
   async lookupPaymentBySequenceId(sequenceId: string) {
