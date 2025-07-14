@@ -10,14 +10,13 @@ import {
   Validate,
   IsOptional,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   CountryEnum,
   FiatEnum,
   SupportedBlockchainTypeEnum,
   TokenEnum,
 } from '@/config/settings';
-import { IFiatToCryptoQuoteResponseDto } from './payment.dto';
 import { ethers } from 'ethers';
 import { PaymentReasonEnum } from '@/models/payment.types';
 
@@ -89,7 +88,7 @@ export class FiatToCryptoOnRampRequestDto {
 
   @ApiProperty({
     description: 'EVM wallet address where crypto will be sent',
-    example: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    example: '0x2179EA580dF5b25b3Cb369f13397C5a6730a48d9',
   })
   @IsString()
   @IsNotEmpty()
@@ -124,23 +123,61 @@ export class RecipientInfoDto {
 }
 
 export class BankInfoDto {
+  @Expose()
   @ApiProperty()
   bankName: string;
 
+  @Expose()
   @ApiProperty()
   accountNumber: string;
 
+  @Expose()
   @ApiProperty()
   @IsOptional()
   accountName?: string;
 
+  @Expose()
   @ApiProperty()
   @IsOptional()
   swiftCode?: string;
 
+  @Expose()
   @ApiProperty()
   @IsOptional()
   accountHolder?: string;
+
+  @ApiProperty({
+    example: 'savings',
+    description: 'Type of bank account (e.g., savings, current)',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  accountType?: string;
+
+  @ApiProperty({
+    example: 'ngn-local-paga',
+    description: 'Unique network identifier (e.g., NGN, PAGA)',
+  })
+  @IsString()
+  @IsOptional()
+  networkId?: string;
+
+  @ApiProperty({
+    example: 'PAGA',
+    description: 'System-level bank identifier (used for lookups)',
+  })
+  @IsString()
+  @IsOptional()
+  accountBank?: string;
+
+  @ApiProperty({
+    example: 'NGN Bank Transfer',
+    description: 'Network name (e.g., NGN Bank Transfer, SEPA)',
+  })
+  @IsString()
+  @IsOptional()
+  networkName?: string;
 }
 
 export class SourceInfoDto {
@@ -237,17 +274,17 @@ export class FiatCollectionResultDto {
   depositId: string;
 }
 
-export class IFiatToCryptoOnRampResponseDto {
-  @ApiProperty({ type: () => IFiatToCryptoQuoteResponseDto })
-  @Type(() => IFiatToCryptoQuoteResponseDto)
-  result: IFiatToCryptoQuoteResponseDto;
+// export class IFiatToCryptoOnRampResponseDto {
+//   @ApiProperty({ type: () => IFiatToCryptoQuoteResponseDto })
+//   @Type(() => IFiatToCryptoQuoteResponseDto)
+//   result: IFiatToCryptoQuoteResponseDto;
 
-  @ApiProperty()
-  status: boolean;
+//   @ApiProperty()
+//   status: boolean;
 
-  @ApiProperty()
-  path: string;
+//   @ApiProperty()
+//   path: string;
 
-  @ApiProperty()
-  statusCode: number;
-}
+//   @ApiProperty()
+//   statusCode: number;
+// }

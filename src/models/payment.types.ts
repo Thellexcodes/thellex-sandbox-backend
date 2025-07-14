@@ -5,15 +5,24 @@ export enum YCPaymentEventEnum {
   COLLECTION_PENDING = 'collection.pending',
   COLLECTION_COMPLETE = 'collection.complete',
   COLLECTION_FAILED = 'collection.failed',
+
+  // Payment events
+  PAYMENT_CREATED = 'payment.created',
+  PAYMENT_PENDING_APPROVAL = 'payment.pending_approval',
+  PAYMENT_PROCESSING = 'payment.processing',
+  PAYMENT_FAILED = 'payment.failed',
+  PAYMENT_EXPIRED = 'payment.expired',
 }
 
 export enum PaymentStatus {
   None = 'none',
+  Created = 'created',
   Complete = 'complete',
   Confirmed = 'confirmed',
   Accepted = 'accepted',
   Done = 'done',
   Processing = 'processing',
+  PendingApproval = 'pending_approval',
   PendingRiskScreening = 'pending_risk_screening',
   Queued = 'queued',
   Sent = 'sent',

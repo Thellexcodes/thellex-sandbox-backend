@@ -1,3 +1,4 @@
+import { EVERY_15_SECONDS_CRON } from '@/config/settings';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
 import { PaymentsService } from '@/modules/payments/payments.service';
 import { Injectable, Logger } from '@nestjs/common';
@@ -15,7 +16,7 @@ export class RampSettlementsCron {
     ttl: 1000 * 60 * 10, // 10 minutes TTL (auto evict old ones)
   });
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(EVERY_15_SECONDS_CRON)
   async processFiatToCryptoSettlements() {
     const txns = await this.paymentService.findAllDirectSettlementTransactions({
       paymentStatus: PaymentStatus.Complete,
@@ -38,15 +39,15 @@ export class RampSettlementsCron {
     //   } catch (err) {
     //     this.logger.error(`❌ Failed to settle txn ${txn.id}`, err.stack);
     //   } finally {
-    //     this.inProgressTxnCache.delete(txn.id);
+    //     this.inProgressTxnCache.delete(txn.id);ty
     //   }
     // }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(EVERY_15_SECONDS_CRON)
   async processCryptoToFiatSettlements() {
     const txns = await this.paymentService.findAllDirectSettlementTransactions({
-      paymentStatus: PaymentStatus.Complete,
+      paymentStatus: PaymentStatus.Processing,
       transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
       sentCrypto: false,
     });

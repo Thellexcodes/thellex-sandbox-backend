@@ -65,7 +65,7 @@ import { ConfigService } from '@/config/config.service';
     NotificationsService,
     NotificationsGateway,
     TronService,
-    // ConfigService,
+    ConfigService,
   ],
   exports: [
     EtherService,
@@ -79,7 +79,7 @@ import { ConfigService } from '@/config/config.service';
     NotificationsService,
     NotificationsGateway,
     TronService,
-    // ConfigService,
+    ConfigService,
   ],
 })
 export class SharedModule {}

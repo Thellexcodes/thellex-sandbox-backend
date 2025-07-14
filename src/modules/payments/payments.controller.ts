@@ -13,13 +13,10 @@ import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
 import { BasicKycCheckerGuard } from '@/middleware/guards/basic-kyc-checker.guard';
-import {
-  FiatToCryptoOnRampRequestDto,
-  IFiatToCryptoOnRampResponseDto,
-} from './dto/fiat-to-crypto-request.dto';
+import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
 import {
   CreateWithdrawalResponseDto,
-  IFiatToCryptoQuoteResponseDto,
+  IFiatToCryptoQuoteSummaryResponseDto,
 } from './dto/payment.dto';
 import { VersionedController001 } from '../controller/base.controller';
 import { FiatEnum } from '@/config/settings';
@@ -55,7 +52,7 @@ export class PaymentsController {
   @ApiResponse({
     status: 201,
     description: 'Fiat-to-crypto onramp request created successfully',
-    type: IFiatToCryptoOnRampResponseDto,
+    type: IFiatToCryptoQuoteSummaryResponseDto,
   })
   @ApiOperation({ summary: 'Initiate fiat-to-crypto onramp transaction' })
   async initiateFiatToCryptoOnRamp(
@@ -64,7 +61,7 @@ export class PaymentsController {
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const response = await this.paymentService.handleFiatToCryptoOnRamp(
+    const response = await this.paymentService.handleFiatToCryptoOffRamp(
       user,
       dto,
     );
@@ -77,7 +74,7 @@ export class PaymentsController {
   @ApiResponse({
     status: 201,
     description: 'Fiat-to-crypto onramp request created successfully',
-    type: IFiatToCryptoOnRampResponseDto,
+    type: IFiatToCryptoQuoteSummaryResponseDto,
   })
   async requestOffRampFiatPayment(
     @Body() dto: RequestCryptoOffRampPaymentDto,
@@ -93,7 +90,7 @@ export class PaymentsController {
   }
 
   @Get('rates/:fiatCode?')
-  @ApiOkResponse({ type: IFiatToCryptoQuoteResponseDto })
+  @ApiOkResponse({ type: IFiatToCryptoQuoteSummaryResponseDto })
   @UseGuards(AuthGuard, BasicKycCheckerGuard)
   async rates(
     @Query('fiatCode') fiatCode: FiatEnum,

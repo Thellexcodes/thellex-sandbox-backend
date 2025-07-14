@@ -1,13 +1,14 @@
 // src/config/config.service.ts
-import * as dotenv from 'dotenv';
+
 import * as fs from 'fs';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
 
 export class ConfigService {
   private envConfig: { [key: string]: string };
 
   constructor() {
-    const envPath = path.resolve(__dirname, '../../.env');
+    const envPath = path.resolve(process.cwd(), '.env');
     if (!fs.existsSync(envPath)) {
       throw new Error('.env file not found!');
     }
@@ -25,5 +26,9 @@ export class ConfigService {
       throw new Error(`Config key ${key} not found`);
     }
     return value;
+  }
+
+  getNodeEnv(): string {
+    return this.get('NODE_ENV') + '_';
   }
 }

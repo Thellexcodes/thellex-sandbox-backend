@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import {
@@ -18,19 +18,35 @@ import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
+//[x] improve with all treasuery addresses
+const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>
+  addr.toLowerCase(),
+);
+
+function maskTreasuryAddress(value: string): string | undefined {
+  if (!value) return value;
+  return TREASURY_ADDRESSES.includes(value.toLowerCase()) ? 'Thellex' : value;
+}
+
 export class RampReciepientInfoDto {
+  @Expose()
   @ApiProperty()
   @IsOptional()
+  @Transform(({ value }) => maskTreasuryAddress(value))
   sourceAddress?: string;
 
+  @Expose()
   @ApiProperty()
   @IsOptional()
-  destnationAddress: string;
+  @Transform(({ value }) => maskTreasuryAddress(value))
+  destnationAddress?: string;
 
+  @Expose()
   @ApiProperty()
   @IsOptional()
   network: SupportedBlockchainTypeEnum;
 
+  @Expose()
   @ApiProperty()
   @IsOptional()
   assetCode: TokenEnum;
@@ -55,7 +71,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'uuid', nullable: false })
   providerTransactionId: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   providerReference: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -111,7 +127,12 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Expose()
   @ApiProperty()
   @Column({ type: 'decimal', precision: 18, scale: 2 })
-  adjustedFiatAmount: number;
+  netFiatAmount: number;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ type: 'decimal', precision: 18, scale: 2 })
+  netCryptoAmount: number;
 
   @Expose()
   @ApiProperty()
@@ -156,10 +177,12 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   // ========== PAYMENT DETAILS ==========
   @Expose()
   @ApiProperty()
+  @IsOptional()
   @Column({ type: 'jsonb', nullable: true })
   recipientInfo: RampReciepientInfoDto;
 
   @Expose()
+  @IsOptional()
   @ApiProperty()
   @Column({ type: 'jsonb', nullable: true })
   bankInfo: BankInfoDto;
@@ -167,4 +190,10 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   // ========== COMPUTED / INTERNAL ==========
   @Column({ nullable: true })
   sourceAddress: string;
+
+  @Expose()
+  @IsOptional()
+  @ApiProperty()
+  @Column({ nullable: false })
+  blockchainTxId: string;
 }

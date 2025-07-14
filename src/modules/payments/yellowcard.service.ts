@@ -5,7 +5,8 @@ import {
   IYCAcceptCollectionRequestPayload,
   IYCChannelsResponseType,
   IYCNetworksResponseType,
-  IYCPaymentRequestResponseType,
+  IYCollectionRequestResponseType,
+  IYCPaymentRequestResponse,
   IYellowCardWebhookConfig,
 } from '@/models/yellocard.models';
 
@@ -68,8 +69,8 @@ export class YellowCardService {
   // Resolve Bank Account
   async resolveBankAccount(body: AnyObject) {
     const method = 'POST';
-    const path = '/business/bank/resolve';
-    const url = `${this.ycUrl}/bank/resolve`;
+    const path = '/business/details/bank';
+    const url = `${this.ycUrl}${path}`;
     const headers = this.generateAuthHeaders(method, path, body);
     return await this.httpService.post(url, body, { headers });
   }
@@ -85,20 +86,23 @@ export class YellowCardService {
 
   // --- Payments ---
 
-  async submitPaymentRequest(body: AnyObject) {
+  async submitPaymentRequest(
+    body: AnyObject,
+  ): Promise<IYCPaymentRequestResponse> {
     const method = 'POST';
-    const path = '/payments/submit';
-    const url = `${this.ycUrl}/payments/submit`;
+    const path = '/business/payments';
+    const url = `${this.ycUrl}${path}`;
     const headers = this.generateAuthHeaders(method, path, body);
     return await this.httpService.post(url, body, { headers });
   }
 
-  async acceptPaymentRequest(body: AnyObject) {
+  async acceptPaymentRequest({ id }: AnyObject) {
     const method = 'POST';
-    const path = '/payments/accept';
+    const path = `/business/payments/${id}/accept`;
+    console.log({ path });
     const url = `${this.ycUrl}${path}`;
-    const headers = this.generateAuthHeaders(method, path, body);
-    return await this.httpService.post(url, body, { headers });
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.post(url, undefined, { headers });
   }
 
   async denyPaymentRequest(body: AnyObject) {
@@ -139,7 +143,7 @@ export class YellowCardService {
   // --- Collections ---
   async submitCollectionRequest(
     body: AnyObject,
-  ): IYCPaymentRequestResponseType {
+  ): IYCollectionRequestResponseType {
     const method = 'POST';
     const path = '/business/collections';
     const url = `${this.ycUrl}${path}`;
@@ -151,7 +155,7 @@ export class YellowCardService {
     const method = 'POST';
     const path = '/collections/accept';
     const url = `${this.ycUrl}${path}`;
-    const headers = this.generateAuthHeaders(method, path, body);
+    const headers = this.generateAuthHeaders(method, path);
     return await this.httpService.post(url, body, { headers });
   }
 
@@ -232,12 +236,11 @@ export class YellowCardService {
   }
 
   async listWebhooks() {
-    // const method = 'GET';
-    // const path = '/webhooks';
-    // const url = `${this.ycUrl}/webhooks`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = '/business/webhooks';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.get(url, { headers });
   }
 
   // --- Settlement ---
@@ -310,7 +313,6 @@ export class YellowCardService {
     }
 
     if (!code) {
-      console.log('stopped here');
       return {
         expiresAt: cached.expiresAt,
         rate: cached.data,

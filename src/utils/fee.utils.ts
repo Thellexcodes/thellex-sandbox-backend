@@ -27,38 +27,42 @@ export function calculateAdjustedAmount(
  * @returns
  */
 export function calculateNetCryptoAmount(
-  amount: number,
-  feeValue: number, // e.g., 200 for 2%
-  rate: number,
+  fiatAmount: number, // e.g. ₦15,000
+  feeValue: number, // e.g. 200 for 2%
+  rate: number, // e.g. 1615 NGN/USDT
 ) {
-  const feeDecimal = feeValue / 10000; // e.g. 200 -> 0.02
-  const feeAmount = amount * feeDecimal; // e.g. ₦15,000 * 0.02 = ₦300
-  const adjustedNaira = amount - feeAmount; // e.g. ₦14,700
+  const feeDecimal = feeValue / 10000; // e.g. 200 → 0.02
+  const feeAmount = fiatAmount * feeDecimal; // ₦300
+  const netFiatAmount = fiatAmount - feeAmount; // ₦14,700
 
-  const grossCrypto = parseFloat((adjustedNaira / rate).toFixed(6)); // e.g. 14,700 / 1615 ≈ 9.105
+  const grossCrypto = parseFloat((fiatAmount / rate).toFixed(6)); // Before fees
+  const netCryptoAmount = parseFloat((netFiatAmount / rate).toFixed(6)); // After fees
 
   return {
-    adjustedNaira,
-    feeAmount,
-    feeLabel: `${(feeDecimal * 100).toFixed(2)}%`,
-    grossCrypto,
+    netFiatAmount, // Amount after fee deduction
+    feeAmount, // Fee in fiat
+    feeLabel: `${(feeDecimal * 100).toFixed(2)}%`, // e.g. '2.00%'
+    grossCrypto, // Fiat to crypto before fees
+    netCryptoAmount, // Fiat to crypto after fee
   };
 }
 
-export function calculateNetFiatAmount(
+export async function calculateNetFiatAmount(
   cryptoAmount: number,
   feeValue: number, // e.g., 200 for 2%
   rate: number,
 ) {
-  const feeDecimal = feeValue / 10000; // e.g. 200 -> 0.02
+  const feeDecimal = feeValue / 10000; // e.g. 200 → 0.02
   const grossFiat = cryptoAmount * rate; // e.g. 10 * 1615 = ₦16,150
-  const feeAmount = grossFiat * feeDecimal; // e.g. ₦16,150 * 0.02 = ₦323
-  const netFiatAmount = parseFloat((grossFiat - feeAmount).toFixed(2)); // e.g. ₦15,827.00
+  const feeAmount = grossFiat * feeDecimal; // ₦16,150 * 0.02 = ₦323
+  const netFiatAmount = parseFloat((grossFiat - feeAmount).toFixed(2)); // ₦15,827.00
+  const netCryptoAmount = parseFloat((netFiatAmount / rate).toFixed(6)); // 15,827 / 1615 ≈ 9.8
 
   return {
     grossFiat,
     feeAmount,
     feeLabel: `${(feeDecimal * 100).toFixed(2)}%`,
     netFiatAmount,
+    netCryptoAmount,
   };
 }

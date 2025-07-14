@@ -1,7 +1,14 @@
+import { AnyObject } from '@/models/any.types';
 import { PaymentStatus, YCPaymentEventEnum } from '@/models/payment.types';
 import { normalizeEnumValue } from '@/utils/helpers';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class YcCreatePaymentHookDto {
   @IsUUID()
@@ -16,6 +23,9 @@ export class YcCreatePaymentHookDto {
 
   @IsString()
   apiKey: string;
+
+  @IsOptional()
+  settlementInfo?: AnyObject;
 
   @Transform(({ value }) => normalizeEnumValue(value, YCPaymentEventEnum))
   @IsEnum(YCPaymentEventEnum)

@@ -58,7 +58,7 @@ export const NAIRA_RATE = 0.0;
 // --- Supported blockchain types in the system ---
 export enum SupportedBlockchainTypeEnum {
   BEP20 = 'bep20',
-  TRC20 = 'trc20',
+  // TRC20 = 'trc20',
   MATIC = 'matic',
   // MATIC_AMOY = 'matic-amoy',
   // AVAX = 'avax',
@@ -68,7 +68,7 @@ export enum SupportedBlockchainTypeEnum {
   // STELLAR = 'stellar',
   // CELO = 'celo',
   // BITCOIN = 'btc',
-  ETHEREUM = 'erc20',
+  // ETHEREUM = 'erc20',
   // SUI = 'sui',
   // SOLANA = 'solana',
   // BASE = 'base',
@@ -100,10 +100,10 @@ export type BLOCKCHAIN_TYPE = SupportedBlockchainTypeEnum;
 export type FEEType = 'flat' | 'percentage';
 
 // --- Blockchains currently used in production environments ---
-export const SUPPORTED_BLOCKCHAINS: SupportedBlockchainTypeEnum[] = [
+export const SUPPORTED_BLOCKCHAINS: Partial<SupportedBlockchainTypeEnum[]> = [
   SupportedBlockchainTypeEnum.BEP20,
-  SupportedBlockchainTypeEnum.TRC20,
 ];
+
 export enum SupportedWalletTypes {
   EVM = 'evm',
   STELLAR = 'stellar',
@@ -184,7 +184,7 @@ export class TransactionSettingsDto {
 }
 
 export const BlockchainNetworkSettings: Record<
-  SupportedBlockchainTypeEnum,
+  Partial<SupportedBlockchainTypeEnum>,
   NetworkSettings
 > = {
   [SupportedBlockchainTypeEnum.BEP20]: {
@@ -195,14 +195,14 @@ export const BlockchainNetworkSettings: Record<
     decimals: 18,
     secretKey: process.env.EVM_TREASURY_SECRET_KEY!,
   },
-  [SupportedBlockchainTypeEnum.TRC20]: {
-    name: 'Tron TRC20',
-    treasuryAddress: process.env.EVM_TREASURY_ADDRESS!,
-    rpcUrl: getAppConfig().BLOCKCHAIN.TRON_RPC_URL,
-    explorerUrl: '',
-    decimals: 6,
-    secretKey: process.env.TRC20_TREASURY_SECRET_KEY!,
-  },
+  // [SupportedBlockchainTypeEnum.TRC20]: {
+  //   name: 'Tron TRC20',
+  //   treasuryAddress: process.env.EVM_TREASURY_ADDRESS!,
+  //   rpcUrl: getAppConfig().BLOCKCHAIN.TRON_RPC_URL,
+  //   explorerUrl: '',
+  //   decimals: 6,
+  //   secretKey: process.env.TRC20_TREASURY_SECRET_KEY!,
+  // },
   [SupportedBlockchainTypeEnum.MATIC]: {
     name: 'Polygon',
     treasuryAddress: process.env.EVM_TREASURY_ADDRESS!,
@@ -211,14 +211,14 @@ export const BlockchainNetworkSettings: Record<
     decimals: 18,
     secretKey: process.env.EVM_TREASURY_SECRET_KEY!,
   },
-  [SupportedBlockchainTypeEnum.ETHEREUM]: {
-    name: 'Ethereum ERC20',
-    treasuryAddress: '0xYourERC20TreasuryAddressHere',
-    rpcUrl: '',
-    explorerUrl: 'https://etherscan.io/address/',
-    decimals: 18,
-    secretKey: process.env.EVM_TREASURY_SECRET_KEY!,
-  },
+  // [SupportedBlockchainTypeEnum.ETHEREUM]: {
+  //   name: 'Ethereum ERC20',
+  //   treasuryAddress: '0xYourERC20TreasuryAddressHere',
+  //   rpcUrl: '',
+  //   explorerUrl: 'https://etherscan.io/address/',
+  //   decimals: 18,
+  //   secretKey: process.env.EVM_TREASURY_SECRET_KEY!,
+  // },
 };
 
 export const TokenAddresses: Record<
@@ -229,16 +229,16 @@ export const TokenAddresses: Record<
     [TokenEnum.USDT]: '0x55d398326f99059fF775485246999027B3197955',
     [TokenEnum.USDC]: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
   },
-  [SupportedBlockchainTypeEnum.TRC20]: {
-    [TokenEnum.USDT]: 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj',
-    [TokenEnum.USDC]: 'TC4d9vQ9zV8PskcF1CgrFz1E1T7J3VaAaM',
-  },
+  // [SupportedBlockchainTypeEnum.TRC20]: {
+  //   [TokenEnum.USDT]: 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj',
+  //   [TokenEnum.USDC]: 'TC4d9vQ9zV8PskcF1CgrFz1E1T7J3VaAaM',
+  // },
   [SupportedBlockchainTypeEnum.MATIC]: {
     [TokenEnum.USDT]: '0x3813e82e6f7098b9583FC0F33a962D02018B6803',
     [TokenEnum.USDC]: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
   },
-  [SupportedBlockchainTypeEnum.ETHEREUM]: {
-    [TokenEnum.USDT]: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-    [TokenEnum.USDC]: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  },
+  // [SupportedBlockchainTypeEnum.ETHEREUM]: {
+  //   [TokenEnum.USDT]: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  //   [TokenEnum.USDC]: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  // },
 };

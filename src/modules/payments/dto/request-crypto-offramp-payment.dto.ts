@@ -32,7 +32,7 @@ export class RequestCryptoOffRampPaymentDto {
   assetCode: TokenEnum;
 
   @ApiProperty({
-    example: SupportedBlockchainTypeEnum.TRC20,
+    example: SupportedBlockchainTypeEnum.BEP20,
     description: 'Blockchain network',
     enum: SupportedBlockchainTypeEnum,
   })
@@ -52,7 +52,7 @@ export class RequestCryptoOffRampPaymentDto {
   // ===== Fiat & Payment Preferences =====
 
   @ApiProperty({
-    example: SupportedFiatCurrency.USD,
+    example: SupportedFiatCurrency.NGN,
     enum: SupportedFiatCurrency,
     description: 'Fiat currency to receive',
   })
@@ -90,7 +90,7 @@ export class RequestCryptoOffRampPaymentDto {
   // ===== Crypto Sender Info =====
 
   @ApiProperty({
-    example: '0x1234abcd5678ef90...',
+    example: '0x2179EA580dF5b25b3Cb369f13397C5a6730a48d9',
     description: 'Address sending the crypto',
   })
   @IsString()

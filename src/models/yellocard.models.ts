@@ -68,7 +68,8 @@ interface IYCSource {
   accountType: string;
 }
 
-export interface IYCPaymentRequestResponse {
+//submit collection request response interface
+export interface IYCCollectionRequestResponse {
   currency: string;
   status: string;
   serviceFeeAmountUSD: number;
@@ -103,10 +104,58 @@ export interface IYCAcceptCollectionRequestPayload {
   id: string;
 }
 
-export type IYCPaymentRequestResponseType = Promise<IYCPaymentRequestResponse>;
+export type IYCollectionRequestResponseType =
+  Promise<IYCCollectionRequestResponse>;
 
 //webhooks
 export interface IYellowCardWebhookConfig {
   active: boolean;
   url: string;
+}
+
+//payout response interface
+export interface IYCPayoutRequestResponseDestination {
+  accountNumber: string;
+  accountType: string;
+  networkId: string;
+  accountBank: string;
+  accountName: string;
+  networkName: string;
+}
+
+export interface IYCPayoutRequestResponseSender {
+  name: string;
+  country: string;
+  phone: string;
+  address: string;
+  dob: string;
+  email: string;
+  idNumber: string;
+  idType: string;
+}
+
+export interface IYCPaymentRequestResponse {
+  sequenceId: string;
+  channelId: string;
+  currency: string;
+  country: string;
+  reason: string;
+  destination: IYCPayoutRequestResponseDestination;
+  sender: IYCPayoutRequestResponseSender;
+  forceAccept: boolean;
+  customerUID: string;
+  partnerId: string;
+  requestSource: string;
+  id: string;
+  attempt: number;
+  status: string;
+  amount: number;
+  convertedAmount: number;
+  rate: number;
+  expiresAt: Date;
+  settlementInfo: Record<string, unknown>;
+  tier0Active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  directSettlement: boolean;
 }

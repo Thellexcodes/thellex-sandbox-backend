@@ -32,31 +32,4 @@ export class YellowCardCron {
       this.logger.error(`❌ Failed to fetch Yellow Card rates`, error);
     }
   }
-
-  // @Cron(CronExpression.EVERY_10_SECONDS)
-  // async handleSettlement(): Promise<void> {
-  //   try {
-  //     const accountInfo = await this.yellowCardService.getAccount();
-  //     // console.log(accountInfo);
-
-  //     const payload = {
-  //       amount: 100000,
-  //       walletAddress: '0xRecipientWalletAddress',
-  //       cryptoCurrency: 'USDC',
-  //       cryptoNetwork: 'ETH',
-  //       sequenceId: uuidV4(),
-  //       travelRuleInfo: {
-  //         name: 'My Business Name',
-  //         businessRegistrationNumber: '1234567890',
-  //       },
-  //     };
-
-  //     // const { data } =
-  //     //   await this.yellowCardService.submitSettlementRequest(payload);
-
-  //     //   this.logger.log(`✅ Settlement submitted: ${JSON.stringify(data)}`);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // }
 }
