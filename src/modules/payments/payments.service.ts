@@ -67,8 +67,13 @@ export class PaymentsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async handleRates(fiatCode: FiatEnum | undefined): Promise<any> {
+  async handleRates(
+    fiatCode: FiatEnum | undefined,
+    user: any,
+    amount: number, // The amount user wants to convert or transact
+  ): Promise<{ rates: any; expiresAt; netFiat; netCrypto } | null> {
     try {
+      // Get cached rates for the fiatCode (can be fiat or crypto)
       const cached = await this.ycService.getRateFromCache(fiatCode);
 
       if (
@@ -79,18 +84,44 @@ export class PaymentsService {
         return null;
       }
 
+      // Format user with tiers, to get fee info
+      const userPlain = formatUserWithTiers(user);
+
+      // Helper to format a single rate object
       const formatRate = (rate: IYellowCardRateDto) => ({
         fiatCode: rate.code,
         rate: rate.buy,
       });
 
+      // Format rates array or single object accordingly
       const ratesFormatted = Array.isArray(cached.rate)
         ? cached.rate.map(formatRate)
         : formatRate(cached.rate);
 
+      // Use the first rate for calculations (or adapt as needed)
+      const firstRate = Array.isArray(cached.rate)
+        ? cached.rate[0]
+        : cached.rate;
+
+      // Calculate net fiat amount after fees (assuming your function returns a value)
+      const netFiat = await calculateNetFiatAmount(
+        amount,
+        userPlain.currentTier.txnFee.withdrawal.feePercentage,
+        firstRate.buy,
+      );
+
+      // Calculate net crypto amount after fees
+      const netCrypto = await calculateNetCryptoAmount(
+        amount,
+        userPlain.currentTier.txnFee.withdrawal.feePercentage,
+        firstRate.buy,
+      );
+
       return {
         rates: ratesFormatted,
         expiresAt: cached.expiresAt,
+        netFiat,
+        netCrypto,
       };
     } catch (err) {
       console.error('Error in handleRates:', err);
@@ -269,7 +300,7 @@ export class PaymentsService {
         feeLabel,
         grossCrypto,
         netCryptoAmount,
-      } = calculateNetCryptoAmount(
+      } = await calculateNetCryptoAmount(
         dto.userAmount,
         userPlain.currentTier.txnFee.withdrawal.feePercentage,
         fiatRate.rate.buy,

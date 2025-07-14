@@ -97,7 +97,8 @@ export class PaymentsController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    const result = await this.paymentService.handleRates(fiatCode);
+    const user = req.user;
+    const result = await this.paymentService.handleRates(fiatCode, user, 10);
     responseHandler(result, res, req);
   }
 

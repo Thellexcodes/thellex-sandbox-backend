@@ -9,7 +9,7 @@ import {
   SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   TokenEnum,
-  TransactionSettingsDto,
+  TRANSACTION_POLICY,
   WalletProviderEnum,
 } from '@/config/settings';
 import * as crypto from 'crypto';
@@ -300,7 +300,7 @@ export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
     nextTier: nextTier ? formatTier(nextTier) : null,
     outstandingKyc,
     remainingTiers,
-    transactionSettings: new TransactionSettingsDto(),
+    transactionSettings: TRANSACTION_POLICY,
   };
 }
 

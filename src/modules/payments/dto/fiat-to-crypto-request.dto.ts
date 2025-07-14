@@ -136,8 +136,6 @@ export class BankInfoDto {
   @IsOptional()
   accountName?: string;
 
-  @Expose()
-  @ApiProperty()
   @IsOptional()
   swiftCode?: string;
 

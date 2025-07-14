@@ -10,4 +10,5 @@ export enum UserErrorEnum {
   USER_NOT_FOUND = 'access/USER_NOT_FOUND',
   USER_SUSPENDED = 'access/USER_SUSPENDED',
   UNAUTHORIZED = 'access/UNAUTHORIZED',
+  FORBIDDEN = 'access/FORBIDDEN',
 }

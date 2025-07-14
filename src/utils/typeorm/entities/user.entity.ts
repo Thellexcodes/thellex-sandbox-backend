@@ -23,11 +23,13 @@ import {
   CwalletProfilesEntity,
   ICwalletProfilesDto,
 } from './wallets/cwallet/cwallet-profiles.entity';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, plainToInstance, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { FiatCryptoRampTransactionEntity } from './fiat-crypto-ramp-transaction.entity';
-import { TransactionSettingsDto } from '@/config/settings';
+import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.dto';
+import { TRANSACTION_POLICY } from '@/config/settings';
+import { RoleEnum } from '@/models/roles-actions.enum';
 
 @Index(['email'])
 @Entity({ name: 'users' })
@@ -82,6 +84,14 @@ export class UserEntity extends BaseEntity {
     nullable: false,
   })
   tier: TierEnum;
+
+  @Column({
+    type: 'enum',
+    enum: RoleEnum,
+    default: RoleEnum.USER,
+    nullable: false,
+  })
+  role: RoleEnum;
 
   @Expose()
   @OneToMany(() => AuthVerificationCodesEntity, (v) => v.user, {
@@ -247,6 +257,11 @@ export class IUserDto extends UserEntity {
   @Type(() => TierInfoDto)
   remainingTiers: TierInfoDto[];
 
-  @Type(() => TransactionSettingsDto)
-  transactionSettings: TransactionSettingsDto = new TransactionSettingsDto();
+  @Expose()
+  @ApiProperty({ type: () => TransactionPolicyDto })
+  @Type(() => TransactionPolicyDto)
+  transactionSettings: TransactionPolicyDto = plainToInstance(
+    TransactionPolicyDto,
+    TRANSACTION_POLICY,
+  );
 }

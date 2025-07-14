@@ -1,9 +1,12 @@
+import { RoleEnum } from '@/models/roles-actions.enum';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  ForbiddenException,
+  HttpStatus,
 } from '@nestjs/common';
+import { CustomHttpException } from '../custom.http.exception';
+import { UserErrorEnum } from '@/models/user-error.enum';
 
 @Injectable()
 export class SuperAdminGuard implements CanActivate {
@@ -11,12 +14,11 @@ export class SuperAdminGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || user.role !== 'superadmin') {
-      throw new ForbiddenException({
-        statusCode: 403,
-        message: 'Access denied. Superadmin only.',
-        errorCode: 'FORBIDDEN_SUPERADMIN_ONLY',
-      });
+    if (!user || user.role !== RoleEnum.SUPER_ADMIN) {
+      throw new CustomHttpException(
+        UserErrorEnum.FORBIDDEN,
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     return true;

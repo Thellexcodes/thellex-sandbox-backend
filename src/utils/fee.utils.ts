@@ -26,7 +26,7 @@ export function calculateAdjustedAmount(
  * @param rate  rate
  * @returns
  */
-export function calculateNetCryptoAmount(
+export async function calculateNetCryptoAmount(
   fiatAmount: number, // e.g. ₦15,000
   feeValue: number, // e.g. 200 for 2%
   rate: number, // e.g. 1615 NGN/USDT

@@ -137,51 +137,20 @@ export const SERVER_REQUEST_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes in millisec
 export const EVERY_15_SECONDS_CRON = '*/20 * * * * *';
 export const DIRECT_SETTLEMENT_THRESHOLD = 100;
 
-export class TransactionSettingsDto {
-  @Expose()
-  @ApiProperty()
-  CRYPTO = {
-    DEPOSIT: {
-      ALLOWED: true,
-      REQUIRES_KYC: false,
-    },
-    WITHDRAWAL: {
-      ALLOWED: true,
-      REQUIRES_KYC: true,
-    },
-  };
-
-  @Expose()
-  @ApiProperty()
-  FIAT_TO_CRYPTO = {
-    DEPOSIT: {
-      ALLOWED: true,
-      REQUIRES_KYC: true,
-    },
-  };
-
-  @Expose()
-  @ApiProperty()
-  CRYPTO_TO_FIAT = {
-    WITHDRAWAL: {
-      ALLOWED: true,
-      REQUIRES_KYC: true,
-    },
-  };
-
-  @Expose()
-  @ApiProperty()
-  FIAT_TO_FIAT = {
-    DEPOSIT: {
-      ALLOWED: true,
-      REQUIRES_KYC: true,
-    },
-    WITHDRAWAL: {
-      ALLOWED: true,
-      REQUIRES_KYC: true,
-    },
-  };
-}
+export const TRANSACTION_POLICY = {
+  cryptoDepositAllowed: true,
+  cryptoDepositRequiresKyc: false,
+  cryptoWithdrawalAllowed: true,
+  cryptoWithdrawalRequiresKyc: true,
+  fiatToCryptoDepositAllowed: true,
+  fiatToCryptoDepositRequiresKyc: true,
+  cryptoToFiatWithdrawalAllowed: true,
+  cryptoToFiatWithdrawalRequiresKyc: true,
+  fiatToFiatDepositAllowed: true,
+  fiatToFiatDepositRequiresKyc: true,
+  fiatToFiatWithdrawalAllowed: true,
+  fiatToFiatWithdrawalRequiresKyc: true,
+};
 
 export const BlockchainNetworkSettings: Record<
   Partial<SupportedBlockchainTypeEnum>,
