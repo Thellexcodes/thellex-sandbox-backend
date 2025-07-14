@@ -13,5 +13,16 @@ export class YcPaymentHookService {
       paymentStatus: PaymentStatus.Complete,
       updatedAt: toUTCString(dto.executedAt),
     });
+
+    //[x]send notication and transaction
+  }
+
+  async handleSuccessfulPaymentRequest(dto: YcCreatePaymentHookDto) {
+    await this.paymentService.updateTransactionBySequenceId(dto.sequenceId, {
+      paymentStatus: PaymentStatus.Complete,
+      updatedAt: toUTCString(dto.executedAt),
+    });
+
+    //[x]send notication and transaction
   }
 }

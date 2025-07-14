@@ -121,6 +121,7 @@ export interface IYCPayoutRequestResponseDestination {
   accountBank: string;
   accountName: string;
   networkName: string;
+  customerUID: string;
 }
 
 export interface IYCPayoutRequestResponseSender {
@@ -158,4 +159,24 @@ export interface IYCPaymentRequestResponse {
   createdAt: string;
   updatedAt: string;
   directSettlement: boolean;
+}
+
+export interface IYCAcceptPaymentResponse {
+  id: string;
+  channelId: string;
+  sequenceId: string;
+  currency: string;
+  country: string;
+  amount: number; // Defaults to 0
+  reason: string;
+  convertedAmount: number; // Defaults to 0
+  status: string;
+  rate: number; // Defaults to 0
+
+  sender: IYCPayoutRequestResponseSender;
+  destination: IYCPayoutRequestResponseDestination;
+
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
 }

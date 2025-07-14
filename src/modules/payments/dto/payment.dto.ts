@@ -54,7 +54,15 @@ export class IFiatToCryptoQuoteSummaryResponseDto {
   rate: number;
 
   @Expose()
-  @ApiProperty({ example: 3.034056, description: 'Gross crypto to receive' })
+  @ApiProperty({ example: 3.034056, description: 'Gross fiat to receive/send' })
+  @IsNumber()
+  grossFiat: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 3.034056,
+    description: 'Gross crypto to receive/send',
+  })
   @IsNumber()
   grossCrypto: number;
 

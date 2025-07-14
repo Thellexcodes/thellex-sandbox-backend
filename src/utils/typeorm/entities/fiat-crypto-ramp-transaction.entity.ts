@@ -108,7 +108,9 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ default: false })
   sentCrypto: boolean;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Expose()
+  @ApiProperty()
+  @Column({ type: 'timestamp with time zone', nullable: false })
   expiresAt: Date;
 
   // ========== PAYMENT PROVIDER ==========
@@ -119,8 +121,6 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   walletId: string;
 
   // ========== AMOUNTS ==========
-  @Expose()
-  @ApiProperty()
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   userAmount: number;
 
@@ -194,6 +194,6 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Expose()
   @IsOptional()
   @ApiProperty()
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   blockchainTxId: string;
 }

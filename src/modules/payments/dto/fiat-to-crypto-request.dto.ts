@@ -146,10 +146,6 @@ export class BankInfoDto {
   @IsOptional()
   accountHolder?: string;
 
-  @ApiProperty({
-    example: 'savings',
-    description: 'Type of bank account (e.g., savings, current)',
-  })
   @IsString()
   @IsNotEmpty()
   @IsOptional()

@@ -12,6 +12,7 @@ export enum YCPaymentEventEnum {
   PAYMENT_PROCESSING = 'payment.processing',
   PAYMENT_FAILED = 'payment.failed',
   PAYMENT_EXPIRED = 'payment.expired',
+  PAYMENT_COMPLETE = 'payment.complete',
 }
 
 export enum PaymentStatus {

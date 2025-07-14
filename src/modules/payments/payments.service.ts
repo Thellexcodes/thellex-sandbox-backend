@@ -547,14 +547,13 @@ export class PaymentsService {
       IFiatToCryptoQuoteSummaryResponseDto,
       {
         userAmount: dto.userAmount,
-        feePercentage: feeLabel,
-        feeAmount,
-        adjustedFiatAmount: netFiatAmount,
+        feeLabel,
+        serviceFeeAmountLocal: feeAmount,
+        serviceFeeAmountUsd,
         rate: fiatRate.rate.buy,
         netFiatAmount,
         netCryptoAmount,
         grossFiat,
-        serviceFeeAmountUsd,
         expiresAt: yellowCardResponse.expiresAt,
         bankInfo: dto.bankInfo,
         recipientInfo: newTxn.recipientInfo,
@@ -684,12 +683,11 @@ export class PaymentsService {
       console.log({ id: params.providerTransactionId });
 
       //[x] check for bank records
-      //[x] accept payment
-      const acceptResponse = await this.ycService.acceptPaymentRequest({
-        id: params.providerTransactionId,
-      });
+      // const acceptResponse = await this.ycService.acceptPaymentRequest({
+      //   id: params.providerTransactionId,
+      // });
 
-      console.log({ acceptResponse });
+      // console.log({ acceptResponse });
 
       // const { currency, recipientInfo } = params;
 

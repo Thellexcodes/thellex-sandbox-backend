@@ -3,6 +3,7 @@ import { HttpService } from '@/middleware/http.service';
 import { AnyObject } from '@/models/any.types';
 import {
   IYCAcceptCollectionRequestPayload,
+  IYCAcceptPaymentResponse,
   IYCChannelsResponseType,
   IYCNetworksResponseType,
   IYCollectionRequestResponseType,
@@ -96,32 +97,30 @@ export class YellowCardService {
     return await this.httpService.post(url, body, { headers });
   }
 
-  async acceptPaymentRequest({ id }: AnyObject) {
+  async acceptPaymentRequest({
+    id,
+  }: AnyObject): Promise<IYCAcceptPaymentResponse> {
     const method = 'POST';
     const path = `/business/payments/${id}/accept`;
-    console.log({ path });
     const url = `${this.ycUrl}${path}`;
     const headers = this.generateAuthHeaders(method, path);
-    return await this.httpService.post(url, undefined, { headers });
+    return await this.httpService.post(url, {}, { headers });
   }
 
-  async denyPaymentRequest(body: AnyObject) {
+  async denyPaymentRequest({ id }: AnyObject) {
     const method = 'POST';
-    const path = '/payments/deny';
+    const path = `/business/payments/${id}/deny`;
     const url = `${this.ycUrl}${path}`;
-    const headers = this.generateAuthHeaders(method, path, body);
-    return await this.httpService.post(url, body, { headers });
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.post(url, {}, { headers });
   }
 
-  async lookupPayment(queryParams: Record<string, any>) {
+  async lookupPayment(id: string) {
     const method = 'GET';
-    const path = '/payments/lookup';
-    const url = new URL(`${this.ycUrl}${path}`);
-    Object.entries(queryParams).forEach(([key, val]) =>
-      url.searchParams.append(key, String(val)),
-    );
+    const path = `/business/payments/${id}`;
+    const url = `${this.ycUrl}${path}`;
     const headers = this.generateAuthHeaders(method, path);
-    return await this.httpService.get(url.toString(), { headers });
+    return await this.httpService.get(url, { headers });
   }
 
   async lookupPaymentBySequenceId(sequenceId: string) {
