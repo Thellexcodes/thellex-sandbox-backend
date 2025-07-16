@@ -138,27 +138,27 @@ export class WalletManagerService {
       const totalInUsd = totalSum.toFixed(2);
 
       // Filter out usdt from walletMap before returning
-      const filteredWalletMap = Object.fromEntries(
-        Object.entries(walletMap).filter(([key]) => key !== 'usdt'),
-      );
-
-      return plainToInstance(
-        WalletBalanceSummaryResponseDto,
-        {
-          totalInUsd,
-          wallets: filteredWalletMap,
-        },
-        { excludeExtraneousValues: true },
-      );
+      // const filteredWalletMap = Object.fromEntries(
+      //   Object.entries(walletMap).filter(([key]) => key !== 'usdt'),
+      // );
 
       // return plainToInstance(
       //   WalletBalanceSummaryResponseDto,
       //   {
       //     totalInUsd,
-      //     wallets: walletMap,
+      //     wallets: filteredWalletMap,
       //   },
       //   { excludeExtraneousValues: true },
       // );
+
+      return plainToInstance(
+        WalletBalanceSummaryResponseDto,
+        {
+          totalInUsd,
+          wallets: walletMap,
+        },
+        { excludeExtraneousValues: true },
+      );
     } catch (error) {
       console.error('getBalance error:', error);
       throw new CustomHttpException(

@@ -124,19 +124,19 @@ export class YellowCardService {
   }
 
   async lookupPaymentBySequenceId(sequenceId: string) {
-    // const method = 'GET';
-    // const path = `/payments/lookup/${sequenceId}`;
-    // const url = `${this.ycUrl}/payments/lookup/${sequenceId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url, { headers });
+    const method = 'GET';
+    const path = `/payments/lookup/${sequenceId}`;
+    const url = `${this.ycUrl}/payments/lookup/${sequenceId}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   async listPayments() {
-    // const method = 'GET';
-    // const path = '/payments/list';
-    // const url = `${this.ycUrl}/payments/list`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url, { headers });
+    const method = 'GET';
+    const path = '/payments/list';
+    const url = `${this.ycUrl}/payments/list`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   // --- Collections ---
@@ -159,54 +159,54 @@ export class YellowCardService {
   }
 
   async denyCollectionRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/deny';
-    // const url = `${this.ycUrl}/collections/deny`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // return  this.httpService.post(url, body, { headers });
+    const method = 'POST';
+    const path = '/collections/deny';
+    const url = `${this.ycUrl}/collections/deny`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.post(url, body, { headers });
   }
 
   async cancelCollection(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/cancel';
-    // const url = `${this.ycUrl}/collections/cancel`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // return  this.httpService.post(url, body, { headers });
+    const method = 'POST';
+    const path = '/collections/cancel';
+    const url = `${this.ycUrl}/collections/cancel`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.post(url, body, { headers });
   }
 
   async refundCollection(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/refund';
-    // const url = `${this.ycUrl}/collections/refund`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // return  this.httpService.post(url, body, { headers });
+    const method = 'POST';
+    const path = '/collections/refund';
+    const url = `${this.ycUrl}/collections/refund`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.post(url, body, { headers });
   }
 
   async lookupCollection(queryParams: Record<string, any>) {
-    // const method = 'GET';
-    // const path = '/collections/lookup';
-    // const url = new URL(`${this.ycUrl}/collections/lookup`);
-    // Object.entries(queryParams).forEach(([key, val]) =>
-    //   url.searchParams.append(key, String(val)),
-    // );
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url.toString(), { headers });
+    const method = 'GET';
+    const path = '/collections/lookup';
+    const url = new URL(`${this.ycUrl}/collections/lookup`);
+    Object.entries(queryParams).forEach(([key, val]) =>
+      url.searchParams.append(key, String(val)),
+    );
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url.toString(), { headers });
   }
 
   async lookupCollectionBySequenceId(sequenceId: string) {
-    // const method = 'GET';
-    // const path = `/collections/lookup/${sequenceId}`;
-    // const url = `${this.ycUrl}/collections/lookup/${sequenceId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url, { headers });
+    const method = 'GET';
+    const path = `/collections/lookup/${sequenceId}`;
+    const url = `${this.ycUrl}/collections/lookup/${sequenceId}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   async listCollections() {
-    // const method = 'GET';
-    // const path = '/collections/list';
-    // const url = `${this.ycUrl}/collections/list`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url, { headers });
+    const method = 'GET';
+    const path = '/collections/list';
+    const url = `${this.ycUrl}/collections/list`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   // --- Webhooks ---
@@ -219,19 +219,17 @@ export class YellowCardService {
   }
 
   async updateWebhook(body: object) {
-    // const method = 'PUT';
-    // const path = '/webhooks';
-    // const url = `${this.ycUrl}/webhooks`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // return  this.httpService.put(url, body, { headers });
+    const method = 'PUT';
+    const path = '/webhooks';
+    const url = `${this.ycUrl}/webhooks`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.put(url, body, { headers });
   }
 
   async removeWebhook(webhookId: string) {
-    // const method = 'DELETE';
-    // const path = `/webhooks/${webhookId}`;
-    // const url = `${this.ycUrl}/webhooks/${webhookId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.delete(url, { headers });
+    const method = 'DELETE';
+    const path = `/webhooks/${webhookId}`;
+    const url = `${this.ycUrl}/webhooks/${webhookId}`;
   }
 
   async listWebhooks() {
@@ -245,11 +243,11 @@ export class YellowCardService {
   // --- Settlement ---
 
   async lookupSettlementBySequenceId(sequenceId: string) {
-    // const method = 'GET';
-    // const path = `/settlements/lookup/${sequenceId}`;
-    // const url = `${this.ycUrl}/settlements/lookup/${sequenceId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // return  this.httpService.get(url, { headers });
+    const method = 'GET';
+    const path = `/settlements/lookup/${sequenceId}`;
+    const url = `${this.ycUrl}/settlements/lookup/${sequenceId}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   async submitSettlementRequest(body: object) {

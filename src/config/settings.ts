@@ -211,8 +211,8 @@ export const TRANSACTION_POLICY: TransactionPolicyDto = {
   fiatToCryptoDepositRequiresKyc: true,
   cryptoToFiatWithdrawalRequiresKyc: true,
   //fiat-to-fiat
-  fiatToFiatDepositAllowed: false,
-  fiatToFiatWithdrawalAllowed: false,
+  fiatToFiatDepositAllowed: true,
+  fiatToFiatWithdrawalAllowed: true,
   fiatToFiatDepositRequiresKyc: true,
   fiatToFiatWithdrawalRequiresKyc: true,
 };

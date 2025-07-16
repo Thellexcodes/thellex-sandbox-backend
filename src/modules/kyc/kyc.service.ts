@@ -239,7 +239,13 @@ export class KycService {
 
       return plainToInstance(
         KycResultDto,
-        { isVerified: true, currentTier, nextTier },
+        {
+          isVerified: true,
+          currentTier,
+          nextTier,
+          bankingNetwork,
+          bankAccountInfo,
+        },
         { excludeExtraneousValues: true },
       );
     } catch (error) {

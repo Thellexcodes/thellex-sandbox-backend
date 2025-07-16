@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccountEntity extends BaseEntity {

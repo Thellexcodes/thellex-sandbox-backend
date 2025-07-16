@@ -21,7 +21,7 @@ import {
   IFiatToCryptoQuoteSummaryResponseDto,
 } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { formatUserWithTiers } from '@/utils/helpers';
 import {
   calculateNetCryptoAmount,
@@ -66,6 +66,7 @@ export class PaymentsService {
     @InjectRepository(TransactionHistoryEntity)
     private readonly txnHistoryRepo: Repository<TransactionHistoryEntity>,
     private readonly configService: ConfigService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async handleRates(
@@ -190,13 +191,15 @@ export class PaymentsService {
     }
   }
 
-  // Crypto to fiat off ramp
   async handleFiatToCryptoOffRamp(
     user: UserEntity,
     dto: FiatToCryptoOnRampRequestDto,
   ): Promise<IFiatToCryptoQuoteSummaryResponseDto> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      // Fetch fiat rate from cache
       const fiatRate = await this.ycService.getRateFromCache(
         dto.fiatCode.toUpperCase(),
       );
@@ -218,10 +221,7 @@ export class PaymentsService {
           HttpStatus.NOT_FOUND,
         );
 
-      // Prepare user data with tiers
       const userPlain = formatUserWithTiers(user);
-
-      // Fetch active channels and networks
       const { channels } = await this.ycService.getChannels();
       const { networks } = await this.ycService.getNetworks();
 
@@ -229,7 +229,6 @@ export class PaymentsService {
         (c) => c.status === 'active' && c.rampType === 'deposit',
       );
 
-      // Check if user's country is supported
       const supportedCountries = Array.from(
         new Set(activeChannels.map((c) => c.country)),
       );
@@ -240,21 +239,18 @@ export class PaymentsService {
         );
       }
 
-      // Use the first active channel and its supported network
       const channel = activeChannels[0];
       const supportedNetworks = networks.filter(
         (n) => n.status === 'active' && n.channelIds.includes(channel.id),
       );
-      const network = supportedNetworks[0]; // Not currently used but could be extended
+      const network = supportedNetworks[0];
 
-      // Format user KYC date of birth safely (MM/DD/YYYY)
       const userKycData = { ...userPlain.kyc };
       if (userKycData.dob) {
         const [year, month, day] = userKycData.dob.split('-');
         userKycData.dob = `${month}/${day}/${year}`;
       }
 
-      // Prepare recipient info
       const recipient = {
         name: `${userKycData.firstName} ${userKycData.lastName}`,
         country: dto.country.toUpperCase(),
@@ -268,11 +264,9 @@ export class PaymentsService {
         additionalIdNumber: userKycData.bvn,
       };
 
-      // Unique transaction sequence ID
       const sequenceId = uuidV4();
 
-      // Submit a temporary request just to get the rate and reference info
-      const tempRateRequest = {
+      const yellowCardResponse = await this.ycService.submitCollectionRequest({
         sequenceId,
         channelId: channel.id,
         currency: channel.currency,
@@ -282,19 +276,10 @@ export class PaymentsService {
         recipient,
         forceAccept: true,
         source: { accountType: 'bank' },
-        // source: {
-        //   accountNumber: '+2341111111111',
-        //   accountType: 'bank',
-        //   networkId: '20823163-f55c-4fa5-8cdb-d59c5289a137',
-        // },
         customerType: userPlain.kyc.customerType,
         customerUID: userPlain.uid.toString(),
-      };
+      });
 
-      const yellowCardResponse =
-        await this.ycService.submitCollectionRequest(tempRateRequest);
-
-      // Calculate fees and net crypto amount
       const {
         netFiatAmount,
         feeAmount,
@@ -311,9 +296,6 @@ export class PaymentsService {
         (feeAmount / fiatRate.rate.buy).toFixed(2),
       );
 
-      //[x] implement reduced kyc for transactions less than $20
-
-      // Create new transaction entity
       const newTxn = new FiatCryptoRampTransactionEntity();
       newTxn.user = user;
       newTxn.userId = user.id;
@@ -327,12 +309,12 @@ export class PaymentsService {
       newTxn.customerType = userPlain.kyc.customerType;
       newTxn.paymentReason = dto.paymentReason;
 
-      newTxn.userAmount = dto.userAmount; // original fiat amount
-      newTxn.netFiatAmount = netFiatAmount; // fiat after adding/removing fees
+      newTxn.userAmount = dto.userAmount;
+      newTxn.netFiatAmount = netFiatAmount;
       newTxn.netCryptoAmount = netCryptoAmount;
-      newTxn.feeLabel = feeLabel; // e.g. "2.00%"
-      newTxn.serviceFeeAmountLocal = feeAmount; // fee in fiat (local currency)
-      newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd; // fee converted to USD
+      newTxn.feeLabel = feeLabel;
+      newTxn.serviceFeeAmountLocal = feeAmount;
+      newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd;
 
       newTxn.rate = fiatRate.rate.buy;
       newTxn.grossCrypto = grossCrypto;
@@ -354,10 +336,9 @@ export class PaymentsService {
       };
       newTxn.expiresAt = yellowCardResponse.expiresAt;
 
-      // Save the transaction
-      const fctTxn = await this.fiatCryptoRampTransactionRepo.save(newTxn);
+      const savedTxn = await queryRunner.manager.save(newTxn);
+      await queryRunner.commitTransaction();
 
-      // Return the formatted response DTO
       return plainToInstance(
         IFiatToCryptoQuoteSummaryResponseDto,
         {
@@ -369,15 +350,18 @@ export class PaymentsService {
           netCryptoAmount,
           rate: fiatRate.rate.buy,
           grossCrypto,
-          bankInfo: fctTxn.bankInfo,
-          recipientInfo: fctTxn.recipientInfo,
+          bankInfo: savedTxn.bankInfo,
+          recipientInfo: savedTxn.recipientInfo,
           expiresAt: yellowCardResponse.expiresAt,
         },
         { excludeExtraneousValues: true },
       );
     } catch (error) {
-      this.logger.error('handleCryptoToFiatOnRamp failed', error);
+      await queryRunner.rollbackTransaction();
+      this.logger.error('handleFiatToCryptoOffRamp failed', error);
       throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 
