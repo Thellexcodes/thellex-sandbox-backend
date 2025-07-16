@@ -1,8 +1,6 @@
 import { getAppConfig } from '@/constants/env';
 import { NetworkSettings } from '@/models/network-settings';
-import { TronService } from '@/utils/services/tron.service';
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.dto';
 
 // --- Basic Settings ---
 export const ENVIRONMENT = 'beta';
@@ -115,6 +113,10 @@ export enum WalletProviderEnum {
   CIRCLE = 'circle',
 }
 
+export enum BankingNetworkProviderEnum {
+  MAPLERAD = 'maplerad',
+}
+
 export enum CustomerTypesEnum {
   Retail = 'retail',
   Institution = 'institution',
@@ -136,21 +138,6 @@ export const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
 export const SERVER_REQUEST_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes in milliseconds
 export const EVERY_15_SECONDS_CRON = '*/20 * * * * *';
 export const DIRECT_SETTLEMENT_THRESHOLD = 100;
-
-export const TRANSACTION_POLICY = {
-  cryptoDepositAllowed: true,
-  cryptoDepositRequiresKyc: false,
-  cryptoWithdrawalAllowed: true,
-  cryptoWithdrawalRequiresKyc: true,
-  fiatToCryptoDepositAllowed: true,
-  fiatToCryptoDepositRequiresKyc: true,
-  cryptoToFiatWithdrawalAllowed: true,
-  cryptoToFiatWithdrawalRequiresKyc: true,
-  fiatToFiatDepositAllowed: true,
-  fiatToFiatDepositRequiresKyc: true,
-  fiatToFiatWithdrawalAllowed: true,
-  fiatToFiatWithdrawalRequiresKyc: true,
-};
 
 export const BlockchainNetworkSettings: Record<
   Partial<SupportedBlockchainTypeEnum>,
@@ -210,4 +197,22 @@ export const TokenAddresses: Record<
   //   [TokenEnum.USDT]: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
   //   [TokenEnum.USDC]: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
   // },
+};
+
+export const TRANSACTION_POLICY: TransactionPolicyDto = {
+  //crypto deposits
+  cryptoDepositAllowed: true,
+  cryptoWithdrawalAllowed: true,
+  cryptoDepositRequiresKyc: false,
+  cryptoWithdrawalRequiresKyc: false,
+  //crypto-on/off-ramp
+  fiatToCryptoDepositAllowed: true,
+  cryptoToFiatWithdrawalAllowed: true,
+  fiatToCryptoDepositRequiresKyc: true,
+  cryptoToFiatWithdrawalRequiresKyc: true,
+  //fiat-to-fiat
+  fiatToFiatDepositAllowed: false,
+  fiatToFiatWithdrawalAllowed: false,
+  fiatToFiatDepositRequiresKyc: true,
+  fiatToFiatWithdrawalRequiresKyc: true,
 };

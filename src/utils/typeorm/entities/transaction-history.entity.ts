@@ -102,13 +102,9 @@ export class TransactionHistoryEntity extends BaseEntity {
   @Column({ name: 'reason', type: 'varchar', nullable: true })
   reason?: string | null;
 
-  @Expose()
-  @ApiProperty()
   @Column({ name: 'wallet_id', type: 'varchar', nullable: false })
   walletId: string;
 
-  @Expose()
-  @ApiProperty()
   @Column({ name: 'wallet_name', type: 'varchar', nullable: true })
   walletName: string | null;
 

@@ -9,7 +9,7 @@ import {
   PhoneNumberLookupResponse,
 } from '@/models/identifications.types';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   BasicTierKycDto,
@@ -34,6 +34,12 @@ import { TierEnum } from '@/config/tier.lists';
 import { UserService } from '../users/user.service';
 import { plainToInstance } from 'class-transformer';
 import { VerifyBvnDto } from './dto/validate-bvn.dto';
+import { MapleradService } from '../payments/maplerad.service';
+import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
+import { BankingNetworkProviderEnum } from '@/config/settings';
+import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
+import { ConfigService } from '@/config/config.service';
+import { ENV_PRODUCTION } from '@/models/settings.types';
 
 //TODO: Handle errors with enum
 //[x]: Move the Dojah services out
@@ -42,8 +48,13 @@ export class KycService {
   constructor(
     @InjectRepository(KycEntity)
     private readonly kycRepo: Repository<KycEntity>,
+    @InjectRepository(BankingNetworkEntity)
+    private readonly bankingNetworkRepo: Repository<BankingNetworkEntity>,
     private readonly httpService: HttpService,
     private readonly userService: UserService,
+    private readonly mapleradService: MapleradService,
+    private readonly dataSource: DataSource,
+    private readonly configService: ConfigService,
   ) {}
 
   private get dojahUrl(): string {
@@ -57,15 +68,14 @@ export class KycService {
   async createBasicKyc(
     kydataDto: BasicTierKycDto,
     user: UserEntity,
-  ): Promise<KycResultDto | any> {
-    try {
-      if (user.tier !== TierEnum.NONE) {
-        throw new CustomHttpException(
-          KycErrorEnum.KYC_ALREADY_EXISTS,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+  ): Promise<KycResultDto> {
+    // const institutions = await this.mapleradService.getAllInstitutions(); //825 ( Pay)
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
       let ninResponse: NinLookupResponse | undefined;
       let bvnResponse: BvnLookupResponse | undefined;
 
@@ -126,7 +136,7 @@ export class KycService {
         firstName: ninResponse?.entity?.first_name ?? kydataDto.firstName,
         middleName: kydataDto?.middleName,
         lastName: ninResponse?.entity?.last_name ?? kydataDto.lastName,
-        dob: ninResponse?.entity.date_of_birth ?? kydataDto.dob,
+        dob: ninResponse?.entity?.date_of_birth ?? kydataDto.dob,
         idTypes: [IdTypeEnum.BVN, IdTypeEnum.NIN],
         houseNumber: kydataDto.houseNumber,
         streetName: kydataDto.streetName,
@@ -136,12 +146,94 @@ export class KycService {
         provider: KycProviderEnum.DOJAH,
       };
 
-      const kycRecord = this.kycRepo.create(userKycData);
+      // Create KycEntity with queryRunner.manager
+      const kycRecord = queryRunner.manager.create(KycEntity, userKycData);
+      const savedKycRecord = await queryRunner.manager.save(kycRecord);
 
-      await this.kycRepo.save(kycRecord);
+      // Update user tier also via queryRunner.manager
+      await this.updateUserTierWithManager(
+        queryRunner.manager,
+        user.id,
+        TierEnum.BASIC,
+      );
 
-      await this.userService.updateUserTier(user.id, TierEnum.BASIC);
+      // Use updated user data from the main service, outside transaction
       const updatedUser = await this.userService.findOneById(user.id);
+
+      // Format dob string for mapleRad
+      const dobParts = kydataDto.dob.split('-');
+      const formattedDob = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
+      const country = kydataDto.country?.toUpperCase() || 'NG';
+
+      const mapleRadCustomerInfo = {
+        first_name: savedKycRecord.firstName,
+        last_name: savedKycRecord.lastName,
+        email: savedKycRecord.user.email,
+        country,
+        identification_number: kydataDto.bvn,
+        dob: formattedDob,
+        phone: {
+          phone_country_code: kydataDto.phone.phone_country_code,
+          phone_number: kydataDto.phone.phone_number,
+        },
+        identity: {
+          type: userKycData.idTypes[1],
+          image: 'https://example.com/image',
+          number: kydataDto.nin,
+          country,
+        },
+        address: {
+          street: kydataDto.streetName,
+          street2: null,
+          city: kydataDto.city,
+          state: kydataDto.state,
+          country,
+          postal_code: kydataDto.postal_code,
+        },
+      };
+
+      const enrolledCustomerResponse =
+        await this.mapleradService.enrollCustomer(mapleRadCustomerInfo);
+
+      const enrolledCustomer = enrolledCustomerResponse.data;
+      const bankingNetwork = queryRunner.manager.create(BankingNetworkEntity, {
+        external_customer_id: enrolledCustomer.id,
+        first_name: enrolledCustomer.first_name,
+        last_name: enrolledCustomer.last_name,
+        email: enrolledCustomer.email,
+        country: enrolledCustomer.country,
+        status: enrolledCustomer.status,
+        tier: enrolledCustomer.tier,
+        external_created_at: enrolledCustomer.created_at,
+        external_updated_at: enrolledCustomer.updated_at,
+        provider: BankingNetworkProviderEnum.MAPLERAD,
+        user,
+      });
+
+      await queryRunner.manager.save(bankingNetwork);
+
+      const createAccountResponse =
+        await this.mapleradService.createBankingAccount({
+          customer_id: enrolledCustomer.id,
+          currency: 'NGN',
+          preferred_bank:
+            this.configService.getRaw('NODE_ENV') !== ENV_PRODUCTION
+              ? ''
+              : '824',
+        });
+
+      const bankAccountInfo = queryRunner.manager.create(BankAccountEntity, {
+        user,
+        bankName: createAccountResponse.data.bank_name,
+        accountName: createAccountResponse.data.account_name,
+        accountNumber: createAccountResponse.data.account_number,
+        iban: createAccountResponse.data.account_number,
+        external_createdAt: createAccountResponse.data.created_at,
+      });
+
+      await queryRunner.manager.save(bankAccountInfo);
+
+      await queryRunner.commitTransaction();
 
       const { nextTier, currentTier } = formatUserWithTiers(updatedUser);
 
@@ -151,8 +243,25 @@ export class KycService {
         { excludeExtraneousValues: true },
       );
     } catch (error) {
-      console.log(error);
+      await queryRunner.rollbackTransaction();
+      console.error('Transaction rollback due to:', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
+  }
+
+  async updateUserTierWithManager(
+    manager: EntityManager,
+    userId: string,
+    tier: TierEnum,
+  ): Promise<void> {
+    await manager.update(UserEntity, { id: userId }, { tier });
+  }
+
+  cleanDateString(dateStr: string): string {
+    // Extract up to milliseconds (.xxx)
+    return dateStr.replace(/(\.\d{3})\d+Z$/, '$1Z');
   }
 
   async lookupNIN(nin: number): Promise<NinLookupResponse> {

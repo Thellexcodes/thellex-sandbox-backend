@@ -14,10 +14,7 @@ import { responseHandler } from '@/utils/helpers';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
 import { BasicKycCheckerGuard } from '@/middleware/guards/basic-kyc-checker.guard';
 import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
-import {
-  CreateWithdrawalResponseDto,
-  IFiatToCryptoQuoteSummaryResponseDto,
-} from './dto/payment.dto';
+import { CreateWithdrawalResponseDto } from './dto/payment.dto';
 import { VersionedController001 } from '../controller/base.controller';
 import { FiatEnum } from '@/config/settings';
 import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
@@ -25,6 +22,7 @@ import { SuperAdminGuard } from '@/middleware/guards/super-admin.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
 import { CheckPolicies } from '../auth/decorators/check-policy.decorator';
 import { CanManageCompany } from '../auth/policies/company-admin.policy';
+import { IFiatToCryptoQuoteSummaryResponseDto } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 
 ApiTags('Payments');
 @VersionedController001('payments')

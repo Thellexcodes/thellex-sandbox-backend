@@ -16,7 +16,10 @@ import { v4 as uuidV4 } from 'uuid';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { PaymentPartnerEnum } from '@/models/payments.types';
 import { walletConfig } from '@/utils/tokenChains';
-import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
+import {
+  FiatCryptoRampTransactionEntity,
+  IFiatToCryptoQuoteSummaryResponseDto,
+} from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { formatUserWithTiers } from '@/utils/helpers';
@@ -44,7 +47,6 @@ import {
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
-import { IFiatToCryptoQuoteSummaryResponseDto } from './dto/payment.dto';
 import { ConfigService } from '@/config/config.service';
 import { PaymentErrorEnum } from '@/models/payment-error.enum';
 
@@ -52,7 +54,6 @@ import { PaymentErrorEnum } from '@/models/payment-error.enum';
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
-  private NODE_ENV = this.configService.getNodeEnv();
 
   constructor(
     private readonly qwalletService: QwalletService,
@@ -193,7 +194,7 @@ export class PaymentsService {
   async handleFiatToCryptoOffRamp(
     user: UserEntity,
     dto: FiatToCryptoOnRampRequestDto,
-  ): Promise<IFiatToCryptoQuoteSummaryResponseDto | any> {
+  ): Promise<IFiatToCryptoQuoteSummaryResponseDto> {
     try {
       // Fetch fiat rate from cache
       const fiatRate = await this.ycService.getRateFromCache(
@@ -347,7 +348,7 @@ export class PaymentsService {
         accountHolder: yellowCardResponse.bankInfo.accountName,
       };
       newTxn.recipientInfo = {
-        destnationAddress: dto.destinationAddress,
+        destinationAddress: dto.destinationAddress,
         network: dto.network,
         assetCode: dto.assetCode,
       };
@@ -565,7 +566,7 @@ export class PaymentsService {
       networkName: yellowCardResponse.destination.networkName,
     };
     newTxn.recipientInfo = {
-      destnationAddress: networkInfo.treasuryAddress,
+      destinationAddress: networkInfo.treasuryAddress,
       sourceAddress: dto.sourceAddress,
       network: dto.network,
       assetCode: dto.assetCode,
@@ -608,13 +609,13 @@ export class PaymentsService {
       const { recipientInfo, grossCrypto, userId, user } = params;
 
       const [cwallet, qwallet] = await Promise.all([
-        this.cwalletService.lookupSubWallet(recipientInfo.destnationAddress),
-        this.qwalletService.lookupSubWallet(recipientInfo.destnationAddress),
+        this.cwalletService.lookupSubWallet(recipientInfo.destinationAddress),
+        this.qwalletService.lookupSubWallet(recipientInfo.destinationAddress),
       ]);
 
       if (!cwallet && !qwallet) {
         this.logger.warn(
-          `❗ No wallet found for address ${recipientInfo.destnationAddress} - skipping payout.`,
+          `❗ No wallet found for address ${recipientInfo.destinationAddress} - skipping payout.`,
         );
         return;
       }
@@ -622,7 +623,7 @@ export class PaymentsService {
       //[x] check balance of treasurer
 
       const tx = await this.ethersService.transferToken({
-        to: recipientInfo.destnationAddress,
+        to: recipientInfo.destinationAddress,
         amount: grossCrypto.toString(),
         assetCode: recipientInfo.assetCode,
         chain: recipientInfo.network,
@@ -650,7 +651,7 @@ export class PaymentsService {
         blockchainTxId: tx.txHash,
         walletId,
         sourceAddress: tx.sourceAddress,
-        destinationAddress: recipientInfo.destnationAddress,
+        destinationAddress: recipientInfo.destinationAddress,
         paymentNetwork: recipientInfo.network,
         user,
         paymentStatus: PaymentStatus.Accepted,

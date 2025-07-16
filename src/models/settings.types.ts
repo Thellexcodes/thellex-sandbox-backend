@@ -73,6 +73,10 @@ export type ApiConfig = {
     SECRET_KEY: string;
     PAYMENT_API: string;
   };
+  MPR: {
+    PUBLIC_KEY: string;
+    SECRET_KEY: string;
+  };
   ALCHEMY_API: string;
   KYC_ENCRYPTION_KEY: string;
   IPINFO_TOKEN: string;
@@ -85,66 +89,6 @@ export type Env =
   | 'staging'
   | 'qa'
   | 'production';
-
-// Server
-export const serverPortMap = getEnvVarMap('SERVER_PORT');
-export const serverIpMap = getEnvVarMap('SERVER_IP');
-
-// Postgres
-export const postgresHostMap = getEnvVarMap('POSTGRES_HOST');
-export const postgresPortMap = getEnvVarMap('POSTGRES_PORT');
-export const postgresUserMap = getEnvVarMap('POSTGRES_USER');
-export const postgresDbMap = getEnvVarMap('POSTGRES_DB');
-export const postgresPasswordMap = getEnvVarMap('POSTGRES_PASSWORD');
-
-// Auth & Client
-export const authJwtSecretMap = getEnvVarMap('AUTH_JWT_SECRET');
-export const clientRpIdMap = getEnvVarMap('CLIENT_RP_ID');
-export const clientUrlMap = getEnvVarMap('CLIENT_URL');
-
-// APIs
-export const alchemyApiMap = getEnvVarMap('ALCHEMY_API');
-export const kycEncryptionKeyMap = getEnvVarMap('KYC_ENCRYPTION_KEY');
-
-//Yellow card
-export const ycPaymentApiMap = getEnvVarMap('YC_PAYMENT_API');
-export const ycSecretKeyMap = getEnvVarMap('YC_SECRET_KEY');
-export const ycPublicKeyMap = getEnvVarMap('YC_PUBLIC_KEY');
-
-// Qwallet
-export const qwalletApiMap = getEnvVarMap('QWALLET_API');
-export const qwalletSecretMap = getEnvVarMap('QWALLET_SECRET_KEY');
-
-// CWallet
-export const cwalletApiKeyMap = getEnvVarMap('CWALLET_API_KEY');
-export const cwalletEntitySecretMap = getEnvVarMap('CWALLET_ENTITY_SECRET');
-export const cwalletEntityPublicKeyMap = getEnvVarMap(
-  'CWALLET_ENTITY_PUBLIC_KEY',
-);
-export const cwalletEntityCypherTextMap = getEnvVarMap(
-  'CWALLET_ENTITY_CYPHER_TEXT',
-);
-
-// Blockchain
-export const ethereumRpcUrlMap = getEnvVarMap('ETHEREUM_RPC_URL');
-export const baseRpcUrlMap = getEnvVarMap('BASE_RPC_URL');
-export const stellarRpcEndpointMap = getEnvVarMap('STELLAR_RPC_ENDPOINT');
-export const tronRpcUrlMap = getEnvVarMap('TRON_FULL_NODE');
-export const bscRpcUrlMap = getEnvVarMap('BSC_RPC_URL');
-export const maticPolRpcUrlMap = getEnvVarMap('MATIC_POL_RPC_URL');
-
-// Email
-export const emailUserMap = getEnvVarMap('EMAIL_USER');
-export const emailAppPasswordMap = getEnvVarMap('EMAIL_APP_PASSWORD');
-export const emailAppNameMap = getEnvVarMap('EMAIL_APPLICATION_NAME');
-
-//Dojah
-export const dojahApiMap = getEnvVarMap('DOJAH_KYC_API');
-export const dojahAppIdMap = getEnvVarMap('DOJAH_APP_ID');
-export const dojahPublicKeyMap = getEnvVarMap('DOJAH_AUTH_PUBLIC_KEY');
-
-// Other
-export const ipinfoTokenMap = getEnvVarMap('IPINFO_TOKEN');
 
 export function getEnvVarMap(prefix: string): Record<Env, string> {
   const upperPrefix = prefix.toUpperCase();

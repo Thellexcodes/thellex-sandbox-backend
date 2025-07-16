@@ -19,6 +19,7 @@ import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { ENV_PRODUCTION } from '@/models/settings.types';
 import { FiatCryptoRampTransactionEntity } from './entities/fiat-crypto-ramp-transaction.entity';
+import { BankingNetworkEntity } from './entities/banking/banking-network.entity';
 
 export const typeOrmConfig = async (
   configService: ConfigService,
@@ -46,6 +47,7 @@ export const typeOrmConfig = async (
       NotificationEntity,
       PayoutSettingEntity,
       CardManagementEntity,
+      BankingNetworkEntity,
       CwalletProfilesEntity,
       TransactionHistoryEntity,
       AuthVerificationCodesEntity,

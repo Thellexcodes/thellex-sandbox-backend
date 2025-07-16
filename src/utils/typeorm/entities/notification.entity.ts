@@ -70,10 +70,8 @@ export class NotificationEntity extends BaseEntity {
   })
   kind: NotificationKindEnum;
 
-  @Expose()
-  @ApiPropertyOptional()
   @Column({ name: 'wallet_id', type: 'varchar', nullable: true })
-  walletID?: string | null;
+  walletID: string | null;
 
   @Expose()
   @Column({ name: 'transaction_type' })

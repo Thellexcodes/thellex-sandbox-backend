@@ -29,6 +29,8 @@ import { NotificationsService } from './notifications/notifications.service';
 import { NotificationsGateway } from './notifications/notifications.gateway';
 import { TronService } from '@/utils/services/tron.service';
 import { ConfigService } from '@/config/config.service';
+import { MapleradService } from './payments/maplerad.service';
+import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
 
 @Global()
 @Module({
@@ -43,6 +45,7 @@ import { ConfigService } from '@/config/config.service';
       BankAccountEntity,
       UserSettingEntity,
       NotificationEntity,
+      BankingNetworkEntity,
       QWalletProfileEntity,
       CwalletProfilesEntity,
       TransactionHistoryEntity,
@@ -66,6 +69,7 @@ import { ConfigService } from '@/config/config.service';
     NotificationsGateway,
     TronService,
     ConfigService,
+    MapleradService,
   ],
   exports: [
     EtherService,
@@ -80,6 +84,7 @@ import { ConfigService } from '@/config/config.service';
     NotificationsGateway,
     TronService,
     ConfigService,
+    MapleradService,
   ],
 })
 export class SharedModule {}

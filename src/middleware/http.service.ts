@@ -53,6 +53,20 @@ export class HttpService {
     return response.data;
   }
 
+  async patch<T = any>(
+    url: string,
+    data: any,
+    config?: AxiosRequestConfig,
+  ): Promise<T> {
+    const response = await this.request<T>({
+      method: 'PATCH',
+      url,
+      data,
+      ...config,
+    });
+    return response.data;
+  }
+
   async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.request<T>({
       method: 'DELETE',

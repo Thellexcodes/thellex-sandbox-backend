@@ -30,6 +30,7 @@ import { FiatCryptoRampTransactionEntity } from './fiat-crypto-ramp-transaction.
 import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.dto';
 import { TRANSACTION_POLICY } from '@/config/settings';
 import { RoleEnum } from '@/models/roles-actions.enum';
+import { BankingNetworkEntity } from './banking/banking-network.entity';
 
 @Index(['email'])
 @Entity({ name: 'users' })
@@ -196,6 +197,13 @@ export class UserEntity extends BaseEntity {
     cascade: true,
   })
   fiatCryptoRampTransactions: FiatCryptoRampTransactionEntity;
+
+  @Type(() => BankingNetworkEntity)
+  @OneToOne(() => BankingNetworkEntity, (t) => t.user, {
+    eager: true,
+    cascade: true,
+  })
+  bankingNetworks: BankingNetworkEntity;
 }
 
 @Exclude()

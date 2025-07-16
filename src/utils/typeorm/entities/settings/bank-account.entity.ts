@@ -43,6 +43,21 @@ export class BankAccountEntity extends BaseEntity {
   @ApiProperty({ description: 'Indicates if this is the primary bank account' })
   @Column({ name: 'is_primary', type: 'boolean', default: false })
   isPrimary: boolean;
+
+  @Column()
+  external_createdAt: Date;
+
+  @Column({ type: 'boolean', default: false })
+  require_consent: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  consent_url: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  reference: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  eur: string;
 }
 
 @Exclude()
