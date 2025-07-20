@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
+  BASIS_POINTS_DIVISOR,
   BlockchainNetworkSettings,
   DIRECT_SETTLEMENT_THRESHOLD,
   FiatEnum,
@@ -19,6 +20,8 @@ import { walletConfig } from '@/utils/tokenChains';
 import {
   FiatCryptoRampTransactionEntity,
   IFiatToCryptoQuoteSummaryResponseDto,
+  IRatesDto,
+  IRatesResponseDto,
 } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -77,10 +80,9 @@ export class PaymentsService {
   async handleRates(
     fiatCode: FiatEnum | undefined,
     user: any,
-    amount: number, // The amount user wants to convert or transact
-  ): Promise<{ rates: any; expiresAt; netFiat; netCrypto } | null | any> {
+    amount: number,
+  ): Promise<IRatesResponseDto | null> {
     try {
-      // Get cached rates for the fiatCode (can be fiat or crypto)
       const cached = await this.ycService.getRateFromCache(fiatCode);
 
       if (
@@ -90,40 +92,31 @@ export class PaymentsService {
       ) {
         return null;
       }
-      // Format user with tiers, to get fee info
+
       const userPlain = formatUserWithTiers(user);
-      // Helper to format a single rate object
 
-      const formatRate = (rate: IYellowCardRateDto) => ({
+      const formatRate = (rate: IYellowCardRateDto): IRatesDto => ({
         fiatCode: rate.code,
-        rate: rate.buy,
+        rate: {
+          buy: rate.buy,
+          sell: rate.sell,
+          fee: userPlain.currentTier.txnFee.withdrawal.feePercentage,
+          feeDivisor: BASIS_POINTS_DIVISOR,
+        },
       });
-      // Format rates array or single object accordingly
-      const ratesFormatted = Array.isArray(cached.rate)
-        ? cached.rate.map(formatRate)
-        : formatRate(cached.rate);
-      // Use the first rate for calculations (or adapt as needed)
-      // const firstRate = Array.isArray(cached.rate)
-      //   ? cached.rate[0]
-      //   : cached.rate;
-      // Calculate net fiat amount after fees (assuming your function returns a value)
-      // const netFiat = await calculateNetFiatAmount(
-      //   amount,
-      //   userPlain.currentTier.txnFee.withdrawal.feePercentage,
-      //   firstRate.buy,
-      // );
-      // // Calculate net crypto amount after fees
-      // const netCrypto = await calculateNetCryptoAmount(
-      //   amount,
-      //   userPlain.currentTier.txnFee.withdrawal.feePercentage,
-      //   firstRate.buy,
-      // );
 
-      return {
-        rates: ratesFormatted,
-        fee: userPlain.currentTier.txnFee.withdrawal.feePercentage,
+      const formattedRates: IRatesDto[] = Array.isArray(cached.rate)
+        ? cached.rate.map(formatRate)
+        : [formatRate(cached.rate)];
+
+      const result = {
+        rates: formattedRates,
         expiresAt: cached.expiresAt,
       };
+
+      return plainToInstance(IRatesResponseDto, result, {
+        excludeExtraneousValues: true,
+      });
     } catch (err) {
       console.error('Error in handleRates:', err);
       return null;

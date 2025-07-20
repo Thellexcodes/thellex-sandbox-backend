@@ -216,3 +216,5 @@ export const TRANSACTION_POLICY: TransactionPolicyDto = {
   fiatToFiatDepositRequiresKyc: true,
   fiatToFiatWithdrawalRequiresKyc: true,
 };
+
+export const BASIS_POINTS_DIVISOR = 100;

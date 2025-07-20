@@ -281,43 +281,82 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   expiresAt: Date;
 }
 
-export class Rates {
+export class IRateDto {
   @ApiProperty({
-    description: 'Fiat currency code, e.g. USD, EUR',
-    example: 'NGN',
-  })
-  @Expose()
-  fiatCode: string;
-
-  @ApiProperty({
-    description: 'Exchange rate for the fiat currency',
+    description:
+      'Rate at which fiat is bought from the user (e.g., converting fiat to crypto)',
     example: 1615,
   })
   @Expose()
-  rate: number;
-}
+  buy: number;
 
-export class IRatesResponseDto {
   @ApiProperty({
-    description: 'Exchange rate details',
-    type: Rates,
-    example: {
-      fiatCode: 'NGN',
-      rate: 1615,
-    },
+    description:
+      'Rate at which fiat is sold to the user (e.g., converting crypto to fiat)',
+    example: 1580,
   })
   @Expose()
-  rates: Rates;
+  sell: number;
 
   @ApiProperty({
-    description: 'Fee applied on the fiat to crypto conversion',
+    description: 'Fee (in fiat) applied to the conversion process',
     example: 200,
   })
   @Expose()
   fee: number;
 
   @ApiProperty({
-    description: 'Timestamp (ISO 8601 string) when rates expire',
+    description:
+      'Divisor used to calculate fee percentage (e.g., 100 to get percentage)',
+    example: 100,
+  })
+  @Expose()
+  feeDivisor: number;
+}
+
+export class IRatesDto {
+  @ApiProperty({
+    description: 'Fiat currency code (ISO 4217 format), e.g., USD, EUR, NGN',
+    example: 'NGN',
+  })
+  @Expose()
+  fiatCode: string;
+
+  @ApiProperty({
+    description: 'Buy/sell rates for the specified fiat currency',
+    type: () => IRateDto,
+    example: {
+      buy: 1615,
+      sell: 1580,
+      fee: 200,
+    },
+  })
+  @Expose()
+  @Type(() => IRateDto)
+  rate: IRateDto;
+}
+
+export class IRatesResponseDto {
+  @ApiProperty({
+    description: 'Exchange rates for one or more fiat currencies',
+    type: [IRatesDto],
+    example: [
+      {
+        fiatCode: 'NGN',
+        rate: {
+          buy: 1615,
+          sell: 1580,
+          fee: 200,
+        },
+      },
+    ],
+  })
+  @Expose()
+  @Type(() => IRatesDto)
+  rates: IRatesDto[];
+
+  @ApiProperty({
+    description: 'Expiration timestamp of the exchange rate in ISO 8601 format',
     example: '2025-07-19T15:05:35.840Z',
   })
   @Expose()

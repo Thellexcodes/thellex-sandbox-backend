@@ -74,7 +74,6 @@ export class PaymentsController {
     type: IFiatToCryptoQuoteSummaryResponseDto,
   })
   @ApiOperation({ summary: 'Initiate fiat-to-crypto onramp transaction' })
-  // FiatToCryptoOnRampRequestDto
   async initiateFiatToCryptoOnRamp(
     @Body() dto: FiatToCryptoOnRampRequestDto,
     @Req() req: CustomRequest,
@@ -96,17 +95,19 @@ export class PaymentsController {
     description: 'Fiat-to-crypto onramp request created successfully',
     type: IFiatToCryptoQuoteSummaryResponseDto,
   })
+  // @Body() dto: RequestCryptoOffRampPaymentDto,
   async requestOffRampFiatPayment(
-    @Body() dto: RequestCryptoOffRampPaymentDto,
+    @Body() dto: any,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    const user = req.user;
-    const response = await this.paymentService.handleCryptotoFiatOffRamp(
-      user,
-      dto,
-    );
-    responseHandler(response, res, req);
+    console.log(dto);
+    // const user = req.user;
+    // const response = await this.paymentService.handleCryptotoFiatOffRamp(
+    //   user,
+    //   dto,
+    // );
+    // responseHandler(response, res, req);
   }
 
   @Get('rates/:fiatCode?')
