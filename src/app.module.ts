@@ -2,7 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/users/user.module';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { jwtConfigurations } from './config/jwt.config';
@@ -34,6 +34,7 @@ import { CwalletModule } from './modules/wallets/cwallet/cwallet.module';
 import { AuthEntity } from './utils/typeorm/entities/auth.entity';
 import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.module';
 import { typeOrmConfig } from './utils/typeorm/typeOrm.config';
+import { ConfigService } from './config/config.service';
 
 @Module({
   imports: [
@@ -44,11 +45,9 @@ import { typeOrmConfig } from './utils/typeorm/typeOrm.config';
       AuthVerificationCodesEntity,
     ]),
     TypeOrmModule.forRootAsync({
-      useFactory: async (configService: ConfigService) =>
-        await typeOrmConfig(configService),
-      inject: [ConfigService],
+      useFactory: async () => await typeOrmConfig(),
+      inject: [],
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (): Promise<JwtModuleOptions> => ({

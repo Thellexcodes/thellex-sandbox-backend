@@ -1,9 +1,11 @@
 // src/config/config.service.ts
 
+import { Injectable } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 
+@Injectable()
 export class ConfigService {
   private envConfig: { [key: string]: string };
   private envPrefix: string;

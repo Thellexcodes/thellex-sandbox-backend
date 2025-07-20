@@ -8,6 +8,7 @@ import {
 } from '@/models/maplerad.types';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 
 @Injectable()
 export class MapleradService {
@@ -16,17 +17,17 @@ export class MapleradService {
   constructor(private readonly httpService: HttpService) {}
 
   // Customers
-  async createCustomer(payload: Record<string, any>) {
-    const path = '/customers';
+  async getCustomer(customerId: string) {
+    const path = `/customers/${customerId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
-    return await this.httpService.post(url, payload, { headers });
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
+    return await this.httpService.get(url, { headers });
   }
 
   async upgradeCustomer(customerId: string, tier: 1 | 2) {
     const path = `/customers/${customerId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('PATCH', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.PATCH, path);
     return await this.httpService.patch(url, { tier }, { headers });
   }
 
@@ -35,16 +36,14 @@ export class MapleradService {
   ): Promise<IMRCreateCustomerResponseDto<IMRCustomerDataDto>> {
     const path = '/customers/enroll';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
-    // const response = await axios.post(url, payload, { headers });
-    // return response.data;
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async whitelistCustomer(customerId: string, whitelist: boolean) {
     const path = `/customers/whitelist`; // or /blacklist based on flag
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(
       url,
       { customer_id: customerId, whitelist },
@@ -52,38 +51,31 @@ export class MapleradService {
     );
   }
 
-  async getCustomer(customerId: string) {
-    const path = `/customers/${customerId}`;
-    const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
-    return await this.httpService.get(url, { headers });
-  }
-
   async getAllCustomers() {
     const path = '/customers';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
   async getCustomerAccounts(customerId: string) {
     const path = `/customers/${customerId}/accounts`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
   async getCustomerTransactions(customerId: string) {
     const path = `/customers/${customerId}/transactions`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
   async getCustomerVirtualAccounts(customerId: string) {
     const path = `/customers/${customerId}/virtual-accounts`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
@@ -93,14 +85,14 @@ export class MapleradService {
   ): Promise<IMRBankAccountResponseDto> {
     const path = '/collections/virtual-account';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async verifyBankingTransaction(transactionId: string): Promise<any> {
     const path = `/banking/transactions/${transactionId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
 
     const response = await axios.get(url, { headers });
     return response.data;
@@ -109,7 +101,7 @@ export class MapleradService {
   async sendMobileMoney(payload: Record<string, any>): Promise<any> {
     const path = '/banking/mobile-money';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
@@ -118,7 +110,7 @@ export class MapleradService {
   async createUsdAccount(payload: Record<string, any>): Promise<any> {
     const path = '/banking/usd/accounts';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
@@ -127,7 +119,7 @@ export class MapleradService {
   async checkAccountRequestStatus(requestId: string): Promise<any> {
     const path = `/accounts/request-status/${requestId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
 
     const response = await axios.get(url, { headers });
     return response.data;
@@ -136,7 +128,7 @@ export class MapleradService {
   async getVirtualAccountById(accountId: string): Promise<any> {
     const path = `/accounts/${accountId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
 
     const response = await axios.get(url, { headers });
     return response.data;
@@ -145,7 +137,7 @@ export class MapleradService {
   async createCounterparty(payload: Record<string, any>): Promise<any> {
     const path = '/counterparty';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
@@ -154,7 +146,7 @@ export class MapleradService {
   async getCounterparty(counterpartyId: string): Promise<any> {
     const path = `/counterparty/${counterpartyId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
 
     const response = await axios.get(url, { headers });
     return response.data;
@@ -163,7 +155,7 @@ export class MapleradService {
   async getSupportedRails(): Promise<any> {
     const path = '/rails/supported';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
 
     const response = await axios.get(url, { headers });
     return response.data;
@@ -172,17 +164,88 @@ export class MapleradService {
   async getCounterpartyByAccountId(accountId: string): Promise<any> {
     const path = `/counterparty/account/${accountId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
 
     const response = await axios.get(url, { headers });
     return response.data;
+  }
+
+  // Bills
+
+  // Transfers
+  async localTransferAfrica(dto: CreateFiatWithdrawPaymentDto) {
+    const path = `/transfers`;
+    const url = `${this.baseUrl}${path}`;
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
+
+    const response = await axios.get(url, { headers });
+    return response.data;
+  }
+
+  async usTransfer(data, apiKey) {
+    try {
+      const response = await axios.post(
+        'https://api.example.com/transfer/us',
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        'US Transfer Error:',
+        error.response?.data || error.message,
+      );
+      throw error;
+    }
+  }
+
+  async getTransfers(apiKey) {
+    try {
+      const response = await axios.get('https://api.example.com/transfers', {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        'Get Transfers Error:',
+        error.response?.data || error.message,
+      );
+      throw error;
+    }
+  }
+
+  async verifyTransfer(identifier, apiKey) {
+    try {
+      const response = await axios.get(
+        `https://api.example.com/transfers/verify/${identifier}`,
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        'Verify Transfer Error:',
+        error.response?.data || error.message,
+      );
+      throw error;
+    }
   }
 
   // Virtual Account
   async createVirtualAccount(customerId: string, currency: string = 'NGN') {
     const path = '/collections/virtual-account';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(
       url,
       { customer_id: customerId, currency },
@@ -194,21 +257,21 @@ export class MapleradService {
   async createCard(payload: Record<string, any>) {
     const path = '/issuing/card';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async createBusinessCard(payload: Record<string, any>) {
     const path = '/issuing/business-card';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async fundCard(cardId: string, amount: number, currency: string = 'USD') {
     const path = '/issuing/fund';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(
       url,
       { card_id: cardId, amount, currency },
@@ -219,7 +282,7 @@ export class MapleradService {
   async withdrawFromCard(cardId: string, amount: number) {
     const path = '/issuing/withdraw';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(
       url,
       { card_id: cardId, amount },
@@ -230,35 +293,35 @@ export class MapleradService {
   async getAllCards() {
     const path = '/issuing/cards';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
   async getCard(cardId: string) {
     const path = `/issuing/cards/${cardId}`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
   async freezeCard(cardId: string) {
     const path = `/issuing/cards/${cardId}/freeze`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('PATCH', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.PATCH, path);
     return await this.httpService.patch(url, {}, { headers });
   }
 
   async unfreezeCard(cardId: string) {
     const path = `/issuing/cards/${cardId}/unfreeze`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('PATCH', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.PATCH, path);
     return await this.httpService.patch(url, {}, { headers });
   }
 
   async getCardTransactions(cardId: string) {
     const path = `/issuing/cards/${cardId}/transactions`;
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
@@ -266,28 +329,28 @@ export class MapleradService {
   async getBillers() {
     const path = '/bills/billers';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
   async buyAirtime(payload: Record<string, any>) {
     const path = '/bills/airtime';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async buyData(payload: Record<string, any>) {
     const path = '/bills/data';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async buyElectricity(payload: Record<string, any>) {
     const path = '/bills/electricity';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
@@ -295,25 +358,25 @@ export class MapleradService {
   async generateFXQuote(payload: Record<string, any>) {
     const path = '/fx/quote';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async exchangeCurrency(payload: Record<string, any>) {
     const path = '/fx/exchange';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
     return await this.httpService.post(url, payload, { headers });
   }
 
   async getFXHistory() {
     const path = '/fx/history';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
     return await this.httpService.get(url, { headers });
   }
 
-  private generateAuthHeaders(method: string, path: string) {
+  private generateAuthHeaders(method: RequestMethodsEnum, path: string) {
     return {
       Authorization: `Bearer ${getAppConfig().MPR.SECRET_KEY}`,
       'Content-Type': 'application/json',
@@ -327,7 +390,7 @@ export class MapleradService {
   async getAllInstitutions(): Promise<IMRInstitutionResponseDto> {
     const path = '/institutions?country=NG';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('GET', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
 
     const response = await axios.get(url, { headers });
     return response.data?.data;
@@ -336,7 +399,7 @@ export class MapleradService {
   async fetchBankDetails(payload: { identifier: string }): Promise<any> {
     const path = '/institutions/details';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
@@ -348,7 +411,7 @@ export class MapleradService {
   }): Promise<any> {
     const path = '/institutions/resolve';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
@@ -362,7 +425,7 @@ export class MapleradService {
   }): Promise<any> {
     const path = '/simulations/wallet/credit';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
@@ -377,7 +440,7 @@ export class MapleradService {
   }): Promise<any> {
     const path = '/simulations/transactions/card';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
@@ -392,9 +455,19 @@ export class MapleradService {
   }): Promise<any> {
     const path = '/simulations/transactions/collection';
     const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders('POST', path);
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
   }
+}
+
+export enum RequestMethodsEnum {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+  OPTIONS = 'OPTIONS',
+  HEAD = 'HEAD',
 }

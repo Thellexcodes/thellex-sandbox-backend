@@ -2,7 +2,6 @@ import { getAppConfig, getEnv } from '@/constants/env';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
-import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
@@ -21,9 +20,7 @@ import { ENV_PRODUCTION } from '@/models/settings.types';
 import { FiatCryptoRampTransactionEntity } from './entities/fiat-crypto-ramp-transaction.entity';
 import { BankingNetworkEntity } from './entities/banking/banking-network.entity';
 
-export const typeOrmConfig = async (
-  configService: ConfigService,
-): Promise<TypeOrmModuleOptions> => {
+export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
   const isProd = getEnv() === ENV_PRODUCTION;
 
   return {

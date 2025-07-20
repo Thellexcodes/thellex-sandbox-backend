@@ -1,7 +1,7 @@
 import {
   CountryEnum,
   SupportedBlockchainTypeEnum,
-  SupportedFiatCurrency,
+  SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
 import { ApiProperty } from '@nestjs/swagger';
@@ -52,13 +52,13 @@ export class RequestCryptoOffRampPaymentDto {
   // ===== Fiat & Payment Preferences =====
 
   @ApiProperty({
-    example: SupportedFiatCurrency.NGN,
-    enum: SupportedFiatCurrency,
+    example: SupportedFiatCurrencyEnum.NGN,
+    enum: SupportedFiatCurrencyEnum,
     description: 'Fiat currency to receive',
   })
-  @IsEnum(SupportedFiatCurrency)
+  @IsEnum(SupportedFiatCurrencyEnum)
   @IsNotEmpty()
-  fiatCode: SupportedFiatCurrency;
+  fiatCode: SupportedFiatCurrencyEnum;
 
   @ApiProperty({
     description: '2-letter ISO country code (e.g., ng, gh)',

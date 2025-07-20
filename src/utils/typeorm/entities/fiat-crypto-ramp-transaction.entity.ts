@@ -7,7 +7,7 @@ import {
   PaymentStatus,
   TransactionTypeEnum,
 } from '@/models/payment.types';
-import { PaymentPartnerEnum } from '@/models/payments.types';
+import { PaymentPartnerEnum } from '@/models/payments.providers';
 import {
   CountryEnum,
   CustomerTypesEnum,
@@ -94,9 +94,13 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   phoneNumber: string;
 
   // ========== TRANSACTION META ==========
+  @Expose()
+  @ApiProperty()
   @Column({ type: 'enum', enum: TransactionTypeEnum, nullable: false })
   transactionType: TransactionTypeEnum;
 
+  @Expose()
+  @ApiProperty()
   @Column({
     type: 'enum',
     enum: PaymentStatus,
@@ -113,6 +117,11 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
   @Column({ default: false })
   sentCrypto: boolean;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ default: false })
+  seen: boolean;
 
   @Expose()
   @ApiProperty()
@@ -270,4 +279,47 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   @IsDate()
   @Type(() => Date)
   expiresAt: Date;
+}
+
+export class Rates {
+  @ApiProperty({
+    description: 'Fiat currency code, e.g. USD, EUR',
+    example: 'NGN',
+  })
+  @Expose()
+  fiatCode: string;
+
+  @ApiProperty({
+    description: 'Exchange rate for the fiat currency',
+    example: 1615,
+  })
+  @Expose()
+  rate: number;
+}
+
+export class IRatesResponseDto {
+  @ApiProperty({
+    description: 'Exchange rate details',
+    type: Rates,
+    example: {
+      fiatCode: 'NGN',
+      rate: 1615,
+    },
+  })
+  @Expose()
+  rates: Rates;
+
+  @ApiProperty({
+    description: 'Fee applied on the fiat to crypto conversion',
+    example: 200,
+  })
+  @Expose()
+  fee: number;
+
+  @ApiProperty({
+    description: 'Timestamp (ISO 8601 string) when rates expire',
+    example: '2025-07-19T15:05:35.840Z',
+  })
+  @Expose()
+  expiresAt: string;
 }

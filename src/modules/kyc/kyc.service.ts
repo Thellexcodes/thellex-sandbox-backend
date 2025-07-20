@@ -36,10 +36,7 @@ import { plainToInstance } from 'class-transformer';
 import { VerifyBvnDto } from './dto/validate-bvn.dto';
 import { MapleradService } from '../payments/maplerad.service';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
-import { BankingNetworkProviderEnum } from '@/config/settings';
-import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
 import { ConfigService } from '@/config/config.service';
-import { ENV_PRODUCTION } from '@/models/settings.types';
 
 //TODO: Handle errors with enum
 //[x]: Move the Dojah services out
@@ -148,7 +145,7 @@ export class KycService {
 
       // Create KycEntity with queryRunner.manager
       const kycRecord = queryRunner.manager.create(KycEntity, userKycData);
-      const savedKycRecord = await queryRunner.manager.save(kycRecord);
+      await queryRunner.manager.save(kycRecord);
 
       // Update user tier also via queryRunner.manager
       await this.updateUserTierWithManager(
@@ -161,77 +158,78 @@ export class KycService {
       const updatedUser = await this.userService.findOneById(user.id);
 
       // Format dob string for mapleRad
-      const dobParts = kydataDto.dob.split('-');
-      const formattedDob = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
-      const country = kydataDto.country?.toUpperCase() || 'NG';
+      // const dobParts = kydataDto.dob.split('-');
+      // const formattedDob = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
+      // const country = kydataDto.country?.toUpperCase() || 'NG';
 
-      const mapleRadCustomerInfo = {
-        first_name: savedKycRecord.firstName,
-        last_name: savedKycRecord.lastName,
-        email: savedKycRecord.user.email,
-        country,
-        identification_number: kydataDto.bvn,
-        dob: formattedDob,
-        phone: {
-          phone_country_code: kydataDto.phone.phone_country_code,
-          phone_number: kydataDto.phone.phone_number,
-        },
-        identity: {
-          type: userKycData.idTypes[1],
-          image: 'https://example.com/image',
-          number: kydataDto.nin,
-          country,
-        },
-        address: {
-          street: kydataDto.streetName,
-          street2: null,
-          city: kydataDto.city,
-          state: kydataDto.state,
-          country,
-          postal_code: kydataDto.postal_code,
-        },
-      };
+      // const mapleRadCustomerInfo = {
+      //   first_name: savedKycRecord.firstName,
+      //   last_name: savedKycRecord.lastName,
+      //   email: savedKycRecord.user.email,
+      //   country,
+      //   identification_number: kydataDto.bvn,
+      //   dob: formattedDob,
+      //   phone: {
+      //     phone_country_code: kydataDto.phone.phone_country_code,
+      //     phone_number: kydataDto.phone.phone_number,
+      //   },
+      //   identity: {
+      //     type: userKycData.idTypes[1],
+      //     image: 'https://example.com/image',
+      //     number: kydataDto.nin,
+      //     country,
+      //   },
+      //   address: {
+      //     street: kydataDto.streetName,
+      //     street2: null,
+      //     city: kydataDto.city,
+      //     state: kydataDto.state,
+      //     country,
+      //     postal_code: kydataDto.postal_code,
+      //   },
+      // };
 
-      const enrolledCustomerResponse =
-        await this.mapleradService.enrollCustomer(mapleRadCustomerInfo);
+      // const enrolledCustomerResponse =
+      //   await this.mapleradService.enrollCustomer(mapleRadCustomerInfo);
 
-      const enrolledCustomer = enrolledCustomerResponse.data;
-      const bankingNetwork = queryRunner.manager.create(BankingNetworkEntity, {
-        external_customer_id: enrolledCustomer.id,
-        first_name: enrolledCustomer.first_name,
-        last_name: enrolledCustomer.last_name,
-        email: enrolledCustomer.email,
-        country: enrolledCustomer.country,
-        status: enrolledCustomer.status,
-        tier: enrolledCustomer.tier,
-        external_created_at: enrolledCustomer.created_at,
-        external_updated_at: enrolledCustomer.updated_at,
-        provider: BankingNetworkProviderEnum.MAPLERAD,
-        user,
-      });
+      // const enrolledCustomer = enrolledCustomerResponse.data;
+      // const bankingNetwork = queryRunner.manager.create(BankingNetworkEntity, {
+      //   external_customer_id: enrolledCustomer.id,
+      //   first_name: enrolledCustomer.first_name,
+      //   last_name: enrolledCustomer.last_name,
+      //   email: enrolledCustomer.email,
+      //   country: enrolledCustomer.country,
+      //   status: enrolledCustomer.status,
+      //   tier: enrolledCustomer.tier,
+      //   external_created_at: enrolledCustomer.created_at,
+      //   external_updated_at: enrolledCustomer.updated_at,
+      //   provider: BankingNetworkProviderEnum.MAPLERAD,
+      //   user,
+      // });
 
-      await queryRunner.manager.save(bankingNetwork);
+      // await queryRunner.manager.save(bankingNetwork);
 
-      const createAccountResponse =
-        await this.mapleradService.createBankingAccount({
-          customer_id: enrolledCustomer.id,
-          currency: 'NGN',
-          preferred_bank:
-            this.configService.getRaw('NODE_ENV') !== ENV_PRODUCTION
-              ? ''
-              : '824',
-        });
+      // const createAccountResponse =
+      //   await this.mapleradService.createBankingAccount({
+      //     customer_id: enrolledCustomer.id,
+      //     currency: 'NGN',
+      //     preferred_bank:
+      //       this.configService.getRaw('NODE_ENV') !== ENV_PRODUCTION
+      //         ? ''
+      //         : '824',
+      //   });
 
-      const bankAccountInfo = queryRunner.manager.create(BankAccountEntity, {
-        user,
-        bankName: createAccountResponse.data.bank_name,
-        accountName: createAccountResponse.data.account_name,
-        accountNumber: createAccountResponse.data.account_number,
-        iban: createAccountResponse.data.account_number,
-        external_createdAt: createAccountResponse.data.created_at,
-      });
+      // const bankAccountInfo = queryRunner.manager.create(BankAccountEntity, {
+      //   user,
+      //   external_customer_id: createAccountResponse.data.id,
+      //   bankName: createAccountResponse.data.bank_name,
+      //   accountName: createAccountResponse.data.account_name,
+      //   accountNumber: createAccountResponse.data.account_number,
+      //   iban: createAccountResponse.data.account_number,
+      //   external_createdAt: createAccountResponse.data.created_at,
+      // });
 
-      await queryRunner.manager.save(bankAccountInfo);
+      // await queryRunner.manager.save(bankAccountInfo);
 
       await queryRunner.commitTransaction();
 
@@ -239,13 +237,7 @@ export class KycService {
 
       return plainToInstance(
         KycResultDto,
-        {
-          isVerified: true,
-          currentTier,
-          nextTier,
-          bankingNetwork,
-          bankAccountInfo,
-        },
+        { isVerified: true, currentTier, nextTier },
         { excludeExtraneousValues: true },
       );
     } catch (error) {

@@ -31,10 +31,12 @@ import { TronService } from '@/utils/services/tron.service';
 import { ConfigService } from '@/config/config.service';
 import { MapleradService } from './payments/maplerad.service';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
+import { CustomConfigModule } from '@/config/config.module';
 
 @Global()
 @Module({
   imports: [
+    CustomConfigModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       AuthEntity,

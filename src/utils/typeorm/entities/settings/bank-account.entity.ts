@@ -14,6 +14,9 @@ export class BankAccountEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
+  @Column()
+  external_customer_id: string;
+
   @Expose()
   @ApiProperty({ description: 'Bank name' })
   @Column({ name: 'bank_name', type: 'varchar', length: 100 })

@@ -22,7 +22,11 @@ import { SuperAdminGuard } from '@/middleware/guards/super-admin.guard';
 import { PoliciesGuard } from '../auth/guards/policies.guard';
 import { CheckPolicies } from '../auth/decorators/check-policy.decorator';
 import { CanManageCompany } from '../auth/policies/company-admin.policy';
-import { IFiatToCryptoQuoteSummaryResponseDto } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
+import {
+  IFiatToCryptoQuoteSummaryResponseDto,
+  IRatesResponseDto,
+} from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
+import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 
 ApiTags('Payments');
 @VersionedController001('payments')
@@ -30,11 +34,28 @@ ApiTags('Payments');
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
 
-  @Post('withdraw-crypto')
+  @Post('withdraw-fiat')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
   @ApiOkResponse({ type: CreateWithdrawalResponseDto })
   async withdrawPayment(
+    @Body() withdrawPaymentDto: CreateFiatWithdrawPaymentDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
+    const response = await this.paymentService.handleWithdrawFiatPayment(
+      user,
+      withdrawPaymentDto,
+    );
+    responseHandler(response, res, req);
+  }
+
+  @Post('withdraw-crypto')
+  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @ApiOperation({ summary: 'Withdrawal of crypto payment' })
+  @ApiOkResponse({ type: CreateWithdrawalResponseDto })
+  async withdrawFiat(
     @Body() withdrawPaymentDto: CreateCryptoWithdrawPaymentDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
@@ -53,6 +74,7 @@ export class PaymentsController {
     type: IFiatToCryptoQuoteSummaryResponseDto,
   })
   @ApiOperation({ summary: 'Initiate fiat-to-crypto onramp transaction' })
+  // FiatToCryptoOnRampRequestDto
   async initiateFiatToCryptoOnRamp(
     @Body() dto: FiatToCryptoOnRampRequestDto,
     @Req() req: CustomRequest,
@@ -88,7 +110,7 @@ export class PaymentsController {
   }
 
   @Get('rates/:fiatCode?')
-  @ApiOkResponse({ type: IFiatToCryptoQuoteSummaryResponseDto })
+  @ApiOkResponse({ type: IRatesResponseDto })
   @UseGuards(AuthGuard, BasicKycCheckerGuard)
   async rates(
     @Query('fiatCode') fiatCode: FiatEnum,

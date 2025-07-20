@@ -39,7 +39,7 @@ export class CardManagementController {
   ) {
     const userData = req.user;
 
-    await this.stellarService.submitTx(createCardManagementDto.signedTx);
+    // await this.stellarService.submitTx(createCardManagementDto.signedTx);
 
     const result = await this.cardManagementService.create({
       ...createCardManagementDto,

@@ -122,7 +122,7 @@ export enum CustomerTypesEnum {
   Institution = 'institution',
 }
 
-export enum SupportedFiatCurrency {
+export enum SupportedFiatCurrencyEnum {
   USD = 'usd',
   // EUR = 'EUR',
   // GBP = 'GBP',

@@ -14,7 +14,7 @@ import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { YellowCardService } from './yellowcard.service';
 import { v4 as uuidV4 } from 'uuid';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { PaymentPartnerEnum } from '@/models/payments.types';
+import { PaymentPartnerEnum } from '@/models/payments.providers';
 import { walletConfig } from '@/utils/tokenChains';
 import {
   FiatCryptoRampTransactionEntity,
@@ -22,7 +22,7 @@ import {
 } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { formatUserWithTiers } from '@/utils/helpers';
+import { formatUserWithTiers, toUTCDate } from '@/utils/helpers';
 import {
   calculateNetCryptoAmount,
   calculateNetFiatAmount,
@@ -49,6 +49,9 @@ import {
 } from '@/models/notifications.enum';
 import { ConfigService } from '@/config/config.service';
 import { PaymentErrorEnum } from '@/models/payment-error.enum';
+import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
+import { MapleradService } from './maplerad.service';
+import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 
 //[x] properly throw error using enum
 @Injectable()
@@ -67,13 +70,15 @@ export class PaymentsService {
     private readonly txnHistoryRepo: Repository<TransactionHistoryEntity>,
     private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
+    private readonly mapleradService: MapleradService,
+    private readonly transactionHistoryServie: TransactionHistoryService,
   ) {}
 
   async handleRates(
     fiatCode: FiatEnum | undefined,
     user: any,
     amount: number, // The amount user wants to convert or transact
-  ): Promise<{ rates: any; expiresAt; netFiat; netCrypto } | null> {
+  ): Promise<{ rates: any; expiresAt; netFiat; netCrypto } | null | any> {
     try {
       // Get cached rates for the fiatCode (can be fiat or crypto)
       const cached = await this.ycService.getRateFromCache(fiatCode);
@@ -85,45 +90,39 @@ export class PaymentsService {
       ) {
         return null;
       }
-
       // Format user with tiers, to get fee info
       const userPlain = formatUserWithTiers(user);
-
       // Helper to format a single rate object
+
       const formatRate = (rate: IYellowCardRateDto) => ({
         fiatCode: rate.code,
         rate: rate.buy,
       });
-
       // Format rates array or single object accordingly
       const ratesFormatted = Array.isArray(cached.rate)
         ? cached.rate.map(formatRate)
         : formatRate(cached.rate);
-
       // Use the first rate for calculations (or adapt as needed)
-      const firstRate = Array.isArray(cached.rate)
-        ? cached.rate[0]
-        : cached.rate;
-
+      // const firstRate = Array.isArray(cached.rate)
+      //   ? cached.rate[0]
+      //   : cached.rate;
       // Calculate net fiat amount after fees (assuming your function returns a value)
-      const netFiat = await calculateNetFiatAmount(
-        amount,
-        userPlain.currentTier.txnFee.withdrawal.feePercentage,
-        firstRate.buy,
-      );
-
-      // Calculate net crypto amount after fees
-      const netCrypto = await calculateNetCryptoAmount(
-        amount,
-        userPlain.currentTier.txnFee.withdrawal.feePercentage,
-        firstRate.buy,
-      );
+      // const netFiat = await calculateNetFiatAmount(
+      //   amount,
+      //   userPlain.currentTier.txnFee.withdrawal.feePercentage,
+      //   firstRate.buy,
+      // );
+      // // Calculate net crypto amount after fees
+      // const netCrypto = await calculateNetCryptoAmount(
+      //   amount,
+      //   userPlain.currentTier.txnFee.withdrawal.feePercentage,
+      //   firstRate.buy,
+      // );
 
       return {
         rates: ratesFormatted,
+        fee: userPlain.currentTier.txnFee.withdrawal.feePercentage,
         expiresAt: cached.expiresAt,
-        netFiat,
-        netCrypto,
       };
     } catch (err) {
       console.error('Error in handleRates:', err);
@@ -191,18 +190,32 @@ export class PaymentsService {
     }
   }
 
+  async handleWithdrawFiatPayment(
+    user: UserEntity,
+    withdrawCryptoPaymentDto: CreateFiatWithdrawPaymentDto,
+  ): Promise<TransactionHistoryEntity | any> {
+    // const localTransferResponse = this.mapleradService.localTransferAfrica(
+    //   withdrawCryptoPaymentDto,
+    // );
+    //[x] creat transaction history
+    //[x] store withdraw record in fiat dto
+    //[x] alert users
+  }
+
   async handleFiatToCryptoOffRamp(
     user: UserEntity,
     dto: FiatToCryptoOnRampRequestDto,
-  ): Promise<IFiatToCryptoQuoteSummaryResponseDto> {
+  ): Promise<IFiatToCryptoQuoteSummaryResponseDto | any> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const fiatRate = await this.ycService.getRateFromCache(
-        dto.fiatCode.toUpperCase(),
-      );
+      const fiatCode = dto.fiatCode.toUpperCase();
+      const countryCode = dto.country.toUpperCase();
+
+      // Get fiat rate
+      const fiatRate = await this.ycService.getRateFromCache(fiatCode);
       if (!fiatRate?.rate) {
         throw new CustomHttpException(
           PaymentErrorEnum.RATES_NOT_YET_ACTIVE,
@@ -210,29 +223,36 @@ export class PaymentsService {
         );
       }
 
+      // Wallet lookup
       const [cwallet, qwallet] = await Promise.all([
         this.cwalletService.lookupSubWallet(dto.destinationAddress),
         this.qwalletService.lookupSubWallet(dto.destinationAddress),
       ]);
 
-      if (!cwallet && !qwallet)
+      if (!cwallet && !qwallet) {
         throw new CustomHttpException(
           WalletErrorEnum.MISSING_WALLET_ID,
           HttpStatus.NOT_FOUND,
         );
+      }
 
+      const wallet = cwallet ?? qwallet;
+
+      // Format user
       const userPlain = formatUserWithTiers(user);
-      const { channels } = await this.ycService.getChannels();
-      const { networks } = await this.ycService.getNetworks();
 
-      const activeChannels = channels.filter(
+      // Get channels and networks
+      const [channelData, networkData] = await Promise.all([
+        this.ycService.getChannels(),
+        this.ycService.getNetworks(),
+      ]);
+
+      const activeChannels = channelData.channels.filter(
         (c) => c.status === 'active' && c.rampType === 'deposit',
       );
 
-      const supportedCountries = Array.from(
-        new Set(activeChannels.map((c) => c.country)),
-      );
-      if (!supportedCountries.includes(dto.country.toUpperCase())) {
+      const supportedCountries = new Set(activeChannels.map((c) => c.country));
+      if (!supportedCountries.has(countryCode)) {
         throw new CustomHttpException(
           PaymentErrorEnum.COUNTRY_NOT_ACTIVE,
           HttpStatus.FORBIDDEN,
@@ -240,11 +260,13 @@ export class PaymentsService {
       }
 
       const channel = activeChannels[0];
-      const supportedNetworks = networks.filter(
+
+      const supportedNetworks = networkData.networks.filter(
         (n) => n.status === 'active' && n.channelIds.includes(channel.id),
       );
       const network = supportedNetworks[0];
 
+      // Format KYC
       const userKycData = { ...userPlain.kyc };
       if (userKycData.dob) {
         const [year, month, day] = userKycData.dob.split('-');
@@ -253,7 +275,7 @@ export class PaymentsService {
 
       const recipient = {
         name: `${userKycData.firstName} ${userKycData.lastName}`,
-        country: dto.country.toUpperCase(),
+        country: countryCode,
         phone: userKycData.phone ?? '+2341111111111',
         address: userKycData.address,
         dob: userKycData.dob,
@@ -266,6 +288,7 @@ export class PaymentsService {
 
       const sequenceId = uuidV4();
 
+      // Submit to YellowCard
       const yellowCardResponse = await this.ycService.submitCollectionRequest({
         sequenceId,
         channelId: channel.id,
@@ -280,6 +303,7 @@ export class PaymentsService {
         customerUID: userPlain.uid.toString(),
       });
 
+      // Calculate values
       const {
         netFiatAmount,
         feeAmount,
@@ -296,49 +320,81 @@ export class PaymentsService {
         (feeAmount / fiatRate.rate.buy).toFixed(2),
       );
 
-      const newTxn = new FiatCryptoRampTransactionEntity();
-      newTxn.user = user;
-      newTxn.userId = user.id;
-      newTxn.sequenceId = sequenceId;
-      newTxn.channelId = channel.id;
-      newTxn.transactionType = TransactionTypeEnum.FIAT_TO_CRYPTO_WITHDRAWAL;
-      newTxn.paymentStatus = PaymentStatus.Processing;
-      newTxn.providerReference = yellowCardResponse.reference;
-      newTxn.providerTransactionId = yellowCardResponse.id;
-      newTxn.providerDepositId = yellowCardResponse.depositId;
-      newTxn.customerType = userPlain.kyc.customerType;
-      newTxn.paymentReason = dto.paymentReason;
-
-      newTxn.userAmount = dto.userAmount;
-      newTxn.netFiatAmount = netFiatAmount;
-      newTxn.netCryptoAmount = netCryptoAmount;
-      newTxn.feeLabel = feeLabel;
-      newTxn.serviceFeeAmountLocal = feeAmount;
-      newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd;
-
-      newTxn.rate = fiatRate.rate.buy;
-      newTxn.grossCrypto = grossCrypto;
-
-      newTxn.fiatCode = dto.fiatCode;
-      newTxn.currency = channel.currency;
-      newTxn.country = dto.country;
-
-      newTxn.paymentProvider = PaymentPartnerEnum.YELLOWCARD;
-      newTxn.bankInfo = {
-        bankName: yellowCardResponse.bankInfo.name,
-        accountNumber: yellowCardResponse.bankInfo.accountNumber,
-        accountHolder: yellowCardResponse.bankInfo.accountName,
-      };
-      newTxn.recipientInfo = {
-        destinationAddress: dto.destinationAddress,
-        network: dto.network,
-        assetCode: dto.assetCode,
-      };
-      newTxn.expiresAt = yellowCardResponse.expiresAt;
+      // Create transaction entity
+      const newTxn = queryRunner.manager.create(
+        FiatCryptoRampTransactionEntity,
+        {
+          user,
+          userId: user.id,
+          sequenceId,
+          channelId: channel.id,
+          transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+          paymentStatus: PaymentStatus.Processing,
+          providerReference: yellowCardResponse.reference,
+          providerTransactionId: yellowCardResponse.id,
+          providerDepositId: yellowCardResponse.depositId,
+          customerType: userPlain.kyc.customerType,
+          paymentReason: dto.paymentReason,
+          userAmount: dto.userAmount,
+          netFiatAmount,
+          netCryptoAmount,
+          feeLabel,
+          serviceFeeAmountLocal: feeAmount,
+          serviceFeeAmountUSD: serviceFeeAmountUsd,
+          rate: fiatRate.rate.buy,
+          grossCrypto,
+          fiatCode: dto.fiatCode,
+          currency: channel.currency,
+          country: dto.country,
+          paymentProvider: PaymentPartnerEnum.YELLOWCARD,
+          bankInfo: {
+            bankName: yellowCardResponse.bankInfo.name,
+            accountNumber: yellowCardResponse.bankInfo.accountNumber,
+            accountHolder: yellowCardResponse.bankInfo.accountName,
+          },
+          recipientInfo: {
+            destinationAddress: dto.destinationAddress,
+            network: dto.network,
+            assetCode: dto.assetCode,
+          },
+          expiresAt: yellowCardResponse.expiresAt,
+        },
+      );
 
       const savedTxn = await queryRunner.manager.save(newTxn);
+
+      // Save transaction history
+      const txnData: TransactionHistoryDto = {
+        event: YCPaymentEventEnum.COLLECTION_CREATED,
+        transactionId: sequenceId,
+        transactionDirection: TransactionDirectionEnum.INBOUND,
+        assetCode: dto.assetCode,
+        amount: netCryptoAmount.toString(),
+        fee: serviceFeeAmountUsd.toString(),
+        blockchainTxId: '',
+        walletId: wallet.id,
+        sourceAddress: '',
+        destinationAddress: dto.destinationAddress,
+        paymentNetwork: dto.network,
+        user,
+        paymentStatus: PaymentStatus.Processing,
+        transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+      };
+
+      const { user: u, ...transaction } =
+        await this.transactionHistoryServie.create(txnData, user);
+
+      // Notify user
+      await this.notificationGateway.emitNotificationToUser({
+        token: user.alertID,
+        event: YCPaymentEventEnum.COLLECTION_CREATED,
+        status: NotificationStatusEnum.SUCCESS,
+        data: { transaction },
+      });
+
       await queryRunner.commitTransaction();
 
+      // Return summary DTO
       return plainToInstance(
         IFiatToCryptoQuoteSummaryResponseDto,
         {
@@ -353,12 +409,19 @@ export class PaymentsService {
           bankInfo: savedTxn.bankInfo,
           recipientInfo: savedTxn.recipientInfo,
           expiresAt: yellowCardResponse.expiresAt,
+          seen: false,
+          paymentStatus: transaction.paymentStatus,
+          transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+          createdAt: savedTxn.createdAt,
         },
         { excludeExtraneousValues: true },
       );
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('handleFiatToCryptoOffRamp failed', error);
+      this.logger.error(
+        'handleFiatToCryptoOffRamp failed:',
+        error.stack ?? error,
+      );
       throw error;
     } finally {
       await queryRunner.release();
@@ -394,6 +457,8 @@ export class PaymentsService {
         WalletErrorEnum.MISSING_WALLET_ID,
         HttpStatus.NOT_FOUND,
       );
+
+    const wallet = cwallet ?? qwallet;
 
     const sourceAddress =
       cwallet?.networkMetadata[dto.network].address ??
@@ -559,6 +624,27 @@ export class PaymentsService {
 
     await this.fiatCryptoRampTransactionRepo.save(newTxn);
 
+    // Save transaction history
+    const txnData: TransactionHistoryDto = {
+      event: YCPaymentEventEnum.COLLECTION_CREATED,
+      transactionId: sequenceId,
+      transactionDirection: TransactionDirectionEnum.INBOUND,
+      assetCode: dto.assetCode,
+      amount: netCryptoAmount.toString(),
+      fee: serviceFeeAmountUsd.toString(),
+      blockchainTxId: '',
+      walletId: wallet.id,
+      sourceAddress: dto.sourceAddress,
+      destinationAddress: networkInfo.treasuryAddress,
+      paymentNetwork: dto.network,
+      user,
+      paymentStatus: PaymentStatus.Processing,
+      transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+    };
+
+    const { user: u, ...transaction } =
+      await this.transactionHistoryServie.create(txnData, user);
+
     return plainToInstance(
       IFiatToCryptoQuoteSummaryResponseDto,
       {
@@ -573,6 +659,10 @@ export class PaymentsService {
         expiresAt: yellowCardResponse.expiresAt,
         bankInfo: dto.bankInfo,
         recipientInfo: newTxn.recipientInfo,
+        seen: false,
+        paymentStatus: transaction.paymentStatus,
+        transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+        createdAt: transaction.createdAt,
       },
       { excludeExtraneousValues: true },
     );

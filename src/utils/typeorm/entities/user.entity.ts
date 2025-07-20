@@ -190,13 +190,13 @@ export class UserEntity extends BaseEntity {
   taxSettings: TaxSettingEntity;
 
   @Expose()
-  @ApiProperty({ type: () => FiatCryptoRampTransactionEntity })
+  @ApiProperty({ type: () => [FiatCryptoRampTransactionEntity] })
   @Type(() => FiatCryptoRampTransactionEntity)
-  @OneToOne(() => FiatCryptoRampTransactionEntity, (t) => t.user, {
+  @OneToMany(() => FiatCryptoRampTransactionEntity, (t) => t.user, {
     eager: true,
     cascade: true,
   })
-  fiatCryptoRampTransactions: FiatCryptoRampTransactionEntity;
+  fiatCryptoRampTransactions: FiatCryptoRampTransactionEntity[];
 
   @Type(() => BankingNetworkEntity)
   @OneToOne(() => BankingNetworkEntity, (t) => t.user, {

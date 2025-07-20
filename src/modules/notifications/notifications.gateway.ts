@@ -5,6 +5,7 @@ import {
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
+import { YCPaymentEventEnum } from '@/models/payment.types';
 import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
 import {
@@ -41,24 +42,30 @@ export class NotificationsGateway {
     token,
     event,
     status,
-    data,
+    data = {},
   }: {
     token: string;
-    event: NotificationEventEnum | WalletWebhookEventEnum;
+    event: NotificationEventEnum | WalletWebhookEventEnum | YCPaymentEventEnum;
     status: NotificationStatusEnum;
     data?: AnyObject;
-  }): Promise<string> {
+  }): Promise<string | any> {
+    const stringifiedData: Record<string, string> = {
+      event: event.toString(),
+      status: status.toString(),
+    };
+
+    for (const [key, value] of Object.entries(data)) {
+      stringifiedData[key] =
+        typeof value === 'object' ? JSON.stringify(value) : String(value);
+    }
+
     const message: admin.messaging.Message = {
       token,
       notification: {
         title: this.getTitle(event, status),
         body: this.getMessage(event, status),
       },
-      data: {
-        ...data,
-        event,
-        status,
-      },
+      data: stringifiedData,
     };
 
     try {
@@ -72,7 +79,7 @@ export class NotificationsGateway {
   }
 
   private getTitle(
-    event: NotificationEventEnum | WalletWebhookEventEnum,
+    event: NotificationEventEnum | WalletWebhookEventEnum | YCPaymentEventEnum,
     status: NotificationStatusEnum,
   ): string {
     const statusTitleMap: Record<NotificationStatusEnum, string> = {
@@ -84,7 +91,7 @@ export class NotificationsGateway {
   }
 
   private getMessage(
-    event: NotificationEventEnum | WalletWebhookEventEnum,
+    event: NotificationEventEnum | WalletWebhookEventEnum | YCPaymentEventEnum,
     status: NotificationStatusEnum,
   ): string {
     const key = `${event}_${status}`;
@@ -92,7 +99,7 @@ export class NotificationsGateway {
   }
 
   private formatEvent(
-    event: NotificationEventEnum | WalletWebhookEventEnum,
+    event: NotificationEventEnum | WalletWebhookEventEnum | YCPaymentEventEnum,
   ): string {
     return event
       .split('_')

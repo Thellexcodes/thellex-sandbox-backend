@@ -10,7 +10,7 @@ import {
   Validate,
   IsOptional,
 } from 'class-validator';
-import { Expose, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
   CountryEnum,
   FiatEnum,
@@ -19,6 +19,7 @@ import {
 } from '@/config/settings';
 import { ethers } from 'ethers';
 import { PaymentReasonEnum } from '@/models/payment.types';
+import { IsLowercaseEnum } from '@/validators/is-lowercase-enum.validator';
 
 @ValidatorConstraint({ name: 'IsEvmAddress', async: false })
 export class IsEvmAddressConstraint implements ValidatorConstraintInterface {
@@ -46,7 +47,12 @@ export class FiatToCryptoOnRampRequestDto {
     example: 'ngn',
     enum: FiatEnum,
   })
-  @IsEnum(FiatEnum)
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase() : value,
+  )
+  @IsLowercaseEnum(FiatEnum, {
+    message: 'fiatCode must be a valid ISO 4217 fiat code in lowercase',
+  })
   @IsNotEmpty()
   fiatCode: FiatEnum;
 
@@ -73,7 +79,14 @@ export class FiatToCryptoOnRampRequestDto {
     description: 'Reason for the off-ramp payment',
     enum: PaymentReasonEnum,
   })
-  @IsEnum(PaymentReasonEnum)
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase() : value,
+  )
+  @IsLowercaseEnum(PaymentReasonEnum, {
+    message:
+      'paymentReason must be one of: ' +
+      Object.values(PaymentReasonEnum).join(', '),
+  })
   @IsNotEmpty()
   paymentReason: PaymentReasonEnum;
 
