@@ -32,6 +32,7 @@ export class CwalletHooksController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
+    console.log(payload);
     switch (payload.notificationType) {
       case CircleNotificationType.TransactionsInbound:
         await this.cwalletHooksService.handleDepositSuccessful(payload);

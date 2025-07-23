@@ -3,6 +3,8 @@ import { UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
+import { FiatEnum } from '@/config/settings';
+import { BankProvidersEnum } from '@/models/banks.types';
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccountEntity extends BaseEntity {
@@ -61,6 +63,13 @@ export class BankAccountEntity extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: true })
   eur: string;
+
+  @Column({
+    type: 'enum',
+    enum: BankProvidersEnum,
+    default: BankProvidersEnum.NONE,
+  })
+  provider: BankProvidersEnum;
 }
 
 @Exclude()

@@ -97,17 +97,16 @@ export class PaymentsController {
   })
   // @Body() dto: RequestCryptoOffRampPaymentDto,
   async requestOffRampFiatPayment(
-    @Body() dto: any,
+    @Body() dto: RequestCryptoOffRampPaymentDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    console.log(dto);
-    // const user = req.user;
-    // const response = await this.paymentService.handleCryptotoFiatOffRamp(
-    //   user,
-    //   dto,
-    // );
-    // responseHandler(response, res, req);
+    const user = req.user;
+    const response = await this.paymentService.handleCryptoToFiatOffRamp(
+      user,
+      dto,
+    );
+    responseHandler(response, res, req);
   }
 
   @Get('rates/:fiatCode?')
@@ -122,6 +121,19 @@ export class PaymentsController {
     const result = await this.paymentService.handleRates(fiatCode, user, 10);
     responseHandler(result, res, req);
   }
+
+  // @Get('supported-banks')
+  // @ApiOkResponse({ type: IRatesResponseDto })
+  // @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  // async rates(
+  //   @Query('fiatCode') fiatCode: FiatEnum,
+  //   @Req() req: CustomRequest,
+  //   @Res() res: CustomResponse,
+  // ) {
+  //   const user = req.user;
+  //   const result = await this.paymentService.handleRates(fiatCode, user, 10);
+  //   responseHandler(result, res, req);
+  // }
 
   @UseGuards(PoliciesGuard, SuperAdminGuard)
   @CheckPolicies(CanManageCompany)

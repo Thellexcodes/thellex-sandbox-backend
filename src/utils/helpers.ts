@@ -24,6 +24,7 @@ import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
 import { compareTwoStrings } from 'string-similarity';
 import { Injectable, PipeTransform } from '@nestjs/common';
+import { Bank, NigeriaBanks } from './nigeria-banks';
 
 //TODO: handle errors with enums
 
@@ -370,4 +371,64 @@ export class NormalizeEnumPipe implements PipeTransform {
 
     return value;
   }
+}
+
+// Calculate Levenshtein distance for string similarity
+function levenshteinDistance(a: string, b: string): number {
+  const lenA = a.length;
+  const lenB = b.length;
+
+  if (lenA === 0) return lenB;
+  if (lenB === 0) return lenA;
+
+  const matrix: number[][] = Array.from({ length: lenB + 1 }, (_, j) =>
+    Array.from({ length: lenA + 1 }, (_, i) => (j === 0 ? i : i === 0 ? j : 0)),
+  );
+
+  for (let j = 1; j <= lenB; j++) {
+    for (let i = 1; i <= lenA; i++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[j][i] = Math.min(
+        matrix[j][i - 1] + 1, // deletion
+        matrix[j - 1][i] + 1, // insertion
+        matrix[j - 1][i - 1] + cost, // substitution
+      );
+    }
+  }
+
+  return matrix[lenB][lenA];
+}
+
+// Calculate similarity percentage
+function similarityPercentage(a: string, b: string): number {
+  if (!a || !b) return 0;
+
+  const distance = levenshteinDistance(a.toLowerCase(), b.toLowerCase());
+  const maxLen = Math.max(a.length, b.length);
+  return maxLen === 0 ? 100 : ((maxLen - distance) / maxLen) * 100;
+}
+
+// Main fuzzy match function
+export function findBankByName(name: string): Bank | null {
+  if (!name || typeof name !== 'string') return null;
+
+  const cleanedName = name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+  const pattern = cleanedName.split(/\s+/).join('.*');
+  const regex = new RegExp(pattern, 'i');
+
+  const candidates = NigeriaBanks.filter((bank) => regex.test(bank.name));
+  if (candidates.length === 0) return null;
+
+  let bestMatch: Bank | null = null;
+  let highestSimilarity = 0;
+
+  for (const bank of candidates) {
+    const similarity = similarityPercentage(cleanedName, bank.name);
+    if (similarity >= 95 && similarity > highestSimilarity) {
+      bestMatch = bank;
+      highestSimilarity = similarity;
+    }
+  }
+
+  return bestMatch;
 }

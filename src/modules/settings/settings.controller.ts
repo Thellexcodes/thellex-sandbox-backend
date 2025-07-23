@@ -5,6 +5,7 @@ import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { CreateBankAccountDto } from './dto/payment-settings';
 import { responseHandler } from '@/utils/helpers';
 import { VersionedController001 } from '../controller/base.controller';
+import { YellowCardService } from '../payments/yellowcard.service';
 
 @VersionedController001('settings')
 export class SettingsController {
@@ -27,15 +28,16 @@ export class SettingsController {
   //   return this.settingsService.getuserIdBankAccountSettings(req.user.id);
   // }
 
-  @Post('bank-account')
+  @Post('bank-account/add')
   @UseGuards(AuthGuard)
-  addBankAccount(
+  async addBankAccount(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
-    @Body() dto: CreateBankAccountDto,
+    @Body() dto,
   ) {
     const userId = req.user.id;
-    const result = this.settingsService.addBankAccount(userId, dto);
+    const result = await this.settingsService.addBankAccount(userId, dto);
+    console.log(result);
     return responseHandler(result, res, req);
   }
 

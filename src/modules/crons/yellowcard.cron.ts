@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { YellowCardService } from '../payments/yellowcard.service';
 import { rateCache } from '@/utils/constants';
 import { EVERY_15_SECONDS_CRON } from '@/config/settings';
-import { v4 as uuidV4 } from 'uuid';
 
 @Injectable()
 export class YellowCardCron {
@@ -24,7 +23,7 @@ export class YellowCardCron {
           data: rates,
         });
 
-        // this.logger.log(`✅ Cached Yellow Card rates successfully`);
+        this.logger.log(`✅ Cached Yellow Card rates successfully`);
       } else {
         this.logger.warn(`⚠️ Yellow Card rates fetch returned no data`);
       }

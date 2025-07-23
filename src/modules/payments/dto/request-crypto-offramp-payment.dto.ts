@@ -1,11 +1,12 @@
 import {
   CountryEnum,
+  FiatEnum,
   SupportedBlockchainTypeEnum,
   SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
@@ -18,6 +19,7 @@ import {
 import { IsEvmAddressConstraint } from './fiat-to-crypto-request.dto';
 import { BankInfoRequestDto } from './bank-info-request.dto';
 import { PaymentReasonEnum } from '@/models/payment.types';
+import { IsLowercaseEnum } from '@/validators/is-lowercase-enum.validator';
 
 export class RequestCryptoOffRampPaymentDto {
   // ===== Crypto Asset Details =====
@@ -55,6 +57,13 @@ export class RequestCryptoOffRampPaymentDto {
     example: SupportedFiatCurrencyEnum.NGN,
     enum: SupportedFiatCurrencyEnum,
     description: 'Fiat currency to receive',
+  })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase() : value,
+  )
+  @IsLowercaseEnum(FiatEnum, {
+    message:
+      'paymentReason must be one of: ' + Object.values(FiatEnum).join(', '),
   })
   @IsEnum(SupportedFiatCurrencyEnum)
   @IsNotEmpty()

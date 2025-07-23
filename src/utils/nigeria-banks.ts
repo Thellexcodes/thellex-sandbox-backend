@@ -1,4 +1,12 @@
-const AfricaBanks = [
+export interface Bank {
+  name: string;
+  slug: string;
+  code: string;
+  ussd: string;
+  logo: string;
+}
+
+export const NigeriaBanks = [
   {
     name: '3Line Card Management Limited',
     slug: '',
