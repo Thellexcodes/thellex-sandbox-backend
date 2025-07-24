@@ -19,7 +19,7 @@ export class YcCreatePaymentHookDto {
 
   @Transform(({ value }) => normalizeEnumValue(value, PaymentStatus))
   @IsEnum(PaymentStatus)
-  status: string;
+  status: PaymentStatus;
 
   @IsString()
   apiKey: string;

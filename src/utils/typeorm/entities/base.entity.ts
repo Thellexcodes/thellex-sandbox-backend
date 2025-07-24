@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 export abstract class BaseEntity extends TypeOrmBase {
+  @Expose()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

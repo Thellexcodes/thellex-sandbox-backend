@@ -73,4 +73,23 @@ export class TransactionHistoryService {
 
     return this.transactionRepo.save(existing);
   }
+
+  async updateTransactionByTransactionId(
+    transactionId: string,
+    updates: Partial<TransactionHistoryEntity>,
+  ): Promise<TransactionHistoryEntity> {
+    const transaction =
+      await this.findTransactionByTransactionId(transactionId);
+
+    if (!transaction) {
+      throw new CustomHttpException(
+        'Transaction not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    Object.assign(transaction, updates);
+
+    return this.transactionRepo.save(transaction);
+  }
 }

@@ -243,15 +243,17 @@ export class YellowCardService {
   async updateWebhook(body: object) {
     const method = 'PUT';
     const path = '/webhooks';
-    const url = `${this.ycUrl}/webhooks`;
+    const url = `${this.ycUrl}${path}`;
     const headers = this.generateAuthHeaders(method, path, body);
     return this.httpService.put(url, body, { headers });
   }
 
-  async removeWebhook(webhookId: string) {
+  async removeWebhook(body: AnyObject) {
     const method = 'DELETE';
-    const path = `/webhooks/${webhookId}`;
-    const url = `${this.ycUrl}/webhooks/${webhookId}`;
+    const path = '/business/webhooks';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
   async listWebhooks() {
@@ -345,14 +347,15 @@ export class YellowCardService {
 
     return {
       expiresAt: cached.expiresAt,
-      rate: rate || {
-        buy: 1531.5428,
-        sell: 1632.5428,
-        locale: 'NG',
-        rateId: 'nigerian-naira',
-        code: 'NGN',
-        updatedAt: '2025-07-22T16:34:34.773Z',
-      },
+      rate: rate,
+      // || {
+      //   buy: 1531.5428,
+      //   sell: 1632.5428,
+      //   locale: 'NG',
+      //   rateId: 'nigerian-naira',
+      //   code: 'NGN',
+      //   updatedAt: '2025-07-22T16:34:34.773Z',
+      // },
     };
   }
 

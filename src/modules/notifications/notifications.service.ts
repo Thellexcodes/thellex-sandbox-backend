@@ -29,7 +29,7 @@ export class NotificationsService {
 
   async markAsConsumed(id: string): Promise<INotificationConsumeResponseDto> {
     try {
-      const notification = await this.notificationRepo.findOneBy({ txnID: id });
+      const notification = await this.notificationRepo.findOneBy({ id });
 
       if (!notification) {
         throw new CustomHttpException(
@@ -45,13 +45,12 @@ export class NotificationsService {
         );
       }
 
-      await this.notificationRepo.update({ txnID: id }, { consumed: true });
+      await this.notificationRepo.update({ id }, { consumed: true });
       return plainToInstance(
         INotificationConsumeResponseDto,
         { id, consumed: true },
         { excludeExtraneousValues: true },
       );
-      // return { id, consumed: true };
     } catch (error) {
       console.error('Error consuming notification:', error);
 

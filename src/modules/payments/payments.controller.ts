@@ -135,8 +135,8 @@ export class PaymentsController {
   //   responseHandler(result, res, req);
   // }
 
-  @UseGuards(PoliciesGuard, SuperAdminGuard)
-  @CheckPolicies(CanManageCompany)
+  // @UseGuards(PoliciesGuard, SuperAdminGuard)
+  // @CheckPolicies(CanManageCompany)
   @Post('set-yc-hook')
   @UseGuards(AuthGuard)
   async setYcWebhookConfig(

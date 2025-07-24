@@ -142,5 +142,6 @@ export class TransactionHistoryEntity extends BaseEntity {
 
 @Exclude()
 export class ITransactionHistoryDto extends TransactionHistoryEntity {
+  @Expose() id: string;
   @Expose() createdAt: Date;
 }

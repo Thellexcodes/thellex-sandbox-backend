@@ -432,8 +432,6 @@ export class PaymentsService {
 
   // Crypto to fiat off ramp
   async handleCryptoToFiatOffRamp(user, dto) {
-    console.log(dto);
-
     try {
       const fiatRate = await this.ycService.getRateFromCache(
         dto.fiatCode.toUpperCase(),
@@ -510,12 +508,19 @@ export class PaymentsService {
       };
 
       const destination = {
-        accountName: dto.bankInfo.accountHolder,
-        accountNumber: dto.bankInfo.accountNumber,
+        accountName: 'Regina Phalenge',
+        accountNumber: '1111111111',
         accountType: 'bank',
-        networkId: network.id,
-        accountBank: network.code,
+        networkId: '5f1af11b-305f-4420-8fce-65ed2725a409',
       };
+
+      // const destination = {
+      //   accountName: dto.bankInfo.accountHolder,
+      //   accountNumber: dto.bankInfo.accountNumber,
+      //   accountType: 'bank',
+      //   networkId: network.id,
+      //   accountBank: network.code,
+      // };
 
       const { grossFiat, feeAmount, feeLabel, netFiatAmount, netCryptoAmount } =
         await calculateNetFiatAmount(
@@ -679,6 +684,13 @@ export class PaymentsService {
       const { user: u, ...transaction } =
         await this.transactionHistoryServie.create(txnData, user);
 
+      await this.notificationGateway.emitNotificationToUser({
+        token: user.alertID,
+        event: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+        status: NotificationStatusEnum.PROCESSING,
+        data: { transaction },
+      });
+
       return plainToInstance(
         IFiatToCryptoQuoteSummaryResponseDto,
         {
@@ -776,29 +788,29 @@ export class PaymentsService {
       //[x] any updates on params and then saved
       // await this.fiatCryptoRampTransactionRepo.save(params);
 
-      const notification = await this.notificationGateway.createNotification({
-        user: params.user,
-        title: '',
-        message: '',
-        data: {
-          amount: '',
-          assetCode: '',
-          txnID: '',
-          walletID: '',
-          transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
-        },
-      });
+      // const notification = await this.notificationGateway.createNotification({
+      //   user: params.user,
+      //   title: '',
+      //   message: '',
+      //   data: {
+      //     amount: '',
+      //     assetCode: '',
+      //     txnID: '',
+      //     walletID: '',
+      //     transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+      //   },
+      // });
 
-      this.notificationGateway.emitNotificationToUser({
-        token: params.user.alertID,
-        event: NotificationEventEnum.CRYPTO_TO_FIAT,
-        status: NotificationStatusEnum.SUCCESS,
-        data: {
-          transaction,
-          notification,
-        },
-      });
-      // this.logger.log(`✅ Crypto payout successful for user ${userId}`);
+      // this.notificationGateway.emitNotificationToUser({
+      //   token: params.user.alertID,
+      //   event: NotificationEventEnum.CRYPTO_TO_FIAT,
+      //   status: NotificationStatusEnum.SUCCESS,
+      //   data: {
+      //     transaction,
+      //     notification,
+      //   },
+      // });
+      // // this.logger.log(`✅ Crypto payout successful for user ${userId}`);
 
       return { success: true, txHash: tx.txHash };
     } catch (error) {
@@ -824,11 +836,10 @@ export class PaymentsService {
           HttpStatus.NOT_FOUND,
         );
       }
-      console.log({ id: params.providerTransactionId });
 
       //[x] check for bank records
       // const acceptResponse = await this.ycService.acceptPaymentRequest({
-      //   id: params.providerTransactionId,
+      //   id: 'd4159747-dbcb-5fd2-992a-5ea7a30f14a2',
       // });
 
       // console.log({ acceptResponse });
@@ -869,7 +880,7 @@ export class PaymentsService {
     }
   }
 
-  async updateTransactionBySequenceId(
+  async updateRampTransactionHistoryBySequenceId(
     sequenceId: string,
     updates: Partial<FiatCryptoRampTransactionEntity>,
   ): Promise<FiatCryptoRampTransactionEntity> {
@@ -895,8 +906,52 @@ export class PaymentsService {
 
   async handleActivateYcWebhook() {
     try {
-      // const webHooks = await this.ycService.listWebhooks();
-      // console.log({ webHooks });
+      const webHooks = await this.ycService.listWebhooks();
+      console.log(webHooks);
+      //       {
+      // [1]   webhooks: [
+      // [1]     {
+      // [1]       partnerId: 'c2119ce9-2ee6-4ba6-9b12-67af1dcba485',
+      // [1]       active: true,
+      // [1]       updatedAt: '2025-07-11T08:28:33.702Z',
+      // [1]       createdAt: '2025-07-11T08:28:33.702Z',
+      // [1]       url: 'https://goat-touched-mite.ngrok-free.app/api/yc-payments-hooks',
+      // [1]       id: 'b20ac825-8ddf-42e2-8914-01bc3a1b41e6',
+      // [1]       state: ''
+      // [1]     },
+      // [1]     {
+      // [1]       partnerId: 'c2119ce9-2ee6-4ba6-9b12-67af1dcba485',
+      // [1]       active: true,
+      // [1]       updatedAt: '2025-07-11T08:08:31.025Z',
+      // [1]       createdAt: '2025-07-11T08:08:31.025Z',
+      // [1]       url: 'https://goat-touched-mite.ngrok-free.app/api/payments-hooks',
+      // [1]       id: '86c4049a-1395-40fe-b4db-22ca19dbd243',
+      // [1]       state: ''
+      // [1]     },
+      // [1]     {
+      // [1]       partnerId: 'c2119ce9-2ee6-4ba6-9b12-67af1dcba485',
+      // [1]       active: true,
+      // [1]       updatedAt: '2025-06-20T09:51:49.447Z',
+      // [1]       createdAt: '2025-06-20T09:51:49.447Z',
+      // [1]       url: 'https://webhook.site/9df281f6-0cbd-4e60-a9ab-c01dfe16046a',
+      // [1]       id: 'ba1af894-b517-4a57-8364-f6c95cd06c72',
+      // [1]       state: ''
+      // [1]     },
+      // [1]     {
+      // [1]       partnerId: 'c2119ce9-2ee6-4ba6-9b12-67af1dcba485',
+      // [1]       active: true,
+      // [1]       updatedAt: '2025-07-11T08:06:14.505Z',
+      // [1]       createdAt: '2025-07-11T08:06:14.505Z',
+      // [1]       url: 'https://webhook.site/0f4205a4-00c8-40cc-809a-d3f4b63670a6',
+      // [1]       id: '5c56d43a-be5f-4130-bc72-13d5a812552f',
+      // [1]       state: ''
+      // [1]     }
+      // [1]   ]
+      // [1] }
+      // const response = await this.ycService.removeWebhook({
+      //   id: '5c56d43a-be5f-4130-bc72-13d5a812552f',
+      // });
+
       // const az = await this.ycService.createWebhook({
       //   active: true,
       //   url: 'https://goat-touched-mite.ngrok-free.app/api/yc-payments-hooks', //[x] upate payload later

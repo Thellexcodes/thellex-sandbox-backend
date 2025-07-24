@@ -20,6 +20,13 @@ import * as admin from 'firebase-admin';
 import * as serviceAccount from 'firebase/serviceAccountKey.json';
 import { LessThan, Repository } from 'typeorm';
 
+interface CreateNotificationInput {
+  user: UserEntity;
+  title: NotificationEventEnum | WalletWebhookEventEnum | YCPaymentEventEnum;
+  message: NotificationEventEnum | WalletWebhookEventEnum | YCPaymentEventEnum;
+  data: AnyObject;
+}
+
 @Injectable()
 export class NotificationsGateway {
   private readonly logger = new Logger(NotificationsGateway.name);
@@ -34,7 +41,7 @@ export class NotificationsGateway {
           serviceAccount as admin.ServiceAccount,
         ),
       });
-      this.logger.log('Firebase Admin initialized.');
+      this.logger.log('✅ Firebase Admin initialized.');
     }
   }
 
@@ -85,7 +92,7 @@ export class NotificationsGateway {
     const statusTitleMap: Record<NotificationStatusEnum, string> = {
       success: 'Success',
       failed: 'Failed',
-      pending: 'Pending',
+      processing: 'processing',
     };
     return `${statusTitleMap[status]}: ${this.formatEvent(event)}`;
   }
@@ -103,7 +110,7 @@ export class NotificationsGateway {
   ): string {
     return event
       .split('_')
-      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .map((word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   }
 
@@ -112,26 +119,21 @@ export class NotificationsGateway {
     title,
     message,
     data,
-  }: {
-    user: UserEntity;
-    title: string;
-    message: string;
-    data: Partial<
-      Pick<
-        NotificationEntity,
-        'amount' | 'assetCode' | 'txnID' | 'walletID' | 'transactionType'
-      >
-    >;
-  }): Promise<NotificationEntity> {
+  }: CreateNotificationInput): Promise<NotificationEntity> {
     try {
       const upperCurrency = data.assetCode?.toUpperCase() || '';
       const expiresAt = getUtcExpiryDateMonthsFromNow(3);
 
+      const formattedTitle = this.formatEvent(title);
+      const formattedMessage = `${this.formatEvent(message)} ${
+        data.amount || ''
+      } ${upperCurrency}`.trim();
+
       const notificationData: Partial<NotificationEntity> = {
         ...data,
         user,
-        title: title.replace(/_/g, ' '),
-        message: `${message} ${data.amount || ''} ${upperCurrency}`,
+        title: formattedTitle,
+        message: formattedMessage,
         expiresAt,
         consumed: false,
         assetCode: upperCurrency,
@@ -144,7 +146,7 @@ export class NotificationsGateway {
         excludeExtraneousValues: true,
       });
     } catch (error) {
-      this.logger.error('Failed to create notification', error);
+      this.logger.error('❌ Failed to create notification', error);
       throw new CustomHttpException(
         NotificationErrorEnum.CREATE_FAILED,
         HttpStatus.BAD_REQUEST,
@@ -179,25 +181,62 @@ export class NotificationsGateway {
   }
 
   private messages: Record<string, string> = {
-    fiat_to_crypto_success: 'Fiat to crypto conversion was successful.',
-    fiat_to_crypto_failed: 'Fiat to crypto conversion failed.',
-    fiat_to_crypto_pending: 'Fiat to crypto conversion is pending.',
+    // 🔐 Auth
+    login_success: 'Login successful.',
+    login_failed: 'Login attempt failed.',
 
-    crypto_to_fiat_success: 'Crypto to fiat conversion was successful.',
-    crypto_to_fiat_failed: 'Crypto to fiat conversion failed.',
-    crypto_to_fiat_pending: 'Crypto to fiat conversion is pending.',
+    // 👤 Account
+    account_updated_success: 'Your account has been updated.',
+    account_verified_success: 'Your account has been verified.',
+    account_suspended_success: 'Your account has been suspended.',
 
+    // 💳 Payments
+    payment_success: 'Your payment was successful.',
+    payment_failed: 'Your payment failed.',
+    payment_pending: 'Your payment is pending.',
+    payment_refunded: 'Your payment has been refunded.',
+
+    // 🔄 Conversions
+    fiat_to_crypto_deposit_success:
+      'Your fiat to crypto deposit was successful.',
+    crypto_to_fiat_withdrawal_success:
+      'Your crypto to fiat withdrawal was successful.',
+    fiat_to_fiat_deposit_success: 'Your fiat to fiat deposit was successful.',
+    fiat_to_fiat_withdrawal_success:
+      'Your fiat to fiat withdrawal was successful.',
+
+    // 🪙 Crypto Transactions
     crypto_deposit_success: 'You’ve successfully deposited crypto.',
     crypto_withdrawal_success: 'You’ve successfully withdrawn crypto.',
     crypto_withdrawal_failed: 'Your crypto withdrawal failed.',
 
-    login_success: 'Login successful.',
-    login_failed: 'Login attempt failed.',
+    // 🧾 Orders
+    order_created_success: 'Your order has been created.',
+    order_completed_success: 'Your order has been completed.',
+    order_cancelled_success: 'Your order has been cancelled.',
 
-    password_changed_success: 'Your password has been changed.',
-    account_updated_success: 'Your account has been updated.',
+    // 🧾 POS
+    pos_session_started_success: 'POS session has started.',
+    pos_session_ended_success: 'POS session has ended.',
+    pos_device_connected_success: 'POS device connected.',
+    pos_device_disconnected_success: 'POS device disconnected.',
 
+    // 📬 Communication
+    new_message_success: 'You have a new message.',
+    friend_request_success: 'You have received a new friend request.',
+
+    // ⚙️ System
     system_alert_success: 'There is an important system alert.',
     promotion_success: 'You have received a new promotion!',
+    wallet_created_success: 'Your wallet has been created.',
+    wallet_address_generated_success:
+      'A new wallet address has been generated.',
+    password_changed_success: 'Your password has been changed.',
+    two_factor_enabled_success: 'Two-factor authentication has been enabled.',
+    two_factor_disabled_success: 'Two-factor authentication has been disabled.',
+
+    // 🖥️ Devices
+    device_registered_success:
+      'A new device has been registered to your account.',
   };
 }
