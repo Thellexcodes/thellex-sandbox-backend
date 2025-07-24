@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   NAIRA_RATE,
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   TokenEnum,
   WalletProviderEnum,
@@ -51,7 +51,8 @@ export class WalletManagerService {
           for (const [networkKey, networkDetails] of Object.entries(
             providerConfig.networks,
           )) {
-            const network = networkKey.toLowerCase() as SupportedBlockchainType;
+            const network =
+              networkKey.toLowerCase() as SupportedBlockchainTypeEnum;
             const tokenSymbols = networkDetails.tokens;
 
             for (const token of tokenSymbols) {
@@ -136,6 +137,20 @@ export class WalletManagerService {
       const totalSum = validBalances.reduce((sum, value) => sum + value, 0);
       const totalInUsd = totalSum.toFixed(2);
 
+      // Filter out usdt from walletMap before returning
+      // const filteredWalletMap = Object.fromEntries(
+      //   Object.entries(walletMap).filter(([key]) => key !== 'usdt'),
+      // );
+
+      // return plainToInstance(
+      //   WalletBalanceSummaryResponseDto,
+      //   {
+      //     totalInUsd,
+      //     wallets: filteredWalletMap,
+      //   },
+      //   { excludeExtraneousValues: true },
+      // );
+
       return plainToInstance(
         WalletBalanceSummaryResponseDto,
         {
@@ -155,7 +170,7 @@ export class WalletManagerService {
 
   private async getQWalletBalance(
     token: TokenEnum,
-    network: SupportedBlockchainType,
+    network: SupportedBlockchainTypeEnum,
     qwalletId: string,
   ): Promise<number> {
     return this.getWalletTokenBalance({
@@ -168,7 +183,7 @@ export class WalletManagerService {
 
   private async getCWalletBalance(
     token: TokenEnum,
-    network: SupportedBlockchainType,
+    network: SupportedBlockchainTypeEnum,
     walletId: string,
   ): Promise<number> {
     return this.getWalletTokenBalance({
@@ -186,7 +201,7 @@ export class WalletManagerService {
     type,
   }: {
     token: TokenEnum;
-    network: SupportedBlockchainType;
+    network: SupportedBlockchainTypeEnum;
     walletId: string;
     type: WalletProviderEnum;
   }): Promise<number> {

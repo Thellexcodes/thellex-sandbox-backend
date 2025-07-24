@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { CwalletProfilesEntity } from './cwallet-profiles.entity';
 import {
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
@@ -114,7 +114,7 @@ export class CwalletsEntity extends BaseEntity {
     nullable: true,
   })
   networkMetadata: Record<
-    SupportedBlockchainType,
+    SupportedBlockchainTypeEnum,
     {
       address: string;
       tokenId?: string;

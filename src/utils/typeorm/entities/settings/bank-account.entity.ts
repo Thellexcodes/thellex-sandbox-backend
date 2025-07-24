@@ -2,7 +2,9 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
+import { FiatEnum } from '@/config/settings';
+import { BankProvidersEnum } from '@/models/banks.types';
 
 @Entity({ name: 'bank_accounts' })
 export class BankAccountEntity extends BaseEntity {
@@ -13,6 +15,9 @@ export class BankAccountEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
+
+  @Column()
+  external_customer_id: string;
 
   @Expose()
   @ApiProperty({ description: 'Bank name' })
@@ -43,6 +48,28 @@ export class BankAccountEntity extends BaseEntity {
   @ApiProperty({ description: 'Indicates if this is the primary bank account' })
   @Column({ name: 'is_primary', type: 'boolean', default: false })
   isPrimary: boolean;
+
+  @Column()
+  external_createdAt: Date;
+
+  @Column({ type: 'boolean', default: false })
+  require_consent: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  consent_url: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  reference: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  eur: string;
+
+  @Column({
+    type: 'enum',
+    enum: BankProvidersEnum,
+    default: BankProvidersEnum.NONE,
+  })
+  provider: BankProvidersEnum;
 }
 
 @Exclude()

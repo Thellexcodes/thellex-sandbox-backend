@@ -59,6 +59,10 @@ export enum WalletErrorEnum {
 
   // Generic fallback
   QWALLET_INTERNAL_ERROR = 'QWALLET_INTERNAL_ERROR',
+
+  // Wallet lookup errors
+  WALLET_NOT_FOUND = 'WALLET_NOT_FOUND',
+  MISSING_WALLET_ID = 'MISSING_WALLET_ID',
 }
 
 export enum WalletType {

@@ -13,8 +13,9 @@ export class CreateBankAccountDto {
   @IsString()
   bankName: string;
 
-  @ApiProperty({ example: 'John Doe' })
+  @ApiPropertyOptional({ example: 'John Doe' })
   @IsString()
+  @IsOptional()
   accountName: string;
 
   @ApiProperty({ example: '1234567890' })
@@ -35,6 +36,10 @@ export class CreateBankAccountDto {
   @IsOptional()
   @IsBoolean()
   isPrimary?: boolean;
+
+  @ApiProperty({ example: '123' })
+  @IsNumber()
+  bankCode: number;
 }
 
 export class UpdateBankAccountDto extends PartialType(CreateBankAccountDto) {
@@ -42,12 +47,6 @@ export class UpdateBankAccountDto extends PartialType(CreateBankAccountDto) {
   @IsOptional()
   @IsString()
   bankName?: string;
-
-  @ApiProperty({ example: '1234567890', required: false })
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  accountNumber?: string;
 
   @ApiProperty({ example: 'John Doe', required: false })
   @IsOptional()

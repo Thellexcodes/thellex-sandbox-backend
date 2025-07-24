@@ -1,4 +1,4 @@
-import { Post, Body, Req, Res, UseGuards } from '@nestjs/common';
+import { Post, Body, Req, Res, UseGuards, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AccessResponseDto, CreateUserDto } from './dto/user.dto';
 import {
@@ -13,6 +13,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
 import { VersionedController001 } from '../controller/base.controller';
+import { FcmDto } from './dto/fcm.dto';
 
 //TODO: middleware for outstanding verifications
 @ApiTags('User')
@@ -42,6 +43,8 @@ export class UserController {
       identifier: user.email,
     } as LoginUserDto);
 
+    console.log(authRecords.notifications);
+
     responseHandler(authRecords, res, req);
   }
 
@@ -55,6 +58,21 @@ export class UserController {
   ) {
     const user = req.user;
     const result = await this.userService.verifyUser(verifyUserDto, user);
+    responseHandler(result, res, req);
+  }
+
+  @Patch('update-fcm-token')
+  @UseGuards(AuthGuard)
+  async updateFcmToken(
+    @Body() body: FcmDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    const user = req.user;
+    const result = await this.userService.updateUserAlertId(
+      user.id,
+      body.token,
+    );
     responseHandler(result, res, req);
   }
 }

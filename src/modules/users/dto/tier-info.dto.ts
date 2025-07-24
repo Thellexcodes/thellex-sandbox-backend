@@ -1,6 +1,6 @@
 import { TierEnum, TxnTypeEnum } from '@/config/tier.lists';
 import { UserRequirement } from '@/models/user.requirements.enum';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class TransactionLimitsDto {
@@ -26,6 +26,7 @@ export class TierInfoDto {
   target: string;
 
   @ApiProperty({ description: 'Description of the tier' })
+  @Expose()
   description: string;
 
   @ApiProperty({
@@ -33,6 +34,7 @@ export class TierInfoDto {
     type: () => TransactionLimitsDto,
   })
   @Expose()
+  @Type(() => TransactionLimitsDto)
   transactionLimits: TransactionLimitsDto;
 
   @ApiProperty({
@@ -41,6 +43,7 @@ export class TierInfoDto {
     isArray: false,
   })
   @Expose()
+  @Type(() => TxnFeeDto)
   txnFee: Partial<Record<TxnTypeEnum, TxnFeeDto>>;
 
   @ApiProperty({

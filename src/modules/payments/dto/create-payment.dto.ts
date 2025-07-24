@@ -1,20 +1,20 @@
 import {
   SUPPORTED_BLOCKCHAINS,
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   TokenEnum,
 } from '@/config/settings';
-import { PaymentType } from '@/models/payment.types';
+import { TransactionDirectionEnum } from '@/models/payment.types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional, IsIn, IsEnum } from 'class-validator';
 
 export class CreateRequestPaymentDto {
   @ApiProperty({
     description: 'Type of the payment request',
-    enum: PaymentType,
-    example: PaymentType.INBOUND,
+    enum: TransactionDirectionEnum,
+    example: TransactionDirectionEnum.INBOUND,
   })
-  @IsEnum(PaymentType)
-  paymentType: PaymentType;
+  @IsEnum(TransactionDirectionEnum)
+  TransactionDirectionEnum: TransactionDirectionEnum;
 
   @ApiProperty({
     description: 'Asset code (e.g., USDC, BTC)',
@@ -45,5 +45,5 @@ export class CreateRequestPaymentDto {
     example: 'polygon',
   })
   @IsIn(SUPPORTED_BLOCKCHAINS, { message: 'network/invalid' })
-  network: SupportedBlockchainType;
+  network: SupportedBlockchainTypeEnum;
 }

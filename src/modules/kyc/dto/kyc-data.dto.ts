@@ -2,7 +2,7 @@ import { BaseResponseDto } from '@/models/base-response.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsString,
@@ -10,12 +10,32 @@ import {
   IsDateString,
   IsOptional,
   IsEnum,
+  Matches,
+  ValidateNested,
 } from 'class-validator';
 
 //upload documents
 export enum UploadDocumentInputTypeEnum {
   Base64 = 'base64',
   Url = 'url',
+}
+
+class PhoneDto {
+  @ApiProperty({
+    example: '+234',
+    description: 'Phone country code (e.g. +234)',
+  })
+  @IsString()
+  @Matches(/^\+\d{1,4}$/, { message: 'phone_country_code/invalid-format' })
+  phone_country_code: string;
+
+  @ApiProperty({
+    example: '8135878103',
+    description: 'Phone number without country code',
+  })
+  @IsString()
+  @Matches(/^\d{6,15}$/, { message: 'phone_number/invalid-format' })
+  phone_number: string;
 }
 
 export class BasicTierKycDto {
@@ -25,33 +45,40 @@ export class BasicTierKycDto {
 
   @ApiProperty({
     enum: IdTypeEnum,
-    description: 'Type of ID provided',
+    description: 'Additional type of ID provided',
     example: `${IdTypeEnum.BVN}`,
   })
-  @IsEnum(IdTypeEnum, { message: 'idType/invalid' })
+  @IsEnum(IdTypeEnum, { message: 'additionalIdType/invalid' })
   additionalIdType: IdTypeEnum;
 
   @ApiProperty({ description: 'First name of the user' })
   @IsString({ message: 'firstName/not-string' })
   firstName: string;
 
-  @ApiProperty({ description: 'Last name of the user' })
+  @ApiProperty({ description: 'Middle name of the user' })
   @IsOptional()
   @IsString({ message: 'middleName/not-string' })
-  middleName: string;
+  middleName?: string;
 
   @ApiProperty({ description: 'Last name of the user' })
   @IsString({ message: 'lastName/not-string' })
   lastName: string;
 
-  @ApiProperty({ description: 'Phone number' })
-  @IsString({ message: 'phone/empty' })
-  phoneNumber: string;
+  @ApiProperty({
+    type: PhoneDto,
+    description: 'Phone details including country code and number',
+  })
+  @ValidateNested()
+  @Type(() => PhoneDto)
+  phone: PhoneDto;
 
-  @ApiProperty({ description: 'Date of birth of BVN holder (yyyy-mm-dd)' })
+  @ApiProperty({
+    description: 'Date of birth of BVN holder (yyyy-mm-dd)',
+    example: '1997-05-01',
+  })
   @IsOptional()
   @IsDateString({}, { message: 'dob/invalid-format' })
-  dob: string;
+  dob?: string;
 
   @ApiProperty({ description: 'Bank Verification Number (BVN)' })
   @IsNotEmpty({ message: 'bvn/empty' })
@@ -66,22 +93,40 @@ export class BasicTierKycDto {
   @ApiProperty({ description: 'House number of the user' })
   @IsOptional()
   @IsString({ message: 'houseNumber/not-string' })
-  houseNumber: string;
+  houseNumber?: string;
 
-  @ApiProperty({ description: 'Street name of the user' })
+  @ApiProperty({
+    description: 'Street name of the user',
+    example: '63 Banana Island',
+  })
+  @IsNotEmpty({ message: 'nin/empty' })
   @IsString({ message: 'streetName/not-string' })
-  @IsOptional()
   streetName: string;
 
   @ApiProperty({ description: 'State of residence' })
+  @IsNotEmpty({ message: 'nin/empty' })
   @IsString({ message: 'state/not-string' })
-  @IsOptional()
   state: string;
 
-  @ApiProperty({ description: 'LGA of residence' })
+  @ApiProperty({ description: 'City of residence' })
+  @IsNotEmpty({ message: 'nin/empty' })
+  @IsString({ message: 'city/not-string' })
+  city: string;
+
+  @ApiProperty({ description: 'Country of residence', example: 'NG' })
+  @IsNotEmpty({ message: 'nin/empty' })
+  @IsString({ message: 'country/not-string' })
+  country: string;
+
+  @ApiProperty({ description: 'Postal code of residence' })
+  @IsNotEmpty({ message: 'nin/empty' })
+  @IsString({ message: 'postal_code/not-string' })
+  postal_code: string;
+
+  @ApiProperty({ description: 'Local Government Area (LGA) of residence' })
   @IsOptional()
   @IsString({ message: 'lga/not-string' })
-  lga: string;
+  lga?: string;
 }
 
 export class KycResultDto {
@@ -114,6 +159,29 @@ export class KycResultDto {
     description: 'List of outstanding KYC requirements.',
   })
   outstandingKyc: string[] = [];
+
+  @Expose()
+  @ApiProperty({
+    type: [TierInfoDto],
+    description: 'List of tiers remaining for the user to progress through',
+    example: [
+      {
+        name: 'PERSONAL',
+        target: 'Verified Individuals',
+        description:
+          'Users with face and address verification — ideal for POS/crypto usage.',
+        transactionLimits: {
+          dailyCreditLimit: 500000,
+          dailyDebitLimit: 500000,
+          singleDebitLimit: 100000,
+        },
+        txnFee: { WITHDRAWAL: { min: 1, max: 300, feePercentage: 2.0 } },
+        requirements: ['FaceVerification', 'ResidentialAddress'],
+      },
+    ],
+  })
+  @Type(() => TierInfoDto)
+  remainingTiers: TierInfoDto[];
 }
 
 export class KycResponseDto extends BaseResponseDto<KycResultDto> {
@@ -291,4 +359,10 @@ export class EntityDto {
 export class VerificationResponseDto {
   @ApiProperty({ type: () => EntityDto })
   entity: EntityDto;
+}
+
+export class ValidateBvnResponseDto {
+  @ApiProperty()
+  @Expose()
+  isValid: boolean;
 }

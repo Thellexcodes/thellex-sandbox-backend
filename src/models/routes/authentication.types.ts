@@ -1,4 +1,4 @@
-type HttpMethod = 'GET' | 'POST' | 'PUT';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 interface IGenerateYCSignature {
   method: HttpMethod;

@@ -1,5 +1,3 @@
-// import { CHAINS } from '@/thellex-sdk/src';
-import { DocumentAnalysisEntityDto } from '@/modules/kyc/dto/kyc-data.dto';
 import { LRUCache } from 'lru-cache';
 
 export const getRpcUrls = (chainId: number) => {
@@ -12,11 +10,5 @@ export const getRpcUrls = (chainId: number) => {
 };
 
 export const rateCache = new LRUCache<string, any>({
-  max: 100000, // Max number of items in cache
-  ttl: 20000, // Time-to-live in milliseconds (20 minutes)
+  max: 100000,
 });
-
-interface IdDocumentCacheInterface {
-  photoIdFrontImageBase64: string;
-  documentAnalysisResult: DocumentAnalysisEntityDto;
-}

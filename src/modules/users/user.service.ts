@@ -1,12 +1,11 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/user.dto';
 import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { JwtPayload } from '@/config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { LoginUserDto } from './dto/login-user.dto';
 import { MailService } from '../email/mail.service';
@@ -17,6 +16,8 @@ import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { TierEnum } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
+import { ConfigService } from '@/config/config.service';
+import { getAppConfig } from '@/constants/env';
 
 @Injectable()
 export class UserService {
@@ -32,40 +33,54 @@ export class UserService {
     private readonly mailService: MailService,
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
     createUserDto: CreateUserDto,
   ): Promise<{ access_token: string; expires_at?: Date }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    let user: UserEntity;
+
     try {
       const email = createUserDto.email.toLowerCase();
-      let user = await this.findOneByEmail(email);
+      user = await this.findOneByEmail(email);
 
       if (user) {
-        // Resend verification code only if no valid code exists
-        const expires_at = await this.resendVerification(user); // throws if code still valid
+        const expires_at = await this.resendVerification(user);
         const access_token = await this.signToken({ id: user.id });
         return { access_token, expires_at };
       }
 
       const uid = await generateUniqueUid(this.userRepository);
+
       const newUser = this.userRepository.create({
         email,
         uid,
       });
 
-      user = await this.userRepository.save(newUser);
+      // Save user inside the transaction
+      user = await queryRunner.manager.save(newUser);
 
-      const { expires_at } = await this.emailVerificationComposer(user);
-      const access_token = await this.signToken({ id: user.id });
-      return { access_token, expires_at };
+      // Commit first to persist the user in DB
+      await queryRunner.commitTransaction();
     } catch (error: any) {
+      await queryRunner.rollbackTransaction();
       this.logger.error('User creation failed:', error);
       throw new CustomHttpException(
         error.message || 'Internal server error',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    } finally {
+      await queryRunner.release();
     }
+
+    // Now it's safe to call services that depend on committed data
+    const { expires_at } = await this.emailVerificationComposer(user);
+    const access_token = await this.signToken({ id: user.id });
+    return { access_token, expires_at };
   }
 
   /**
@@ -147,7 +162,7 @@ export class UserService {
 
     const emailOptions = {
       to: user.email,
-      from: this.configService.get<string>('GMAIL_USER'),
+      from: getAppConfig().EMAIL.MAIL_USER,
       subject: 'Verify your account',
       template: 'welcome',
       context: { code },
@@ -252,5 +267,14 @@ export class UserService {
 
   async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {
     await this.userRepository.update(userId, { tier: newTier });
+  }
+
+  async updateUserAlertId(userId: string, token: string): Promise<void> {
+    try {
+      await this.userRepository.update(userId, { alertID: token });
+      console.log('updated');
+    } catch (errr) {
+      console.log(errr);
+    }
   }
 }

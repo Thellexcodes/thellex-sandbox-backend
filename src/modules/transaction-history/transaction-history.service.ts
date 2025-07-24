@@ -6,8 +6,8 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { TransactionHistoryDto } from './dto/create-transaction-history.dto';
 import { QWalletStatus } from '../wallets/qwallet/qwallet-status.enum';
-import { IQWalletHookWithdrawSuccessfulEvent } from '../wallets/webhooks/qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
-import { IUpdateCwalletTransactionDto } from '../wallets/webhooks/cwallet-hooks/dto/update-cwallet-hook.dto';
+import { IQWalletHookWithdrawSuccessfulEvent } from '../webhooks/qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
+import { IUpdateCwalletTransactionDto } from '../webhooks/cwallet-hooks/dto/update-cwallet-hook.dto';
 
 //TODO: add try catch block for error handling
 @Injectable()
@@ -21,11 +21,7 @@ export class TransactionHistoryService {
     txData: TransactionHistoryDto,
     user: UserEntity,
   ): Promise<TransactionHistoryEntity> {
-    const transactionRecord = this.transactionRepo.create({
-      user,
-      ...txData,
-    });
-
+    const transactionRecord = this.transactionRepo.create({ user, ...txData });
     return this.transactionRepo.save(transactionRecord);
   }
 
@@ -76,5 +72,24 @@ export class TransactionHistoryService {
     Object.assign(existing, params.updates);
 
     return this.transactionRepo.save(existing);
+  }
+
+  async updateTransactionByTransactionId(
+    transactionId: string,
+    updates: Partial<TransactionHistoryEntity>,
+  ): Promise<TransactionHistoryEntity> {
+    const transaction =
+      await this.findTransactionByTransactionId(transactionId);
+
+    if (!transaction) {
+      throw new CustomHttpException(
+        'Transaction not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    Object.assign(transaction, updates);
+
+    return this.transactionRepo.save(transaction);
   }
 }

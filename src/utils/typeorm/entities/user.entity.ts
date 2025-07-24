@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { AuthEntity } from './auth.entity';
 import { AuthVerificationCodesEntity } from './auth-verification-codes.entity';
@@ -23,10 +23,16 @@ import {
   CwalletProfilesEntity,
   ICwalletProfilesDto,
 } from './wallets/cwallet/cwallet-profiles.entity';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, plainToInstance, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
+import { FiatCryptoRampTransactionEntity } from './fiat-crypto-ramp-transaction.entity';
+import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.dto';
+import { TRANSACTION_POLICY } from '@/config/settings';
+import { RoleEnum } from '@/models/roles-actions.enum';
+import { BankingNetworkEntity } from './banking/banking-network.entity';
 
+@Index(['email'])
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
   @ApiProperty()
@@ -65,7 +71,7 @@ export class UserEntity extends BaseEntity {
   @Expose()
   @Column({
     name: 'alert_id',
-    type: 'uuid',
+    type: 'text',
     unique: true,
     nullable: false,
     default: () => 'uuid_generate_v4()',
@@ -79,6 +85,14 @@ export class UserEntity extends BaseEntity {
     nullable: false,
   })
   tier: TierEnum;
+
+  @Column({
+    type: 'enum',
+    enum: RoleEnum,
+    default: RoleEnum.USER,
+    nullable: false,
+  })
+  role: RoleEnum;
 
   @Expose()
   @OneToMany(() => AuthVerificationCodesEntity, (v) => v.user, {
@@ -107,6 +121,7 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => KycEntity, (kyc) => kyc.user, {
     nullable: true,
     cascade: true,
+    eager: true,
   })
   kyc: KycEntity;
 
@@ -173,6 +188,22 @@ export class UserEntity extends BaseEntity {
     cascade: true,
   })
   taxSettings: TaxSettingEntity;
+
+  @Expose()
+  @ApiProperty({ type: () => [FiatCryptoRampTransactionEntity] })
+  @Type(() => FiatCryptoRampTransactionEntity)
+  @OneToMany(() => FiatCryptoRampTransactionEntity, (t) => t.user, {
+    eager: true,
+    cascade: true,
+  })
+  fiatCryptoRampTransactions: FiatCryptoRampTransactionEntity[];
+
+  @Type(() => BankingNetworkEntity)
+  @OneToOne(() => BankingNetworkEntity, (t) => t.user, {
+    eager: true,
+    cascade: true,
+  })
+  bankingNetworks: BankingNetworkEntity;
 }
 
 @Exclude()
@@ -210,4 +241,35 @@ export class IUserDto extends UserEntity {
     description: 'Next user tier info',
   })
   nextTier: TierInfoDto | null;
+
+  @Expose()
+  @ApiProperty({
+    type: [TierInfoDto],
+    description: 'List of tiers remaining for the user to progress through',
+    example: [
+      {
+        name: 'PERSONAL',
+        target: 'Verified Individuals',
+        description:
+          'Users with face and address verification — ideal for POS/crypto usage.',
+        transactionLimits: {
+          dailyCreditLimit: 500000,
+          dailyDebitLimit: 500000,
+          singleDebitLimit: 100000,
+        },
+        txnFee: { WITHDRAWAL: { min: 1, max: 300, feePercentage: 2.0 } },
+        requirements: ['FaceVerification', 'ResidentialAddress'],
+      },
+    ],
+  })
+  @Type(() => TierInfoDto)
+  remainingTiers: TierInfoDto[];
+
+  @Expose()
+  @ApiProperty({ type: () => TransactionPolicyDto })
+  @Type(() => TransactionPolicyDto)
+  transactionSettings: TransactionPolicyDto = plainToInstance(
+    TransactionPolicyDto,
+    TRANSACTION_POLICY,
+  );
 }

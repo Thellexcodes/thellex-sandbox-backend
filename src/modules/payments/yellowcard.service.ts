@@ -3,29 +3,26 @@ import { HttpService } from '@/middleware/http.service';
 import { AnyObject } from '@/models/any.types';
 import {
   IYCAcceptCollectionRequestPayload,
+  IYCAcceptPaymentResponse,
   IYCChannelsResponseType,
   IYCNetworksResponseType,
+  IYCollectionRequestResponseType,
   IYCPaymentRequestResponse,
-  IYCPaymentRequestResponseType,
   IYellowCardWebhookConfig,
 } from '@/models/yellocard.models';
 
 import { generateYcSignature } from '@/utils/helpers';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { rateCache } from '@/utils/constants';
+import {
+  IYellowCardRateDto,
+  IYellowCardRatesResponseDto,
+} from './dto/yellocard.dto';
+import axios, { AxiosRequestHeaders } from 'axios';
 
 @Injectable()
 export class YellowCardService {
-  private readonly publicKey: string;
-  private readonly secretKey: string;
-
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-  ) {
-    this.publicKey = this.configService.get<string>('YC_PUBLIC_KEY')!;
-    this.secretKey = this.configService.get<string>('YC_SECRET_KEY')!;
-  }
+  constructor(private readonly httpService: HttpService) {}
 
   // --- Payments API ---
 
@@ -36,9 +33,7 @@ export class YellowCardService {
     const url = crypto
       ? `${this.ycUrl}${path}`
       : `${this.ycUrl}${path}?country=NG`;
-
     const headers = this.generateAuthHeaders(method, path);
-
     return await this.httpService.get<IYCChannelsResponseType>(url, {
       headers,
     });
@@ -56,7 +51,7 @@ export class YellowCardService {
   }
 
   // Get Rates
-  async getRates() {
+  async getRates(): Promise<IYellowCardRatesResponseDto> {
     const method = 'GET';
     const path = '/business/rates';
     const url = `${this.ycUrl}${path}`;
@@ -66,97 +61,110 @@ export class YellowCardService {
 
   // Get Account
   async getAccount() {
-    // const method = 'GET';
-    // const path = '/business/account';
-    // const url = `${this.ycUrl}/account`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = '/business/account';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.get(url, { headers });
   }
 
   // Resolve Bank Account
-  async resolveBankAccount(body: object) {
-    // const method = 'POST';
-    // const path = '/business/bank/resolve';
-    // const url = `${this.ycUrl}/bank/resolve`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+  async resolveBankAccount(body: AnyObject) {
+    const method = 'POST';
+    const path = '/business/details/bank';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
   // Widget Quote
-  async widgetQuote(body: object) {
+  async widgetQuote(body: AnyObject) {
     // const method = 'POST';
     // const path = '/business/widget/quote';
     // const url = `${this.ycUrl}/widget/quote`;
     // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+    // return  this.httpService.post(url, body, { headers });
   }
 
   // --- Payments ---
-
-  async submitPaymentRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/payments/submit';
-    // const url = `${this.ycUrl}/payments/submit`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+  async submitPaymentRequest(
+    body: AnyObject,
+  ): Promise<IYCPaymentRequestResponse | undefined> {
+    try {
+      const method = 'POST';
+      const path = '/business/payments';
+      const url = `${this.ycUrl}${path}`;
+      const headers = this.generateAuthHeaders(method, path, body);
+      const response = await axios.post<IYCPaymentRequestResponse>(url, body, {
+        headers,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('submitPaymentRequest error:', error);
+      // Optionally rethrow or handle error as needed
+    }
   }
 
-  async acceptPaymentRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/payments/accept';
-    // const url = `${this.ycUrl}/payments/accept`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+  // async submitPaymentRequest(
+  //   body: AnyObject,
+  // ): Promise<IYCPaymentRequestResponse> {
+  //   try {
+  //     const method = 'POST';
+  //     const path = '/business/payments';
+  //     const url = `${this.ycUrl}${path}`;
+  //     const headers = this.generateAuthHeaders(method, path, body);
+  //     return await this.httpService.post(url, body, { headers });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
+
+  async acceptPaymentRequest({
+    id,
+  }: AnyObject): Promise<IYCAcceptPaymentResponse> {
+    const method = 'POST';
+    const path = `/business/payments/${id}/accept`;
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.post(url, {}, { headers });
   }
 
-  async denyPaymentRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/payments/deny';
-    // const url = `${this.ycUrl}/payments/deny`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+  async denyPaymentRequest({ id }: AnyObject) {
+    const method = 'POST';
+    const path = `/business/payments/${id}/deny`;
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.post(url, {}, { headers });
   }
 
-  async lookupPayment(queryParams: Record<string, any>) {
-    // const method = 'GET';
-    // const path = '/payments/lookup';
-    // const url = new URL(`${this.ycUrl}/payments/lookup`);
-    // Object.entries(queryParams).forEach(([key, val]) =>
-    //   url.searchParams.append(key, String(val)),
-    // );
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url.toString(), { headers });
-    // return await firstValueFrom(response$);
+  async lookupPayment(id: string) {
+    const method = 'GET';
+    const path = `/business/payments/${id}`;
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.get(url, { headers });
   }
 
   async lookupPaymentBySequenceId(sequenceId: string) {
-    // const method = 'GET';
-    // const path = `/payments/lookup/${sequenceId}`;
-    // const url = `${this.ycUrl}/payments/lookup/${sequenceId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = `/payments/lookup/${sequenceId}`;
+    const url = `${this.ycUrl}/payments/lookup/${sequenceId}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   async listPayments() {
-    // const method = 'GET';
-    // const path = '/payments/list';
-    // const url = `${this.ycUrl}/payments/list`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = '/payments/list';
+    const url = `${this.ycUrl}/payments/list`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   // --- Collections ---
   async submitCollectionRequest(
     body: AnyObject,
-  ): IYCPaymentRequestResponseType {
+  ): IYCollectionRequestResponseType {
     const method = 'POST';
     const path = '/business/collections';
     const url = `${this.ycUrl}${path}`;
@@ -168,65 +176,59 @@ export class YellowCardService {
     const method = 'POST';
     const path = '/collections/accept';
     const url = `${this.ycUrl}${path}`;
-    const headers = this.generateAuthHeaders(method, path, body);
+    const headers = this.generateAuthHeaders(method, path);
     return await this.httpService.post(url, body, { headers });
   }
 
   async denyCollectionRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/deny';
-    // const url = `${this.ycUrl}/collections/deny`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'POST';
+    const path = '/collections/deny';
+    const url = `${this.ycUrl}/collections/deny`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.post(url, body, { headers });
   }
 
   async cancelCollection(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/cancel';
-    // const url = `${this.ycUrl}/collections/cancel`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'POST';
+    const path = '/collections/cancel';
+    const url = `${this.ycUrl}/collections/cancel`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.post(url, body, { headers });
   }
 
   async refundCollection(body: object) {
-    // const method = 'POST';
-    // const path = '/collections/refund';
-    // const url = `${this.ycUrl}/collections/refund`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'POST';
+    const path = '/collections/refund';
+    const url = `${this.ycUrl}/collections/refund`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.post(url, body, { headers });
   }
 
   async lookupCollection(queryParams: Record<string, any>) {
-    // const method = 'GET';
-    // const path = '/collections/lookup';
-    // const url = new URL(`${this.ycUrl}/collections/lookup`);
-    // Object.entries(queryParams).forEach(([key, val]) =>
-    //   url.searchParams.append(key, String(val)),
-    // );
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url.toString(), { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = '/collections/lookup';
+    const url = new URL(`${this.ycUrl}/collections/lookup`);
+    Object.entries(queryParams).forEach(([key, val]) =>
+      url.searchParams.append(key, String(val)),
+    );
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url.toString(), { headers });
   }
 
   async lookupCollectionBySequenceId(sequenceId: string) {
-    // const method = 'GET';
-    // const path = `/collections/lookup/${sequenceId}`;
-    // const url = `${this.ycUrl}/collections/lookup/${sequenceId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = `/collections/lookup/${sequenceId}`;
+    const url = `${this.ycUrl}/collections/lookup/${sequenceId}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   async listCollections() {
-    // const method = 'GET';
-    // const path = '/collections/list';
-    // const url = `${this.ycUrl}/collections/list`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = '/collections/list';
+    const url = `${this.ycUrl}/collections/list`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   // --- Webhooks ---
@@ -239,54 +241,122 @@ export class YellowCardService {
   }
 
   async updateWebhook(body: object) {
-    // const method = 'PUT';
-    // const path = '/webhooks';
-    // const url = `${this.ycUrl}/webhooks`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.put(url, body, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'PUT';
+    const path = '/webhooks';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.put(url, body, { headers });
   }
 
-  async removeWebhook(webhookId: string) {
-    // const method = 'DELETE';
-    // const path = `/webhooks/${webhookId}`;
-    // const url = `${this.ycUrl}/webhooks/${webhookId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.delete(url, { headers });
-    // return await firstValueFrom(response$);
+  async removeWebhook(body: AnyObject) {
+    const method = 'DELETE';
+    const path = '/business/webhooks';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return await this.httpService.post(url, body, { headers });
   }
 
   async listWebhooks() {
-    // const method = 'GET';
-    // const path = '/webhooks';
-    // const url = `${this.ycUrl}/webhooks`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = '/business/webhooks';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return await this.httpService.get(url, { headers });
   }
 
   // --- Settlement ---
 
   async lookupSettlementBySequenceId(sequenceId: string) {
-    // const method = 'GET';
-    // const path = `/settlements/lookup/${sequenceId}`;
-    // const url = `${this.ycUrl}/settlements/lookup/${sequenceId}`;
-    // const headers = this.generateAuthHeaders(method, path);
-    // const response$ = this.httpService.get(url, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'GET';
+    const path = `/settlements/lookup/${sequenceId}`;
+    const url = `${this.ycUrl}/settlements/lookup/${sequenceId}`;
+    const headers = this.generateAuthHeaders(method, path);
+    return this.httpService.get(url, { headers });
   }
 
   async submitSettlementRequest(body: object) {
-    // const method = 'POST';
-    // const path = '/settlements/submit';
-    // const url = `${this.ycUrl}/settlements/submit`;
-    // const headers = this.generateAuthHeaders(method, path, body);
-    // const response$ = this.httpService.post(url, body, { headers });
-    // return await firstValueFrom(response$);
+    const method = 'POST';
+    const path = '/business/settlement';
+    const url = `${this.ycUrl}${path}`;
+    const headers = this.generateAuthHeaders(method, path, body);
+    return this.httpService.post(url, body, { headers });
   }
 
-  private get ycUrl(): string {
-    return getAppConfig().YC.PAYMENT_API;
+  async convertFiatToCrypto(
+    fiatCode: string,
+    cryptoCode: string,
+    amount: number,
+  ): Promise<{
+    convertedAmount: number | null;
+    rateUsed?: {
+      fiatSell: number;
+      cryptoSell: number;
+    };
+    expiresAt?: string;
+  }> {
+    const fiatRate = await this.getRateFromCache(fiatCode);
+    const cryptoRate = await this.getRateFromCache(cryptoCode);
+
+    // If either is an array (unexpected here), return null
+    if (Array.isArray(fiatRate) || Array.isArray(cryptoRate)) {
+      return { convertedAmount: null };
+    }
+
+    if (!fiatRate?.rate.sell || !cryptoRate?.rate.sell) {
+      return { convertedAmount: null };
+    }
+
+    const fiatSell = fiatRate.rate.sell;
+    const cryptoSell = cryptoRate.rate.sell;
+
+    const converted = amount / fiatSell / cryptoSell;
+
+    return {
+      convertedAmount: Number(converted.toFixed(6)),
+      rateUsed: {
+        fiatSell,
+        cryptoSell,
+      },
+      expiresAt: fiatRate.expiresAt,
+    };
+  }
+
+  async getRateFromCache(code?: string): Promise<{
+    expiresAt: string;
+    rate: IYellowCardRateDto | any;
+  }> {
+    const cached = rateCache.get('y_rates') as
+      | { expiresAt: string; data: IYellowCardRateDto[] }
+      | undefined;
+
+    if (!cached || !cached.data) {
+      return { expiresAt: null, rate: null };
+    }
+
+    if (!code) {
+      return {
+        expiresAt: cached.expiresAt,
+        rate: cached.data,
+      };
+    }
+
+    const rate = cached.data.find(
+      (rate: IYellowCardRateDto) =>
+        rate.code.toUpperCase() === code.toUpperCase(),
+    );
+
+    return {
+      expiresAt: cached.expiresAt,
+      rate: rate,
+      // || {
+      //   buy: 1531.5428,
+      //   sell: 1632.5428,
+      //   locale: 'NG',
+      //   rateId: 'nigerian-naira',
+      //   code: 'NGN',
+      //   updatedAt: '2025-07-22T16:34:34.773Z',
+      // },
+    };
   }
 
   private generateAuthHeaders(
@@ -297,10 +367,14 @@ export class YellowCardService {
     const { headers } = generateYcSignature({
       method,
       path,
-      publicKey: this.publicKey,
-      secretKey: this.secretKey,
+      publicKey: getAppConfig().YC.PUBLIC_KEY,
+      secretKey: getAppConfig().YC.SECRET_KEY,
       body,
     });
     return headers;
+  }
+
+  private get ycUrl(): string {
+    return getAppConfig().YC.PAYMENT_API;
   }
 }

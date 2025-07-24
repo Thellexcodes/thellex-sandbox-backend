@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { jwtConfigurations } from 'src/config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { UserService } from '@/modules/users/user.service';
 import { AuthErrorEnum } from '@/models/auth-error.enum';
 
@@ -15,7 +14,6 @@ export class AuthGuard implements CanActivate {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    private configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

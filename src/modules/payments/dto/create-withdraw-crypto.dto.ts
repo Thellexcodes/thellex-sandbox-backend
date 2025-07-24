@@ -1,4 +1,4 @@
-import { SupportedBlockchainType, TokenEnum } from '@/config/settings';
+import { SupportedBlockchainTypeEnum, TokenEnum } from '@/config/settings';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
@@ -31,12 +31,12 @@ export class CreateCryptoWithdrawPaymentDto {
 
   @ApiProperty({
     description: 'Blockchain network for the withdrawal',
-    enum: SupportedBlockchainType,
-    example: SupportedBlockchainType.MATIC,
+    enum: SupportedBlockchainTypeEnum,
+    example: SupportedBlockchainTypeEnum.MATIC,
   })
   @IsNotEmpty()
-  @IsEnum(SupportedBlockchainType)
-  network: SupportedBlockchainType;
+  @IsEnum(SupportedBlockchainTypeEnum)
+  network: SupportedBlockchainTypeEnum;
 
   @ApiProperty({
     description: 'sender crypto address',

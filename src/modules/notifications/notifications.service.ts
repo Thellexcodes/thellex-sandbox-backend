@@ -1,48 +1,35 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
-import { NotificationsGateway } from './notifications.gateway';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { NotificationErrorEnum } from '@/models/notification-error.enum';
 import { plainToInstance } from 'class-transformer';
 import { INotificationConsumeResponseDto } from './dto/notification.dto';
+import { NotificationsGateway } from './notifications.gateway';
+import { THIRTY_DAYS_IN_MS } from '@/config/settings';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { AnyObject } from '@/models/any.types';
+import {
+  NotificationErrorEnum,
+  NotificationEventEnum,
+  NotificationStatusEnum,
+} from '@/models/notifications.enum';
+import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 
 //TODO: properly handle errors
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  async createNotification(
-    userId: string,
-    title: string,
-    message: string,
-    ttlSeconds: number,
-  ) {
-    // const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
-    // const notification = this.notificationRepo.create({
-    //   user: { id: userId },
-    //   title,
-    //   message,
-    //   consumed: false,
-    //   expiresAt,
-    // });
-    // const saved = await this.notificationRepo.save(notification);
-    // // Emit notification via websocket
-    // this.notificationsGateway.emitNotificationToUser(userId, saved);
-    // // Update the alertedAt timestamp to now
-    // saved.alertedAt = new Date();
-    // await this.notificationRepo.save(saved);
-    // return saved;
-  }
-
   async markAsConsumed(id: string): Promise<INotificationConsumeResponseDto> {
     try {
-      const notification = await this.notificationRepo.findOneBy({ txnID: id });
+      const notification = await this.notificationRepo.findOneBy({ id });
 
       if (!notification) {
         throw new CustomHttpException(
@@ -58,13 +45,12 @@ export class NotificationsService {
         );
       }
 
-      await this.notificationRepo.update({ txnID: id }, { consumed: true });
+      await this.notificationRepo.update({ id }, { consumed: true });
       return plainToInstance(
         INotificationConsumeResponseDto,
         { id, consumed: true },
         { excludeExtraneousValues: true },
       );
-      // return { id, consumed: true };
     } catch (error) {
       console.error('Error consuming notification:', error);
 

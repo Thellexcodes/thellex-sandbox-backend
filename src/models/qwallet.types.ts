@@ -1,4 +1,4 @@
-import { SupportedBlockchainType } from '@/config/settings';
+import { SupportedBlockchainTypeEnum } from '@/config/settings';
 import { ApiResponse } from './request.types';
 
 // network
@@ -50,7 +50,7 @@ export interface IQWalletResponseData {
   reference: string | null;
   currency: string;
   address: string;
-  network: SupportedBlockchainType;
+  network: SupportedBlockchainTypeEnum;
   user: IQSubAccountData;
   destination_tag: string | null;
   total_payments: string | null;

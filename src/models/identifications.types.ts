@@ -1,6 +1,6 @@
 export type Gender = 'Male' | 'Female';
 
-export interface NinEntity {
+export interface NinFullEntity {
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -11,7 +11,7 @@ export interface NinEntity {
   customer: string;
 }
 
-export interface BvnEntity {
+export interface BvnFullEntity {
   bvn: string;
   first_name: string;
   last_name: string;
@@ -23,7 +23,7 @@ export interface BvnEntity {
   image: string;
 }
 
-export interface PhoneNumberEntity {
+export interface PhoneNumberFullEntity {
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -33,16 +33,29 @@ export interface PhoneNumberEntity {
   msisdn: string;
 }
 
+export interface BvnVerificationResponse {
+  entity: {
+    bvn: {
+      value: string;
+      status: boolean;
+    };
+    first_name: {
+      confidence_value: number;
+      status: boolean;
+    };
+  };
+}
+
 export interface PhoneNumberLookupResponse {
-  entity: PhoneNumberEntity;
+  entity: PhoneNumberFullEntity;
 }
 
 export interface BvnLookupResponse {
-  entity: BvnEntity;
+  entity: BvnFullEntity;
 }
 
 export interface NinLookupResponse {
-  entity: NinEntity;
+  entity: NinFullEntity;
 }
 
 export type EmailReputation = 'high' | 'medium' | 'low' | 'n/a';

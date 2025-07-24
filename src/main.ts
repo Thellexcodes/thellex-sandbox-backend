@@ -1,5 +1,3 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -11,8 +9,12 @@ import { writeFileSync } from 'fs';
 import { ENV_PRODUCTION } from './models/settings.types';
 import { getAppConfig, getEnv } from './constants/env';
 import * as bodyParser from 'body-parser';
-import { FILE_UPLOAD_LIMIT } from './config/settings';
+import {
+  FILE_UPLOAD_LIMIT,
+  SERVER_REQUEST_TIMEOUT_MS,
+} from './config/settings';
 import { API_VERSIONS } from './config/versions';
+import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
 // import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
 // const certFolder = path.join(__dirname, '../cert');
@@ -84,11 +86,13 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new ErrorInterceptor());
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.use(bodyParser.json({ limit: FILE_UPLOAD_LIMIT }));
   app.use(bodyParser.urlencoded({ limit: FILE_UPLOAD_LIMIT, extended: true }));
 
-  await app.listen(serverPort, serverIp);
+  const server = await app.listen(serverPort, serverIp);
+  server.setTimeout(SERVER_REQUEST_TIMEOUT_MS);
 
   console.log(`Application is now running on: ${await app.getUrl()}`);
 }

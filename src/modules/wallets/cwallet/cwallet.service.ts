@@ -21,7 +21,7 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   TokenEnum,
   WalletProviderEnum,
@@ -35,7 +35,11 @@ import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { getAppConfig } from '@/constants/env';
 import { walletConfig } from '@/utils/tokenChains';
-import { PaymentStatus, PaymentType } from '@/models/payment.types';
+import {
+  PaymentStatus,
+  TransactionDirectionEnum,
+  TransactionTypeEnum,
+} from '@/models/payment.types';
 import {
   FeeLevel,
   WalletWebhookEventEnum,
@@ -70,7 +74,7 @@ export class CwalletService {
     });
   }
 
-  async lookupSubWallet(address: string): Promise<CwalletsEntity | null | any> {
+  async lookupSubWallet(address: string): Promise<CwalletsEntity | null> {
     return this.cWalletsRepo
       .createQueryBuilder('wallet')
       .leftJoinAndSelect('wallet.profile', 'profile')
@@ -85,8 +89,6 @@ export class CwalletService {
       )
       .getOne();
   }
-
-  async fetchPaymentAddress(id) {}
 
   async lookupSubWalletByID(id: string): Promise<CwalletsEntity | null> {
     return await this.cWalletsRepo.findOne({
@@ -136,14 +138,14 @@ export class CwalletService {
 
       const transaction = await this.getTransaction({
         id: transfer.data.id,
-        txType: PaymentType.OUTBOUND,
+        txType: 'OUTBOUND',
       });
 
       const txnHistory: TransactionHistoryDto = {
         event: WalletWebhookEventEnum.WithdrawPending,
         tokenId: transaction.tokenId,
         transactionId: transfer.data.id,
-        type: PaymentType.OUTBOUND,
+        transactionDirection: TransactionDirectionEnum.OUTBOUND,
         assetCode: dto.assetCode,
         amount: dto.amount,
         blockchainTxId: transaction.txHash,
@@ -157,6 +159,7 @@ export class CwalletService {
         createdAt: toUTCDate(transaction.createDate),
         user: wallet.profile.user,
         paymentStatus: PaymentStatus.Processing,
+        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
       };
 
       const txn = await this.transactionHistoryService.create(
@@ -276,7 +279,7 @@ export class CwalletService {
 
       const networks = Object.keys(
         providerConfig.networks,
-      ) as SupportedBlockchainType[];
+      ) as SupportedBlockchainTypeEnum[];
 
       for (const network of networks) {
         const tokens = providerConfig.networks[network].tokens;
@@ -340,7 +343,7 @@ export class CwalletService {
   private async walletExists(
     profileId: string,
     walletType: SupportedWalletTypes,
-    network: SupportedBlockchainType,
+    network: SupportedBlockchainTypeEnum,
   ): Promise<boolean> {
     const existingWallet = await this.cWalletsRepo.findOne({
       where: {
@@ -354,7 +357,7 @@ export class CwalletService {
 
   private async createAndStoreWallet(
     token: string,
-    network: SupportedBlockchainType,
+    network: SupportedBlockchainTypeEnum,
     walletType: SupportedWalletTypes,
     profile: CwalletProfilesEntity,
     walletProvider: WalletProviderEnum,
@@ -397,7 +400,7 @@ export class CwalletService {
   async buildTokensForWallet(
     wallet: CwalletsEntity,
     networkMetadata: Record<
-      SupportedBlockchainType,
+      SupportedBlockchainTypeEnum,
       {
         address: string;
         tokenId?: string;
@@ -414,7 +417,7 @@ export class CwalletService {
 
     for (const network of Object.keys(
       networkMetadata,
-    ) as SupportedBlockchainType[]) {
+    ) as SupportedBlockchainTypeEnum[]) {
       const networkConfig = providerConfig.networks?.[network];
       if (!networkConfig) continue;
 

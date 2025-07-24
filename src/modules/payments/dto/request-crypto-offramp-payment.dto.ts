@@ -1,35 +1,82 @@
-import { SupportedFiatCurrency } from '@/config/settings';
+import {
+  CountryEnum,
+  FiatEnum,
+  SupportedBlockchainTypeEnum,
+  SupportedFiatCurrencyEnum,
+  TokenEnum,
+} from '@/config/settings';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Validate,
+  ValidateNested,
 } from 'class-validator';
+import { IsEvmAddressConstraint } from './fiat-to-crypto-request.dto';
+import { BankInfoRequestDto } from './bank-info-request.dto';
+import { PaymentReasonEnum } from '@/models/payment.types';
+import { IsLowercaseEnum } from '@/validators/is-lowercase-enum.validator';
 
 export class RequestCryptoOffRampPaymentDto {
-  @ApiProperty({ example: 'USDT', description: 'The crypto token to off-ramp' })
-  @IsString()
-  @IsNotEmpty()
-  assetCode: string;
-
-  @ApiProperty({ example: 'matic', description: 'Blockchain network' })
-  @IsString()
-  @IsNotEmpty()
-  network: string;
-
-  @ApiProperty({ example: 100, description: 'Amount in crypto' })
-  @IsNumber()
-  amount: number;
+  // ===== Crypto Asset Details =====
 
   @ApiProperty({
-    example: SupportedFiatCurrency.USD,
-    enum: SupportedFiatCurrency,
+    example: TokenEnum.USDT,
+    description: 'The crypto token to off-ramp',
+    enum: TokenEnum,
+  })
+  @IsEnum(TokenEnum)
+  @IsNotEmpty()
+  assetCode: TokenEnum;
+
+  @ApiProperty({
+    example: SupportedBlockchainTypeEnum.BEP20,
+    description: 'Blockchain network',
+    enum: SupportedBlockchainTypeEnum,
+  })
+  @IsEnum(SupportedBlockchainTypeEnum)
+  @IsNotEmpty()
+  network: SupportedBlockchainTypeEnum;
+
+  @ApiProperty({
+    example: 100.5,
+    description: 'Amount in crypto',
+    type: Number,
+  })
+  @IsNumber({ maxDecimalPlaces: 8 })
+  @IsNotEmpty()
+  userAmount: number;
+
+  // ===== Fiat & Payment Preferences =====
+
+  @ApiProperty({
+    example: SupportedFiatCurrencyEnum.NGN,
+    enum: SupportedFiatCurrencyEnum,
     description: 'Fiat currency to receive',
   })
-  @IsEnum(SupportedFiatCurrency)
-  fiatCurrency: SupportedFiatCurrency;
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase() : value,
+  )
+  @IsLowercaseEnum(FiatEnum, {
+    message:
+      'paymentReason must be one of: ' + Object.values(FiatEnum).join(', '),
+  })
+  @IsEnum(SupportedFiatCurrencyEnum)
+  @IsNotEmpty()
+  fiatCode: SupportedFiatCurrencyEnum;
+
+  @ApiProperty({
+    description: '2-letter ISO country code (e.g., ng, gh)',
+    example: 'ng',
+    enum: CountryEnum,
+  })
+  @IsString()
+  @IsNotEmpty()
+  country: CountryEnum;
 
   @ApiProperty({
     example: 'bank_transfer',
@@ -41,10 +88,33 @@ export class RequestCryptoOffRampPaymentDto {
   paymentMethod?: string;
 
   @ApiProperty({
-    example: 'recipient@example.com',
-    description: 'Recipient identifier (email, phone, bank ID, etc)',
+    example: PaymentReasonEnum.TRAVEL,
+    description: 'Reason for the off-ramp payment',
+    enum: PaymentReasonEnum,
+  })
+  @IsEnum(PaymentReasonEnum)
+  @IsNotEmpty()
+  paymentReason: PaymentReasonEnum;
+
+  // ===== Crypto Sender Info =====
+
+  @ApiProperty({
+    example: '0x2179EA580dF5b25b3Cb369f13397C5a6730a48d9',
+    description: 'Address sending the crypto',
   })
   @IsString()
   @IsNotEmpty()
-  recipient: string;
+  @Validate(IsEvmAddressConstraint)
+  sourceAddress: string;
+
+  // ===== Recipient Bank Info =====
+
+  @ApiProperty({
+    description: 'Recipient bank details',
+    type: BankInfoRequestDto,
+  })
+  @ValidateNested()
+  @Type(() => BankInfoRequestDto)
+  @IsNotEmpty()
+  bankInfo: BankInfoRequestDto;
 }

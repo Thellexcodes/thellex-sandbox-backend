@@ -4,10 +4,12 @@ import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
 import { IUserDto, UserEntity } from './typeorm/entities/user.entity';
 import {
+  BlockchainNetworkSettings,
   SUPPORTED_RAMP_COUNTRIES,
-  SupportedBlockchainType,
+  SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
   TokenEnum,
+  TRANSACTION_POLICY,
   WalletProviderEnum,
 } from '@/config/settings';
 import * as crypto from 'crypto';
@@ -20,6 +22,9 @@ import {
 } from '@/config/tier.lists';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
+import { compareTwoStrings } from 'string-similarity';
+import { Injectable, PipeTransform } from '@nestjs/common';
+import { Bank, NigeriaBanks } from './nigeria-banks';
 
 //TODO: handle errors with enums
 
@@ -142,7 +147,7 @@ export function generateYcSignature({
   const timestamp = new Date().toISOString();
   let bodyHash = '';
 
-  if (method === 'POST' || method === 'PUT') {
+  if (['POST', 'PUT'].includes(method.toUpperCase())) {
     const rawBody =
       typeof body === 'string' ? body : JSON.stringify(body || {});
     const hash = crypto.createHash('sha256').update(rawBody).digest();
@@ -186,7 +191,7 @@ export function toUTCDate(dateString: string): Date {
 }
 
 export function isSupportedBlockchainToken(
-  network: SupportedBlockchainType,
+  network: SupportedBlockchainTypeEnum,
   token: TokenEnum,
 ): boolean {
   for (const walletTypeKey in walletConfig) {
@@ -196,7 +201,7 @@ export function isSupportedBlockchainToken(
       for (const networkKey in provider.networks) {
         if (networkKey.toLowerCase() === network.toLowerCase()) {
           const supportedTokens =
-            provider.networks[networkKey as SupportedBlockchainType].tokens;
+            provider.networks[networkKey as SupportedBlockchainTypeEnum].tokens;
           if (
             supportedTokens
               .map((t) => t.toLowerCase())
@@ -220,7 +225,7 @@ export function getTokenId({
   isTestnet = false,
 }: {
   token: TokenEnum;
-  chain?: SupportedBlockchainType;
+  chain?: SupportedBlockchainTypeEnum;
   isTestnet?: boolean;
 }): string | undefined {
   for (const walletTypeKey in walletConfig) {
@@ -232,7 +237,7 @@ export function getTokenId({
       const networks = provider.networks;
 
       for (const networkKey in networks) {
-        const network = networkKey as SupportedBlockchainType;
+        const network = networkKey as SupportedBlockchainTypeEnum;
         const config = networks[network];
 
         // Check for mainnet/testnet match
@@ -282,18 +287,21 @@ export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
   const country = user.kyc?.country || '';
   const outstandingKyc: string[] = [];
 
-  if (
-    isCountrySupportedForOfframp(country) &&
-    !idTypes.includes(IdTypeEnum.BVN)
-  ) {
+  if (isCountrySupportedForOfframp(country) && !user.kyc.bvn) {
     outstandingKyc.push(IdTypeEnum.BVN);
   }
+
+  const remainingTiers = tierOrder
+    .slice(currentIndex + 1)
+    .map((tierKey) => formatTier(tierKey));
 
   return {
     ...user,
     currentTier: formatTier(userTier),
     nextTier: nextTier ? formatTier(nextTier) : null,
     outstandingKyc,
+    remainingTiers,
+    transactionSettings: TRANSACTION_POLICY,
   };
 }
 
@@ -310,9 +318,117 @@ export const normalize = (str: string) =>
     .toLowerCase()
     .replace(/[^a-z]/g, '');
 
-export const isCountrySupportedForOfframp = (country: string): boolean => {
+export const isCountrySupportedForOfframp = (
+  country: string,
+  threshold = 0.8,
+): boolean => {
   const normalized = normalize(country);
-  return SUPPORTED_RAMP_COUNTRIES.some(
-    (supported) => normalize(supported) === normalized,
-  );
+
+  return SUPPORTED_RAMP_COUNTRIES.some((supported) => {
+    const similarity = compareTwoStrings(normalize(supported), normalized);
+    return similarity >= threshold;
+  });
 };
+
+export function getTreasuryAddress(
+  network: SupportedBlockchainTypeEnum,
+): string {
+  return BlockchainNetworkSettings[network].treasuryAddress;
+}
+
+export function normalizeEnumValue<T extends Record<string, string>>(
+  value: string,
+  enumObj: T,
+): T[keyof T] {
+  const normalize = (val: string) => val.toLowerCase().replace(/[_\s]/g, '');
+  const normalizedInput = normalize(value);
+
+  const match = Object.values(enumObj).find(
+    (enumValue) => normalize(enumValue) === normalizedInput,
+  );
+
+  if (!match) {
+    throw new Error(`Invalid enum value: ${value}`);
+  }
+
+  // Assert that match is of type T[keyof T]
+  return match as T[keyof T];
+}
+
+export function toUTCString(timestamp: number): Date {
+  return new Date(timestamp);
+}
+
+@Injectable()
+export class NormalizeEnumPipe implements PipeTransform {
+  constructor(private readonly enumType: Record<string, string>) {}
+
+  transform(value: any) {
+    if (typeof value === 'string') {
+      return normalizeEnumValue(value, this.enumType);
+    }
+    console.log({ value });
+
+    return value;
+  }
+}
+
+// Calculate Levenshtein distance for string similarity
+function levenshteinDistance(a: string, b: string): number {
+  const lenA = a.length;
+  const lenB = b.length;
+
+  if (lenA === 0) return lenB;
+  if (lenB === 0) return lenA;
+
+  const matrix: number[][] = Array.from({ length: lenB + 1 }, (_, j) =>
+    Array.from({ length: lenA + 1 }, (_, i) => (j === 0 ? i : i === 0 ? j : 0)),
+  );
+
+  for (let j = 1; j <= lenB; j++) {
+    for (let i = 1; i <= lenA; i++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[j][i] = Math.min(
+        matrix[j][i - 1] + 1, // deletion
+        matrix[j - 1][i] + 1, // insertion
+        matrix[j - 1][i - 1] + cost, // substitution
+      );
+    }
+  }
+
+  return matrix[lenB][lenA];
+}
+
+// Calculate similarity percentage
+function similarityPercentage(a: string, b: string): number {
+  if (!a || !b) return 0;
+
+  const distance = levenshteinDistance(a.toLowerCase(), b.toLowerCase());
+  const maxLen = Math.max(a.length, b.length);
+  return maxLen === 0 ? 100 : ((maxLen - distance) / maxLen) * 100;
+}
+
+// Main fuzzy match function
+export function findBankByName(name: string): Bank | null {
+  if (!name || typeof name !== 'string') return null;
+
+  const cleanedName = name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+  const pattern = cleanedName.split(/\s+/).join('.*');
+  const regex = new RegExp(pattern, 'i');
+
+  const candidates = NigeriaBanks.filter((bank) => regex.test(bank.name));
+  if (candidates.length === 0) return null;
+
+  let bestMatch: Bank | null = null;
+  let highestSimilarity = 0;
+
+  for (const bank of candidates) {
+    const similarity = similarityPercentage(cleanedName, bank.name);
+    if (similarity >= 95 && similarity > highestSimilarity) {
+      bestMatch = bank;
+      highestSimilarity = similarity;
+    }
+  }
+
+  return bestMatch;
+}

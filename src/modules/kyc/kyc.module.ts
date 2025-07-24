@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { KycService } from './kyc.service';
-import { HttpService } from '@/middleware/http.service';
 import { UserService } from '../users/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
@@ -23,6 +22,6 @@ import { kycController } from './kyc.controller';
     }),
   ],
   controllers: [kycController],
-  providers: [KycService, HttpService, UserService, MailService, HttpService],
+  providers: [KycService, UserService, MailService],
 })
 export class KycModule {}

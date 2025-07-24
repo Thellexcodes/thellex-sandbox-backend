@@ -1,20 +1,6 @@
+import { ConfigService } from '@/config/config.service';
 import {
-  alchemyApiMap,
   ApiConfig,
-  authJwtSecretMap,
-  baseRpcUrlMap,
-  clientRpIdMap,
-  clientUrlMap,
-  cwalletApiKeyMap,
-  cwalletEntityCypherTextMap,
-  cwalletEntityPublicKeyMap,
-  cwalletEntitySecretMap,
-  dojahApiMap,
-  dojahAppIdMap,
-  dojahPublicKeyMap,
-  emailAppNameMap,
-  emailAppPasswordMap,
-  emailUserMap,
   Env,
   ENV_DEVELOPMENT,
   ENV_PRODUCTION,
@@ -22,21 +8,6 @@ import {
   ENV_STAGING,
   ENV_TESTING,
   ENV_TESTNET,
-  ethereumRpcUrlMap,
-  ipinfoTokenMap,
-  kycEncryptionKeyMap,
-  postgresDbMap,
-  postgresHostMap,
-  postgresPasswordMap,
-  postgresPortMap,
-  postgresUserMap,
-  qwalletApiMap,
-  qwalletSecretMap,
-  serverIpMap,
-  serverPortMap,
-  stellarRpcEndpointMap,
-  ycPaymentApiMap,
-  ycSecretKeyMap,
 } from '@/models/settings.types';
 
 export type EnvType =
@@ -50,58 +21,66 @@ export type EnvType =
 export const ENV_KYC_ENCRYPTION = process.env.ENV_KYC_ENCRYPTION;
 
 export function getAppConfig(): ApiConfig {
-  const env = getEnv();
+  const config = new ConfigService();
 
   return {
-    KYC_ENCRYPTION_KEY: kycEncryptionKeyMap[env] || '',
-    ALCHEMY_API: alchemyApiMap[env] || '',
+    KYC_ENCRYPTION_KEY: config.get('KYC_ENCRYPTION_KEY'),
+    ALCHEMY_API: config.get('ALCHEMY_API'),
     SERVER: {
-      PORT: Number(serverPortMap[env]) || 0,
-      IP: serverIpMap[env] || '',
+      PORT: config.getNumber('SERVER_PORT'),
+      IP: config.get('SERVER_IP'),
     },
     POSTGRES: {
-      HOST: postgresHostMap[env] || '',
-      PORT: Number(postgresPortMap[env]) || 0,
-      USER: postgresUserMap[env] || '',
-      DATABASE: postgresDbMap[env] || '',
-      PASSWORD: postgresPasswordMap[env] || '',
+      HOST: config.get('POSTGRES_HOST'),
+      PORT: config.getNumber('POSTGRES_PORT'),
+      USER: config.get('POSTGRES_USER'),
+      DATABASE: config.get('POSTGRES_DB'),
+      PASSWORD: config.get('POSTGRES_PASSWORD'),
     },
-    AUTH_JWT_SECRET: authJwtSecretMap[env] || '',
+    AUTH_JWT_SECRET: config.get('AUTH_JWT_SECRET'),
     CLIENT: {
-      RP_ID: clientRpIdMap[env] || '',
-      URL: clientUrlMap[env] || '',
+      RP_ID: config.get('CLIENT_RP_ID'),
+      URL: config.get('CLIENT_URL'),
     },
     EMAIL: {
-      MAIL_USER: emailUserMap[env] || '',
-      MAIL_APP_PASSWORD: emailAppPasswordMap[env] || '',
-      APPLICATION_NAME: emailAppNameMap[env] || '',
+      MAIL_USER: config.get('EMAIL_USER'),
+      MAIL_APP_PASSWORD: config.get('EMAIL_APP_PASSWORD'),
+      APPLICATION_NAME: config.get('EMAIL_APPLICATION_NAME'),
     },
     BLOCKCHAIN: {
-      ETHEREUM_RPC_URL: ethereumRpcUrlMap[env] || '',
-      BASE_RPC_URL: baseRpcUrlMap[env] || '',
-      STELLAR_RPC_ENDPOINT: stellarRpcEndpointMap[env] || '',
+      ETHEREUM_RPC_URL: config.get('ETHEREUM_RPC_URL'),
+      BASE_RPC_URL: config.get('BASE_RPC_URL'),
+      BEP20_RPC_URL: config.get('BSC_RPC_URL'),
+      STELLAR_RPC_URL: config.get('STELLAR_RPC_URL'),
+      TRON_RPC_URL: config.get('TRON_RPC_URL'),
+      MATIC_POL_RPC_URL: config.get('MATIC_POL_RPC_URL'),
     },
     DOJAH: {
-      APP_ID: dojahAppIdMap[env] || '',
-      AUTH_PUBLIC_KEY: dojahPublicKeyMap[env] || '',
-      API: dojahApiMap[env] || '',
+      APP_ID: config.get('DOJAH_APP_ID'),
+      AUTH_PUBLIC_KEY: config.get('DOJAH_AUTH_PUBLIC_KEY'),
+      API: config.get('DOJAH_API'),
     },
     CWALLET: {
-      API_KEY: cwalletApiKeyMap[env] || '',
-      ENTITY_SECRET: cwalletEntitySecretMap[env] || '',
-      ENTITY_PUBLIC_KEY: cwalletEntityPublicKeyMap[env] || '',
-      ENTITY_CYPHER_TEXT: cwalletEntityCypherTextMap[env] || '',
+      API_KEY: config.get('CWALLET_API_KEY'),
+      ENTITY_SECRET: config.get('CWALLET_ENTITY_SECRET'),
+      ENTITY_PUBLIC_KEY: config.get('CWALLET_ENTITY_PUBLIC_KEY'),
+      ENTITY_CYPHER_TEXT: config.get('CWALLET_ENTITY_CYPHER_TEXT'),
     },
     QWALLET: {
-      SECRET_KEY: qwalletSecretMap[env] || '',
-      API: qwalletApiMap[env] || '',
+      SECRET_KEY: config.get('QWALLET_SECRET_KEY'),
+      API: config.get('QWALLET_API'),
+    },
+    MPR: {
+      PUBLIC_KEY: config.get('MPR_PUBLIC_KEY'),
+      SECRET_KEY: config.get('MPR_SECRET_KEY'),
     },
     YC: {
-      PUBLIC_KEY: process.env.YC_PUBLIC_KEY || '',
-      SECRET_KEY: ycSecretKeyMap[env] || '',
-      PAYMENT_API: ycPaymentApiMap[env] || '',
+      PUBLIC_KEY: config.get('YC_PUBLIC_KEY'),
+      SECRET_KEY: config.get('YC_SECRET_KEY'),
+      PAYMENT_API: config.get('YC_PAYMENT_API'),
     },
-    IPINFO_TOKEN: ipinfoTokenMap[env] || '',
+
+    IPINFO_TOKEN: config.get('IPINFO_TOKEN'),
   };
 }
 

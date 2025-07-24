@@ -16,6 +16,8 @@ import {
 } from './dto/payment-settings';
 import { UpdateTaxSettingsDto } from './dto/tax-settings.dto';
 import { UpdatePayoutSettingsDto } from './dto/payout-settings.dto';
+import { v4 as uuidV4 } from 'uuid';
+import { YellowCardService } from '../payments/yellowcard.service';
 
 @Injectable()
 export class SettingsService {
@@ -25,6 +27,7 @@ export class SettingsService {
 
     @InjectRepository(BankAccountEntity)
     private readonly bankAccountRepo: Repository<BankAccountEntity>,
+    private readonly ycService: YellowCardService,
   ) {
     // Inject other repositories as needed (e.g., TaxSettingEntity, PayoutSettingEntity)
   }
@@ -53,11 +56,29 @@ export class SettingsService {
   }
 
   async addBankAccount(userId: string, dto: CreateBankAccountDto) {
+    // const bankInfo = await this.ycService.resolveBankAccount({
+    //   accountNumber: `${dto.accountNumber}`,
+    //   networkId: dto.bankCode,
+    // });
+
+    const existingAccounts = await this.bankAccountRepo.find({
+      where: { user: { id: userId } },
+    });
+
+    const isFirstAccount = existingAccounts.length === 0;
+
+    const randomName = 'Bank Info 1';
+
     const newBankRecord = this.bankAccountRepo.create({
       ...dto,
+      isPrimary: isFirstAccount,
       user: { id: userId },
+      external_customer_id: uuidV4(),
+      accountName: randomName,
+      external_createdAt: new Date(),
     });
-    return this.bankAccountRepo.save(newBankRecord);
+
+    return await this.bankAccountRepo.save(newBankRecord);
   }
 
   async updateBankAccount(
