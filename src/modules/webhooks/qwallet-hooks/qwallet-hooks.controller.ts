@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, Logger } from '@nestjs/common';
 import { QwalletHooksService } from './qwallet-hooks.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
@@ -11,6 +11,8 @@ import { responseHandler } from '@/utils/helpers';
 @Controller('qwallet-hooks')
 @ApiBearerAuth('access-token')
 export class QwalletHooksController {
+  private readonly logger = new Logger(QwalletHooksController.name);
+
   constructor(private readonly qwalletHooksService: QwalletHooksService) {}
 
   @Post()

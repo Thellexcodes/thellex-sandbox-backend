@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
 import {
   WalletErrorEnum,
@@ -9,21 +9,30 @@ import {
   PaymentStatus,
   TransactionTypeEnum,
 } from '@/models/payment.types';
-import { toUTCDate } from '@/utils/helpers';
+import { normalizeEnumValue, toUTCDate } from '@/utils/helpers';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { TokenEnum } from '@/config/settings';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
 import { QWalletStatus } from '@/modules/wallets/qwallet/qwallet-status.enum';
+import {
+  NotificationEventEnum,
+  NotificationStatusEnum,
+} from '@/models/notifications.enum';
+import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
+import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
 
 //TODO: handle errors with enums
 //TODO: update all date in system to UTC
 @Injectable()
 export class CwalletHooksService {
+  private readonly logger = new Logger(CwalletHooksService.name);
+
   constructor(
     private readonly transactionHistoryServie: TransactionHistoryService,
     private readonly cwalletService: CwalletService,
+    private readonly notificationGateway: NotificationsGateway,
   ) {}
 
   async handleDepositSuccessful(payload: CwalletHookDto) {
@@ -32,7 +41,10 @@ export class CwalletHooksService {
       const txnState = payload.notification.state;
       const notificationPayload = payload.notification;
 
-      if (txnState === PaymentStatus.Complete) {
+      const normalizedState = normalizeEnumValue(txnState, PaymentStatus);
+
+      //handle complete deposit
+      if (normalizedState === PaymentStatus.Complete) {
         const wallet = await this.cwalletService.lookupSubWallet(
           notificationPayload.destinationAddress,
         );
@@ -44,7 +56,7 @@ export class CwalletHooksService {
           );
         }
 
-        const user = wallet.profile.user;
+        const userProfile = wallet.profile.user;
 
         const transactionHistoryExists =
           await this.transactionHistoryServie.findTransactionByTransactionId(
@@ -76,15 +88,13 @@ export class CwalletHooksService {
           sourceAddress: notificationPayload.sourceAddress,
           destinationAddress: notificationPayload.destinationAddress,
           paymentNetwork: notificationPayload.blockchain,
-          user,
+          user: userProfile,
           paymentStatus: PaymentStatus.Accepted,
           transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
         };
 
-        const transaction = await this.transactionHistoryServie.create(
-          txnData,
-          user,
-        );
+        const { user, ...transaction } =
+          await this.transactionHistoryServie.create(txnData, userProfile);
 
         const latestWalletBalance =
           await this.cwalletService.getBalanceByAddress(
@@ -98,24 +108,29 @@ export class CwalletHooksService {
           latestWalletBalance.toString(),
         );
 
-        // const notification =
-        //   await this.walletNotficationsService.createNotification({
-        //     user,
-        //     title: NotificationsEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-        //     message: NotificationMessageEnum.CRYPTO_DEPOSIT_SUCCESSFUL,
-        //     data: {
-        //       amount: notificationPayload.amounts[0],
-        //       assetCode,
-        //       txnID: transaction.id,
-        //       walletID: notificationPayload.walletId,
-        //     },
-        //   });
+        const notification = await this.notificationGateway.createNotification({
+          user,
+          title: NotificationEventEnum.CRYPTO_DEPOSIT,
+          message: NotificationEventEnum.CRYPTO_DEPOSIT,
+          data: {
+            amount: notificationPayload.amounts[0],
+            assetCode,
+            txnID: transaction.id,
+            walletID: notificationPayload.walletId,
+            transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+            kind: NotificationKindEnum.Transaction,
+          },
+        });
 
-        // await this.notificationsGateway.emitTransactionNotificationToUser(
-        //   user.alertID,
-        //   TRANSACTION_NOTIFICATION_TYPES_ENUM.Deposit,
-        //   { transaction, notification },
-        // );
+        await this.notificationGateway.emitNotificationToUser({
+          token: user.alertID,
+          event: WalletWebhookEventEnum.DepositSuccessful,
+          status: NotificationStatusEnum.SUCCESS,
+          data: {
+            notification,
+            transaction,
+          },
+        });
       }
     } catch (error) {
       if (error instanceof CustomHttpException) {
@@ -138,7 +153,10 @@ export class CwalletHooksService {
       const txnState = payload.notification.state;
       const notificationPayload = payload.notification;
 
-      if (txnState === PaymentStatus.Complete) {
+      const normalizedState = normalizeEnumValue(txnState, PaymentStatus);
+
+      // Handle complete withdrawal
+      if (normalizedState === PaymentStatus.Complete) {
         const wallet = await this.cwalletService.lookupSubWallet(
           notificationPayload.sourceAddress,
         );
@@ -165,64 +183,83 @@ export class CwalletHooksService {
           );
         }
 
-        if (transaction.event === WalletWebhookEventEnum.WithdrawalSuccessful) {
+        if (transaction.paymentStatus === PaymentStatus.Complete) {
           throw new CustomHttpException(
             QWalletStatus.TRANSACTION_ALREADY_PROCESSED,
             HttpStatus.CONFLICT,
           );
         }
 
-        // Update transaction to reflect successful withdrawal
-        const updatedTransaction =
+        // Update transaction
+        const updatedTxn =
           await this.transactionHistoryServie.updateCwalletTransaction({
             transactionId: txnID,
             updates: {
-              paymentStatus: PaymentStatus.Done,
               event: WalletWebhookEventEnum.WithdrawalSuccessful,
               blockchainTxId: notificationPayload.txHash,
               updatedAt: toUTCDate(notificationPayload.updateDate),
+              paymentStatus: PaymentStatus.Complete,
             },
           });
-
-        const user = transaction.user;
 
         const txnToken = await this.cwalletService.getToken({
           id: notificationPayload.tokenId,
         });
 
-        const assetCode = txnToken.data.token.symbol.toLocaleLowerCase();
+        const updatedAssetCode = txnToken.data.token.symbol.toLowerCase();
 
         const latestWalletBalance =
           await this.cwalletService.getBalanceByAddress(
             notificationPayload.walletId,
-            assetCode as TokenEnum,
+            updatedAssetCode as TokenEnum,
           );
 
         await this.cwalletService.updateWalletTokenBalance(
           wallet,
-          assetCode,
+          updatedAssetCode,
           latestWalletBalance.toString(),
         );
 
-        // Send notification
-        // const notification =
-        //   await this.walletNotficationsService.createNotification({
-        //     user,
-        //     title: NotificationsEnum.CRYPTO_WITHDRAWAL_SUCCESSFUL,
-        //     message: NotificationMessageEnum.CRYPTO_WITHDRAW_SUCCESSFUL,
-        //     data: {
-        //       amount: transaction.amount,
-        //       assetCode: transaction.assetCode,
-        //       txnID: transaction.transactionId,
-        //       walletID: transaction.walletId,
-        //     },
-        //   });
+        const notification = await this.notificationGateway.createNotification({
+          user: updatedTxn.user,
+          title: NotificationEventEnum.CRYPTO_WITHDRAWAL,
+          message: NotificationEventEnum.CRYPTO_WITHDRAWAL,
+          data: {
+            amount: updatedTxn.amount,
+            assetCode: updatedTxn.assetCode,
+            txnID: updatedTxn.transactionId,
+            walletID: updatedTxn.walletId,
+            transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+            kind: NotificationKindEnum.Transaction,
+          },
+        });
 
-        // await this.notificationsGateway.emitTransactionNotificationToUser(
-        //   user.alertID,
-        //   TRANSACTION_NOTIFICATION_TYPES_ENUM.Withdrawal,
-        //   { transaction: updatedTransaction, notification },
-        // );
+        await this.notificationGateway.emitNotificationToUser({
+          token: updatedTxn.user.alertID,
+          event: WalletWebhookEventEnum.WithdrawalSuccessful,
+          status: NotificationStatusEnum.SUCCESS,
+          data: {
+            notification,
+            transaction: {
+              id: updatedTxn.id,
+              event: updatedTxn.event,
+              transactionId: updatedTxn.transactionId,
+              transactionDirection: updatedTxn.transactionDirection,
+              transactionType: updatedTxn.transactionType,
+              assetCode: updatedTxn.assetCode,
+              amount: updatedTxn.amount,
+              fee: updatedTxn.fee,
+              feeLevel: updatedTxn.feeLevel,
+              blockchainTxId: updatedTxn.blockchainTxId,
+              reason: updatedTxn.reason,
+              paymentStatus: updatedTxn.paymentStatus,
+              sourceAddress: updatedTxn.sourceAddress,
+              destinationAddress: updatedTxn.destinationAddress,
+              paymentNetwork: updatedTxn.paymentNetwork,
+              createdAt: updatedTxn.createdAt,
+            },
+          },
+        });
       }
     } catch (error) {
       if (error instanceof CustomHttpException) {

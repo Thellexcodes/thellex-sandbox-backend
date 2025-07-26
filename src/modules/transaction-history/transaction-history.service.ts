@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +12,8 @@ import { IUpdateCwalletTransactionDto } from '../webhooks/cwallet-hooks/dto/upda
 //TODO: add try catch block for error handling
 @Injectable()
 export class TransactionHistoryService {
+  private readonly logger = new Logger(TransactionHistoryService.name);
+
   constructor(
     @InjectRepository(TransactionHistoryEntity)
     private readonly transactionRepo: Repository<TransactionHistoryEntity>,

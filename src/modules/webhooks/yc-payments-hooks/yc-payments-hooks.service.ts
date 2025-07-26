@@ -19,7 +19,7 @@ export class YcPaymentHookService {
   ) {}
 
   async handleSuccessfulCollectionRequest(dto: YcCreatePaymentHookDto) {
-    //[x] update the ramp trnsaction
+    console.log(dto);
     const rampTransaction =
       await this.paymentService.updateRampTransactionHistoryBySequenceId(
         dto.sequenceId,
@@ -35,32 +35,31 @@ export class YcPaymentHookService {
         { paymentStatus: dto.status },
       );
 
-    const notication = await this.notificationGateway.createNotification({
+    const notification = await this.notificationGateway.createNotification({
       user,
-      title: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
-      message: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+      title: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
+      message: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
       data: {
-        notification: {
-          amount: rampTransaction.netFiatAmount.toString(),
-          assetCode: rampTransaction.recipientInfo.assetCode,
-          txnID: transaction.id,
-        },
-        transaction,
+        amount: rampTransaction.netFiatAmount.toString(),
+        assetCode: rampTransaction.recipientInfo.assetCode,
+        txnID: transaction.id,
+        transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
       },
     });
 
     await this.notificationGateway.emitNotificationToUser({
       token: user.alertID,
-      event: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+      event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
       status: NotificationStatusEnum.SUCCESS,
       data: {
-        notication,
+        notification,
         transaction,
       },
     });
   }
 
   async handleSuccessfulPaymentRequest(dto: YcCreatePaymentHookDto) {
+    console.log(dto);
     //[x] update the ramp trnsaction
     const rampTransaction =
       await this.paymentService.updateRampTransactionHistoryBySequenceId(

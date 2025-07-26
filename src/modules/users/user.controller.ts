@@ -43,8 +43,6 @@ export class UserController {
       identifier: user.email,
     } as LoginUserDto);
 
-    console.log(authRecords.notifications);
-
     responseHandler(authRecords, res, req);
   }
 

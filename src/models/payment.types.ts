@@ -1,4 +1,4 @@
-export enum YCPaymentEventEnum {
+export enum RampPaymentEventEnum {
   COLLECTION_CREATED = 'collection.created',
   COLLECTION_PENDING_APPROVAL = 'collection.pending_approval',
   COLLECTION_PROCESSING = 'collection.processing',

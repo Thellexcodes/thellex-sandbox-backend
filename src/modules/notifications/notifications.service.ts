@@ -6,15 +6,7 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { plainToInstance } from 'class-transformer';
 import { INotificationConsumeResponseDto } from './dto/notification.dto';
 import { NotificationsGateway } from './notifications.gateway';
-import { THIRTY_DAYS_IN_MS } from '@/config/settings';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { AnyObject } from '@/models/any.types';
-import {
-  NotificationErrorEnum,
-  NotificationEventEnum,
-  NotificationStatusEnum,
-} from '@/models/notifications.enum';
-import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
+import { NotificationErrorEnum } from '@/models/notifications.enum';
 
 //TODO: properly handle errors
 @Injectable()
@@ -48,7 +40,7 @@ export class NotificationsService {
       await this.notificationRepo.update({ id }, { consumed: true });
       return plainToInstance(
         INotificationConsumeResponseDto,
-        { id, consumed: true },
+        { id, consumed: true, kind: notification.kind },
         { excludeExtraneousValues: true },
       );
     } catch (error) {

@@ -10,7 +10,7 @@ import {
   PaymentStatus,
   TransactionDirectionEnum,
   TransactionTypeEnum,
-  YCPaymentEventEnum,
+  RampPaymentEventEnum,
 } from '@/models/payment.types';
 import {
   FeeLevel,
@@ -21,7 +21,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEnum } from 'class-validator';
 
-type CombinedEventEnum = WalletWebhookEventEnum | YCPaymentEventEnum;
+type CombinedEventEnum = WalletWebhookEventEnum | RampPaymentEventEnum;
 
 @Entity({ name: 'transaction_history' })
 export class TransactionHistoryEntity extends BaseEntity {
@@ -33,7 +33,7 @@ export class TransactionHistoryEntity extends BaseEntity {
   @Expose()
   @ApiProperty()
   @IsEnum(WalletWebhookEventEnum, { each: false })
-  @IsEnum(YCPaymentEventEnum, { each: false })
+  @IsEnum(RampPaymentEventEnum, { each: false })
   event: CombinedEventEnum;
 
   @Expose()

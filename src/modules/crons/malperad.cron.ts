@@ -5,7 +5,7 @@ import { MapleradService } from '../payments/maplerad.service';
 
 @Injectable()
 export class MapleradCron {
-  private readonly logger = new Logger(MapleradCron.name); // Correct usage
+  private readonly logger = new Logger(MapleradCron.name);
 
   constructor(private readonly mapleradService: MapleradService) {}
 

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { QWalletWebhookPayloadDto } from './dto/qwallet-hook.dto';
 import { IQwalletHookDepositSuccessfulData } from './dto/qwallet-hook-depositSuccessful.dto';
@@ -24,15 +24,20 @@ import {
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
+import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
+import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
 
 //TODO: handle errors with enum
 //TODO: Update logger
 @Injectable()
 export class QwalletHooksService {
+  private readonly logger = new Logger(QwalletHooksService.name);
+
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly notificationService: NotificationsService,
     private readonly transactionHistoryService: TransactionHistoryService,
+    private readonly notificationGateway: NotificationsGateway,
   ) {}
 
   async handleWalletAddressGenerated(
@@ -96,108 +101,161 @@ export class QwalletHooksService {
   async handleDepositSuccessful(
     payload: QWalletWebhookPayloadDto,
   ): Promise<void> {
+    this.logger.log(payload);
     try {
       const data = payload.data as IQwalletHookDepositSuccessfulData;
 
       if (data.status !== PaymentStatus.Accepted) return;
 
-      data.event = payload.event;
-      data.done_at = toUTCDate(data.wallet.updated_at);
+      const {
+        id: transactionId,
+        txid: blockchainTxId,
+        amount,
+        fee,
+        reason,
+        currency: assetCode,
+        status,
+        wallet,
+        user,
+        payment_address,
+      } = data;
 
-      const transactionExists =
+      const {
+        id: walletId,
+        name: walletName,
+        deposit_address,
+        updated_at,
+        default_network,
+      } = wallet;
+
+      // Check if transaction already exists
+      const existingTransaction =
         await this.transactionHistoryService.findTransactionByTransactionId(
-          data.id,
+          transactionId,
         );
-
-      if (transactionExists) {
+      if (existingTransaction) {
         throw new CustomHttpException(
           QWalletStatus.TRANSACTION_FOUND,
           HttpStatus.CONFLICT,
         );
       }
 
-      const qwalletProfile = await this.qwalletService.lookupSubAccountByQid(
-        data.user.id,
-      );
+      // Attach event and normalized done_at
+      data.event = payload.event;
+      const doneAt = toUTCDate(updated_at);
 
-      if (!qwalletProfile)
+      const qwalletProfile = await this.qwalletService.lookupSubAccountByQid(
+        user.id,
+      );
+      if (!qwalletProfile) {
         throw new CustomHttpException(
           QWalletStatus.INVALID_USER,
           HttpStatus.BAD_REQUEST,
         );
+      }
 
-      const wallet = qwalletProfile.wallets.find(
-        (w) =>
-          w.networkMetadata[data.wallet.default_network].address ===
-          data.wallet.deposit_address,
+      const matchingWallet = qwalletProfile.wallets.find(
+        (w) => w.networkMetadata[default_network]?.address === deposit_address,
       );
-
-      if (!wallet) {
+      if (!matchingWallet) {
         throw new CustomHttpException(
           WalletErrorEnum.GET_USER_WALLET_FAILED,
           HttpStatus.NOT_FOUND,
         );
       }
 
-      const user = qwalletProfile.user;
-
       const txnData: TransactionHistoryDto = {
         event: normalizeEnumValue(
           WalletWebhookEventEnum.DepositSuccessful,
           WalletWebhookEventEnum,
         ),
-        transactionId: data.id,
+        transactionId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
-        assetCode: data.currency,
-        amount: data.amount,
-        fee: data.fee,
-        blockchainTxId: data.txid,
-        reason: data.reason,
-        updatedAt: data.done_at,
-        walletId: data.wallet.id,
-        walletName: data.wallet.name ?? transactionExists.walletName,
-        paymentStatus: data.status,
-        destinationAddress: data.wallet.deposit_address,
-        paymentNetwork: data.payment_address.network,
-        sourceAddress: data.payment_address.address,
+        assetCode,
+        amount,
+        fee,
+        blockchainTxId,
+        reason,
+        updatedAt: doneAt,
+        walletId,
+        walletName: walletName ?? '',
+        paymentStatus: PaymentStatus.Complete,
+        destinationAddress: deposit_address,
+        paymentNetwork: payment_address.network,
+        sourceAddress: payment_address.address,
         feeLevel: FeeLevel.HIGH,
-        user,
+        user: qwalletProfile.user,
         transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
       };
 
       const transaction = await this.transactionHistoryService.create(
         txnData,
-        user,
+        qwalletProfile.user,
       );
 
+      // Update wallet balance
       const latestWalletInfo = await this.qwalletService.getUserWallet(
         qwalletProfile.qid,
-        data.currency,
+        assetCode,
       );
-
       await this.qwalletService.updateWalletTokenBalance(
-        wallet,
-        data.currency,
+        matchingWallet,
+        assetCode,
         latestWalletInfo.data.balance,
       );
 
-      // await this.notificationService.createAndSendNotification({
-      //   user,
-      //   data: {
-      //     amount: data.amount,
-      //     assetCode: data.currency,
-      //     txnID: transaction.id,
-      //     walletID: data.wallet.id,
-      //     transaction,
-      //   },
-      //   event: normalizeEnumValue(
-      //     NotificationEventEnum.CRYPTO_DEPOSIT,
-      //     NotificationEventEnum,
-      //   ),
-      //   status: NotificationStatusEnum.SUCCESS,
-      // });
+      // Notify the user
+      const notification = await this.notificationGateway.createNotification({
+        user: qwalletProfile.user,
+        title: NotificationEventEnum.CRYPTO_DEPOSIT,
+        message: NotificationEventEnum.CRYPTO_DEPOSIT,
+        data: {
+          amount,
+          assetCode,
+          txnID: transaction.id,
+          walletID: walletId,
+          transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+          kind: NotificationKindEnum.Transaction,
+        },
+      });
+
+      const {
+        id,
+        event,
+        createdAt,
+        transactionDirection,
+        transactionType,
+        feeLevel,
+      } = transaction;
+
+      await this.notificationGateway.emitNotificationToUser({
+        token: qwalletProfile.user.alertID,
+        event: WalletWebhookEventEnum.DepositSuccessful,
+        status: NotificationStatusEnum.SUCCESS,
+        data: {
+          notification,
+          transaction: {
+            id,
+            event,
+            transactionId,
+            transactionDirection,
+            transactionType,
+            assetCode,
+            amount,
+            fee,
+            feeLevel,
+            blockchainTxId,
+            reason,
+            paymentStatus: PaymentStatus.Complete,
+            sourceAddress: payment_address.address,
+            destinationAddress: deposit_address,
+            paymentNetwork: payment_address.network,
+            createdAt,
+          },
+        },
+      });
     } catch (error) {
-      console.error(error);
+      this.logger.error('Error in handleDepositSuccessful', error);
     }
   }
 
@@ -206,33 +264,36 @@ export class QwalletHooksService {
   ): Promise<void> {
     try {
       const data = payload.data as IQWalletHookWithdrawSuccessfulEvent;
+      const normalizedStatus = normalizeEnumValue(data.status, PaymentStatus);
+      data.status = normalizedStatus;
+
       if (data.status !== PaymentStatus.Done) return;
 
       data.event = payload.event;
       data.done_at = toUTCDate(data.wallet.updated_at);
 
-      const transactionExists =
+      const transaction =
         await this.transactionHistoryService.findTransactionByTransactionId(
           data.id,
         );
 
-      if (!transactionExists) {
+      if (!transaction) {
         throw new CustomHttpException(
           QWalletStatus.TRANSACTION_NOT_FOUND,
           HttpStatus.CONFLICT,
         );
       }
 
-      if (transactionExists.paymentStatus === PaymentStatus.Done)
+      if (transaction.paymentStatus === PaymentStatus.Done) {
         throw new CustomHttpException(
           QWalletStatus.DEPOSIT_REJECTED,
           HttpStatus.CONFLICT,
         );
+      }
 
       const qwalletProfile = await this.qwalletService.lookupSubAccountByQid(
         data.user.id,
       );
-
       if (!qwalletProfile) {
         throw new CustomHttpException(
           QWalletStatus.INVALID_USER,
@@ -242,7 +303,7 @@ export class QwalletHooksService {
 
       const wallet = qwalletProfile.wallets.find(
         (w) =>
-          w.networkMetadata[data.wallet.default_network].address ===
+          w.networkMetadata[data.wallet.default_network]?.address ===
           data.wallet.deposit_address,
       );
 
@@ -261,8 +322,6 @@ export class QwalletHooksService {
         );
       }
 
-      const user = qwalletProfile.user;
-
       const updatedTransaction =
         await this.transactionHistoryService.updateQWalletTransactionByTransactionId(
           data,
@@ -279,23 +338,50 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
-      // await this.notificationService.createAndSendNotification({
-      //   user,
-      //   data: {
-      //     amount: data.amount,
-      //     assetCode: data.currency,
-      //     txnID: updatedTransaction.id,
-      //     walletID: data.wallet.id,
-      //     transaction: updatedTransaction,
-      //   },
-      //   event: normalizeEnumValue(
-      //     NotificationEventEnum.CRYPTO_WITHDRAWAL,
-      //     NotificationEventEnum,
-      //   ),
-      //   status: NotificationStatusEnum.SUCCESS,
-      // });
+      const notification = await this.notificationGateway.createNotification({
+        user: qwalletProfile.user,
+        title: NotificationEventEnum.CRYPTO_WITHDRAWAL,
+        message: NotificationEventEnum.CRYPTO_WITHDRAWAL,
+        data: {
+          amount: data.amount,
+          assetCode: data.currency,
+          txnID: updatedTransaction.id,
+          walletID: updatedTransaction.walletId,
+          transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+          kind: NotificationKindEnum.Transaction,
+        },
+      });
+
+      this.logger.log(notification);
+
+      await this.notificationGateway.emitNotificationToUser({
+        token: qwalletProfile.user.alertID,
+        event: WalletWebhookEventEnum.WithdrawalSuccessful,
+        status: NotificationStatusEnum.SUCCESS,
+        data: {
+          notification,
+          transaction: {
+            id: updatedTransaction.id,
+            event: payload.event,
+            transactionId: updatedTransaction.transactionId,
+            transactionDirection: TransactionDirectionEnum.OUTBOUND,
+            transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+            assetCode: data.currency,
+            amount: data.amount,
+            fee: data.fee,
+            feeLevel: FeeLevel.HIGH,
+            blockchainTxId: data.txid,
+            reason: data.reason,
+            paymentStatus: PaymentStatus.Complete,
+            sourceAddress: updatedTransaction.sourceAddress,
+            destinationAddress: data.recipient.details.address,
+            paymentNetwork: updatedTransaction.paymentNetwork,
+            createdAt: updatedTransaction.createdAt,
+          },
+        },
+      });
     } catch (error) {
-      console.error('Withdrawal processing failed:', error);
+      this.logger.error('Withdrawal processing failed:', error);
     }
   }
 

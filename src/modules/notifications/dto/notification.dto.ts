@@ -1,4 +1,5 @@
 import { BaseResponseDto } from '@/models/base-response.dto';
+import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { IsBoolean, IsString } from 'class-validator';
@@ -13,6 +14,10 @@ export class INotificationConsumeResponseDto {
   @IsBoolean()
   @ApiProperty({ example: 'True' })
   consumed: boolean;
+
+  @Expose()
+  @ApiProperty({ enum: Object.values(NotificationKindEnum) })
+  kind: NotificationKindEnum;
 }
 
 export class NoficationConsumeResponse extends BaseResponseDto<INotificationConsumeResponseDto> {

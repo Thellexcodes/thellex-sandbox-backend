@@ -2,7 +2,10 @@ import { PaymentStatus } from '@/models/payment.types';
 import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 import { QwalletSubAccountDto } from '@/modules/wallets/qwallet/dto/qwallet-subaccount.dto';
 import { QwalletDto } from '@/modules/wallets/qwallet/dto/qwallet.dto';
+import { normalizeEnumValue } from '@/utils/helpers';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsEnum } from 'class-validator';
 
 class RecipientDetailsDto {
   @ApiProperty()
@@ -54,8 +57,10 @@ export class QWalletHookWithdrawSuccessfulEventDto {
   @ApiProperty()
   narration: string;
 
-  @ApiProperty()
-  status: string;
+  @Transform(({ value }) => normalizeEnumValue(value, PaymentStatus))
+  @IsEnum(PaymentStatus)
+  @ApiProperty({ enum: Object.values(PaymentStatus) })
+  status: PaymentStatus;
 
   @ApiProperty({ nullable: true })
   reason: string | null;
