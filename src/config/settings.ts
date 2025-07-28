@@ -91,6 +91,11 @@ export enum CountryEnum {
   GH = 'gh',
 }
 
+export enum ThemeMode {
+  LIGHT = 'light',
+  DARK = 'dark',
+}
+
 // --- Alias for blockchain type used across the app ---
 export type BLOCKCHAIN_TYPE = SupportedBlockchainTypeEnum;
 

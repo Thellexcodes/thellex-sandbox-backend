@@ -3,6 +3,7 @@ import { UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
+import { FiatEnum, ThemeMode } from '@/config/settings';
 
 @Entity({ name: 'user_settings' })
 export class UserSettingEntity extends BaseEntity {
@@ -25,9 +26,9 @@ export class UserSettingEntity extends BaseEntity {
   storeLogoUrl?: string;
 
   @Expose()
-  @ApiPropertyOptional({ description: 'Currency code, e.g. USD, EUR' })
-  @Column({ name: 'currency', nullable: true })
-  currency?: string;
+  @ApiPropertyOptional({ description: 'Currency code, e.g. USD, EUR, NGN' })
+  @Column({ name: 'currency', default: FiatEnum.NGN })
+  currency: string;
 
   @Expose()
   @ApiPropertyOptional({
@@ -84,9 +85,17 @@ export class UserSettingEntity extends BaseEntity {
   notifyOnPayout: boolean;
 
   @Expose()
-  @ApiPropertyOptional({ description: 'Theme color hex code or name' })
-  @Column({ name: 'theme_color', nullable: true })
-  themeColor?: string;
+  @ApiPropertyOptional({
+    enum: ThemeMode,
+    description: 'Theme mode: light or dark',
+  })
+  @Column({
+    type: 'enum',
+    enum: ThemeMode,
+    name: 'theme_mode',
+    nullable: true,
+  })
+  themeMode?: ThemeMode;
 
   @Expose()
   @ApiPropertyOptional({ description: 'Language code, e.g. en, fr' })
