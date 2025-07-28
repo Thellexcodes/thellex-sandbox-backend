@@ -3,8 +3,8 @@ import { CwalletHooksService } from './cwallet-hooks.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
-import { CircleNotificationType } from '@/models/wallet-manager.types';
-import { responseHandler } from '@/utils/helpers';
+import { CircleNotificationTypeEnum } from '@/models/wallet-manager.types';
+import { normalizeEnumValue, responseHandler } from '@/utils/helpers';
 
 //TODO: add cwallet security middleware
 @ApiTags('Web Hooks')
@@ -32,12 +32,16 @@ export class CwalletHooksController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    console.log(payload);
-    switch (payload.notificationType) {
-      case CircleNotificationType.TransactionsInbound:
+    const notificationType = normalizeEnumValue(
+      payload.notificationType,
+      CircleNotificationTypeEnum,
+    );
+
+    switch (notificationType) {
+      case CircleNotificationTypeEnum.TransactionsInbound:
         await this.cwalletHooksService.handleDepositSuccessful(payload);
         break;
-      case CircleNotificationType.TransactionsOutbound:
+      case CircleNotificationTypeEnum.TransactionsOutbound:
         await this.cwalletHooksService.handleWithdrawSuccessful(payload);
         break;
       default:

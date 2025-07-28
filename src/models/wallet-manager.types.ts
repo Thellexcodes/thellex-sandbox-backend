@@ -70,7 +70,7 @@ export enum WalletType {
   CWALLET = 'cwallet',
 }
 
-export enum CircleNotificationType {
+export enum CircleNotificationTypeEnum {
   TransactionsOutbound = 'transactions.outbound',
   TransactionsInbound = 'transactions.inbound',
 }

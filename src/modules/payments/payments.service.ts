@@ -38,7 +38,7 @@ import {
   PaymentStatus,
   TransactionDirectionEnum,
   TransactionTypeEnum,
-  YCPaymentEventEnum,
+  RampPaymentEventEnum,
 } from '@/models/payment.types';
 import { plainToInstance } from 'class-transformer';
 import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
@@ -117,8 +117,6 @@ export class PaymentsService {
         rates: formattedRates,
         expiresAt: cached.expiresAt,
       };
-
-      console.log(result);
 
       return plainToInstance(IRatesResponseDto, result, {
         excludeExtraneousValues: true,
@@ -300,7 +298,12 @@ export class PaymentsService {
         localAmount: dto.userAmount,
         recipient,
         forceAccept: true,
-        source: { accountType: 'bank' },
+        // source: { accountType: 'bank' },
+        source: {
+          accountNumber: '+2341111111111',
+          accountType: 'momo',
+          networkId: '20823163-f55c-4fa5-8cdb-d59c5289a137',
+        },
         customerType: userPlain.kyc.customerType,
         customerUID: userPlain.uid.toString(),
       });
@@ -367,7 +370,7 @@ export class PaymentsService {
 
       // Save transaction history
       const txnData: TransactionHistoryDto = {
-        event: YCPaymentEventEnum.COLLECTION_CREATED,
+        event: RampPaymentEventEnum.COLLECTION_CREATED,
         transactionId: sequenceId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: dto.assetCode,
@@ -389,8 +392,8 @@ export class PaymentsService {
       // Notify user
       await this.notificationGateway.emitNotificationToUser({
         token: user.alertID,
-        event: YCPaymentEventEnum.COLLECTION_CREATED,
-        status: NotificationStatusEnum.SUCCESS,
+        event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
+        status: NotificationStatusEnum.PROCESSING,
         data: { transaction },
       });
 
@@ -509,8 +512,8 @@ export class PaymentsService {
 
       const destination = {
         accountName: 'Regina Phalenge',
-        accountNumber: '1111111111',
-        accountType: 'bank',
+        accountNumber: '+2341111111111',
+        accountType: 'momo',
         networkId: '5f1af11b-305f-4420-8fce-65ed2725a409',
       };
 
@@ -665,7 +668,7 @@ export class PaymentsService {
       await this.fiatCryptoRampTransactionRepo.save(newTxn);
 
       const txnData = {
-        event: YCPaymentEventEnum.COLLECTION_CREATED,
+        event: RampPaymentEventEnum.COLLECTION_CREATED,
         transactionId: sequenceId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: dto.assetCode,
@@ -766,7 +769,7 @@ export class PaymentsService {
       }
 
       const transaction: TransactionHistoryDto = {
-        event: YCPaymentEventEnum.COLLECTION_COMPLETE,
+        event: RampPaymentEventEnum.COLLECTION_COMPLETE,
         transactionId: params.id,
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: recipientInfo.assetCode,

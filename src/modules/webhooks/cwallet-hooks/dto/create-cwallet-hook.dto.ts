@@ -1,10 +1,13 @@
 import { PaymentStatus } from '@/models/payment.types';
 import {
-  CircleNotificationType,
+  CircleNotificationTypeEnum,
   CircleTransactionType,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
+import { normalizeEnumValue } from '@/utils/helpers';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsEnum } from 'class-validator';
 
 class NotificationDto {
   @ApiProperty()
@@ -34,6 +37,8 @@ class NotificationDto {
   @ApiProperty()
   refId: string;
 
+  @Transform(({ value }) => normalizeEnumValue(value, PaymentStatus))
+  @IsEnum(PaymentStatus)
   @ApiProperty({ enum: PaymentStatus })
   state: PaymentStatus;
 
@@ -72,8 +77,12 @@ export class CwalletHookDto {
   @ApiProperty()
   notificationId: string;
 
-  @ApiProperty({ enum: CircleNotificationType })
-  notificationType: CircleNotificationType;
+  @Transform(({ value }) =>
+    normalizeEnumValue(value, CircleNotificationTypeEnum),
+  )
+  @IsEnum(CircleNotificationTypeEnum)
+  @ApiProperty({ enum: CircleNotificationTypeEnum })
+  notificationType: CircleNotificationTypeEnum;
 
   @ApiProperty({ type: NotificationDto })
   notification: NotificationDto;

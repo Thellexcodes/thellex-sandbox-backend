@@ -12,6 +12,9 @@ import {
   IQWalletAddressGenerated,
   QWalletAddressGeneratedDto,
 } from './qwallet-hook-walletUpdated.dto';
+import { IsEnum } from 'class-validator';
+import { normalizeEnumValue } from '@/utils/helpers';
+import { Transform } from 'class-transformer';
 
 export type QWalletWebhookEventMap = {
   [WalletWebhookEventEnum.DepositSuccessful]: IQwalletHookDepositSuccessfulData;
@@ -30,6 +33,8 @@ export type QWalletWebhookPayload = {
   QWalletHookWithdrawSuccessfulEventDto,
 )
 export class QWalletWebhookPayloadDto {
+  @Transform(({ value }) => normalizeEnumValue(value, WalletWebhookEventEnum))
+  @IsEnum(WalletWebhookEventEnum)
   @ApiProperty({ enum: Object.values(WalletWebhookEventEnum) })
   event: WalletWebhookEventEnum;
 

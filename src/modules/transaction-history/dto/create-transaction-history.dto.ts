@@ -2,7 +2,7 @@ import {
   TransactionDirectionEnum,
   PaymentStatus,
   TransactionTypeEnum,
-  YCPaymentEventEnum,
+  RampPaymentEventEnum,
 } from '@/models/payment.types';
 import {
   FeeLevel,
@@ -11,7 +11,7 @@ import {
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 export class TransactionHistoryDto {
-  event?: WalletWebhookEventEnum | YCPaymentEventEnum;
+  event?: WalletWebhookEventEnum | RampPaymentEventEnum;
   transactionId: string;
   transactionDirection: TransactionDirectionEnum;
   transactionType: TransactionTypeEnum;
