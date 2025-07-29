@@ -53,6 +53,7 @@ export class TransactionHistoryEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
+  @Column({ nullable: false })
   transactionType: TransactionTypeEnum;
 
   @Expose()
