@@ -84,6 +84,9 @@ export class PaymentsController {
       user,
       dto,
     );
+
+    console.log(response);
+
     responseHandler(response, res, req);
   }
 
@@ -95,7 +98,6 @@ export class PaymentsController {
     description: 'Fiat-to-crypto onramp request created successfully',
     type: IFiatToCryptoQuoteSummaryResponseDto,
   })
-  // @Body() dto: RequestCryptoOffRampPaymentDto,
   async requestOffRampFiatPayment(
     @Body() dto: RequestCryptoOffRampPaymentDto,
     @Req() req: CustomRequest,

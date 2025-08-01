@@ -19,7 +19,6 @@ export class YcPaymentHookService {
   ) {}
 
   async handleSuccessfulCollectionRequest(dto: YcCreatePaymentHookDto) {
-    console.log(dto);
     const rampTransaction =
       await this.paymentService.updateRampTransactionHistoryBySequenceId(
         dto.sequenceId,
@@ -59,7 +58,6 @@ export class YcPaymentHookService {
   }
 
   async handleSuccessfulPaymentRequest(dto: YcCreatePaymentHookDto) {
-    console.log(dto);
     //[x] update the ramp trnsaction
     const rampTransaction =
       await this.paymentService.updateRampTransactionHistoryBySequenceId(

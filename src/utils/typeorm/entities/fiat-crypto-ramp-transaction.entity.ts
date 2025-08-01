@@ -15,9 +15,10 @@ import {
   TokenEnum,
 } from '@/config/settings';
 import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDate,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -108,6 +109,8 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   })
   paymentStatus: PaymentStatus;
 
+  @Expose()
+  @ApiProperty()
   @Column({
     type: 'enum',
     enum: PaymentReasonEnum,
@@ -148,6 +151,16 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @ApiProperty()
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   netCryptoAmount: number;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  mainAssetAmount: number;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  mainFiatAmount: number;
 
   @Expose()
   @ApiProperty()
@@ -215,6 +228,10 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
 export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransactionEntity {
   @Expose()
+  @ApiProperty()
+  id: string;
+
+  @Expose()
   @ApiProperty({ example: 5000 })
   @IsNumber()
   userAmount: number;
@@ -230,14 +247,19 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   serviceFeeAmountLocal: number;
 
   @Expose()
-  @ApiProperty({ example: 0.06, description: 'Fee amount in USD' })
-  @IsNumber()
-  serviceFeeAmountUsd: number;
-
-  @Expose()
   @ApiProperty({ example: 4900 })
   @IsNumber()
   netFiatAmount: number;
+
+  @Expose()
+  @ApiPropertyOptional({ example: 10 })
+  @IsNumber()
+  mainAssetAmount: number;
+
+  @Expose()
+  @ApiPropertyOptional({ example: 4890 })
+  @IsNumber()
+  mainFiatAmount: number;
 
   @Expose()
   @ApiProperty({ example: 10.0 })

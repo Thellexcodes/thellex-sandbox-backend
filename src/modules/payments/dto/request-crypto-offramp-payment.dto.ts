@@ -5,7 +5,7 @@ import {
   SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsEnum,
@@ -117,4 +117,22 @@ export class RequestCryptoOffRampPaymentDto {
   @Type(() => BankInfoRequestDto)
   @IsNotEmpty()
   bankInfo: BankInfoRequestDto;
+
+  @ApiPropertyOptional({
+    example: 102.1,
+    description: 'Final asset amount including fees, slippage, etc.',
+    type: Number,
+  })
+  @IsNumber({ maxDecimalPlaces: 8 })
+  @IsOptional()
+  mainAssetAmount: number;
+
+  @ApiPropertyOptional({
+    example: 154000,
+    description: 'Final fiat amount user receives after conversion and fees',
+    type: Number,
+  })
+  @IsOptional()
+  @IsNumber()
+  mainFiatAmount: number;
 }

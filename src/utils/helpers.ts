@@ -432,3 +432,7 @@ export function findBankByName(name: string): Bank | null {
 
   return bestMatch;
 }
+
+export function toNumber(val: string): number {
+  return Number(val);
+}

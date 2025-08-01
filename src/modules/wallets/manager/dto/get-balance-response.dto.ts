@@ -4,10 +4,10 @@ import { Exclude, Expose } from 'class-transformer';
 
 export class WalletMapDto {
   @ApiProperty()
-  totalBalance: string;
+  totalBalance: number;
 
   @ApiProperty()
-  valueInLocal: string;
+  valueInLocal: number;
 
   @ApiProperty({ description: 'Supported blockchain network' })
   network: string;

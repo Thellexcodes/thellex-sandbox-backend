@@ -139,6 +139,21 @@ export class TransactionHistoryEntity extends BaseEntity {
   @ApiProperty()
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ nullable: true })
+  rampID: string;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ nullable: true })
+  mainFiatAmount: number;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ nullable: true })
+  mainAssetAmount: number;
 }
 
 @Exclude()

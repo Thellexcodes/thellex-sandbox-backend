@@ -22,11 +22,6 @@ export const ENABLE_TOKEN_SWAP = false;
 export const ENABLE_ESCROW_SERVICE = true;
 export const ENABLE_WALLET_CREATION = true;
 
-// --- Transaction Limits ---
-export const MIN_TRANSACTION_AMOUNT = 1; // $1 minimum
-export const MAX_TRANSACTION_AMOUNT = 1000;
-export const DAILY_LIMIT_PER_USER = 5000;
-
 // --- Security & KYC ---
 export const ENABLE_KYC = true; // Connect to sandbox KYC APIs
 export const ENABLE_DEVICE_VERIFICATION = false; // Optional
@@ -223,3 +218,66 @@ export const TRANSACTION_POLICY: TransactionPolicyDto = {
 };
 
 export const BASIS_POINTS_DIVISOR = 100;
+
+export const FiatTickers = {
+  ngn: {
+    name: 'Nigerian Naira',
+    country: 'Nigeria',
+    symbol: '₦',
+    currencyCode: 'NGN',
+  },
+  ghc: {
+    name: 'Ghanaian Cedi',
+    country: 'Ghana',
+    symbol: '₵',
+    currencyCode: 'GHS',
+  },
+  kes: {
+    name: 'Kenyan Shilling',
+    country: 'Kenya',
+    symbol: 'KSh',
+    currencyCode: 'KES',
+  },
+  zar: {
+    name: 'South African Rand',
+    country: 'South Africa',
+    symbol: 'R',
+    currencyCode: 'ZAR',
+  },
+  bwp: {
+    name: 'Botswana Pula',
+    country: 'Botswana',
+    symbol: 'P',
+    currencyCode: 'BWP',
+  },
+  usd: {
+    name: 'United States Dollar',
+    country: 'United States',
+    symbol: '$',
+    currencyCode: 'USD',
+  },
+} as const;
+
+// --- Transaction Limits ---
+export const MIN_TRANSACTION_AMOUNT = {
+  NGN: {
+    deposit: 5000,
+    withdrawal: 5000,
+  },
+  GHC: {
+    deposit: 100, // Example: GHS 100
+    withdrawal: 100,
+  },
+  KES: {
+    deposit: 500, // Example: KES 500
+    withdrawal: 500,
+  },
+  ZAR: {
+    deposit: 100, // Example: ZAR 100
+    withdrawal: 100,
+  },
+  BWP: {
+    deposit: 100, // Example: BWP 100
+    withdrawal: 100,
+  },
+};

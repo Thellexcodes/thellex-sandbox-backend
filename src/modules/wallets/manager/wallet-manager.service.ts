@@ -8,7 +8,7 @@ import {
 } from '@/config/settings';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { isSupportedBlockchainToken } from '@/utils/helpers';
+import { isSupportedBlockchainToken, toNumber } from '@/utils/helpers';
 import PQueue from 'p-queue';
 import { CwalletService } from '../cwallet/cwallet.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
@@ -104,17 +104,21 @@ export class WalletManagerService {
 
                   if (!walletMap[tokenLower]) {
                     walletMap[tokenLower] = {
-                      totalBalance: total.toFixed(3),
-                      valueInLocal: (total * NAIRA_RATE).toString(),
+                      totalBalance: toNumber(total.toFixed(3)),
+                      valueInLocal: toNumber((total * NAIRA_RATE).toString()),
                       network,
                       address,
                       assetCode: tokenLower,
                       transactionHistory: [],
                     };
                   } else {
-                    walletMap[tokenLower].totalBalance = (
-                      parseFloat(walletMap[tokenLower].totalBalance) + total
-                    ).toString();
+                    walletMap[tokenLower].totalBalance = toNumber(
+                      (
+                        parseFloat(
+                          walletMap[tokenLower].totalBalance.toString(),
+                        ) + total
+                      ).toString(),
+                    );
 
                     // Only replace network if it's different
                     if (walletMap[tokenLower].network !== network) {

@@ -298,12 +298,12 @@ export class PaymentsService {
         localAmount: dto.userAmount,
         recipient,
         forceAccept: true,
-        // source: { accountType: 'bank' },
-        source: {
-          accountNumber: '+2341111111111',
-          accountType: 'momo',
-          networkId: '20823163-f55c-4fa5-8cdb-d59c5289a137',
-        },
+        source: { accountType: 'bank' },
+        // source: {
+        //   accountNumber: '+2341111111111',
+        //   accountType: 'momo',
+        //   networkId: '20823163-f55c-4fa5-8cdb-d59c5289a137',
+        // },
         customerType: userPlain.kyc.customerType,
         customerUID: userPlain.uid.toString(),
       });
@@ -321,8 +321,8 @@ export class PaymentsService {
         fiatRate.rate.buy,
       );
 
-      const serviceFeeAmountUsd = parseFloat(
-        (feeAmount / fiatRate.rate.buy).toFixed(2),
+      const serviceFeeAmountUSD = parseFloat(
+        (feeAmount / fiatRate.rate.buy).toFixed(3),
       );
 
       // Create transaction entity
@@ -341,11 +341,12 @@ export class PaymentsService {
           customerType: userPlain.kyc.customerType,
           paymentReason: dto.paymentReason,
           userAmount: dto.userAmount,
+          mainFiatAmount: dto.userAmount,
           netFiatAmount,
           netCryptoAmount,
           feeLabel,
           serviceFeeAmountLocal: feeAmount,
-          serviceFeeAmountUSD: serviceFeeAmountUsd,
+          serviceFeeAmountUSD,
           rate: fiatRate.rate.buy,
           grossCrypto,
           fiatCode: dto.fiatCode,
@@ -375,7 +376,7 @@ export class PaymentsService {
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: dto.assetCode,
         amount: netCryptoAmount.toString(),
-        fee: serviceFeeAmountUsd.toString(),
+        fee: serviceFeeAmountUSD.toString(),
         blockchainTxId: '',
         walletId: wallet.id,
         sourceAddress: '',
@@ -384,6 +385,7 @@ export class PaymentsService {
         user,
         paymentStatus: PaymentStatus.Processing,
         transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+        rampID: savedTxn.id,
       };
 
       const { user: u, ...transaction } =
@@ -403,10 +405,11 @@ export class PaymentsService {
       return plainToInstance(
         IFiatToCryptoQuoteSummaryResponseDto,
         {
+          id: savedTxn.id,
           userAmount: dto.userAmount,
           feeLabel,
           serviceFeeAmountLocal: feeAmount,
-          serviceFeeAmountUsd,
+          serviceFeeAmountUSD,
           netFiatAmount,
           netCryptoAmount,
           rate: fiatRate.rate.buy,
@@ -418,6 +421,8 @@ export class PaymentsService {
           paymentStatus: transaction.paymentStatus,
           transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
           createdAt: savedTxn.createdAt,
+          mainFiatAmount: savedTxn.mainFiatAmount,
+          paymentReason: savedTxn.paymentReason,
         },
         { excludeExtraneousValues: true },
       );
@@ -434,7 +439,10 @@ export class PaymentsService {
   }
 
   // Crypto to fiat off ramp
-  async handleCryptoToFiatOffRamp(user, dto) {
+  async handleCryptoToFiatOffRamp(
+    user: UserEntity,
+    dto: RequestCryptoOffRampPaymentDto,
+  ) {
     try {
       const fiatRate = await this.ycService.getRateFromCache(
         dto.fiatCode.toUpperCase(),
@@ -527,7 +535,7 @@ export class PaymentsService {
 
       const { grossFiat, feeAmount, feeLabel, netFiatAmount, netCryptoAmount } =
         await calculateNetFiatAmount(
-          dto.userAmount,
+          dto.mainAssetAmount,
           userPlain.currentTier.txnFee.withdrawal.feePercentage,
           fiatRate.rate.buy,
         );
@@ -642,6 +650,7 @@ export class PaymentsService {
       newTxn.serviceFeeAmountUSD = serviceFeeAmountUsd;
       newTxn.grossFiat = grossFiat;
       newTxn.netCryptoAmount = netCryptoAmount;
+      newTxn.mainAssetAmount = dto.mainAssetAmount;
       newTxn.rate = fiatRate.rate.sell;
       newTxn.fiatCode = dto.fiatCode;
       newTxn.currency = channel.currency;
@@ -665,9 +674,11 @@ export class PaymentsService {
       };
       newTxn.expiresAt = payoutResponse.expiresAt;
 
-      await this.fiatCryptoRampTransactionRepo.save(newTxn);
+      const rampTxn = await this.fiatCryptoRampTransactionRepo.save(newTxn);
 
-      const txnData = {
+      // console.log({netCryptoAmount, netFiatAmount})
+
+      const txnData: TransactionHistoryDto = {
         event: RampPaymentEventEnum.COLLECTION_CREATED,
         transactionId: sequenceId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
@@ -682,6 +693,8 @@ export class PaymentsService {
         user,
         paymentStatus: PaymentStatus.Processing,
         transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+        rampID: rampTxn.id,
+        mainAssetAmount: rampTxn.mainAssetAmount,
       };
 
       const { user: u, ...transaction } =
@@ -697,6 +710,7 @@ export class PaymentsService {
       return plainToInstance(
         IFiatToCryptoQuoteSummaryResponseDto,
         {
+          id: rampTxn.id,
           userAmount: dto.userAmount,
           feeLabel,
           serviceFeeAmountLocal: feeAmount,
@@ -712,6 +726,7 @@ export class PaymentsService {
           paymentStatus: transaction.paymentStatus,
           transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
           createdAt: transaction.createdAt,
+          mainAssetAmount: rampTxn.mainAssetAmount,
         },
         { excludeExtraneousValues: true },
       );

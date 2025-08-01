@@ -31,4 +31,6 @@ export class TransactionHistoryDto {
   paymentNetwork: string;
   tokenId?: string;
   user: UserEntity;
+  rampID?: string;
+  mainAssetAmount?: number;
 }
