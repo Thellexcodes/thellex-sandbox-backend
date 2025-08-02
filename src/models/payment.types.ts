@@ -28,6 +28,7 @@ export enum PaymentStatus {
   PendingRiskScreening = 'pending_risk_screening',
   Queued = 'queued',
   Sent = 'sent',
+  Failed = 'failed',
 }
 
 export enum TransactionDirectionEnum {

@@ -1,9 +1,9 @@
 import { Controller, Post, Body, Req, Res, Logger, Get } from '@nestjs/common';
 import { normalizeEnumValue, responseHandler } from '@/utils/helpers';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { YcPaymentHookService } from './yc-payments-hooks.service';
-import { YcCreatePaymentHookDto } from './dto/yc-payment-hook.dto';
+import { YcHookDataDto } from './dto/yc-hook-data.dto';
 import { YCRampPaymentEventEnum } from '@/models/payment.types';
 
 //[x] properly update hooks
@@ -15,27 +15,34 @@ export class YcPaymentsHookController {
   constructor(private readonly ycPaymentsHooksService: YcPaymentHookService) {}
 
   @Post()
+  @ApiBody({
+    description: 'YC webhook event data',
+    type: YcHookDataDto,
+  })
   async create(
-    @Body() dto: YcCreatePaymentHookDto,
+    @Body() dto: YcHookDataDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    console.log({ event: dto.event });
+    console.log({ dto });
+
     const normalizedEvent = normalizeEnumValue(
       dto.event,
       YCRampPaymentEventEnum,
     );
 
-    console.log({ normalizedEvent });
-
-    //[x] handle failed
-    //[x] handled processing
     switch (normalizedEvent) {
+      //collection
       case YCRampPaymentEventEnum.COLLECTION_COMPLETE:
         await this.ycPaymentsHooksService.handleSuccessfulCollectionRequest(
           dto,
         );
         break;
+      case YCRampPaymentEventEnum.COLLECTION_FAILED:
+        await this.ycPaymentsHooksService.handleFailedCollectionRequest(dto);
+        break;
+
+      //payments
       case YCRampPaymentEventEnum.PAYMENT_FAILED:
         await this.ycPaymentsHooksService.handleFailedPaymentRequest(dto);
       case YCRampPaymentEventEnum.PAYMENT_COMPLETE:

@@ -21,6 +21,12 @@ export enum NotificationEventEnum {
   FIAT_TO_FIAT_DEPOSIT = 'fiat_to_fiat_deposit',
   FIAT_TO_FIAT_WITHDRAWAL = 'fiat_to_fiat_withdrawal',
 
+  // ❌ Failed conversions
+  FIAT_TO_CRYPTO_DEPOSIT_FAILED = 'fiat_to_crypto_deposit_failed',
+  CRYPTO_TO_FIAT_WITHDRAWAL_FAILED = 'crypto_to_fiat_withdrawal_failed',
+  FIAT_TO_FIAT_DEPOSIT_FAILED = 'fiat_to_fiat_deposit_failed',
+  FIAT_TO_FIAT_WITHDRAWAL_FAILED = 'fiat_to_fiat_withdrawal_failed',
+
   // 🪙 Crypto Transactions
   CRYPTO_DEPOSIT = 'crypto_deposit',
   CRYPTO_WITHDRAWAL = 'crypto_withdrawal',

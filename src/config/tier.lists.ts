@@ -73,13 +73,13 @@ export const thellexTiers: Partial<Record<TierEnum, Tier>> = {
     ],
     transactionLimits: {
       dailyCreditLimit: null,
-      dailyDebitLimit: 900_000,
+      dailyDebitLimit: 1_000_000,
       singleDebitLimit: 100_000,
     },
     txnFee: {
       [TxnTypeEnum.WITHDRAWAL]: {
         min: 100,
-        max: 150,
+        max: 200,
         feePercentage: 200,
       },
     },
@@ -95,14 +95,14 @@ export const thellexTiers: Partial<Record<TierEnum, Tier>> = {
     ],
     transactionLimits: {
       dailyCreditLimit: null,
-      dailyDebitLimit: 4_000_000,
+      dailyDebitLimit: 5_000_000,
       singleDebitLimit: 1_000_000,
     },
     txnFee: {
       [TxnTypeEnum.WITHDRAWAL]: {
-        min: 1,
-        max: 300,
-        feePercentage: 2.0,
+        min: 100,
+        max: 150,
+        feePercentage: 150,
       },
     },
   },

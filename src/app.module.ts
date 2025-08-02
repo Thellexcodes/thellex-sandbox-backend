@@ -35,6 +35,7 @@ import { AuthEntity } from './utils/typeorm/entities/auth.entity';
 import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.module';
 import { typeOrmConfig } from './utils/typeorm/typeOrm.config';
 import { ConfigService } from './config/config.service';
+import { CrashReportModule } from './crash-report/crash-report.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { ConfigService } from './config/config.service';
     TransactionHistoryModule,
     WalletManagerModule,
     CwalletModule,
+    CrashReportModule,
   ],
   controllers: [AppController],
   providers: [

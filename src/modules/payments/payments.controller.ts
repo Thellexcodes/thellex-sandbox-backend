@@ -85,8 +85,6 @@ export class PaymentsController {
       dto,
     );
 
-    console.log(response);
-
     responseHandler(response, res, req);
   }
 

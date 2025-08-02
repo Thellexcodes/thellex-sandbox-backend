@@ -25,11 +25,7 @@ import {
 } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import {
-  findBankByName,
-  formatUserWithTiers,
-  toUTCDate,
-} from '@/utils/helpers';
+import { findBankByName, formatUserWithTiers } from '@/utils/helpers';
 import {
   calculateNetCryptoAmount,
   calculateNetFiatAmount,
@@ -54,7 +50,6 @@ import {
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
-import { ConfigService } from '@/config/config.service';
 import { PaymentErrorEnum } from '@/models/payment-error.enum';
 import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 import { MapleradService } from './maplerad.service';
@@ -76,7 +71,6 @@ export class PaymentsService {
     private readonly fiatCryptoRampTransactionRepo: Repository<FiatCryptoRampTransactionEntity>,
     @InjectRepository(TransactionHistoryEntity)
     private readonly txnHistoryRepo: Repository<TransactionHistoryEntity>,
-    private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
     private readonly mapleradService: MapleradService,
     private readonly transactionHistoryService: TransactionHistoryService,
@@ -188,6 +182,14 @@ export class PaymentsService {
     }
   }
 
+  async findOneRampTransactionBySequenceId(
+    sequenceId: string,
+  ): Promise<FiatCryptoRampTransactionEntity | null> {
+    return await this.fiatCryptoRampTransactionRepo.findOneBy({
+      sequenceId,
+    });
+  }
+
   async handleWithdrawFiatPayment(
     user: UserEntity,
     withdrawCryptoPaymentDto: CreateFiatWithdrawPaymentDto,
@@ -286,8 +288,6 @@ export class PaymentsService {
         additionalIdType: userKycData.idTypes[1],
         additionalIdNumber: userKycData.bvn,
       };
-
-      console.log(recipient);
 
       const sequenceId = uuidV4();
 
