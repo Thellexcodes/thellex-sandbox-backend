@@ -126,6 +126,8 @@ export class KycService {
         }
       }
 
+      const fullPhoneNumber = `${kydataDto.phoneNumber.phone_country_code}${kydataDto.phoneNumber.phone_number}`;
+
       const userKycData: Partial<KycEntity> = {
         idNumber: kydataDto.nin,
         bvn: kydataDto.bvn,
@@ -141,6 +143,7 @@ export class KycService {
         country: 'Nigeria',
         lga: kydataDto.lga,
         provider: KycProviderEnum.DOJAH,
+        phone: `${kydataDto.phoneNumber}`,
       };
 
       // Create KycEntity with queryRunner.manager

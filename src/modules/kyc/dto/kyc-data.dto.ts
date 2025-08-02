@@ -36,6 +36,10 @@ class PhoneDto {
   @IsString()
   @Matches(/^\d{6,15}$/, { message: 'phone_number/invalid-format' })
   phone_number: string;
+
+  get fullPhone(): string {
+    return `${this.phone_country_code}${this.phone_number}`;
+  }
 }
 
 export class BasicTierKycDto {
@@ -68,9 +72,10 @@ export class BasicTierKycDto {
     type: PhoneDto,
     description: 'Phone details including country code and number',
   })
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => PhoneDto)
-  phone: PhoneDto;
+  phoneNumber: PhoneDto;
 
   @ApiProperty({
     description: 'Date of birth of BVN holder (yyyy-mm-dd)',

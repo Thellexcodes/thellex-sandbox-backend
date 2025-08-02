@@ -1,5 +1,5 @@
 import { AnyObject } from '@/models/any.types';
-import { PaymentStatus, RampPaymentEventEnum } from '@/models/payment.types';
+import { PaymentStatus, YCRampPaymentEventEnum } from '@/models/payment.types';
 import { normalizeEnumValue } from '@/utils/helpers';
 import { Transform } from 'class-transformer';
 import {
@@ -27,8 +27,8 @@ export class YcCreatePaymentHookDto {
   @IsOptional()
   settlementInfo?: AnyObject;
 
-  @Transform(({ value }) => normalizeEnumValue(value, RampPaymentEventEnum))
-  @IsEnum(RampPaymentEventEnum)
+  @Transform(({ value }) => normalizeEnumValue(value, YCRampPaymentEventEnum))
+  @IsEnum(YCRampPaymentEventEnum)
   event: string;
 
   @IsNumber()

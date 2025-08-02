@@ -24,6 +24,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { TransactionHistoryEntity } from './transaction-history.entity';
 
 //[x] improve with all treasuery addresses
 const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>
@@ -301,6 +302,10 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   @IsDate()
   @Type(() => Date)
   expiresAt: Date;
+
+  @Expose()
+  @ApiProperty()
+  transaction: TransactionHistoryEntity[];
 }
 
 export class IRateDto {

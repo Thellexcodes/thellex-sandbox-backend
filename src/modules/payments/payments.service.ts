@@ -38,7 +38,7 @@ import {
   PaymentStatus,
   TransactionDirectionEnum,
   TransactionTypeEnum,
-  RampPaymentEventEnum,
+  YCRampPaymentEventEnum,
 } from '@/models/payment.types';
 import { plainToInstance } from 'class-transformer';
 import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
@@ -59,6 +59,7 @@ import { PaymentErrorEnum } from '@/models/payment-error.enum';
 import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 import { MapleradService } from './maplerad.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { YCTxnAccountTypes } from '@/models/yellow-card.types';
 
 //[x] properly throw error using enum
 @Injectable()
@@ -78,7 +79,7 @@ export class PaymentsService {
     private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
     private readonly mapleradService: MapleradService,
-    private readonly transactionHistoryServie: TransactionHistoryService,
+    private readonly transactionHistoryService: TransactionHistoryService,
   ) {}
 
   async handleRates(
@@ -276,7 +277,7 @@ export class PaymentsService {
       const recipient = {
         name: `${userKycData.firstName} ${userKycData.lastName}`,
         country: countryCode,
-        phone: userKycData.phone ?? '+2341111111111',
+        phone: userKycData.phone,
         address: userKycData.address,
         dob: userKycData.dob,
         email: userPlain.email,
@@ -285,6 +286,8 @@ export class PaymentsService {
         additionalIdType: userKycData.idTypes[1],
         additionalIdNumber: userKycData.bvn,
       };
+
+      console.log(recipient);
 
       const sequenceId = uuidV4();
 
@@ -298,12 +301,7 @@ export class PaymentsService {
         localAmount: dto.userAmount,
         recipient,
         forceAccept: true,
-        source: { accountType: 'bank' },
-        // source: {
-        //   accountNumber: '+2341111111111',
-        //   accountType: 'momo',
-        //   networkId: '20823163-f55c-4fa5-8cdb-d59c5289a137',
-        // },
+        source: { accountType: YCTxnAccountTypes.BANK },
         customerType: userPlain.kyc.customerType,
         customerUID: userPlain.uid.toString(),
       });
@@ -371,7 +369,7 @@ export class PaymentsService {
 
       // Save transaction history
       const txnData: TransactionHistoryDto = {
-        event: RampPaymentEventEnum.COLLECTION_CREATED,
+        event: YCRampPaymentEventEnum.COLLECTION_CREATED,
         transactionId: sequenceId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: dto.assetCode,
@@ -389,7 +387,7 @@ export class PaymentsService {
       };
 
       const { user: u, ...transaction } =
-        await this.transactionHistoryServie.create(txnData, user);
+        await this.transactionHistoryService.create(txnData, user);
 
       // Notify user
       await this.notificationGateway.emitNotificationToUser({
@@ -423,6 +421,7 @@ export class PaymentsService {
           createdAt: savedTxn.createdAt,
           mainFiatAmount: savedTxn.mainFiatAmount,
           paymentReason: savedTxn.paymentReason,
+          transaction,
         },
         { excludeExtraneousValues: true },
       );
@@ -511,7 +510,7 @@ export class PaymentsService {
       const sender = {
         name: `${userPlain.kyc.firstName} ${userPlain.kyc.lastName}`,
         country: 'NGN',
-        phone: userKycData.phone ?? '+2341111111111',
+        phone: userKycData.phone,
         dob: userKycData.dob,
         email: userPlain.email,
         idNumber: userKycData.idNumber,
@@ -519,19 +518,12 @@ export class PaymentsService {
       };
 
       const destination = {
-        accountName: 'Regina Phalenge',
-        accountNumber: '+2341111111111',
-        accountType: 'momo',
-        networkId: '5f1af11b-305f-4420-8fce-65ed2725a409',
+        accountName: dto.bankInfo.accountHolder,
+        accountNumber: dto.bankInfo.accountNumber,
+        accountType: YCTxnAccountTypes.BANK,
+        networkId: network.id,
+        accountBank: network.code,
       };
-
-      // const destination = {
-      //   accountName: dto.bankInfo.accountHolder,
-      //   accountNumber: dto.bankInfo.accountNumber,
-      //   accountType: 'bank',
-      //   networkId: network.id,
-      //   accountBank: network.code,
-      // };
 
       const { grossFiat, feeAmount, feeLabel, netFiatAmount, netCryptoAmount } =
         await calculateNetFiatAmount(
@@ -679,7 +671,7 @@ export class PaymentsService {
       // console.log({netCryptoAmount, netFiatAmount})
 
       const txnData: TransactionHistoryDto = {
-        event: RampPaymentEventEnum.COLLECTION_CREATED,
+        event: YCRampPaymentEventEnum.COLLECTION_CREATED,
         transactionId: sequenceId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: dto.assetCode,
@@ -698,7 +690,7 @@ export class PaymentsService {
       };
 
       const { user: u, ...transaction } =
-        await this.transactionHistoryServie.create(txnData, user);
+        await this.transactionHistoryService.create(txnData, user);
 
       await this.notificationGateway.emitNotificationToUser({
         token: user.alertID,
@@ -727,6 +719,7 @@ export class PaymentsService {
           transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
           createdAt: transaction.createdAt,
           mainAssetAmount: rampTxn.mainAssetAmount,
+          transaction,
         },
         { excludeExtraneousValues: true },
       );
@@ -784,7 +777,7 @@ export class PaymentsService {
       }
 
       const transaction: TransactionHistoryDto = {
-        event: RampPaymentEventEnum.COLLECTION_COMPLETE,
+        event: YCRampPaymentEventEnum.COLLECTION_COMPLETE,
         transactionId: params.id,
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: recipientInfo.assetCode,

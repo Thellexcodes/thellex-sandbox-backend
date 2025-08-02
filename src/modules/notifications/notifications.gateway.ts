@@ -5,7 +5,7 @@ import {
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
-import { RampPaymentEventEnum } from '@/models/payment.types';
+import { YCRampPaymentEventEnum } from '@/models/payment.types';
 import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
 import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
 import {
@@ -22,11 +22,14 @@ import { LessThan, Repository } from 'typeorm';
 
 interface CreateNotificationInput {
   user: UserEntity;
-  title: NotificationEventEnum | WalletWebhookEventEnum | RampPaymentEventEnum;
+  title:
+    | NotificationEventEnum
+    | WalletWebhookEventEnum
+    | YCRampPaymentEventEnum;
   message:
     | NotificationEventEnum
     | WalletWebhookEventEnum
-    | RampPaymentEventEnum;
+    | YCRampPaymentEventEnum;
   data: AnyObject;
 }
 
@@ -58,7 +61,7 @@ export class NotificationsGateway {
     event:
       | NotificationEventEnum
       | WalletWebhookEventEnum
-      | RampPaymentEventEnum;
+      | YCRampPaymentEventEnum;
     status: NotificationStatusEnum;
     data?: AnyObject;
   }): Promise<string | any> {
@@ -95,7 +98,7 @@ export class NotificationsGateway {
     event:
       | NotificationEventEnum
       | WalletWebhookEventEnum
-      | RampPaymentEventEnum,
+      | YCRampPaymentEventEnum,
     status: NotificationStatusEnum,
   ): string {
     const statusTitleMap: Record<NotificationStatusEnum, string> = {
@@ -110,7 +113,7 @@ export class NotificationsGateway {
     event:
       | NotificationEventEnum
       | WalletWebhookEventEnum
-      | RampPaymentEventEnum,
+      | YCRampPaymentEventEnum,
     status: NotificationStatusEnum,
   ): string {
     const key = `${event}_${status}`;
@@ -121,7 +124,7 @@ export class NotificationsGateway {
     event:
       | NotificationEventEnum
       | WalletWebhookEventEnum
-      | RampPaymentEventEnum,
+      | YCRampPaymentEventEnum,
   ): string {
     return event
       .split('_')

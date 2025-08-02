@@ -57,6 +57,8 @@ export class YcPaymentHookService {
     });
   }
 
+  ///------------- Payments ------------
+
   async handleSuccessfulPaymentRequest(dto: YcCreatePaymentHookDto) {
     //[x] update the ramp trnsaction
     const rampTransaction =
@@ -95,5 +97,9 @@ export class YcPaymentHookService {
         transaction,
       },
     });
+  }
+
+  async handleFailedPaymentRequest(dto: any) {
+    console.log({ dto });
   }
 }
