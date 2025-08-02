@@ -7,8 +7,12 @@ import {
   IsString,
 } from 'class-validator';
 
-export class CreateBankAccountDto {
-  @ApiProperty() @IsString() currency: string;
+export class ICreateBankRequestAccountDto {
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  currency: string;
+
   @ApiProperty({ example: 'First National Bank' })
   @IsString()
   bankName: string;
@@ -38,40 +42,42 @@ export class CreateBankAccountDto {
   isPrimary?: boolean;
 
   @ApiProperty({ example: '123' })
-  @IsNumber()
-  bankCode: number;
+  @IsString()
+  bankCode: string;
 }
 
-export class UpdateBankAccountDto extends PartialType(CreateBankAccountDto) {
-  @ApiProperty({ example: 'First Bank', required: false })
-  @IsOptional()
-  @IsString()
-  bankName?: string;
+// export class UpdateBankAccountDto extends PartialType(
+//   ICreateBankRequestAccountDto,
+// ) {
+//   @ApiProperty({ example: 'First Bank', required: false })
+//   @IsOptional()
+//   @IsString()
+//   bankName?: string;
 
-  @ApiProperty({ example: 'John Doe', required: false })
-  @IsOptional()
-  @IsString()
-  accountName?: string;
+//   @ApiProperty({ example: 'John Doe', required: false })
+//   @IsOptional()
+//   @IsString()
+//   accountName?: string;
 
-  @ApiProperty({ example: 'NGN', required: false })
-  @IsOptional()
-  @IsString()
-  currency?: string;
+//   @ApiProperty({ example: 'NGN', required: false })
+//   @IsOptional()
+//   @IsString()
+//   currency?: string;
 
-  @ApiProperty({
-    example: 'nuban',
-    required: false,
-    description: 'Account type e.g. nuban, iban',
-  })
-  @IsOptional()
-  @IsString()
-  accountType?: string;
+//   @ApiProperty({
+//     example: 'nuban',
+//     required: false,
+//     description: 'Account type e.g. nuban, iban',
+//   })
+//   @IsOptional()
+//   @IsString()
+//   accountType?: string;
 
-  @ApiProperty({ example: 'NG', required: false })
-  @IsOptional()
-  @IsString()
-  country?: string;
-}
+//   @ApiProperty({ example: 'NG', required: false })
+//   @IsOptional()
+//   @IsString()
+//   country?: string;
+// }
 
 // UpdatePaymentSettingsDto
 export class UpdatePaymentSettingsDto {

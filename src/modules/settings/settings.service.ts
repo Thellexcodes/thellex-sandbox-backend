@@ -1,6 +1,6 @@
 import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
 import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateStoreSettingsDto } from './dto/update-setting.dto';
@@ -10,17 +10,20 @@ import {
   SettingsErrorEnum,
 } from '@/models/settings.types';
 import {
-  CreateBankAccountDto,
-  UpdateBankAccountDto,
+  ICreateBankRequestAccountDto,
   UpdatePaymentSettingsDto,
 } from './dto/payment-settings';
 import { UpdateTaxSettingsDto } from './dto/tax-settings.dto';
 import { UpdatePayoutSettingsDto } from './dto/payout-settings.dto';
 import { v4 as uuidV4 } from 'uuid';
 import { YellowCardService } from '../payments/yellowcard.service';
+import { MapleradService } from '../payments/maplerad.service';
+import { toUTCDate } from '@/utils/helpers';
 
 @Injectable()
 export class SettingsService {
+  private readonly logger = new Logger(SettingsService.name);
+
   constructor(
     @InjectRepository(UserSettingEntity)
     private readonly settingsRepo: Repository<UserSettingEntity>,
@@ -28,6 +31,7 @@ export class SettingsService {
     @InjectRepository(BankAccountEntity)
     private readonly bankAccountRepo: Repository<BankAccountEntity>,
     private readonly ycService: YellowCardService,
+    private readonly malperadService: MapleradService,
   ) {
     // Inject other repositories as needed (e.g., TaxSettingEntity, PayoutSettingEntity)
   }
@@ -55,37 +59,46 @@ export class SettingsService {
     // return this.bankAccountRepo.find({ where: { userId } });
   }
 
-  async addBankAccount(userId: string, dto: CreateBankAccountDto) {
-    // const bankInfo = await this.ycService.resolveBankAccount({
-    //   accountNumber: `${dto.accountNumber}`,
-    //   networkId: dto.bankCode,
-    // });
+  async addBankAccount(
+    userId: string,
+    dto: ICreateBankRequestAccountDto,
+  ): Promise<BankAccountEntity> {
+    try {
+      const existing = await this.bankAccountRepo.findOne({
+        where: { user: { id: userId }, accountNumber: dto.accountNumber },
+      });
 
-    const existingAccounts = await this.bankAccountRepo.find({
-      where: { user: { id: userId } },
-    });
+      if (existing) {
+        throw new CustomHttpException('', HttpStatus.FORBIDDEN);
+      }
 
-    const isFirstAccount = existingAccounts.length === 0;
+      const bankInfo = await this.malperadService.resolveInstitutionAccount({
+        account_number: dto.accountNumber,
+        bank_code: dto.bankCode,
+      });
 
-    const randomName = 'Bank Info 1';
+      const isFirstAccount =
+        (await this.bankAccountRepo.count({
+          where: { user: { id: userId } },
+        })) === 0;
 
-    const newBankRecord = this.bankAccountRepo.create({
-      ...dto,
-      isPrimary: isFirstAccount,
-      user: { id: userId },
-      external_customer_id: uuidV4(),
-      accountName: randomName,
-      external_createdAt: new Date(),
-    });
+      const newBankRecord = this.bankAccountRepo.create({
+        ...dto,
+        isPrimary: isFirstAccount,
+        user: { id: userId },
+        external_customer_id: uuidV4(),
+        accountName: bankInfo.account_name,
+        external_createdAt: toUTCDate(new Date().toString()),
+      });
 
-    return await this.bankAccountRepo.save(newBankRecord);
+      return await this.bankAccountRepo.save(newBankRecord);
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error('Failed to add bank account');
+    }
   }
 
-  async updateBankAccount(
-    userId: number,
-    id: number,
-    dto: UpdateBankAccountDto,
-  ) {
+  async updateBankAccount(userId: number, id: number) {
     // const existing = await this.bankAccountRepo.findOne({
     //   where: { userId },
     // });

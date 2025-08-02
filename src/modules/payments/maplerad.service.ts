@@ -6,12 +6,13 @@ import {
   IMRCustomerDataDto,
   IMRInstitutionResponseDto,
 } from '@/models/maplerad.types';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 
 @Injectable()
 export class MapleradService {
+  private readonly logger = new Logger(MapleradService.name);
   private readonly baseUrl = 'https://api.maplerad.com/v1';
 
   constructor(private readonly httpService: HttpService) {}
@@ -399,21 +400,23 @@ export class MapleradService {
   async fetchBankDetails(payload: { identifier: string }): Promise<any> {
     const path = '/institutions/details';
     const url = `${this.baseUrl}${path}`;
+    this.logger.log({ payload });
     const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
-
     const response = await axios.post(url, payload, { headers });
     return response.data;
   }
 
   async resolveInstitutionAccount(payload: {
-    institution_code: string;
+    bank_code: string;
     account_number: string;
-  }): Promise<any> {
+  }): Promise<{ account_number: string; account_name: string }> {
     const path = '/institutions/resolve';
-    const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
-    const response = await axios.post(url, payload, { headers });
+    const url = `${this.baseUrl}${path}`;
+
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
+    const response = await this.httpService.post(url, payload, { headers });
+
     return response.data;
   }
 
@@ -427,7 +430,7 @@ export class MapleradService {
     const url = `${this.baseUrl}${path}`;
     const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
 
-    const response = await axios.post(url, payload, { headers });
+    const response = await this.httpService.post(url, payload, { headers });
     return response.data;
   }
 

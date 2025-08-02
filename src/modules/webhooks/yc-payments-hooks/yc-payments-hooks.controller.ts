@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res, Logger, Get } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, Logger } from '@nestjs/common';
 import { normalizeEnumValue, responseHandler } from '@/utils/helpers';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
@@ -24,8 +24,6 @@ export class YcPaymentsHookController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    console.log({ dto });
-
     const normalizedEvent = normalizeEnumValue(
       dto.event,
       YCRampPaymentEventEnum,

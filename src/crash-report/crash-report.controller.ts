@@ -1,21 +1,27 @@
-import { Controller, Post, Body, Res, Req } from '@nestjs/common';
+import { Post, Body, Res, Req } from '@nestjs/common';
 import { CrashReportService } from './crash-report.service';
 import { CreateCrashReportDto } from './dto/create-crash-report.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { VersionedController001 } from '@/modules/controller/base.controller';
+import { ApiBody } from '@nestjs/swagger';
 
 @VersionedController001('crash-report')
 export class CrashReportController {
   constructor(private readonly crashReportService: CrashReportService) {}
 
   @Post()
+  @ApiBody({
+    type: CreateCrashReportDto,
+    description:
+      'Submit a crash report with device details, OS info, and stack trace log. Used for debugging and monitoring application stability.',
+  })
   async create(
-    @Body() createCrashReportDto: any,
+    @Body() createCrashReportDto: CreateCrashReportDto,
     @Res() res: CustomResponse,
     @Req() req: CustomRequest,
   ) {
-    const result = await this.crashReportService.create(createCrashReportDto);
-    responseHandler(result, res, req);
+    await this.crashReportService.create(createCrashReportDto);
+    responseHandler('', res, req);
   }
 }
