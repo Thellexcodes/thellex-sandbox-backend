@@ -11,7 +11,9 @@ import { PaymentPartnerEnum } from '@/models/payments.providers';
 import {
   CountryEnum,
   CustomerTypesEnum,
+  FiatEnum,
   SupportedBlockchainTypeEnum,
+  SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
 import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
@@ -122,6 +124,9 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ default: false })
   sentCrypto: boolean;
 
+  @Column({ nullable: true })
+  providerErrorMsg: string;
+
   @Expose()
   @ApiProperty()
   @Column({ default: false })
@@ -129,7 +134,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ type: 'timestamp with time zone', nullable: false })
+  @Column({ type: 'timestamptz', nullable: false })
   expiresAt: Date;
 
   // ========== PAYMENT PROVIDER ==========
@@ -194,8 +199,8 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   grossFiat: number;
 
   // ========== CURRENCY / COUNTRY ==========
-  @Column({ type: 'varchar', nullable: true })
-  fiatCode: string;
+  @Column({ type: 'enum', nullable: true, enum: FiatEnum })
+  fiatCode: FiatEnum;
 
   @Column({ type: 'varchar', nullable: true })
   currency: string;

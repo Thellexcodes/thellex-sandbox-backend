@@ -1,5 +1,6 @@
 import { getAppConfig } from '@/constants/env';
 import { NetworkSettings } from '@/models/network-settings';
+import { PaymentPartnerEnum } from '@/models/payments.providers';
 import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.dto';
 
 // --- Basic Settings ---
@@ -138,6 +139,7 @@ export const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
 export const SERVER_REQUEST_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes in milliseconds
 export const EVERY_15_SECONDS_CRON = '*/20 * * * * *';
 export const DIRECT_SETTLEMENT_THRESHOLD = 100;
+export const ONE_DAY_LATER = Date.now() + 24 * 60 * 60 * 1000;
 
 export const BlockchainNetworkSettings: Record<
   Partial<SupportedBlockchainTypeEnum>,
@@ -281,3 +283,28 @@ export const MIN_TRANSACTION_AMOUNT = {
     withdrawal: 100,
   },
 };
+
+export const PAYMENT_PROVIDER_PRIORITY = [
+  PaymentPartnerEnum.MAPLERAD,
+  PaymentPartnerEnum.YELLOWCARD,
+];
+
+//  const err2 = {
+//      id: "a8467ed2-4a48-5d8b-a44c-2d6d053b8a71",
+//      sequenceId: "df0c94da-3358-4d00-857c-c77994a74d75",
+//      status: "failed",
+//      apiKey: "e4d0b27e45834848d03e79706495ff0b",
+//      event: "COLLECTION.FAILED",
+//      executedAt: 1754280797867,
+//      errorCode: "NAME_MISMATCH"
+//    }
+
+// const err3 = {
+// [1]     id: 'c2f8e29d-75f0-5b02-9949-bbd826cc4eb1',
+// [1]     sequenceId: 'ec0a2d68-42ce-44c8-ba6d-c85e9981b98d',
+// [1]     status: 'failed',
+// [1]     apiKey: 'e4d0b27e45834848d03e79706495ff0b',
+// [1]     event: 'COLLECTION.FAILED',
+// [1]     executedAt: 1754282446995,
+// [1]     errorCode: 'NAME_MISMATCH'
+// [1]   }

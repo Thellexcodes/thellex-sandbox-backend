@@ -65,9 +65,9 @@ export class RequestCryptoOffRampPaymentDto {
     message:
       'paymentReason must be one of: ' + Object.values(FiatEnum).join(', '),
   })
-  @IsEnum(SupportedFiatCurrencyEnum)
+  @IsEnum(FiatEnum)
   @IsNotEmpty()
-  fiatCode: SupportedFiatCurrencyEnum;
+  fiatCode: FiatEnum;
 
   @ApiProperty({
     description: '2-letter ISO country code (e.g., ng, gh)',

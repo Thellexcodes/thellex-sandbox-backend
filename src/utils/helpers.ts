@@ -436,3 +436,11 @@ export function findBankByName(name: string): Bank | null {
 export function toNumber(val: string): number {
   return Number(val);
 }
+
+export function capitalizeName(fullName: string): string {
+  return fullName
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}

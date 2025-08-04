@@ -13,6 +13,10 @@ export class YellowCardCron {
   @Cron(EVERY_15_SECONDS_CRON)
   async cacheRates() {
     try {
+      // const ab = await this.yellowCardService.acceptCollectionRequest({
+      //   id: 'f4c7ffc8-11d2-585b-a804-50f4d8a726f2',
+      // });
+      // console.log({ ab });
       const { rates } = await this.yellowCardService.getRates();
       if (rates) {
         const now = new Date();
@@ -23,7 +27,7 @@ export class YellowCardCron {
           data: rates,
         });
 
-        this.logger.log(`✅ Cached Yellow Card rates successfully`);
+        // this.logger.log(`✅ Cached Yellow Card rates successfully`);
       } else {
         this.logger.warn(`⚠️ Yellow Card rates fetch returned no data`);
       }

@@ -12,7 +12,7 @@ import {
 } from '@/models/yellocard.models';
 
 import { generateYcSignature } from '@/utils/helpers';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { rateCache } from '@/utils/constants';
 import {
   IYellowCardRateDto,
@@ -22,6 +22,7 @@ import axios, { AxiosRequestHeaders } from 'axios';
 
 @Injectable()
 export class YellowCardService {
+  private readonly logger = new Logger(YellowCardService.name);
   constructor(private readonly httpService: HttpService) {}
 
   // --- Payments API ---

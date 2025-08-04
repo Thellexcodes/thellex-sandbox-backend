@@ -1,6 +1,7 @@
 import { getAppConfig } from '@/constants/env';
 import { HttpService } from '@/middleware/http.service';
 import {
+  IMapleradWalletDto,
   IMRBankAccountResponseDto,
   IMRCreateCustomerResponseDto,
   IMRCustomerDataDto,
@@ -9,6 +10,7 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
+import { FiatEnum, SupportedFiatCurrencyEnum } from '@/config/settings';
 
 @Injectable()
 export class MapleradService {
@@ -462,6 +464,17 @@ export class MapleradService {
 
     const response = await axios.post(url, payload, { headers });
     return response.data;
+  }
+
+  async checkLiquidity(currency: FiatEnum): Promise<IMapleradWalletDto> {
+    const path = `/wallets`;
+    const url = `${this.baseUrl}${path}`;
+    const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
+    const result: IMapleradWalletDto[] = await this.httpService.get(url, {
+      headers,
+    });
+
+    return result.find((c) => c.currency === currency.toUpperCase());
   }
 }
 

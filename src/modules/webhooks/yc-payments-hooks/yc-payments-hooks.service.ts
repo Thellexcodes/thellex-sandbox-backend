@@ -73,6 +73,7 @@ export class YcPaymentHookService {
         {
           paymentStatus: PaymentStatus.Failed,
           updatedAt: toUTCDate(dto.executedAt.toString()),
+          providerErrorMsg: dto.errorCode,
         },
       );
 
