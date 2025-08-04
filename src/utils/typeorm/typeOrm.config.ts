@@ -54,7 +54,7 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
     extra: {
       charset: 'utf8mb4_unicode_ci',
     },
-    synchronize: !isProd,
+    synchronize: true,
     autoLoadEntities: true,
     logging: false,
     // ssl: isTestNet ? { rejectUnauthorized: false } : false,

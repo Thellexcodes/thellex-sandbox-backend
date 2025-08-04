@@ -27,6 +27,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { TransactionHistoryEntity } from './transaction-history.entity';
+import { v4 as uuidV4 } from 'uuid';
 
 //[x] improve with all treasuery addresses
 const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>
@@ -78,7 +79,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'uuid', nullable: false })
   sequenceId: string;
 
-  @Column({ type: 'uuid', nullable: false })
+  @Column({ nullable: false, default: 'no-id-yet' })
   providerTransactionId: string;
 
   @Column({ type: 'varchar', nullable: true })

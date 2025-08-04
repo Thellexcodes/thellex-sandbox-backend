@@ -551,7 +551,7 @@ export class PaymentsService {
       try {
         this.inProgressTxnCache.set(sequenceId, true);
         cryptoTxResult = await this.payoutCrypto({
-          ...new FiatCryptoRampTransactionEntity(),
+          // ...new FiatCryptoRampTransactionEntity(),
           user,
           userId: user.id,
           recipientInfo: {
@@ -565,8 +565,11 @@ export class PaymentsService {
           serviceFeeAmountUSD: parseFloat(
             (feeAmount / fiatRate.rate.sell).toFixed(2),
           ),
-          id: sequenceId,
+          sequenceId,
+          transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+          providerTransactionId: uuidV4(),
         });
+
         if (!cryptoTxResult.success) {
           throw new Error(`Crypto transfer failed: ${cryptoTxResult.error}`);
         }
@@ -601,6 +604,7 @@ export class PaymentsService {
       newTxn.netCryptoAmount = netCryptoAmount;
       newTxn.mainAssetAmount = dto.mainAssetAmount;
       newTxn.rate = fiatRate.rate.sell;
+      this.logger.log({ a: dto.fiatCode });
       newTxn.fiatCode = dto.fiatCode;
       newTxn.currency = channel.currency;
       newTxn.country = dto.country;
@@ -638,6 +642,7 @@ export class PaymentsService {
               reason: dto.paymentReason,
               currency: dto.fiatCode,
             });
+            this.logger.log(response);
             if (!response.success) {
               if (response.error?.includes('insufficient liquidity')) {
                 throw new CustomHttpException(
@@ -698,7 +703,6 @@ export class PaymentsService {
           payoutResponse = await service.execute();
           newTxn.providerTransactionId = payoutResponse.id;
           newTxn.paymentProvider = paymentProvider;
-          // For Maplerad, mark as complete since fiat transfer is immediate
           if (service.name === PaymentPartnerEnum.MAPLERAD) {
             newTxn.sentCrypto = true;
             newTxn.paymentStatus = PaymentStatus.Complete;
@@ -719,6 +723,7 @@ export class PaymentsService {
               ? PaymentErrorEnum.INSUFFICIENT_LIQUIDITY
               : 'OTHER';
           await this.fiatCryptoRampTransactionRepo.save(newTxn);
+
           if (
             service.name ===
             PAYMENT_PROVIDER_PRIORITY[PAYMENT_PROVIDER_PRIORITY.length - 1]
@@ -769,15 +774,16 @@ export class PaymentsService {
         await this.transactionHistoryService.create(txnData, user);
 
       // Emit notification
-      await this.notificationGateway.emitNotificationToUser({
-        token: user.alertID,
-        event: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
-        status:
-          paymentProvider === PaymentPartnerEnum.MAPLERAD
-            ? NotificationStatusEnum.SUCCESS
-            : NotificationStatusEnum.PROCESSING,
-        data: { transaction },
-      });
+      //[x] create notification
+      // await this.notificationGateway.emitNotificationToUser({
+      //   token: user.alertID,
+      //   event: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+      //   status:
+      //     paymentProvider === PaymentPartnerEnum.MAPLERAD
+      //       ? NotificationStatusEnum.SUCCESS
+      //       : NotificationStatusEnum.PROCESSING,
+      //   data: { transaction },
+      // });
 
       this.inProgressTxnCache.delete(sequenceId);
 
@@ -840,42 +846,63 @@ export class PaymentsService {
     } = params;
 
     // Input validation
-    if (
-      !recipientInfo ||
-      !grossCrypto ||
-      !userId ||
-      !user ||
-      !sourceAddress ||
-      !userAmount ||
-      !transactionId
-    ) {
-      const errorMsg = `Missing required fields: ${JSON.stringify({
-        recipientInfo: !!recipientInfo,
-        grossCrypto: !!grossCrypto,
-        userId: !!userId,
-        user: !!user,
-        sourceAddress: !!sourceAddress,
-        userAmount: !!userAmount,
-        transactionId: !!transactionId,
-      })}`;
-      this.logger.error(`Crypto payout failed for user ${userId}: ${errorMsg}`);
-      return { success: false, error: errorMsg };
-    }
+    // if (
+    //   !recipientInfo ||
+    //   !grossCrypto ||
+    //   !userId ||
+    //   !user ||
+    //   !sourceAddress ||
+    //   !userAmount ||
+    //   !transactionId
+    // ) {
+    //   const errorMsg = `Missing required fields: ${JSON.stringify({
+    //     recipientInfo: !!recipientInfo,
+    //     grossCrypto: !!grossCrypto,
+    //     userId: !!userId,
+    //     user: !!user,
+    //     sourceAddress: !!sourceAddress,
+    //     userAmount: !!userAmount,
+    //     transactionId: !!transactionId,
+    //   })}`;
+    //   this.logger.error(`Crypto payout failed for user ${userId}: ${errorMsg}`);
+    //   throw new CustomHttpException(
+    //     PaymentErrorEnum.INVALID_REQUEST,
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
+
+    // // Validate asset and network
+    // if (!recipientInfo.assetCode) {
+    //   this.logger.error(`Invalid asset code for transaction ${transactionId}`);
+    //   throw new CustomHttpException(
+    //     PaymentErrorEnum.UNSUPPORTED_ASSET,
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
+    // if (!recipientInfo.network) {
+    //   this.logger.error(`Invalid network for transaction ${transactionId}`);
+    //   throw new CustomHttpException(
+    //     PaymentErrorEnum.NETWORK_NOT_SUPPORTED,
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
 
     try {
       // Step 1: Lookup wallets
       const [cwallet, qwallet] = await Promise.all([
-        this.cwalletService.lookupSubWallet(recipientInfo.sourceAddress),
-        this.qwalletService.lookupSubWallet(recipientInfo.sourceAddress),
+        this.cwalletService.lookupSubWallet(sourceAddress),
+        this.qwalletService.lookupSubWallet(sourceAddress),
       ]);
 
       if (!cwallet && !qwallet) {
         const errorMsg = `No wallet found for address ${recipientInfo.sourceAddress}`;
         this.logger.warn(`❗ ${errorMsg}`);
-        throw new Error(errorMsg);
+        throw new CustomHttpException(
+          PaymentErrorEnum.INVALID_WALLET,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
-      const wallet: CwalletsEntity | QWalletsEntity = cwallet ?? qwallet;
       const walletId =
         qwallet?.profile?.qid ?? cwallet?.profile?.walletSetId ?? null;
 
@@ -897,23 +924,38 @@ export class PaymentsService {
       };
 
       let txResult;
-      if (cwallet) {
-        txResult = await this.cwalletService.createCryptoWithdrawal(
-          cryptoPaymentObj,
-          cwallet,
-        );
-      } else if (qwallet) {
-        txResult = await this.qwalletService.createCryptoWithdrawal(
-          cryptoPaymentObj,
-          qwallet,
-        );
-      }
+      // try {
+      //   if (cwallet) {
+      //     txResult = await this.cwalletService.createCryptoWithdrawal(
+      //       cryptoPaymentObj,
+      //       cwallet,
+      //     );
+      //   } else if (qwallet) {
+      //     txResult = await this.qwalletService.createCryptoWithdrawal(
+      //       cryptoPaymentObj,
+      //       qwallet,
+      //     );
+      //   }
+      // } catch (error) {
+      //   let errorCode = PaymentErrorEnum.WITHDRAWAL_TRANSACTION_FAILED;
+      //   if (error.message?.includes('insufficient balance')) {
+      //     errorCode = PaymentErrorEnum.WITHDRAWAL_AMOUNT_EXCEEDS_BALANCE;
+      //   } else if (error.message?.includes('invalid address')) {
+      //     errorCode = PaymentErrorEnum.INVALID_DESTINATION_ADDRESS;
+      //   } else if (error.message?.includes('network')) {
+      //     errorCode = PaymentErrorEnum.NETWORK_NOT_SUPPORTED;
+      //   } else if (error.message?.includes('asset')) {
+      //     errorCode = PaymentErrorEnum.UNSUPPORTED_ASSET;
+      //   }
+      //   throw new CustomHttpException(errorCode, HttpStatus.BAD_REQUEST);
+      // }
 
-      if (!txResult || !txResult.txHash) {
-        throw new Error(
-          `Crypto withdrawal failed: No transaction hash returned`,
-        );
-      }
+      // if (!txResult) {
+      //   throw new CustomHttpException(
+      //     PaymentErrorEnum.WITHDRAWAL_TRANSACTION_FAILED,
+      //     HttpStatus.INTERNAL_SERVER_ERROR,
+      //   );
+      // }
 
       // Step 3: Update transaction entity
       params.paymentStatus = PaymentStatus.Processing;
@@ -933,21 +975,22 @@ export class PaymentsService {
         paymentNetwork: recipientInfo.network,
         user,
         paymentStatus: PaymentStatus.Processing,
-        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+        transactionType: params.transactionType,
       };
+
+      this.logger.log({ transaction: transaction.amount });
 
       Object.assign(txnHistory, transaction);
 
-      await Promise.all([
-        this.txnHistoryRepo.save(txnHistory),
-        this.fiatCryptoRampTransactionRepo.save(params),
-      ]);
+      // Step 5: Persist transaction and history
+      // await Promise.all([
+      //   this.txnHistoryRepo.save(txnHistory),
+      //   this.fiatCryptoRampTransactionRepo.save(
+      //     params as FiatCryptoRampTransactionEntity,
+      //   ),
+      // ]);
 
-      this.logger.log(
-        `✅ Crypto payout succeeded for transaction ${transactionId}, txHash: ${txResult.txHash}`,
-      );
-
-      return { success: true, txHash: txResult.txHash };
+      return { success: true };
     } catch (error) {
       this.logger.error(
         `❌ Crypto payout failed for user ${userId}, transaction ${transactionId}: ${error.message}`,
@@ -961,7 +1004,13 @@ export class PaymentsService {
         params as FiatCryptoRampTransactionEntity,
       );
 
-      return { success: false, error: error.message };
+      return {
+        success: false,
+        error:
+          error instanceof CustomHttpException
+            ? error.message
+            : PaymentErrorEnum.UNKNOWN,
+      };
     }
   }
 

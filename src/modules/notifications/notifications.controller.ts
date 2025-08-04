@@ -32,7 +32,6 @@ export class NotificationsController {
     @Res() res: CustomResponse,
   ) {
     const response = await this.notificationsService.markAsConsumed(id);
-    console.log(response);
     responseHandler(response, res, req);
   }
 }

@@ -20,6 +20,7 @@ import { IsEvmAddressConstraint } from './fiat-to-crypto-request.dto';
 import { BankInfoRequestDto } from './bank-info-request.dto';
 import { PaymentReasonEnum } from '@/models/payment.types';
 import { IsLowercaseEnum } from '@/validators/is-lowercase-enum.validator';
+import { normalizeEnumValue } from '@/utils/helpers';
 
 export class RequestCryptoOffRampPaymentDto {
   // ===== Crypto Asset Details =====
@@ -54,18 +55,12 @@ export class RequestCryptoOffRampPaymentDto {
   // ===== Fiat & Payment Preferences =====
 
   @ApiProperty({
-    example: SupportedFiatCurrencyEnum.NGN,
-    enum: SupportedFiatCurrencyEnum,
+    example: FiatEnum.NGN,
+    enum: FiatEnum,
     description: 'Fiat currency to receive',
   })
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.toLowerCase() : value,
-  )
-  @IsLowercaseEnum(FiatEnum, {
-    message:
-      'paymentReason must be one of: ' + Object.values(FiatEnum).join(', '),
-  })
-  @IsEnum(FiatEnum)
+  @Transform(({ value }) => normalizeEnumValue(value, FiatEnum))
+  // @IsEnum(FiatEnum)
   @IsNotEmpty()
   fiatCode: FiatEnum;
 
