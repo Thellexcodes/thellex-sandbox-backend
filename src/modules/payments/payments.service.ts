@@ -773,18 +773,6 @@ export class PaymentsService {
       const { user: u, ...transaction } =
         await this.transactionHistoryService.create(txnData, user);
 
-      // Emit notification
-      //[x] create notification
-      // await this.notificationGateway.emitNotificationToUser({
-      //   token: user.alertID,
-      //   event: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
-      //   status:
-      //     paymentProvider === PaymentPartnerEnum.MAPLERAD
-      //       ? NotificationStatusEnum.SUCCESS
-      //       : NotificationStatusEnum.PROCESSING,
-      //   data: { transaction },
-      // });
-
       this.inProgressTxnCache.delete(sequenceId);
 
       return plainToInstance(
