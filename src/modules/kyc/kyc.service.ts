@@ -141,6 +141,7 @@ export class KycService {
         country: 'Nigeria',
         lga: kydataDto.lga,
         provider: KycProviderEnum.DOJAH,
+        phone: `${kydataDto.phoneNumber}`,
       };
 
       // Create KycEntity with queryRunner.manager

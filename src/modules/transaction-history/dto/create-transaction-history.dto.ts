@@ -2,7 +2,7 @@ import {
   TransactionDirectionEnum,
   PaymentStatus,
   TransactionTypeEnum,
-  RampPaymentEventEnum,
+  YCRampPaymentEventEnum,
 } from '@/models/payment.types';
 import {
   FeeLevel,
@@ -11,7 +11,7 @@ import {
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 export class TransactionHistoryDto {
-  event?: WalletWebhookEventEnum | RampPaymentEventEnum;
+  event?: WalletWebhookEventEnum | YCRampPaymentEventEnum;
   transactionId: string;
   transactionDirection: TransactionDirectionEnum;
   transactionType: TransactionTypeEnum;
@@ -19,7 +19,7 @@ export class TransactionHistoryDto {
   amount: string;
   fee?: string;
   feeLevel?: FeeLevel;
-  blockchainTxId: string;
+  blockchainTxId?: string;
   reason?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
@@ -31,4 +31,6 @@ export class TransactionHistoryDto {
   paymentNetwork: string;
   tokenId?: string;
   user: UserEntity;
+  rampID?: string;
+  mainAssetAmount?: number;
 }

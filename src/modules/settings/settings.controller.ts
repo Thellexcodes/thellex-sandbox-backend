@@ -1,11 +1,10 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
-import { CreateBankAccountDto } from './dto/payment-settings';
 import { responseHandler } from '@/utils/helpers';
 import { VersionedController001 } from '../controller/base.controller';
-import { YellowCardService } from '../payments/yellowcard.service';
+import { ICreateBankRequestAccountDto } from './dto/payment-settings';
 
 @VersionedController001('settings')
 export class SettingsController {
@@ -33,11 +32,10 @@ export class SettingsController {
   async addBankAccount(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
-    @Body() dto,
+    @Body() dto: ICreateBankRequestAccountDto,
   ) {
     const userId = req.user.id;
     const result = await this.settingsService.addBankAccount(userId, dto);
-    console.log(result);
     return responseHandler(result, res, req);
   }
 

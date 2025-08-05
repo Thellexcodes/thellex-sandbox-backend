@@ -1,8 +1,8 @@
-import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
+import { Get, Post, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { VersionedController001 } from './modules/controller/base.controller';
-import { CustomHttpException } from './middleware/custom.http.exception';
+import { CustomRequest } from './models/request.types';
 
 @ApiExcludeController()
 @VersionedController001('')
@@ -10,13 +10,12 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
+  getHello(@Req() req: CustomRequest): string {
     return this.appService.getHello();
   }
 
   @Post()
-  getHelloPost(@Body() body): string {
-    console.log(body);
+  getHelloPost(): string {
     return this.appService.getHello();
   }
 }

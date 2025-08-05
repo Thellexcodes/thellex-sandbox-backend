@@ -11,18 +11,23 @@ import { PaymentPartnerEnum } from '@/models/payments.providers';
 import {
   CountryEnum,
   CustomerTypesEnum,
+  FiatEnum,
   SupportedBlockchainTypeEnum,
+  SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
 import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDate,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { TransactionHistoryEntity } from './transaction-history.entity';
+import { v4 as uuidV4 } from 'uuid';
 
 //[x] improve with all treasuery addresses
 const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>
@@ -74,7 +79,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'uuid', nullable: false })
   sequenceId: string;
 
-  @Column({ type: 'uuid', nullable: false })
+  @Column({ nullable: false, default: 'no-id-yet' })
   providerTransactionId: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -108,6 +113,8 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   })
   paymentStatus: PaymentStatus;
 
+  @Expose()
+  @ApiProperty()
   @Column({
     type: 'enum',
     enum: PaymentReasonEnum,
@@ -118,6 +125,9 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ default: false })
   sentCrypto: boolean;
 
+  @Column({ nullable: true })
+  providerErrorMsg: string;
+
   @Expose()
   @ApiProperty()
   @Column({ default: false })
@@ -125,7 +135,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ type: 'timestamp with time zone', nullable: false })
+  @Column({ type: 'timestamptz', nullable: false })
   expiresAt: Date;
 
   // ========== PAYMENT PROVIDER ==========
@@ -148,6 +158,16 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @ApiProperty()
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   netCryptoAmount: number;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  mainAssetAmount: number;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  mainFiatAmount: number;
 
   @Expose()
   @ApiProperty()
@@ -180,8 +200,8 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   grossFiat: number;
 
   // ========== CURRENCY / COUNTRY ==========
-  @Column({ type: 'varchar', nullable: true })
-  fiatCode: string;
+  @Column({ type: 'enum', nullable: true, enum: FiatEnum })
+  fiatCode: FiatEnum;
 
   @Column({ type: 'varchar', nullable: true })
   currency: string;
@@ -215,6 +235,10 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
 export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransactionEntity {
   @Expose()
+  @ApiProperty()
+  id: string;
+
+  @Expose()
   @ApiProperty({ example: 5000 })
   @IsNumber()
   userAmount: number;
@@ -230,14 +254,19 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   serviceFeeAmountLocal: number;
 
   @Expose()
-  @ApiProperty({ example: 0.06, description: 'Fee amount in USD' })
-  @IsNumber()
-  serviceFeeAmountUsd: number;
-
-  @Expose()
   @ApiProperty({ example: 4900 })
   @IsNumber()
   netFiatAmount: number;
+
+  @Expose()
+  @ApiPropertyOptional({ example: 10 })
+  @IsNumber()
+  mainAssetAmount: number;
+
+  @Expose()
+  @ApiPropertyOptional({ example: 4890 })
+  @IsNumber()
+  mainFiatAmount: number;
 
   @Expose()
   @ApiProperty({ example: 10.0 })
@@ -279,6 +308,10 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   @IsDate()
   @Type(() => Date)
   expiresAt: Date;
+
+  @Expose()
+  @ApiProperty()
+  transaction: TransactionHistoryEntity[];
 }
 
 export class IRateDto {

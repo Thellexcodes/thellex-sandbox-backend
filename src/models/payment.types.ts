@@ -1,4 +1,4 @@
-export enum RampPaymentEventEnum {
+export enum YCRampPaymentEventEnum {
   COLLECTION_CREATED = 'collection.created',
   COLLECTION_PENDING_APPROVAL = 'collection.pending_approval',
   COLLECTION_PROCESSING = 'collection.processing',
@@ -13,6 +13,7 @@ export enum RampPaymentEventEnum {
   PAYMENT_FAILED = 'payment.failed',
   PAYMENT_EXPIRED = 'payment.expired',
   PAYMENT_COMPLETE = 'payment.complete',
+  PENDING_LIQUIDITY = 'payment.pending_liquidity',
 }
 
 export enum PaymentStatus {
@@ -27,6 +28,7 @@ export enum PaymentStatus {
   PendingRiskScreening = 'pending_risk_screening',
   Queued = 'queued',
   Sent = 'sent',
+  Failed = 'failed',
 }
 
 export enum TransactionDirectionEnum {

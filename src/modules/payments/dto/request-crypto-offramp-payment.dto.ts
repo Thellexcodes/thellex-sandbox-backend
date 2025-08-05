@@ -5,7 +5,7 @@ import {
   SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsEnum,
@@ -20,6 +20,7 @@ import { IsEvmAddressConstraint } from './fiat-to-crypto-request.dto';
 import { BankInfoRequestDto } from './bank-info-request.dto';
 import { PaymentReasonEnum } from '@/models/payment.types';
 import { IsLowercaseEnum } from '@/validators/is-lowercase-enum.validator';
+import { normalizeEnumValue } from '@/utils/helpers';
 
 export class RequestCryptoOffRampPaymentDto {
   // ===== Crypto Asset Details =====
@@ -54,20 +55,14 @@ export class RequestCryptoOffRampPaymentDto {
   // ===== Fiat & Payment Preferences =====
 
   @ApiProperty({
-    example: SupportedFiatCurrencyEnum.NGN,
-    enum: SupportedFiatCurrencyEnum,
+    example: FiatEnum.NGN,
+    enum: FiatEnum,
     description: 'Fiat currency to receive',
   })
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.toLowerCase() : value,
-  )
-  @IsLowercaseEnum(FiatEnum, {
-    message:
-      'paymentReason must be one of: ' + Object.values(FiatEnum).join(', '),
-  })
-  @IsEnum(SupportedFiatCurrencyEnum)
+  @Transform(({ value }) => normalizeEnumValue(value, FiatEnum))
+  // @IsEnum(FiatEnum)
   @IsNotEmpty()
-  fiatCode: SupportedFiatCurrencyEnum;
+  fiatCode: FiatEnum;
 
   @ApiProperty({
     description: '2-letter ISO country code (e.g., ng, gh)',
@@ -117,4 +112,22 @@ export class RequestCryptoOffRampPaymentDto {
   @Type(() => BankInfoRequestDto)
   @IsNotEmpty()
   bankInfo: BankInfoRequestDto;
+
+  @ApiPropertyOptional({
+    example: 102.1,
+    description: 'Final asset amount including fees, slippage, etc.',
+    type: Number,
+  })
+  @IsNumber({ maxDecimalPlaces: 8 })
+  @IsOptional()
+  mainAssetAmount: number;
+
+  @ApiPropertyOptional({
+    example: 154000,
+    description: 'Final fiat amount user receives after conversion and fees',
+    type: Number,
+  })
+  @IsOptional()
+  @IsNumber()
+  mainFiatAmount: number;
 }

@@ -126,8 +126,6 @@ export class UserService {
 
     const userPlain = formatUserWithTiers(user);
 
-    console.log(userPlain.transactionHistory);
-
     return plainToInstance(IUserDto, userPlain, {
       excludeExtraneousValues: true,
     });

@@ -1,4 +1,4 @@
-import { SupportedFiatCurrencyEnum } from '@/config/settings';
+import { FiatEnum, SupportedFiatCurrencyEnum } from '@/config/settings';
 import { PaymentReasonEnum } from '@/models/payment.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -23,7 +23,7 @@ class CounterpartyDto {
   name: string;
 }
 
-export class CreateFiatWithdrawPaymentDto {
+export class ICreateMalperadFiatWithdrawPaymentDto {
   @ApiProperty()
   @IsString()
   bank_code: string;
@@ -42,7 +42,7 @@ export class CreateFiatWithdrawPaymentDto {
 
   @ApiProperty()
   @IsString()
-  currency: SupportedFiatCurrencyEnum;
+  currency: FiatEnum;
 
   @ApiProperty()
   @IsString()

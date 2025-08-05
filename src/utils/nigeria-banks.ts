@@ -24,14 +24,14 @@ export const NigeriaBanks = [
   {
     name: '9 Payment Service Bank',
     slug: '',
-    code: '825',
+    code: '316',
     ussd: '',
     logo: 'https://nigerianbanks.xyz/logo/default-image.png',
   },
   {
     name: '9 Payment Service Bank (9PSB)',
     slug: '',
-    code: '242',
+    code: '316',
     ussd: '',
     logo: 'https://nigerianbanks.xyz/logo/default-image.png',
   },

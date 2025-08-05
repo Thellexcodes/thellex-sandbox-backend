@@ -10,7 +10,7 @@ import {
   PaymentStatus,
   TransactionDirectionEnum,
   TransactionTypeEnum,
-  RampPaymentEventEnum,
+  YCRampPaymentEventEnum,
 } from '@/models/payment.types';
 import {
   FeeLevel,
@@ -21,7 +21,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEnum } from 'class-validator';
 
-type CombinedEventEnum = WalletWebhookEventEnum | RampPaymentEventEnum;
+type CombinedEventEnum = WalletWebhookEventEnum | YCRampPaymentEventEnum;
 
 @Entity({ name: 'transaction_history' })
 export class TransactionHistoryEntity extends BaseEntity {
@@ -33,7 +33,7 @@ export class TransactionHistoryEntity extends BaseEntity {
   @Expose()
   @ApiProperty()
   @IsEnum(WalletWebhookEventEnum, { each: false })
-  @IsEnum(RampPaymentEventEnum, { each: false })
+  @IsEnum(YCRampPaymentEventEnum, { each: false })
   event: CombinedEventEnum;
 
   @Expose()
@@ -139,6 +139,21 @@ export class TransactionHistoryEntity extends BaseEntity {
   @ApiProperty()
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ nullable: true })
+  rampID: string;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ nullable: true })
+  mainFiatAmount: number;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ nullable: true })
+  mainAssetAmount: number;
 }
 
 @Exclude()

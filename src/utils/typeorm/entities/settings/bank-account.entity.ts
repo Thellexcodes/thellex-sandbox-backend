@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -7,6 +7,7 @@ import { FiatEnum } from '@/config/settings';
 import { BankProvidersEnum } from '@/models/banks.types';
 
 @Entity({ name: 'bank_accounts' })
+@Unique(['user', 'accountNumber'])
 export class BankAccountEntity extends BaseEntity {
   @Exclude()
   @ManyToOne(() => UserEntity, (user) => user.bankAccounts, {
@@ -49,7 +50,7 @@ export class BankAccountEntity extends BaseEntity {
   @Column({ name: 'is_primary', type: 'boolean', default: false })
   isPrimary: boolean;
 
-  @Column()
+  @Column({ type: 'timestamptz' })
   external_createdAt: Date;
 
   @Column({ type: 'boolean', default: false })
