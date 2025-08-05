@@ -23,7 +23,7 @@ class CounterpartyDto {
   name: string;
 }
 
-export class CreateFiatWithdrawPaymentDto {
+export class ICreateMalperadFiatWithdrawPaymentDto {
   @ApiProperty()
   @IsString()
   bank_code: string;

@@ -55,3 +55,32 @@ export interface IMapleradWalletDto {
   minimum_balance: number;
   display_wallet: boolean;
 }
+
+export type IMapleradWalletResponseDto = IMRCreateCustomerResponseDto<
+  IMapleradWalletDto[]
+>;
+
+export interface IMapleradTransferDto {
+  id: string;
+  currency: string;
+  status: string;
+  entry: string;
+  type: string;
+  amount: number;
+  summary: string;
+  reason: string;
+  fee: number;
+  reference: string | null;
+  created_at: string;
+  updated_at: string;
+  counterparty: {
+    id: string;
+    account_number: string;
+    account_name: string;
+    bank_code: string;
+    bank_name: string;
+  };
+}
+
+export type IMapleradTransferResponseDto =
+  IMRCreateCustomerResponseDto<IMapleradTransferDto>;

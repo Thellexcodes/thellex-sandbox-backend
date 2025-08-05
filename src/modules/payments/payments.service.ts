@@ -31,6 +31,7 @@ import {
   capitalizeName,
   findBankByName,
   formatUserWithTiers,
+  toLowestDenomination,
   toUTCDate,
 } from '@/utils/helpers';
 import {
@@ -58,11 +59,11 @@ import {
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
 import { PaymentErrorEnum } from '@/models/payment-error.enum';
-import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 import { MapleradService } from './maplerad.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { YCTxnAccountTypes } from '@/models/yellow-card.types';
 import { LRUCache } from 'lru-cache';
+import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 
 //[x] properly throw error using enum
 @Injectable()
@@ -200,7 +201,7 @@ export class PaymentsService {
 
   async handleWithdrawFiatPayment(
     user: UserEntity,
-    withdrawCryptoPaymentDto: CreateFiatWithdrawPaymentDto,
+    withdrawCryptoPaymentDto: ICreateMalperadFiatWithdrawPaymentDto,
   ): Promise<TransactionHistoryEntity | any> {
     // const localTransferResponse = this.mapleradService.localTransferAfrica(
     //   withdrawCryptoPaymentDto,
@@ -551,7 +552,6 @@ export class PaymentsService {
       try {
         this.inProgressTxnCache.set(sequenceId, true);
         cryptoTxResult = await this.payoutCrypto({
-          // ...new FiatCryptoRampTransactionEntity(),
           user,
           userId: user.id,
           recipientInfo: {
@@ -595,16 +595,10 @@ export class PaymentsService {
       newTxn.customerType = userPlain.kyc.customerType;
       newTxn.userAmount = dto.userAmount;
       newTxn.netFiatAmount = netFiatAmount;
-      newTxn.feeLabel = feeLabel;
-      newTxn.serviceFeeAmountLocal = feeAmount;
-      newTxn.serviceFeeAmountUSD = parseFloat(
-        (feeAmount / fiatRate.rate.sell).toFixed(2),
-      );
       newTxn.grossFiat = grossFiat;
       newTxn.netCryptoAmount = netCryptoAmount;
       newTxn.mainAssetAmount = dto.mainAssetAmount;
       newTxn.rate = fiatRate.rate.sell;
-      this.logger.log({ a: dto.fiatCode });
       newTxn.fiatCode = dto.fiatCode;
       newTxn.currency = channel.currency;
       newTxn.country = dto.country;
@@ -631,66 +625,68 @@ export class PaymentsService {
       let payoutResponse;
       let paymentProvider;
 
+      const aa = 100;
+      const bankInfoAndCode = findBankByName(dto.bankInfo.bankName);
+      this.logger.log({ bankInfoAndCode, b: dto.bankInfo.accountNumber });
+      // let bankRecord = await this.mapleradService.resolveInstitutionAccount({
+      //   account_number: dto.bankInfo.accountNumber,
+      //   bank_code: bankInfoAndCode.code,
+      // });
+
+      // this.logger.log({ bankRecord });
+      this.logger.log({
+        bank_code: bankInfoAndCode.code,
+        account_number: dto.bankInfo.accountNumber,
+        amount: toLowestDenomination(aa),
+        reason: dto.paymentReason,
+        currency: dto.fiatCode,
+      });
+
       const payoutServices = [
         {
           name: PaymentPartnerEnum.MAPLERAD,
           execute: async () => {
+            //[x] resolve bank
+
             const response = await this.mapleradService.localTransferAfrica({
-              bank_code: bank.code,
+              bank_code: bankInfoAndCode.code,
               account_number: dto.bankInfo.accountNumber,
-              amount: netFiatAmount,
+              amount: toLowestDenomination(aa),
               reason: dto.paymentReason,
               currency: dto.fiatCode,
             });
-            this.logger.log(response);
-            if (!response.success) {
-              if (response.error?.includes('insufficient liquidity')) {
-                throw new CustomHttpException(
-                  PaymentErrorEnum.INSUFFICIENT_LIQUIDITY,
-                  HttpStatus.SERVICE_UNAVAILABLE,
-                );
-              }
-              throw new CustomHttpException(
-                'Maplerad transfer failed',
-                HttpStatus.INTERNAL_SERVER_ERROR,
-              );
-            }
+
             return {
-              id: response.transactionId,
-              destination: {
-                networkId: network.id,
-                accountBank: bank.code,
-                networkName: bank.name,
-              },
+              ...response,
               expiresAt: toUTCDate(new Date(ONE_DAY_LATER).toISOString()),
             };
           },
         },
-        {
-          name: PaymentPartnerEnum.YELLOWCARD,
-          execute: async () => {
-            let { accountName } = await this.ycService.resolveBankAccount({
-              accountNumber: destination.accountNumber,
-              networkId: destination.networkId,
-            });
-            destination.accountName = accountName;
+        // {
+        //   name: PaymentPartnerEnum.YELLOWCARD,
+        //   execute: async () => {
+        //     let { accountName } = await this.ycService.resolveBankAccount({
+        //       accountNumber: destination.accountNumber,
+        //       networkId: destination.networkId,
+        //     });
+        //     destination.accountName = accountName;
 
-            const request = {
-              sequenceId: sequenceId,
-              channelId: channel.id,
-              currency: channel.currency,
-              country: channel.country,
-              localAmount: dto.userAmount,
-              reason: dto.paymentReason,
-              destination,
-              sender,
-              forceAccept: true,
-              customerUID: userPlain.uid.toString(),
-            };
+        //     const request = {
+        //       sequenceId: sequenceId,
+        //       channelId: channel.id,
+        //       currency: channel.currency,
+        //       country: channel.country,
+        //       localAmount: dto.userAmount,
+        //       reason: dto.paymentReason,
+        //       destination,
+        //       sender,
+        //       forceAccept: true,
+        //       customerUID: userPlain.uid.toString(),
+        //     };
 
-            return await this.ycService.submitPaymentRequest(request);
-          },
-        },
+        //     return await this.ycService.submitPaymentRequest(request);
+        //   },
+        // },
       ].sort(
         (a, b) =>
           PAYMENT_PROVIDER_PRIORITY.indexOf(a.name) -
@@ -705,7 +701,12 @@ export class PaymentsService {
           newTxn.paymentProvider = paymentProvider;
           if (service.name === PaymentPartnerEnum.MAPLERAD) {
             newTxn.sentCrypto = true;
-            newTxn.paymentStatus = PaymentStatus.Complete;
+            newTxn.paymentStatus = PaymentStatus.Processing;
+            newTxn.feeLabel = feeLabel;
+            newTxn.serviceFeeAmountLocal = feeAmount;
+            newTxn.serviceFeeAmountUSD = parseFloat(
+              (feeAmount / fiatRate.rate.sell).toFixed(2),
+            );
           }
           // For YellowCard, keep sentCrypto: false for cron processing
           this.logger.log(`Fiat payout succeeded with ${service.name}`);
@@ -723,7 +724,6 @@ export class PaymentsService {
               ? PaymentErrorEnum.INSUFFICIENT_LIQUIDITY
               : 'OTHER';
           await this.fiatCryptoRampTransactionRepo.save(newTxn);
-
           if (
             service.name ===
             PAYMENT_PROVIDER_PRIORITY[PAYMENT_PROVIDER_PRIORITY.length - 1]
@@ -977,8 +977,6 @@ export class PaymentsService {
         paymentStatus: PaymentStatus.Processing,
         transactionType: params.transactionType,
       };
-
-      this.logger.log({ transaction: transaction.amount });
 
       Object.assign(txnHistory, transaction);
 

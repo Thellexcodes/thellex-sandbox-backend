@@ -32,6 +32,7 @@ import { ConfigService } from '@/config/config.service';
 import { MapleradService } from './payments/maplerad.service';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
 import { CustomConfigModule } from '@/config/config.module';
+import { MpPaymentHooksModule } from './webhooks/mp-payment-hooks/mp-payment-hooks.module';
 
 @Global()
 @Module({
@@ -58,6 +59,7 @@ import { CustomConfigModule } from '@/config/config.module';
     QwalletHooksModule,
     SettingsModule,
     YcPaymentHookModule,
+    MpPaymentHooksModule,
   ],
   providers: [
     EtherService,

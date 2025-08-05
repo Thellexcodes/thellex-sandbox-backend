@@ -26,7 +26,7 @@ import {
   IFiatToCryptoQuoteSummaryResponseDto,
   IRatesResponseDto,
 } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
-import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
+import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 
 ApiTags('Payments');
 @VersionedController001('payments')
@@ -39,7 +39,7 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
   @ApiOkResponse({ type: CreateWithdrawalResponseDto })
   async withdrawPayment(
-    @Body() withdrawPaymentDto: CreateFiatWithdrawPaymentDto,
+    @Body() withdrawPaymentDto: ICreateMalperadFiatWithdrawPaymentDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {

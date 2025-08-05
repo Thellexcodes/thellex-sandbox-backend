@@ -1,7 +1,9 @@
 import { getAppConfig } from '@/constants/env';
 import { HttpService } from '@/middleware/http.service';
 import {
+  IMapleradTransferResponseDto,
   IMapleradWalletDto,
+  IMapleradWalletResponseDto,
   IMRBankAccountResponseDto,
   IMRCreateCustomerResponseDto,
   IMRCustomerDataDto,
@@ -9,7 +11,7 @@ import {
 } from '@/models/maplerad.types';
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import { CreateFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
+import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 import { FiatEnum, SupportedFiatCurrencyEnum } from '@/config/settings';
 
 @Injectable()
@@ -176,13 +178,19 @@ export class MapleradService {
   // Bills
 
   // Transfers
-  async localTransferAfrica(dto: CreateFiatWithdrawPaymentDto) {
-    const path = `/transfers`;
-    const url = `${this.baseUrl}${path}`;
-    const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
-
-    const response = await axios.get(url, { headers });
-    return response.data;
+  async localTransferAfrica(
+    payload: ICreateMalperadFiatWithdrawPaymentDto,
+  ): Promise<IMapleradTransferResponseDto> {
+    try {
+      const path = '/transfers';
+      const url = `${this.baseUrl}${path}`;
+      const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
+      const response = await this.httpService.post(url, payload, { headers });
+      this.logger.log(response);
+      return null;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async usTransfer(data, apiKey) {
@@ -470,11 +478,10 @@ export class MapleradService {
     const path = `/wallets`;
     const url = `${this.baseUrl}${path}`;
     const headers = this.generateAuthHeaders(RequestMethodsEnum.GET, path);
-    const result: IMapleradWalletDto[] = await this.httpService.get(url, {
+    const result = (await this.httpService.get(url, {
       headers,
-    });
-
-    return result.find((c) => c.currency === currency.toUpperCase());
+    })) as IMapleradWalletResponseDto;
+    return result.data.find((c) => c.currency === 'NGN');
   }
 }
 

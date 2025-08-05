@@ -308,3 +308,61 @@ export const PAYMENT_PROVIDER_PRIORITY = [
 // [1]     executedAt: 1754282446995,
 // [1]     errorCode: 'NAME_MISMATCH'
 // [1]   }
+
+//  {
+// [1]   dto: {
+// [1]     id: '29f7bd6c-a645-5b0b-9716-88e7b07db7cd',
+// [1]     sequenceId: 'aa2e9035-e4cc-456f-a13a-7af3c53a2140',
+// [1]     status: 'complete',
+// [1]     apiKey: 'e4d0b27e45834848d03e79706495ff0b',
+// [1]     event: 'COLLECTION.COMPLETE',
+// [1]     executedAt: 1754341397533,
+// [1]     sessionId: '100004250804210307138304078388'
+// [1]   }
+// [1] }
+
+// [1] {
+// [1]   dto: {
+// [1]     id: '90f26d9a-70e7-5e17-a9fa-37809db0fb2d',
+// [1]     sequenceId: 'f63d921e-4954-423b-b8f1-a246c17d92b8',
+// [1]     status: 'processing',
+// [1]     apiKey: 'e4d0b27e45834848d03e79706495ff0b',
+// [1]     event: 'COLLECTION.PROCESSING',
+// [1]     executedAt: 1754342035173
+// [1]   }
+// [1] }
+
+//  {
+// [1]   "status": true,
+// [1]   "message": "Transfer queued successfully",
+// [1]   "data": {
+// [1]     "id": "83fe368d-5237-4b3f-9800-78ae55fd0765",
+// [1]     "currency": "NGN",
+// [1]     "status": "SUCCESS",
+// [1]     "entry": "DEBIT",
+// [1]     "type": "TRANSFER",
+// [1]     "amount": 10000,
+// [1]     "summary": "Transfer | Test Account- (Test Account) - 6099490326 - 9 Payment Service Bank",
+// [1]     "reason": "gift",
+// [1]     "fee": 2000,
+// [1]     "reference": null,
+// [1]     "created_at": "2025-08-05T05:11:03.865038543Z",
+// [1]     "updated_at": "2025-08-05T05:11:03.865038543Z",
+// [1]     "counterparty": {
+// [1]       "id": "3acda671-e4c3-4944-bdf4-c5d325772f01",
+// [1]       "account_number": "6099490326",
+// [1]       "account_name": "Test Account- (Test Account)",
+// [1]       "bank_code": "825",
+// [1]       "bank_name": "9 Payment Service Bank"
+// [1]     }
+// [1]   }
+// [1] }
+
+//  {
+// [1]   "created_at": "2025-08-05 06:32:06.991161 +0000 UTC",
+// [1]   "event": "transfer.successful",
+// [1]   "id": "79d8d97f-d3ba-4b32-a810-a157f4f9d702",
+// [1]   "reference": null,
+// [1]   "status": "SUCCESS",
+// [1]   "updated_at": "2025-08-05 06:32:41.261512071 +0000 UTC"
+// [1] }
