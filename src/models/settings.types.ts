@@ -80,6 +80,7 @@ export type ApiConfig = {
   ALCHEMY_API: string;
   KYC_ENCRYPTION_KEY: string;
   IPINFO_TOKEN: string;
+  ENABLE_HTTPS: string;
 };
 
 export type Env =

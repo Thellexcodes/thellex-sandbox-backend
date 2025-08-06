@@ -3,8 +3,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ErrorInterceptor } from '@/middleware/error.interceptor';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
-// import * as fs from 'fs';
-// import * as path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { writeFileSync } from 'fs';
 import { ENV_PRODUCTION } from './models/settings.types';
 import { getAppConfig, getEnv } from './constants/env';
@@ -15,39 +15,44 @@ import {
 } from './config/settings';
 import { API_VERSIONS } from './config/versions';
 import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
-// import { CircleWalletManager } from './utils/services/circle-wallet.manager';
 
-// const certFolder = path.join(__dirname, '../cert');
-
-// (async () => {
-//   const apiKey = getAppConfig().CWALLET.API_KEY;
-//   const walletSetName = 'My First Wallet Set';
-
-//   const manager = new CircleWalletManager(apiKey);
-
-//   try {
-//     const {} = await manager.setupWalletSet(walletSetName);
-//     // console.log('Wallet Set:', walletSet);
-//     // console.log('Recovery File:', recoveryFile);
-//   } catch (err) {
-//     console.error('Setup error:', err.message);
-//   }
-// })();
+const certFolder = path.join(__dirname, '../../cert');
 
 async function bootstrap() {
-  // let httpsOptions: any;
+  let httpsOptions: any = null;
 
-  // if (process.env.NODE_ENV === 'development') {
-  //   const keyFile = fs.readFileSync(path.join(certFolder, 'server.key'));
-  //   const certFile = fs.readFileSync(path.join(certFolder, 'server.cert'));
+  // Check if HTTPS is enabled via environment variable
+  const enableHttps = getAppConfig().ENABLE_HTTPS === 'true';
 
-  //   httpsOptions = {
-  //     key: keyFile,
-  //     cert: certFile,
-  //   };
-  // }
+  if (enableHttps) {
+    try {
+      const keyFilePath = path.join(certFolder, 'server.key');
+      const certFilePath = path.join(certFolder, 'server.cert');
 
-  const app = await NestFactory.create(AppModule, {});
+      // Verify certificate files exist
+      if (!fs.existsSync(keyFilePath) || !fs.existsSync(certFilePath)) {
+        console.warn(
+          `HTTPS enabled but certificate files not found in ${certFolder}. Falling back to HTTP.`,
+        );
+      } else {
+        httpsOptions = {
+          key: fs.readFileSync(keyFilePath),
+          cert: fs.readFileSync(certFilePath),
+        };
+        console.log('HTTPS enabled with provided certificates.');
+      }
+    } catch (error) {
+      console.error(`Failed to load HTTPS certificates: ${error.message}`);
+      console.warn('Falling back to HTTP.');
+    }
+  } else {
+    console.log('HTTPS disabled. Running on HTTP.');
+  }
+
+  // Create NestJS app with or without HTTPS
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
   app.setGlobalPrefix('api');
 
   app.enableVersioning({
@@ -70,13 +75,11 @@ async function bootstrap() {
         'access-token',
       )
       .setVersion(API_VERSIONS.V100)
-      .addServer(`/`)
+      .addServer(`/${enableHttps ? 'https' : 'http'}`)
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-
     SwaggerModule.setup('doc', app, document);
-
     writeFileSync('./openapi.json', JSON.stringify(document));
   }
 
@@ -94,7 +97,8 @@ async function bootstrap() {
   const server = await app.listen(serverPort, serverIp);
   server.setTimeout(SERVER_REQUEST_TIMEOUT_MS);
 
-  console.log(`Application is now running on: ${await app.getUrl()}`);
+  const appUrl = await app.getUrl();
+  console.log(`Application is now running on: ${appUrl}`);
 }
 
 bootstrap();
