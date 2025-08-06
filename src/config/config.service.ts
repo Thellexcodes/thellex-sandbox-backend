@@ -38,10 +38,7 @@ export class ConfigService {
       this.envConfig = result.parsed || {};
       this.logger.log(`Loaded .env file from ${envPath}`);
     } else {
-      this.logger.warn(
-        '.env file not found in any paths. Using process.env for configuration.',
-      );
-      this.envConfig = { ...process.env }; // Fallback to Render's dashboard variables
+      this.envConfig = { ...process.env };
     }
 
     // Validate NODE_ENV
@@ -52,7 +49,6 @@ export class ConfigService {
     }
 
     this.envPrefix = `${nodeEnv}_`;
-    this.logger.log(`Running in ${nodeEnv} environment`);
   }
 
   get(key: string): string {
