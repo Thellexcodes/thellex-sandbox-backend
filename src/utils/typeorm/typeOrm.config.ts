@@ -57,6 +57,6 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
     synchronize: true,
     autoLoadEntities: true,
     logging: false,
-    // ssl: isTestNet ? { rejectUnauthorized: false } : false,
+    ssl: isProd ? { rejectUnauthorized: true } : false,
   };
 };
