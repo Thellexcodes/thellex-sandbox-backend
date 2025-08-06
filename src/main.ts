@@ -52,6 +52,7 @@ async function bootstrap() {
   // Create NestJS app with or without HTTPS
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
+    logger: false,
   });
   app.setGlobalPrefix('api');
 
@@ -61,7 +62,7 @@ async function bootstrap() {
 
   const isProd = getEnv() === ENV_PRODUCTION;
 
-  if (!isProd) {
+  if (isProd) {
     const config = new DocumentBuilder()
       .setTitle('Thellex API')
       .setDescription('Thellex API Documentation')

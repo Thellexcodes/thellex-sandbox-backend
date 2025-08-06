@@ -20,16 +20,11 @@ export class ConfigService {
 
     let envPath: string | undefined;
     for (const possiblePath of possibleEnvPaths) {
-      this.logger.log(`Checking .env path: ${possiblePath}`);
       if (fs.existsSync(possiblePath)) {
         envPath = possiblePath;
         break;
       }
     }
-
-    // Log all attempted paths and the selected one
-    this.logger.log(`Attempted .env paths: ${possibleEnvPaths.join(', ')}`);
-    this.logger.log(`Selected .env path: ${envPath || 'none'}`);
 
     // Load .env file if found, otherwise use process.env
     if (envPath) {
@@ -62,7 +57,7 @@ export class ConfigService {
 
   get(key: string): string {
     const fullKey = this.envPrefix + key;
-    const value = this.envConfig[fullKey] ?? this.envConfig[key]; // Check prefixed and raw key
+    const value = this.envConfig[fullKey] ?? this.envConfig[key];
     if (value === undefined) {
       this.logger.error(`Config key ${fullKey} or ${key} not found`);
       throw new Error(`Config key ${fullKey} not found`);
