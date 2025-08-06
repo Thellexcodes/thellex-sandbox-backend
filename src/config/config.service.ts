@@ -12,6 +12,7 @@ export class ConfigService {
 
   constructor() {
     const envPath = path.resolve(process.cwd(), '.env');
+    console.log({ envPath });
 
     if (!fs.existsSync(envPath)) {
       throw new Error('.env file not found!');
