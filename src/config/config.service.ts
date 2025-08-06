@@ -10,14 +10,29 @@ export class ConfigService {
   private envPrefix: string;
 
   constructor() {
-    // Define .env path for Render (project root, not src)
-    const envPath = path.resolve(__dirname, '../../.env'); // Adjusts to project root from src/config
+    // Define possible .env paths
+    const possibleEnvPaths = [
+      path.resolve(process.cwd(), '.env'), // Current working directory
+      path.resolve(__dirname, '../../../.env'), // Project root from src/config
+      '/opt/render/project/.env', // Explicit Render project root
+      '/app/.env', // Common Render root path
+    ];
 
-    // Log the .env path for debugging
-    this.logger.log(`Attempting to load .env from: ${envPath}`);
+    let envPath: string | undefined;
+    for (const possiblePath of possibleEnvPaths) {
+      this.logger.log(`Checking .env path: ${possiblePath}`);
+      if (fs.existsSync(possiblePath)) {
+        envPath = possiblePath;
+        break;
+      }
+    }
 
-    // Load .env file if it exists, otherwise use process.env
-    if (fs.existsSync(envPath)) {
+    // Log all attempted paths and the selected one
+    this.logger.log(`Attempted .env paths: ${possibleEnvPaths.join(', ')}`);
+    this.logger.log(`Selected .env path: ${envPath || 'none'}`);
+
+    // Load .env file if found, otherwise use process.env
+    if (envPath) {
       const result = dotenv.config({ path: envPath });
       if (result.error) {
         this.logger.error(
@@ -29,9 +44,9 @@ export class ConfigService {
       this.logger.log(`Loaded .env file from ${envPath}`);
     } else {
       this.logger.warn(
-        '.env file not found at project root. Using process.env for configuration.',
+        '.env file not found in any paths. Using process.env for configuration.',
       );
-      this.envConfig = { ...process.env }; // Fallback to process.env (Render dashboard variables)
+      this.envConfig = { ...process.env }; // Fallback to Render's dashboard variables
     }
 
     // Validate NODE_ENV
