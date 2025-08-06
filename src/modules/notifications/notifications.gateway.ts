@@ -17,7 +17,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import * as admin from 'firebase-admin';
-import * as serviceAccount from 'firebase/serviceAccountKey.json';
+import serviceAccount from 'firebase/serviceAccountKey.json';
 import { LessThan, Repository } from 'typeorm';
 
 interface CreateNotificationInput {
