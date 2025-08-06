@@ -17,37 +17,62 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import * as admin from 'firebase-admin';
-import serviceAccount from 'firebase/serviceAccountKey.json';
+import * as fs from 'fs';
+import * as path from 'path';
 import { LessThan, Repository } from 'typeorm';
-
-interface CreateNotificationInput {
-  user: UserEntity;
-  title:
-    | NotificationEventEnum
-    | WalletWebhookEventEnum
-    | YCRampPaymentEventEnum;
-  message:
-    | NotificationEventEnum
-    | WalletWebhookEventEnum
-    | YCRampPaymentEventEnum;
-  data: AnyObject;
-}
 
 @Injectable()
 export class NotificationsGateway {
   private readonly logger = new Logger(NotificationsGateway.name);
+  private isFirebaseInitialized = false; // Flag to track initialization
 
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
   ) {
-    if (!admin.apps.length) {
+    // Firebase initialization deferred to emitNotificationToUser
+  }
+
+  private initializeFirebase() {
+    if (this.isFirebaseInitialized) {
+      return; // Skip if already initialized
+    }
+
+    const serviceAccountPath =
+      process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
+      path.join(__dirname, '../firebase/serviceAccountKey.json');
+
+    try {
+      // Verify file exists
+      if (!fs.existsSync(serviceAccountPath)) {
+        throw new Error(
+          `Firebase service account file not found at: ${serviceAccountPath}`,
+        );
+      }
+
+      // Load and parse JSON
+      const serviceAccount = JSON.parse(
+        fs.readFileSync(serviceAccountPath, 'utf8'),
+      );
+
+      // Initialize Firebase Admin SDK
       admin.initializeApp({
-        credential: admin.credential.cert(
-          serviceAccount as admin.ServiceAccount,
-        ),
+        credential: admin.credential.cert(serviceAccount),
       });
-      this.logger.log('✅ Firebase Admin initialized.');
+
+      this.isFirebaseInitialized = true;
+      this.logger.log(
+        `✅ Firebase Admin initialized with service account from: ${serviceAccountPath}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ Failed to initialize Firebase: ${error.message}`,
+        error.stack,
+      );
+      throw new CustomHttpException(
+        NotificationErrorEnum.FIREBASE_INIT_FAILED,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -65,6 +90,9 @@ export class NotificationsGateway {
     status: NotificationStatusEnum;
     data?: AnyObject;
   }): Promise<string | any> {
+    // Initialize Firebase if not already done
+    this.initializeFirebase();
+
     const stringifiedData: Record<string, string> = {
       event: event.toString(),
       status: status.toString(),
@@ -90,7 +118,10 @@ export class NotificationsGateway {
       return response;
     } catch (error) {
       this.logger.error('❌ Failed to send notification', error.stack || error);
-      throw error;
+      throw new CustomHttpException(
+        NotificationErrorEnum.SEND_FAILED,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -104,7 +135,7 @@ export class NotificationsGateway {
     const statusTitleMap: Record<NotificationStatusEnum, string> = {
       success: 'Success',
       failed: 'Failed',
-      processing: 'processing',
+      processing: 'Processing',
     };
     return `${statusTitleMap[status]}: ${this.formatEvent(event)}`;
   }
@@ -257,4 +288,17 @@ export class NotificationsGateway {
     device_registered_success:
       'A new device has been registered to your account.',
   };
+}
+
+interface CreateNotificationInput {
+  user: UserEntity;
+  title:
+    | NotificationEventEnum
+    | WalletWebhookEventEnum
+    | YCRampPaymentEventEnum;
+  message:
+    | NotificationEventEnum
+    | WalletWebhookEventEnum
+    | YCRampPaymentEventEnum;
+  data: AnyObject;
 }

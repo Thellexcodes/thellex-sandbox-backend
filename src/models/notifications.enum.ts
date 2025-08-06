@@ -73,4 +73,6 @@ export enum NotificationErrorEnum {
   INVALID_NOTIFICATION_KIND = 'notification/INVALID_NOTIFICATION_KIND',
   INTERNAL_ERROR = 'notification/INTERNAL_ERROR',
   CREATE_FAILED = 'notification/CREATE_FAILED',
+  FIREBASE_INIT_FAILED = 'notification/FIREBASE_INIT_FAILED',
+  SEND_FAILED = 'notification/SEND_FAILED',
 }
