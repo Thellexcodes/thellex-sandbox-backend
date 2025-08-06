@@ -1,4 +1,4 @@
-import * as fetch from 'node-fetch';
+import fetch from 'node-fetch';
 import * as forge from 'node-forge';
 import {
   registerEntitySecretCiphertext,
