@@ -12,12 +12,12 @@ import { responseHandler } from '@/utils/helpers';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
-import { VersionedController001 } from '../controller/base.controller';
+import { VersionedController101 } from '../controller/base.controller';
 import { FcmDto } from './dto/fcm.dto';
 
 //TODO: middleware for outstanding verifications
 @ApiTags('User')
-@VersionedController001('user')
+@VersionedController101('user')
 @ApiBearerAuth('access-token')
 export class UserController {
   constructor(private readonly userService: UserService) {}

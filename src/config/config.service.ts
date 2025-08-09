@@ -36,7 +36,7 @@ export class ConfigService {
         throw result.error;
       }
       this.envConfig = result.parsed || {};
-      this.logger.log(`Loaded .env file from ${envPath}`);
+      // this.logger.log(`Loaded .env file from ${envPath}`);
     } else {
       this.envConfig = { ...process.env };
     }

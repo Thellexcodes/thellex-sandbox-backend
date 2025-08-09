@@ -308,10 +308,6 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   @IsDate()
   @Type(() => Date)
   expiresAt: Date;
-
-  @Expose()
-  @ApiProperty()
-  transaction: TransactionHistoryEntity[];
 }
 
 export class IRateDto {

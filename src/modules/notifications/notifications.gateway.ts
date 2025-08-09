@@ -40,7 +40,7 @@ export class NotificationsGateway {
 
     const serviceAccountPath =
       process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-      path.join(__dirname, '../firebase/serviceAccountKey.json');
+      path.join(__dirname, '../../../firebase/serviceAccountKey.json');
 
     try {
       // Verify file exists
@@ -90,7 +90,6 @@ export class NotificationsGateway {
     status: NotificationStatusEnum;
     data?: AnyObject;
   }): Promise<string | any> {
-    // Initialize Firebase if not already done
     this.initializeFirebase();
 
     const stringifiedData: Record<string, string> = {

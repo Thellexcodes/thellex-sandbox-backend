@@ -74,16 +74,25 @@ export class PaymentsService {
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
     private readonly ycService: YellowCardService,
-    private readonly ethersService: EtherService,
     private readonly notificationGateway: NotificationsGateway,
     @InjectRepository(FiatCryptoRampTransactionEntity)
     private readonly fiatCryptoRampTransactionRepo: Repository<FiatCryptoRampTransactionEntity>,
-    @InjectRepository(TransactionHistoryEntity)
-    private readonly txnHistoryRepo: Repository<TransactionHistoryEntity>,
     private readonly dataSource: DataSource,
     private readonly mapleradService: MapleradService,
     private readonly transactionHistoryService: TransactionHistoryService,
-  ) {}
+  ) {
+    // this.notificationGateway.emitNotificationToUser({
+    //   token:
+    //     'eny5uYxnR6KzQIFPmkll1Y:APA91bEF7yJwA9ofBHpQdiJb80URlREaOwT9fxBC8tjFmiOJg-tgjIILKDNeMe5LwTVUVAwdBwDcelcFj8FT2KaI-irKTgDVhaKOJIoSd4F8200noLryPGA',
+    //   event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
+    //   status: NotificationStatusEnum.PROCESSING,
+    //   data: {
+    //     transaction: {
+    //       id: 'this isadfa txn dddd',
+    //     },
+    //   },
+    // });
+  }
 
   async handleRates(
     fiatCode: FiatEnum | undefined,
@@ -430,7 +439,6 @@ export class PaymentsService {
           createdAt: savedTxn.createdAt,
           mainFiatAmount: savedTxn.mainFiatAmount,
           paymentReason: savedTxn.paymentReason,
-          transaction,
         },
         { excludeExtraneousValues: true },
       );

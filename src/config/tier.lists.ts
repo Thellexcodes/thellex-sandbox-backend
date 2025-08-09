@@ -115,7 +115,7 @@ export const thellexTiers: Partial<Record<TierEnum, Tier>> = {
       UserRequirement.SignedIndemnityForm,
     ],
     transactionLimits: {
-      dailyCreditLimit: 1_000_000,
+      dailyCreditLimit: null,
       dailyDebitLimit: 1_000_000,
       singleDebitLimit: 500_000,
     },
@@ -138,7 +138,7 @@ export const thellexTiers: Partial<Record<TierEnum, Tier>> = {
       UserRequirement.Attestation,
     ],
     transactionLimits: {
-      dailyCreditLimit: 3_000_000,
+      dailyCreditLimit: null,
       dailyDebitLimit: 3_000_000,
       singleDebitLimit: 1_000_000,
     },
@@ -159,7 +159,7 @@ export const thellexTiers: Partial<Record<TierEnum, Tier>> = {
       UserRequirement.InternalComplianceApproval,
     ],
     transactionLimits: {
-      dailyCreditLimit: Infinity,
+      dailyCreditLimit: null,
       dailyDebitLimit: 5_000_000,
       singleDebitLimit: 5_000_000,
     },

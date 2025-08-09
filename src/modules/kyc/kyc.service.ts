@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@/middleware/http.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { KycErrorEnum } from '@/models/kyc-error.enum';
@@ -42,6 +42,8 @@ import { ConfigService } from '@/config/config.service';
 //[x]: Move the Dojah services out
 @Injectable()
 export class KycService {
+  private readonly logger = new Logger(KycService.name);
+
   constructor(
     @InjectRepository(KycEntity)
     private readonly kycRepo: Repository<KycEntity>,
@@ -51,7 +53,6 @@ export class KycService {
     private readonly userService: UserService,
     private readonly mapleradService: MapleradService,
     private readonly dataSource: DataSource,
-    private readonly configService: ConfigService,
   ) {}
 
   private get dojahUrl(): string {

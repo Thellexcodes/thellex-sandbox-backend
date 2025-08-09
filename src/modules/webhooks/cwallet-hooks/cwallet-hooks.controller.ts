@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, Logger } from '@nestjs/common';
 import { CwalletHooksService } from './cwallet-hooks.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CwalletHookDto } from './dto/create-cwallet-hook.dto';
@@ -10,6 +10,8 @@ import { normalizeEnumValue, responseHandler } from '@/utils/helpers';
 @ApiTags('Web Hooks')
 @Controller('cwallet-hooks')
 export class CwalletHooksController {
+  private readonly logger = new Logger(CwalletHooksController.name);
+
   constructor(private readonly cwalletHooksService: CwalletHooksService) {}
 
   @Post()

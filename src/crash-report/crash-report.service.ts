@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateCrashReportDto } from './dto/create-crash-report.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
 export class CrashReportService {
-  private crashDir = path.resolve(__dirname, '..', '..', '..', 'crash_logs');
+  private readonly logger = new Logger(CrashReportService.name);
+  private crashDir = path.resolve(__dirname, '..', '..', 'crash_logs');
 
   constructor() {
     if (!fs.existsSync(this.crashDir)) {

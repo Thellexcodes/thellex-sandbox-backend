@@ -29,7 +29,7 @@ export class YcPaymentsHookController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    console.log({ dto });
+    // console.log({ dto });
 
     const normalizedEvent = normalizeEnumValue(
       dto.event,

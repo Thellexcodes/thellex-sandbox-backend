@@ -15,7 +15,7 @@ import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto
 import { BasicKycCheckerGuard } from '@/middleware/guards/basic-kyc-checker.guard';
 import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
 import { CreateWithdrawalResponseDto } from './dto/payment.dto';
-import { VersionedController001 } from '../controller/base.controller';
+import { VersionedController101 } from '../controller/base.controller';
 import { FiatEnum } from '@/config/settings';
 import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
 import { SuperAdminGuard } from '@/middleware/guards/super-admin.guard';
@@ -29,7 +29,7 @@ import {
 import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 
 ApiTags('Payments');
-@VersionedController001('payments')
+@VersionedController101('payments')
 @ApiBearerAuth('access-token')
 export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
