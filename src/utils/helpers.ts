@@ -448,3 +448,10 @@ export function capitalizeName(fullName: string): string {
 export function toLowestDenomination(amount: number): number {
   return Math.round(amount * 100);
 }
+
+export function extractFirstName(firstName: string): string {
+  if (!firstName || firstName.trim() === '') {
+    return '';
+  }
+  return firstName.trim().split(' ')[0];
+}

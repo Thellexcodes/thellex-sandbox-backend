@@ -29,6 +29,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import {
   capitalizeName,
+  extractFirstName,
   findBankByName,
   formatUserWithTiers,
   toLowestDenomination,
@@ -291,10 +292,9 @@ export class PaymentsService {
         const [year, month, day] = userKycData.dob.split('-');
         userKycData.dob = `${month}/${day}/${year}`;
       }
-
       const recipient = {
         name: capitalizeName(
-          `${userKycData.firstName} ${userKycData.lastName}`,
+          `${extractFirstName(userKycData.firstName)} ${userKycData.lastName}`,
         ),
         country: countryCode,
         phone: userKycData.phone,

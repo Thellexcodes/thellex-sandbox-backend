@@ -373,7 +373,6 @@ export class KycService {
     userId: string,
     dto: VerifyBvnDto,
   ): Promise<ValidateBvnResponseDto> {
-    this.logger.log({ bvn: dto.bvn });
     try {
       const response = await this.httpService.get<BvnVerificationResponse>(
         `${this.dojahUrl}/api/v1/kyc/bvn`,
@@ -388,20 +387,42 @@ export class KycService {
 
       const isValid = response.entity?.bvn?.status ?? false;
 
-      if (isValid) {
-        const userKycRecord = await this.getUserKyc(userId);
-
-        if (!userKycRecord) {
-          return { isValid };
-        }
-
-        userKycRecord.bvn = String(dto.bvn);
-        await this.kycRepo.save(userKycRecord);
+      if (!isValid) {
+        this.logger.warn(
+          `BVN validation failed for user ${userId}: Invalid BVN ${dto.bvn}`,
+        );
+        return { isValid };
       }
+
+      const userKycRecord = await this.getUserKyc(userId);
+      if (!userKycRecord) {
+        this.logger.warn(`No KYC record found for user ${userId}`);
+        return { isValid };
+      }
+
+      // Update KYC record
+      userKycRecord.bvn = String(dto.bvn);
+      userKycRecord.phone = dto.phoneNumber.fullPhone;
+      if (!userKycRecord.idTypes.includes(IdTypeEnum.BVN)) {
+        userKycRecord.idTypes = [...userKycRecord.idTypes, IdTypeEnum.BVN];
+        this.logger.log(
+          `Added BVN to idTypes for user ${userId}: ${userKycRecord.idTypes}`,
+        );
+      } else {
+        this.logger.log(
+          `BVN already in idTypes for user ${userId}: ${userKycRecord.idTypes}`,
+        );
+      }
+
+      await this.kycRepo.save(userKycRecord);
+      this.logger.log(`Saved KYC record for user ${userId}`);
 
       return { isValid };
     } catch (error) {
-      this.logger.error('BVN validation failed:', error);
+      this.logger.error(
+        `BVN validation failed for user ${userId}: ${error.message}`,
+        error.stack,
+      );
     }
   }
 

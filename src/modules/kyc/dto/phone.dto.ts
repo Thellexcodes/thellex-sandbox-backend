@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { IsString, Matches } from 'class-validator';
 
 export class PhoneDto {
@@ -18,6 +19,7 @@ export class PhoneDto {
   @Matches(/^\d{6,15}$/, { message: 'phone_number/invalid-format' })
   phone_number: string;
 
+  @Expose()
   get fullPhone(): string {
     return `${this.phone_country_code}${this.phone_number}`;
   }
