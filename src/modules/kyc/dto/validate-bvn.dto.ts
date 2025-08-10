@@ -1,13 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumberString, ValidateNested } from 'class-validator';
+import { PhoneDto } from './phone.dto';
+import { Type } from 'class-transformer';
 
 export class VerifyBvnDto {
+  @ApiProperty({ description: 'Bank Verification Number (BVN)' })
+  @IsNotEmpty({ message: 'bvn/empty' })
+  @IsNumberString({}, { message: 'bvn/not-numeric' })
+  bvn: string;
+
   @ApiProperty({
-    description: '11-digit Bank Verification Number (BVN)',
-    example: 12345678901,
+    type: PhoneDto,
+    description: 'Phone details including country code and number',
   })
-  @IsInt({ message: 'BVN must be an integer' })
-  @Min(10000000000, { message: 'BVN must be at least 11 digits' })
-  @Max(99999999999, { message: 'BVN must be at most 11 digits' })
-  bvnNumber: number;
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => PhoneDto)
+  phoneNumber: PhoneDto;
 }

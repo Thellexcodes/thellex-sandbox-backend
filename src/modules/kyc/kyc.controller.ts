@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
+import { Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import {
   ApiBearerAuth,

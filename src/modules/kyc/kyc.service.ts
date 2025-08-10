@@ -373,6 +373,7 @@ export class KycService {
     userId: string,
     dto: VerifyBvnDto,
   ): Promise<ValidateBvnResponseDto> {
+    this.logger.log({ bvn: dto.bvn });
     try {
       const response = await this.httpService.get<BvnVerificationResponse>(
         `${this.dojahUrl}/api/v1/kyc/bvn`,
@@ -381,7 +382,7 @@ export class KycService {
             AppId: getAppConfig().DOJAH.APP_ID,
             Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
           },
-          params: { bvn: dto.bvnNumber },
+          params: { bvn: dto.bvn },
         },
       );
 
@@ -394,13 +395,13 @@ export class KycService {
           return { isValid };
         }
 
-        userKycRecord.bvn = String(dto.bvnNumber);
+        userKycRecord.bvn = String(dto.bvn);
         await this.kycRepo.save(userKycRecord);
       }
 
       return { isValid };
     } catch (error) {
-      console.error('BVN validation failed:', error?.message || error);
+      this.logger.error('BVN validation failed:', error);
     }
   }
 
