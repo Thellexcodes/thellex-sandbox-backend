@@ -9,6 +9,7 @@ import {
   NotificationEventEnum,
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
+import { TransactionsService } from '@/modules/transactions/transactions.service';
 
 @Injectable()
 export class YcPaymentHookService {
@@ -18,6 +19,7 @@ export class YcPaymentHookService {
     private readonly paymentService: PaymentsService,
     private readonly transactionHistoryService: TransactionHistoryService,
     private readonly notificationGateway: NotificationsGateway,
+    private readonly transactionService: TransactionsService,
   ) {}
 
   async handleSuccessfulCollectionRequest(dto: YcHookDataDto) {
@@ -35,6 +37,16 @@ export class YcPaymentHookService {
         rampTransaction.sequenceId,
         { paymentStatus: dto.status },
       );
+
+    await this.transactionService.createTransaction({
+      transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+      fiatAmount: rampTransaction.userAmount,
+      cryptoAmount: rampTransaction.mainAssetAmount,
+      cryptoAsset: rampTransaction.recipientInfo.assetCode,
+      fiatCurrency: rampTransaction.fiatCode,
+      paymentStatus: rampTransaction.paymentStatus,
+      paymentReason: rampTransaction.paymentReason ?? transaction.paymentReason,
+    });
 
     const notification = await this.notificationGateway.createNotification({
       user,
@@ -124,6 +136,15 @@ export class YcPaymentHookService {
         rampTransaction.sequenceId,
         { paymentStatus: dto.status },
       );
+
+    await this.transactionService.createTransaction({
+      transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+      cryptoAmount: transaction.mainAssetAmount ?? 0,
+      cryptoAsset: transaction.assetCode,
+      paymentStatus: transaction.paymentStatus,
+      paymentReason: transaction.paymentReason,
+      fiatAmount: transaction.mainFiatAmount ?? 0,
+    });
 
     const notification = await this.notificationGateway.createNotification({
       user,

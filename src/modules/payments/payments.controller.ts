@@ -80,7 +80,7 @@ export class PaymentsController {
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const response = await this.paymentService.handleFiatToCryptoOffRamp(
+    const response = await this.paymentService.handleFiatToCryptoOnRamp(
       user,
       dto,
     );

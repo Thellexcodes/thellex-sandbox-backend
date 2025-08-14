@@ -13,21 +13,17 @@ import {
   CustomerTypesEnum,
   FiatEnum,
   SupportedBlockchainTypeEnum,
-  SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
 import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDate,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { TransactionHistoryEntity } from './transaction-history.entity';
-import { v4 as uuidV4 } from 'uuid';
 
 //[x] improve with all treasuery addresses
 const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>

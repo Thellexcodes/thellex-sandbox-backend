@@ -1,4 +1,4 @@
-import { FiatEnum, SupportedFiatCurrencyEnum } from '@/config/settings';
+import { FiatEnum } from '@/config/settings';
 import { PaymentReasonEnum } from '@/models/payment.types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';

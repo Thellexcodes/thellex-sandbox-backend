@@ -5,7 +5,6 @@ import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserEntity } from 'src/utils/typeorm/entities/user.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
@@ -19,6 +18,8 @@ import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { ENV_PRODUCTION } from '@/models/settings.types';
 import { FiatCryptoRampTransactionEntity } from './entities/fiat-crypto-ramp-transaction.entity';
 import { BankingNetworkEntity } from './entities/banking/banking-network.entity';
+import { TransactionHistoryEntity } from './entities/transactions/transaction-history.entity';
+import { TransactionEntity } from './entities/transactions/transaction.entity';
 
 export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
   const isProd = getEnv() === ENV_PRODUCTION;
@@ -39,6 +40,7 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
       CwalletsEntity,
       QWalletsEntity,
       TaxSettingEntity,
+      TransactionEntity,
       BankAccountEntity,
       UserSettingEntity,
       NotificationEntity,

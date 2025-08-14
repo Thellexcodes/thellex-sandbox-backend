@@ -34,7 +34,6 @@ import {
   TransactionDirectionEnum,
   TransactionTypeEnum,
 } from '@/models/payment.types';
-import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { ApiResponse } from '@/models/request.types';
 import { getAppConfig } from '@/constants/env';
@@ -44,6 +43,8 @@ import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-
 import { walletConfig } from '@/utils/tokenChains';
 import { toUTCDate } from '@/utils/helpers';
 import { plainToInstance } from 'class-transformer';
+import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
+import { TransactionsService } from '@/modules/transactions/transactions.service';
 
 //TODO: handle errors with enum
 @Injectable()
@@ -57,6 +58,7 @@ export class QwalletService {
     private readonly transactionHistoryService: TransactionHistoryService,
     @InjectRepository(TokenEntity)
     private readonly tokenRepo: Repository<TokenEntity>,
+    private readonly transactionService: TransactionsService,
   ) {}
 
   // >>>>>>>>>>>>>>> SubAcocunts <<<<<<<<<<<<<<<
@@ -562,7 +564,7 @@ export class QwalletService {
       const transactionData: TransactionHistoryDto = {
         event: WalletWebhookEventEnum.WithdrawPending,
         transactionId: txnData.id,
-        assetCode: txnData.currency,
+        assetCode: txnData.currency as TokenEnum,
         amount: txnData.amount,
         fee: txnData.fee,
         blockchainTxId: txnData.txid,

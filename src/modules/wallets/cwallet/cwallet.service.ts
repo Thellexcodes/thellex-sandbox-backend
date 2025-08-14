@@ -27,7 +27,6 @@ import {
   WalletProviderEnum,
 } from '@/config/settings';
 import { getTokenId, toUTCDate } from '@/utils/helpers';
-import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transaction-history.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
 import { CreateCryptoWithdrawPaymentDto } from '@/modules/payments/dto/create-withdraw-crypto.dto';
@@ -46,6 +45,8 @@ import {
 } from '@/models/wallet-manager.types';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { plainToInstance } from 'class-transformer';
+import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
+import { TransactionsService } from '@/modules/transactions/transactions.service';
 
 @Injectable()
 export class CwalletService {
@@ -59,6 +60,7 @@ export class CwalletService {
     @InjectRepository(TokenEntity)
     private readonly tokenRepo: Repository<TokenEntity>,
     private readonly transactionHistoryService: TransactionHistoryService,
+    private readonly transactionService: TransactionsService,
   ) {
     this.circleClient = initiateDeveloperControlledWalletsClient({
       apiKey: getAppConfig().CWALLET.API_KEY,
@@ -125,7 +127,7 @@ export class CwalletService {
   async createCryptoWithdrawal(
     dto: CreateCryptoWithdrawPaymentDto,
     wallet: CwalletsEntity,
-  ): Promise<ITransactionHistoryDto | any> {
+  ): Promise<ITransactionHistoryDto> {
     try {
       const tokenId = getTokenId({ token: dto.assetCode });
 

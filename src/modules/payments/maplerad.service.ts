@@ -12,7 +12,7 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
-import { FiatEnum, SupportedFiatCurrencyEnum } from '@/config/settings';
+import { FiatEnum } from '@/config/settings';
 
 @Injectable()
 export class MapleradService {

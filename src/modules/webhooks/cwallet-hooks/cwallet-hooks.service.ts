@@ -22,6 +22,7 @@ import {
 } from '@/models/notifications.enum';
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
+import { TransactionsService } from '@/modules/transactions/transactions.service';
 
 //TODO: handle errors with enums
 //TODO: update all date in system to UTC
@@ -33,6 +34,7 @@ export class CwalletHooksService {
     private readonly transactionHistoryServie: TransactionHistoryService,
     private readonly cwalletService: CwalletService,
     private readonly notificationGateway: NotificationsGateway,
+    private readonly transactionService: TransactionsService,
   ) {}
 
   async handleDepositSuccessful(payload: CwalletHookDto) {
@@ -73,7 +75,8 @@ export class CwalletHooksService {
           id: notificationPayload.tokenId,
         });
 
-        const assetCode = txnToken.data.token.symbol.toLocaleLowerCase();
+        const assetCode =
+          txnToken.data.token.symbol.toLocaleLowerCase() as TokenEnum;
 
         const txnData: TransactionHistoryDto = {
           event: WalletWebhookEventEnum.DepositSuccessful,
@@ -101,6 +104,15 @@ export class CwalletHooksService {
             notificationPayload.walletId,
             assetCode as TokenEnum,
           );
+
+        await this.transactionService.createTransaction({
+          transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+          cryptoAmount: transaction.mainAssetAmount ?? 0,
+          cryptoAsset: transaction.assetCode,
+          paymentStatus: transaction.paymentStatus,
+          paymentReason: transaction.paymentReason,
+          fiatAmount: transaction.mainFiatAmount ?? 0,
+        });
 
         await this.cwalletService.updateWalletTokenBalance(
           wallet,
@@ -213,6 +225,15 @@ export class CwalletHooksService {
             notificationPayload.walletId,
             updatedAssetCode as TokenEnum,
           );
+
+        await this.transactionService.createTransaction({
+          transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+          cryptoAmount: updatedTxn.mainAssetAmount ?? 0,
+          cryptoAsset: updatedTxn.assetCode,
+          paymentStatus: updatedTxn.paymentStatus,
+          paymentReason: updatedTxn.paymentReason,
+          fiatAmount: updatedTxn.mainFiatAmount ?? 0,
+        });
 
         await this.cwalletService.updateWalletTokenBalance(
           wallet,

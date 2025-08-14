@@ -5,8 +5,8 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
 import {
+  PaymentReasonEnum,
   PaymentStatus,
   TransactionDirectionEnum,
   TransactionTypeEnum,
@@ -16,10 +16,12 @@ import {
   FeeLevel,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEnum } from 'class-validator';
+import { BaseEntity } from '../base.entity';
+import { UserEntity } from '../user.entity';
+import { TokenEnum } from '@/config/settings';
 
 type CombinedEventEnum = WalletWebhookEventEnum | YCRampPaymentEventEnum;
 
@@ -58,8 +60,13 @@ export class TransactionHistoryEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ name: 'asset_code', type: 'varchar', nullable: false })
-  assetCode: string;
+  @Column({
+    name: 'asset_code',
+    type: 'enum',
+    nullable: false,
+    enum: TokenEnum,
+  })
+  assetCode: TokenEnum;
 
   @Expose()
   @ApiProperty()
@@ -119,6 +126,17 @@ export class TransactionHistoryEntity extends BaseEntity {
     nullable: false,
   })
   paymentStatus: PaymentStatus;
+
+  @Expose()
+  @ApiProperty()
+  @Column({
+    name: 'payment_reason',
+    type: 'enum',
+    enum: PaymentReasonEnum,
+    default: PaymentReasonEnum.NONE,
+    nullable: false,
+  })
+  paymentReason: PaymentReasonEnum;
 
   @Expose()
   @ApiProperty()

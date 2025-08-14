@@ -8,7 +8,6 @@ import {
   ICardManagementDto,
 } from '@/utils/typeorm/entities/card-management.entity';
 import { NotificationEntity } from './notification.entity';
-import { TransactionHistoryEntity } from './transaction-history.entity';
 import {
   IQWalletProfileDto,
   QWalletProfileEntity,
@@ -31,6 +30,7 @@ import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.d
 import { TRANSACTION_POLICY } from '@/config/settings';
 import { RoleEnum } from '@/models/roles-actions.enum';
 import { BankingNetworkEntity } from './banking/banking-network.entity';
+import { TransactionHistoryEntity } from './transactions/transaction-history.entity';
 
 @Index(['email'])
 @Entity({ name: 'users' })

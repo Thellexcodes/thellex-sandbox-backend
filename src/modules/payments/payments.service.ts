@@ -11,7 +11,6 @@ import {
   WalletProviderEnum,
 } from '@/config/settings';
 import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { YellowCardService } from './yellowcard.service';
@@ -49,7 +48,6 @@ import { plainToInstance } from 'class-transformer';
 import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
 import { IYellowCardRateDto } from './dto/yellocard.dto';
 import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
-import { EtherService } from '@/utils/services/ethers.service';
 import { TransactionHistoryDto } from '../transaction-history/dto/create-transaction-history.dto';
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
@@ -65,6 +63,11 @@ import { TransactionHistoryService } from '../transaction-history/transaction-hi
 import { YCTxnAccountTypes } from '@/models/yellow-card.types';
 import { LRUCache } from 'lru-cache';
 import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
+import {
+  ITransactionHistoryDto,
+  TransactionHistoryEntity,
+} from '@/utils/typeorm/entities/transactions/transaction-history.entity';
+import { TransactionsService } from '../transactions/transactions.service';
 
 //[x] properly throw error using enum
 @Injectable()
@@ -81,6 +84,7 @@ export class PaymentsService {
     private readonly dataSource: DataSource,
     private readonly mapleradService: MapleradService,
     private readonly transactionHistoryService: TransactionHistoryService,
+    private readonly transactionService: TransactionsService,
   ) {
     // this.notificationGateway.emitNotificationToUser({
     //   token:
@@ -221,7 +225,7 @@ export class PaymentsService {
     //[x] alert users
   }
 
-  async handleFiatToCryptoOffRamp(
+  async handleFiatToCryptoOnRamp(
     user: UserEntity,
     dto: FiatToCryptoOnRampRequestDto,
   ): Promise<IFiatToCryptoQuoteSummaryResponseDto | any> {
@@ -633,7 +637,6 @@ export class PaymentsService {
       let payoutResponse;
       let paymentProvider;
 
-      const aa = 100;
       const bankInfoAndCode = findBankByName(dto.bankInfo.bankName);
       this.logger.log({ bankInfoAndCode, b: dto.bankInfo.accountNumber });
       // let bankRecord = await this.mapleradService.resolveInstitutionAccount({
@@ -645,7 +648,7 @@ export class PaymentsService {
       this.logger.log({
         bank_code: bankInfoAndCode.code,
         account_number: dto.bankInfo.accountNumber,
-        amount: toLowestDenomination(aa),
+        amount: toLowestDenomination(dto.userAmount),
         reason: dto.paymentReason,
         currency: dto.fiatCode,
       });
@@ -659,7 +662,7 @@ export class PaymentsService {
             const response = await this.mapleradService.localTransferAfrica({
               bank_code: bankInfoAndCode.code,
               account_number: dto.bankInfo.accountNumber,
-              amount: toLowestDenomination(aa),
+              amount: toLowestDenomination(dto.userAmount),
               reason: dto.paymentReason,
               currency: dto.fiatCode,
             });
@@ -919,39 +922,40 @@ export class PaymentsService {
         fund_uid: recipientInfo.destinationAddress,
       };
 
-      let txResult;
-      // try {
-      //   if (cwallet) {
-      //     txResult = await this.cwalletService.createCryptoWithdrawal(
-      //       cryptoPaymentObj,
-      //       cwallet,
-      //     );
-      //   } else if (qwallet) {
-      //     txResult = await this.qwalletService.createCryptoWithdrawal(
-      //       cryptoPaymentObj,
-      //       qwallet,
-      //     );
-      //   }
-      // } catch (error) {
-      //   let errorCode = PaymentErrorEnum.WITHDRAWAL_TRANSACTION_FAILED;
-      //   if (error.message?.includes('insufficient balance')) {
-      //     errorCode = PaymentErrorEnum.WITHDRAWAL_AMOUNT_EXCEEDS_BALANCE;
-      //   } else if (error.message?.includes('invalid address')) {
-      //     errorCode = PaymentErrorEnum.INVALID_DESTINATION_ADDRESS;
-      //   } else if (error.message?.includes('network')) {
-      //     errorCode = PaymentErrorEnum.NETWORK_NOT_SUPPORTED;
-      //   } else if (error.message?.includes('asset')) {
-      //     errorCode = PaymentErrorEnum.UNSUPPORTED_ASSET;
-      //   }
-      //   throw new CustomHttpException(errorCode, HttpStatus.BAD_REQUEST);
-      // }
+      let txResult: ITransactionHistoryDto;
+      try {
+        if (cwallet) {
+          txResult = await this.cwalletService.createCryptoWithdrawal(
+            cryptoPaymentObj,
+            cwallet,
+          );
+        } else if (qwallet) {
+          txResult = await this.qwalletService.createCryptoWithdrawal(
+            cryptoPaymentObj,
+            qwallet,
+          );
+        }
+      } catch (error) {
+        throw new CustomHttpException(error, HttpStatus.BAD_REQUEST);
+      }
 
-      // if (!txResult) {
-      //   throw new CustomHttpException(
-      //     PaymentErrorEnum.WITHDRAWAL_TRANSACTION_FAILED,
-      //     HttpStatus.INTERNAL_SERVER_ERROR,
-      //   );
-      // }
+      if (!txResult) {
+        throw new CustomHttpException(
+          PaymentErrorEnum.WITHDRAWAL_TRANSACTION_FAILED,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      //Revenue tracker for crypto payout
+      await this.transactionService.createTransaction({
+        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+        fiatAmount: txResult.mainFiatAmount ?? 0,
+        cryptoAmount: txResult.mainAssetAmount ?? 0,
+        cryptoAsset: txResult.assetCode,
+        fiatCurrency: params.fiatCode,
+        paymentStatus: params.paymentStatus,
+        paymentReason: params.paymentReason,
+      });
 
       // Step 3: Update transaction entity
       params.paymentStatus = PaymentStatus.Processing;
@@ -976,13 +980,12 @@ export class PaymentsService {
 
       Object.assign(txnHistory, transaction);
 
-      // Step 5: Persist transaction and history
-      // await Promise.all([
-      //   this.txnHistoryRepo.save(txnHistory),
-      //   this.fiatCryptoRampTransactionRepo.save(
-      //     params as FiatCryptoRampTransactionEntity,
-      //   ),
-      // ]);
+      await Promise.all([
+        this.transactionHistoryService.create(txnHistory, user),
+        this.fiatCryptoRampTransactionRepo.save(
+          params as FiatCryptoRampTransactionEntity,
+        ),
+      ]);
 
       return { success: true };
     } catch (error) {

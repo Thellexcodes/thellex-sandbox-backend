@@ -26,6 +26,8 @@ import {
 } from '@/models/notifications.enum';
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
+import { TokenEnum } from '@/config/settings';
+import { TransactionsService } from '@/modules/transactions/transactions.service';
 
 //TODO: handle errors with enum
 //TODO: Update logger
@@ -38,6 +40,7 @@ export class QwalletHooksService {
     private readonly notificationService: NotificationsService,
     private readonly transactionHistoryService: TransactionHistoryService,
     private readonly notificationGateway: NotificationsGateway,
+    private readonly transactionService: TransactionsService,
   ) {}
 
   async handleWalletAddressGenerated(
@@ -171,7 +174,7 @@ export class QwalletHooksService {
         ),
         transactionId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
-        assetCode,
+        assetCode: assetCode as TokenEnum,
         amount,
         fee,
         blockchainTxId,
@@ -203,6 +206,15 @@ export class QwalletHooksService {
         assetCode,
         latestWalletInfo.data.balance,
       );
+
+      await this.transactionService.createTransaction({
+        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+        fiatAmount: transaction.mainFiatAmount ?? 0,
+        cryptoAmount: transaction.mainAssetAmount ?? 0,
+        cryptoAsset: transaction.assetCode,
+        paymentStatus: transaction.paymentStatus,
+        paymentReason: transaction.paymentReason,
+      });
 
       // Notify the user
       const notification = await this.notificationGateway.createNotification({
@@ -338,6 +350,15 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
+      await this.transactionService.createTransaction({
+        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+        fiatAmount: transaction.mainFiatAmount ?? 0,
+        cryptoAmount: transaction.mainAssetAmount ?? 0,
+        cryptoAsset: transaction.assetCode,
+        paymentStatus: transaction.paymentStatus,
+        paymentReason: transaction.paymentReason,
+      });
+
       const notification = await this.notificationGateway.createNotification({
         user: qwalletProfile.user,
         title: NotificationEventEnum.CRYPTO_WITHDRAWAL,
@@ -351,8 +372,6 @@ export class QwalletHooksService {
           kind: NotificationKindEnum.Transaction,
         },
       });
-
-      this.logger.log(notification);
 
       await this.notificationGateway.emitNotificationToUser({
         token: qwalletProfile.user.alertID,
