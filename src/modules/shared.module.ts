@@ -37,6 +37,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { TransactionEntity } from '@/utils/typeorm/entities/transactions/transaction.entity';
 import { TransactionsService } from './transactions/transactions.service';
 import { DevicesModule } from './devices/devices.module';
+import { DevicesService } from './devices/devices.service';
 
 @Global()
 @Module({
@@ -82,6 +83,7 @@ import { DevicesModule } from './devices/devices.module';
     ConfigService,
     MapleradService,
     TransactionsService,
+    DevicesService,
   ],
   exports: [
     EtherService,
@@ -98,6 +100,7 @@ import { DevicesModule } from './devices/devices.module';
     ConfigService,
     MapleradService,
     TransactionsService,
+    DevicesService,
   ],
 })
 export class SharedModule {}

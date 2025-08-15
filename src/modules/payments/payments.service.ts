@@ -68,6 +68,7 @@ import {
   TransactionHistoryEntity,
 } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
 import { TransactionsService } from '../transactions/transactions.service';
+import { DevicesService } from '../devices/devices.service';
 
 //[x] properly throw error using enum
 @Injectable()
@@ -85,6 +86,7 @@ export class PaymentsService {
     private readonly mapleradService: MapleradService,
     private readonly transactionHistoryService: TransactionHistoryService,
     private readonly transactionService: TransactionsService,
+    private readonly deviceService: DevicesService,
   ) {
     // this.notificationGateway.emitNotificationToUser({
     //   token:
@@ -408,15 +410,17 @@ export class PaymentsService {
         rampID: savedTxn.id,
       };
 
-      const { user: u, ...transaction } =
+      const { user: _user, ...transaction } =
         await this.transactionHistoryService.create(txnData, user);
+
+      const tokens = await this.deviceService.getUserDeviceTokens(user.id);
 
       // Notify user
       await this.notificationGateway.emitNotificationToUser({
-        token: user.alertID,
         event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
         status: NotificationStatusEnum.PROCESSING,
         data: { transaction },
+        tokens,
       });
 
       await queryRunner.commitTransaction();

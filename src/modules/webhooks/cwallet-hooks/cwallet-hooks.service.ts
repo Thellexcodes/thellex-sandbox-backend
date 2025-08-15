@@ -23,6 +23,7 @@ import {
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
 import { TransactionsService } from '@/modules/transactions/transactions.service';
+import { DevicesService } from '@/modules/devices/devices.service';
 
 //TODO: handle errors with enums
 //TODO: update all date in system to UTC
@@ -35,6 +36,7 @@ export class CwalletHooksService {
     private readonly cwalletService: CwalletService,
     private readonly notificationGateway: NotificationsGateway,
     private readonly transactionService: TransactionsService,
+    private readonly deviceService: DevicesService,
   ) {}
 
   async handleDepositSuccessful(payload: CwalletHookDto) {
@@ -134,14 +136,16 @@ export class CwalletHooksService {
           },
         });
 
+        const tokens = await this.deviceService.getUserDeviceTokens(user.id);
+
         await this.notificationGateway.emitNotificationToUser({
-          token: user.alertID,
           event: WalletWebhookEventEnum.DepositSuccessful,
           status: NotificationStatusEnum.SUCCESS,
           data: {
             notification,
             transaction,
           },
+          tokens,
         });
       }
     } catch (error) {
@@ -255,8 +259,12 @@ export class CwalletHooksService {
           },
         });
 
+        const tokens = await this.deviceService.getUserDeviceTokens(
+          transaction.user.id,
+        );
+
         await this.notificationGateway.emitNotificationToUser({
-          token: updatedTxn.user.alertID,
+          tokens,
           event: WalletWebhookEventEnum.WithdrawalSuccessful,
           status: NotificationStatusEnum.SUCCESS,
           data: {

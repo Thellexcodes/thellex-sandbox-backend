@@ -10,6 +10,7 @@ import {
   NotificationStatusEnum,
 } from '@/models/notifications.enum';
 import { TransactionsService } from '@/modules/transactions/transactions.service';
+import { DevicesService } from '@/modules/devices/devices.service';
 
 @Injectable()
 export class YcPaymentHookService {
@@ -20,6 +21,7 @@ export class YcPaymentHookService {
     private readonly transactionHistoryService: TransactionHistoryService,
     private readonly notificationGateway: NotificationsGateway,
     private readonly transactionService: TransactionsService,
+    private readonly deviceService: DevicesService,
   ) {}
 
   async handleSuccessfulCollectionRequest(dto: YcHookDataDto) {
@@ -60,14 +62,16 @@ export class YcPaymentHookService {
       },
     });
 
+    const tokens = await this.deviceService.getUserDeviceTokens(user.id);
+
     await this.notificationGateway.emitNotificationToUser({
-      token: user.alertID,
       event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
       status: NotificationStatusEnum.SUCCESS,
       data: {
         notification,
         transaction,
       },
+      tokens,
     });
   }
 
@@ -107,8 +111,10 @@ export class YcPaymentHookService {
       },
     });
 
+    const tokens = await this.deviceService.getUserDeviceTokens(user.id);
+
     await this.notificationGateway.emitNotificationToUser({
-      token: user.alertID,
+      tokens,
       event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
       status: NotificationStatusEnum.FAILED,
       data: {
@@ -158,8 +164,10 @@ export class YcPaymentHookService {
       },
     });
 
+    const tokens = await this.deviceService.getUserDeviceTokens(user.id);
+
     await this.notificationGateway.emitNotificationToUser({
-      token: user.alertID,
+      tokens,
       event: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
       status: NotificationStatusEnum.SUCCESS,
       data: {
@@ -204,8 +212,10 @@ export class YcPaymentHookService {
       },
     });
 
+    const tokens = await this.deviceService.getUserDeviceTokens(user.id);
+
     await this.notificationGateway.emitNotificationToUser({
-      token: user.alertID,
+      tokens,
       event: NotificationEventEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
       status: NotificationStatusEnum.FAILED,
       data: {

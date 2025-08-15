@@ -28,6 +28,7 @@ import { NotificationsGateway } from '@/modules/notifications/notifications.gate
 import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
 import { TokenEnum } from '@/config/settings';
 import { TransactionsService } from '@/modules/transactions/transactions.service';
+import { DevicesService } from '@/modules/devices/devices.service';
 
 //TODO: handle errors with enum
 //TODO: Update logger
@@ -41,6 +42,7 @@ export class QwalletHooksService {
     private readonly transactionHistoryService: TransactionHistoryService,
     private readonly notificationGateway: NotificationsGateway,
     private readonly transactionService: TransactionsService,
+    private readonly deviceService: DevicesService,
   ) {}
 
   async handleWalletAddressGenerated(
@@ -238,10 +240,13 @@ export class QwalletHooksService {
         transactionDirection,
         transactionType,
         feeLevel,
+        user: _user,
       } = transaction;
 
+      const tokens = await this.deviceService.getUserDeviceTokens(_user.id);
+
       await this.notificationGateway.emitNotificationToUser({
-        token: qwalletProfile.user.alertID,
+        tokens,
         event: WalletWebhookEventEnum.DepositSuccessful,
         status: NotificationStatusEnum.SUCCESS,
         data: {
@@ -373,8 +378,12 @@ export class QwalletHooksService {
         },
       });
 
+      const tokens = await this.deviceService.getUserDeviceTokens(
+        updatedTransaction.user.id,
+      );
+
       await this.notificationGateway.emitNotificationToUser({
-        token: qwalletProfile.user.alertID,
+        tokens,
         event: WalletWebhookEventEnum.WithdrawalSuccessful,
         status: NotificationStatusEnum.SUCCESS,
         data: {

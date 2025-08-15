@@ -67,17 +67,6 @@ export class UserEntity extends BaseEntity {
   })
   idempotencyKey: string;
 
-  @ApiProperty()
-  @Expose()
-  @Column({
-    name: 'alert_id',
-    type: 'text',
-    unique: true,
-    nullable: false,
-    default: () => 'uuid_generate_v4()',
-  })
-  alertID: string;
-
   @Column({
     type: 'enum',
     enum: TierEnum,
