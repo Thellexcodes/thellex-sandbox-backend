@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateDeviceDto } from './dto/create-device.dto';
-import { UpdateDeviceDto } from './dto/update-device.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';

@@ -76,7 +76,6 @@ async function bootstrap() {
         'access-token',
       )
       .setVersion(API_VERSIONS.V101)
-      .addServer(`/${enableHttps ? 'https' : 'http'}`)
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

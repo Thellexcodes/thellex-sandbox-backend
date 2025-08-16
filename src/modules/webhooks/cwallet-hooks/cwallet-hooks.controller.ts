@@ -39,6 +39,8 @@ export class CwalletHooksController {
       CircleNotificationTypeEnum,
     );
 
+    this.logger.log({ payload });
+
     switch (notificationType) {
       case CircleNotificationTypeEnum.TransactionsInbound:
         await this.cwalletHooksService.handleDepositSuccessful(payload);

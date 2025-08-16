@@ -161,7 +161,7 @@ export class CwalletService {
         createdAt: toUTCDate(transaction.createDate),
         user: wallet.profile.user,
         paymentStatus: PaymentStatus.Processing,
-        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
       };
 
       const txn = await this.transactionHistoryService.create(
