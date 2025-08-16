@@ -332,6 +332,7 @@ export class QwalletHooksService {
       }
 
       const token = wallet.tokens.find((t) => t.assetCode === data.currency);
+
       if (!token) {
         throw new CustomHttpException(
           WalletErrorEnum.UNSUPPORTED_TOKEN,

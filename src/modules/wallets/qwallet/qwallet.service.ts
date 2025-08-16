@@ -580,7 +580,7 @@ export class QwalletService {
         feeLevel: FeeLevel.HIGH,
         paymentNetwork: network,
         user,
-        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
       };
 
       const txn = await this.transactionHistoryService.create(

@@ -49,7 +49,7 @@ export class TransactionHistoryService {
     }
 
     existing.event = updates.event;
-    // existing.paymentStatus = updates.status;
+    existing.paymentStatus = updates.status;
     existing.updatedAt = updates.done_at;
     existing.blockchainTxId = updates.txid;
     existing.reason = updates.narration;
