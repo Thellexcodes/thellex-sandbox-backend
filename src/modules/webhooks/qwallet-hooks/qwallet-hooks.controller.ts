@@ -54,3 +54,5 @@ export class QwalletHooksController {
     return responseHandler('', res, req);
   }
 }
+
+// https://-touched-mite.ngrok-free.app/api/qwallet-hooks

@@ -303,7 +303,7 @@ export class QwalletHooksService {
 
       if (transaction.paymentStatus === PaymentStatus.Done) {
         throw new CustomHttpException(
-          QWalletStatus.DEPOSIT_REJECTED,
+          QWalletStatus.UNSUPPORTED_EVENT,
           HttpStatus.CONFLICT,
         );
       }
@@ -356,7 +356,7 @@ export class QwalletHooksService {
       );
 
       await this.transactionService.createTransaction({
-        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
         fiatAmount: transaction.mainFiatAmount ?? 0,
         cryptoAmount: transaction.mainAssetAmount ?? 0,
         cryptoAsset: transaction.assetCode,

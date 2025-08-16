@@ -305,33 +305,32 @@ export class CwalletHooksService {
   }
 }
 
+//[x]  handle incoming
 // {
-//     "subscriptionId": "2f0a742e-cef7-42a3-b0e6-e6dfee9ea77d",
-//     "notificationId": "45b0b7b0-fa4f-4b5f-b40d-c8c41f45fa1e",
-//     "notificationType": "transactions.outbound",
-//     "notification": {
-//       "id": "298b5449-e9e9-5a61-9614-affb12e4e2b3",
-//       "blockchain": "MATIC",
-//       "walletId": "2bad2907-bf5d-5ae9-b24a-d4321d1a05d4",
-//       "tokenId": "db6905b9-8bcd-5537-8b08-f5548bdf7925",
-//       "sourceAddress": "0x229e78435bb9cc24916300ddd2204e71bba351b4",
-//       "destinationAddress": "0x865d00444c3ce0063298624cf7fda80ed828ec72",
-//       "amounts": [
-//         "1"
-//       ],
-//       "nftTokenIds": [],
-//       "refId": "",
-//       "state": "COMPLETE",
-//       "errorReason": "",
-//       "transactionType": "OUTBOUND",
-//       "txHash": "0x4f6938c5d48237d0c2d2344c9e88220451aed5a141770d6139beaeb9e9f718ce",
-//       "userOpHash": "0xf549ae31c11c3f806919dee8c7472786364006feba3f1d535f61797a08645410",
-//       "createDate": "2025-08-16T05:17:08Z",
-//       "updateDate": "2025-08-16T05:19:02Z",
-//       "errorDetails": null,
-//       "networkFeeInUSD": "0.002893305559843607818",
-//       "networkFee": "0.012338190020655044"
-//     },
-//     "timestamp": "2025-08-16T05:19:02.235460983Z",
-//     "version": 2
-//   }
+// [1]     "subscriptionId": "2f0a742e-cef7-42a3-b0e6-e6dfee9ea77d",
+// [1]     "notificationId": "3479b431-e357-48a0-9b66-12d103735e8c",
+// [1]     "notificationType": "transactions.inbound",
+// [1]     "notification": {
+// [1]       "id": "a5b88780-5129-5dea-a583-92a7e8ac77de",
+// [1]       "blockchain": "MATIC",
+// [1]       "walletId": "2bad2907-bf5d-5ae9-b24a-d4321d1a05d4",
+// [1]       "tokenId": "db6905b9-8bcd-5537-8b08-f5548bdf7925",
+// [1]       "sourceAddress": "0xee7ae85f2fe2239e27d9c1e23fffe168d63b4055",
+// [1]       "destinationAddress": "0x229e78435bb9cc24916300ddd2204e71bba351b4",
+// [1]       "amounts": [
+// [1]         "0.9936"
+// [1]       ],
+// [1]       "nftTokenIds": [],
+// [1]       "state": "CONFIRMED",
+// [1]       "errorReason": "",
+// [1]       "transactionType": "INBOUND",
+// [1]       "txHash": "0x8e48cb5bb961f7418659bff31520287c4087678d1ac56e713326f4791514b1c3",
+// [1]       "createDate": "2025-08-16T06:53:12Z",
+// [1]       "updateDate": "2025-08-16T06:53:12Z",
+// [1]       "errorDetails": null,
+// [1]       "networkFeeInUSD": "0.0015824700963759361984",
+// [1]       "networkFee": "0.006790260014485888"
+// [1]     },
+// [1]     "timestamp": "2025-08-16T06:53:12.491934311Z",
+// [1]     "version": 2
+// [1]   }
