@@ -24,7 +24,7 @@ import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
 import { IdTypeEnum } from '@/models/kyc.types';
 import { compareTwoStrings } from 'string-similarity';
 import { Injectable, PipeTransform } from '@nestjs/common';
-import { Bank, NigeriaBanks } from './nigeria-banks';
+import { NGBankDto, NigeriaBanks } from './nigeria-banks';
 
 //TODO: handle errors with enums
 
@@ -295,7 +295,7 @@ export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
     .slice(currentIndex + 1)
     .map((tierKey) => formatTier(tierKey));
 
-  return {
+  const result: Partial<IUserDto> = {
     ...user,
     currentTier: formatTier(userTier),
     nextTier: nextTier ? formatTier(nextTier) : null,
@@ -303,6 +303,12 @@ export function formatUserWithTiers(user: UserEntity): Partial<IUserDto> {
     remainingTiers,
     transactionSettings: TRANSACTION_POLICY,
   };
+
+  if (isCountrySupportedForOfframp(country)) {
+    result.banks = NigeriaBanks;
+  }
+
+  return result;
 }
 
 export function keyByFieldKey(array: any[]): Record<string, any> {
@@ -409,7 +415,7 @@ function similarityPercentage(a: string, b: string): number {
 }
 
 // Main fuzzy match function
-export function findBankByName(name: string): Bank | null {
+export function findBankByName(name: string): NGBankDto | null {
   if (!name || typeof name !== 'string') return null;
 
   const cleanedName = name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
@@ -419,7 +425,7 @@ export function findBankByName(name: string): Bank | null {
   const candidates = NigeriaBanks.filter((bank) => regex.test(bank.name));
   if (candidates.length === 0) return null;
 
-  let bestMatch: Bank | null = null;
+  let bestMatch: NGBankDto | null = null;
   let highestSimilarity = 0;
 
   for (const bank of candidates) {

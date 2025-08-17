@@ -31,6 +31,7 @@ import { TRANSACTION_POLICY } from '@/config/settings';
 import { RoleEnum } from '@/models/roles-actions.enum';
 import { BankingNetworkEntity } from './banking/banking-network.entity';
 import { TransactionHistoryEntity } from './transactions/transaction-history.entity';
+import { NGBankDto } from '@/utils/nigeria-banks';
 
 @Index(['email'])
 @Entity({ name: 'users' })
@@ -261,4 +262,13 @@ export class IUserDto extends UserEntity {
     TransactionPolicyDto,
     TRANSACTION_POLICY,
   );
+
+  @Expose()
+  @ApiProperty({
+    type: () => [NGBankDto],
+    description:
+      'List of Nigerian banks, included if the user’s country supports offramp',
+  })
+  @Type(() => NGBankDto)
+  banks?: NGBankDto[] = undefined;
 }
