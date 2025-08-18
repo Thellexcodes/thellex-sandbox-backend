@@ -18,7 +18,6 @@ export class YellowCardCron {
       //   id: 'f4c7ffc8-11d2-585b-a804-50f4d8a726f2',
       // });
       // console.log({ ab });
-      console.log(getAppConfig().YC);
       const { rates } = await this.yellowCardService.getRates();
       if (rates) {
         const now = new Date();
