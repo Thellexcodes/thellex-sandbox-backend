@@ -3,7 +3,6 @@ import { Cron } from '@nestjs/schedule';
 import { YellowCardService } from '../payments/yellowcard.service';
 import { rateCache } from '@/utils/constants';
 import { EVERY_15_SECONDS_CRON } from '@/config/settings';
-import { getAppConfig } from '@/constants/env';
 
 @Injectable()
 export class YellowCardCron {
@@ -14,10 +13,6 @@ export class YellowCardCron {
   @Cron(EVERY_15_SECONDS_CRON)
   async cacheRates() {
     try {
-      // const ab = await this.yellowCardService.acceptCollectionRequest({
-      //   id: 'f4c7ffc8-11d2-585b-a804-50f4d8a726f2',
-      // });
-      // console.log({ ab });
       const { rates } = await this.yellowCardService.getRates();
       if (rates) {
         const now = new Date();
