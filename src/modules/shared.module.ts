@@ -1,7 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionHistoryService } from './transaction-history/transaction-history.service';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
@@ -33,6 +32,12 @@ import { MapleradService } from './payments/maplerad.service';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
 import { CustomConfigModule } from '@/config/config.module';
 import { MpPaymentHooksModule } from './webhooks/mp-payment-hooks/mp-payment-hooks.module';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
+import { TransactionsModule } from './transactions/transactions.module';
+import { TransactionEntity } from '@/utils/typeorm/entities/transactions/transaction.entity';
+import { TransactionsService } from './transactions/transactions.service';
+import { DevicesModule } from './devices/devices.module';
+import { DevicesService } from './devices/devices.service';
 
 @Global()
 @Module({
@@ -47,6 +52,7 @@ import { MpPaymentHooksModule } from './webhooks/mp-payment-hooks/mp-payment-hoo
       CwalletsEntity,
       BankAccountEntity,
       UserSettingEntity,
+      TransactionEntity,
       NotificationEntity,
       BankingNetworkEntity,
       QWalletProfileEntity,
@@ -60,6 +66,8 @@ import { MpPaymentHooksModule } from './webhooks/mp-payment-hooks/mp-payment-hoo
     SettingsModule,
     YcPaymentHookModule,
     MpPaymentHooksModule,
+    TransactionsModule,
+    DevicesModule,
   ],
   providers: [
     EtherService,
@@ -74,6 +82,8 @@ import { MpPaymentHooksModule } from './webhooks/mp-payment-hooks/mp-payment-hoo
     TronService,
     ConfigService,
     MapleradService,
+    TransactionsService,
+    DevicesService,
   ],
   exports: [
     EtherService,
@@ -89,6 +99,8 @@ import { MpPaymentHooksModule } from './webhooks/mp-payment-hooks/mp-payment-hoo
     TronService,
     ConfigService,
     MapleradService,
+    TransactionsService,
+    DevicesService,
   ],
 })
 export class SharedModule {}

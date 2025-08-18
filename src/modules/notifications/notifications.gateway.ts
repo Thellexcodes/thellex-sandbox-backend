@@ -17,6 +17,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import * as admin from 'firebase-admin';
+import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
 import * as fs from 'fs';
 import * as path from 'path';
 import { LessThan, Repository } from 'typeorm';
@@ -40,7 +41,7 @@ export class NotificationsGateway {
 
     const serviceAccountPath =
       process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-      path.join(__dirname, '../firebase/serviceAccountKey.json');
+      path.join(__dirname, '../../../firebase/serviceAccountKey.json');
 
     try {
       // Verify file exists
@@ -77,20 +78,19 @@ export class NotificationsGateway {
   }
 
   async emitNotificationToUser({
-    token,
     event,
     status,
     data = {},
+    tokens,
   }: {
-    token: string;
     event:
       | NotificationEventEnum
       | WalletWebhookEventEnum
       | YCRampPaymentEventEnum;
     status: NotificationStatusEnum;
     data?: AnyObject;
+    tokens: string[];
   }): Promise<string | any> {
-    // Initialize Firebase if not already done
     this.initializeFirebase();
 
     const stringifiedData: Record<string, string> = {
@@ -103,17 +103,17 @@ export class NotificationsGateway {
         typeof value === 'object' ? JSON.stringify(value) : String(value);
     }
 
-    const message: admin.messaging.Message = {
-      token,
+    const message: MulticastMessage = {
       notification: {
         title: this.getTitle(event, status),
         body: this.getMessage(event, status),
       },
       data: stringifiedData,
+      tokens,
     };
 
     try {
-      const response = await admin.messaging().send(message);
+      const response = await admin.messaging().sendEachForMulticast(message);
       this.logger.log(`✅ Notification sent: ${response}`);
       return response;
     } catch (error) {

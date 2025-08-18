@@ -166,11 +166,15 @@ export class YellowCardService {
   async submitCollectionRequest(
     body: AnyObject,
   ): IYCollectionRequestResponseType {
-    const method = 'POST';
-    const path = '/business/collections';
-    const url = `${this.ycUrl}${path}`;
-    const headers = this.generateAuthHeaders(method, path, body);
-    return await this.httpService.post(url, body, { headers });
+    try {
+      const method = 'POST';
+      const path = '/business/collections';
+      const url = `${this.ycUrl}${path}`;
+      const headers = this.generateAuthHeaders(method, path, body);
+      return await this.httpService.post(url, body, { headers });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async acceptCollectionRequest(body: IYCAcceptCollectionRequestPayload) {

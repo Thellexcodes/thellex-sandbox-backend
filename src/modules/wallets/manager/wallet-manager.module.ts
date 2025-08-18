@@ -11,8 +11,8 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verif
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../../email/mail.service';
 import { TransactionHistoryService } from '../../transaction-history/transaction-history.service';
-import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transaction-history.entity';
 import { CwalletService } from '../cwallet/cwallet.service';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
 
 @Module({
   imports: [

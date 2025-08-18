@@ -1,0 +1,7 @@
+// Error handling enum
+export enum EncryptionErrorType {
+  INVALID_KEY = 'INVALID_KEY',
+  ENCRYPTION_FAILED = 'ENCRYPTION_FAILED',
+  DECRYPTION_FAILED = 'DECRYPTION_FAILED',
+  INVALID_INPUT = 'INVALID_INPUT',
+}

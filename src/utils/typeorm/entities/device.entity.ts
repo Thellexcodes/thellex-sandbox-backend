@@ -4,6 +4,7 @@ import { BaseEntity } from './base.entity';
 import { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { PlatformEnum } from '@/config/settings';
 
 @Entity({ name: 'devices' })
 export class DeviceEntity extends BaseEntity {
@@ -68,6 +69,21 @@ export class DeviceEntity extends BaseEntity {
 
   @Column('text', { name: 'attestation_object', nullable: true })
   attestationObject: string | null;
+
+  @Column({ type: 'enum', enum: PlatformEnum })
+  platform: PlatformEnum;
+
+  @Column({ type: 'text', nullable: true })
+  deviceModel?: string;
+
+  @Column({ type: 'text', nullable: true })
+  osVersion?: string;
+
+  @Column({ type: 'text' })
+  fcmToken: string;
+
+  @Column({ type: 'text', nullable: true })
+  deviceId?: string;
 }
 
 @Exclude()

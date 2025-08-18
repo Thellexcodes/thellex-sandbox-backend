@@ -26,6 +26,9 @@ import {
 } from '@/models/notifications.enum';
 import { NotificationsGateway } from '@/modules/notifications/notifications.gateway';
 import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
+import { TokenEnum } from '@/config/settings';
+import { TransactionsService } from '@/modules/transactions/transactions.service';
+import { DevicesService } from '@/modules/devices/devices.service';
 
 //TODO: handle errors with enum
 //TODO: Update logger
@@ -38,6 +41,8 @@ export class QwalletHooksService {
     private readonly notificationService: NotificationsService,
     private readonly transactionHistoryService: TransactionHistoryService,
     private readonly notificationGateway: NotificationsGateway,
+    private readonly transactionService: TransactionsService,
+    private readonly deviceService: DevicesService,
   ) {}
 
   async handleWalletAddressGenerated(
@@ -171,7 +176,7 @@ export class QwalletHooksService {
         ),
         transactionId,
         transactionDirection: TransactionDirectionEnum.INBOUND,
-        assetCode,
+        assetCode: assetCode as TokenEnum,
         amount,
         fee,
         blockchainTxId,
@@ -204,6 +209,15 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
+      await this.transactionService.createTransaction({
+        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+        fiatAmount: transaction.mainFiatAmount ?? 0,
+        cryptoAmount: transaction.mainAssetAmount ?? 0,
+        cryptoAsset: transaction.assetCode,
+        paymentStatus: transaction.paymentStatus,
+        paymentReason: transaction.paymentReason,
+      });
+
       // Notify the user
       const notification = await this.notificationGateway.createNotification({
         user: qwalletProfile.user,
@@ -226,10 +240,13 @@ export class QwalletHooksService {
         transactionDirection,
         transactionType,
         feeLevel,
+        user: _user,
       } = transaction;
 
+      const tokens = await this.deviceService.getUserDeviceTokens(_user.id);
+
       await this.notificationGateway.emitNotificationToUser({
-        token: qwalletProfile.user.alertID,
+        tokens,
         event: WalletWebhookEventEnum.DepositSuccessful,
         status: NotificationStatusEnum.SUCCESS,
         data: {
@@ -286,7 +303,7 @@ export class QwalletHooksService {
 
       if (transaction.paymentStatus === PaymentStatus.Done) {
         throw new CustomHttpException(
-          QWalletStatus.DEPOSIT_REJECTED,
+          QWalletStatus.UNSUPPORTED_EVENT,
           HttpStatus.CONFLICT,
         );
       }
@@ -315,6 +332,7 @@ export class QwalletHooksService {
       }
 
       const token = wallet.tokens.find((t) => t.assetCode === data.currency);
+
       if (!token) {
         throw new CustomHttpException(
           WalletErrorEnum.UNSUPPORTED_TOKEN,
@@ -338,6 +356,15 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
+      await this.transactionService.createTransaction({
+        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+        fiatAmount: transaction.mainFiatAmount ?? 0,
+        cryptoAmount: transaction.mainAssetAmount ?? 0,
+        cryptoAsset: transaction.assetCode,
+        paymentStatus: transaction.paymentStatus,
+        paymentReason: transaction.paymentReason,
+      });
+
       const notification = await this.notificationGateway.createNotification({
         user: qwalletProfile.user,
         title: NotificationEventEnum.CRYPTO_WITHDRAWAL,
@@ -352,10 +379,12 @@ export class QwalletHooksService {
         },
       });
 
-      this.logger.log(notification);
+      const tokens = await this.deviceService.getUserDeviceTokens(
+        updatedTransaction.user.id,
+      );
 
       await this.notificationGateway.emitNotificationToUser({
-        token: qwalletProfile.user.alertID,
+        tokens,
         event: WalletWebhookEventEnum.WithdrawalSuccessful,
         status: NotificationStatusEnum.SUCCESS,
         data: {

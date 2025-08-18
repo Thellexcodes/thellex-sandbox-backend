@@ -16,7 +16,6 @@ import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { TierEnum } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
-import { ConfigService } from '@/config/config.service';
 import { getAppConfig } from '@/constants/env';
 
 @Injectable()
@@ -28,7 +27,6 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(AuthVerificationCodesEntity)
     private readonly authenticationRepository: Repository<AuthVerificationCodesEntity>,
-    private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly qwalletService: QwalletService,
@@ -267,14 +265,5 @@ export class UserService {
 
   async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {
     await this.userRepository.update(userId, { tier: newTier });
-  }
-
-  async updateUserAlertId(userId: string, token: string): Promise<void> {
-    try {
-      await this.userRepository.update(userId, { alertID: token });
-      console.log('updated');
-    } catch (errr) {
-      console.log(errr);
-    }
   }
 }

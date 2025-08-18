@@ -66,7 +66,7 @@ export class RampSettlementsCron {
           .checkLiquidity(txns[0]?.fiatCode)
           .then((b) => b.available_balance)) > 0;
     } catch (err) {
-      this.logger.error(`Failed to check Maplerad liquidity: ${err.message}`);
+      // this.logger.error(`Failed to check Maplerad liquidity: ${err.message}`);
     }
 
     for (const txn of txns) {

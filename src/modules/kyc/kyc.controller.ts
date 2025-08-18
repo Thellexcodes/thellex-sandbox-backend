@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, Res } from '@nestjs/common';
+import { Post, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import {
   ApiBearerAuth,
@@ -15,11 +15,11 @@ import {
   ValidateBvnResponseDto,
   VerifySelfieWithPhotoIdDto,
 } from './dto/kyc-data.dto';
-import { VersionedController001 } from '../controller/base.controller';
+import { VersionedController101 } from '../controller/base.controller';
 import { VerifyBvnDto } from './dto/validate-bvn.dto';
 
 @ApiTags('Kyc')
-@VersionedController001('kyc')
+@VersionedController101('kyc')
 @ApiBearerAuth('access-token')
 export class kycController {
   constructor(private readonly kycService: KycService) {}

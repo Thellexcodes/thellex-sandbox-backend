@@ -8,7 +8,6 @@ import {
   ICardManagementDto,
 } from '@/utils/typeorm/entities/card-management.entity';
 import { NotificationEntity } from './notification.entity';
-import { TransactionHistoryEntity } from './transaction-history.entity';
 import {
   IQWalletProfileDto,
   QWalletProfileEntity,
@@ -31,6 +30,8 @@ import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.d
 import { TRANSACTION_POLICY } from '@/config/settings';
 import { RoleEnum } from '@/models/roles-actions.enum';
 import { BankingNetworkEntity } from './banking/banking-network.entity';
+import { TransactionHistoryEntity } from './transactions/transaction-history.entity';
+import { NGBankDto } from '@/utils/nigeria-banks';
 
 @Index(['email'])
 @Entity({ name: 'users' })
@@ -66,17 +67,6 @@ export class UserEntity extends BaseEntity {
     default: () => 'uuid_generate_v4()',
   })
   idempotencyKey: string;
-
-  @ApiProperty()
-  @Expose()
-  @Column({
-    name: 'alert_id',
-    type: 'text',
-    unique: true,
-    nullable: false,
-    default: () => 'uuid_generate_v4()',
-  })
-  alertID: string;
 
   @Column({
     type: 'enum',
@@ -272,4 +262,13 @@ export class IUserDto extends UserEntity {
     TransactionPolicyDto,
     TRANSACTION_POLICY,
   );
+
+  @Expose()
+  @ApiProperty({
+    type: () => [NGBankDto],
+    description:
+      'List of Nigerian banks, included if the user’s country supports offramp',
+  })
+  @Type(() => NGBankDto)
+  banks?: NGBankDto[] = undefined;
 }

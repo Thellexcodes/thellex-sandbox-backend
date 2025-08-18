@@ -1,3 +1,4 @@
+import { TokenEnum } from '@/config/settings';
 import {
   TransactionDirectionEnum,
   PaymentStatus,
@@ -15,7 +16,7 @@ export class TransactionHistoryDto {
   transactionId: string;
   transactionDirection: TransactionDirectionEnum;
   transactionType: TransactionTypeEnum;
-  assetCode: string;
+  assetCode: TokenEnum;
   amount: string;
   fee?: string;
   feeLevel?: FeeLevel;
@@ -33,4 +34,5 @@ export class TransactionHistoryDto {
   user: UserEntity;
   rampID?: string;
   mainAssetAmount?: number;
+  transactionMessage?: string;
 }

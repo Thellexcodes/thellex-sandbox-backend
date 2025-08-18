@@ -13,21 +13,18 @@ import {
   CustomerTypesEnum,
   FiatEnum,
   SupportedBlockchainTypeEnum,
-  SupportedFiatCurrencyEnum,
   TokenEnum,
 } from '@/config/settings';
 import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDate,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { TransactionHistoryEntity } from './transaction-history.entity';
-import { v4 as uuidV4 } from 'uuid';
+import { ITransactionHistoryDto } from './transactions/transaction-history.entity';
 
 //[x] improve with all treasuery addresses
 const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>
@@ -146,7 +143,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   walletId: string;
 
   // ========== AMOUNTS ==========
-  @Column({ type: 'decimal', precision: 18, scale: 2 })
+  @Column({ type: 'numeric', precision: 18, scale: 2 })
   userAmount: number;
 
   @Expose()
@@ -161,12 +158,12 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  @Column({ type: 'numeric', precision: 18, scale: 2, nullable: true })
   mainAssetAmount: number;
 
   @Expose()
   @ApiProperty()
-  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  @Column({ type: 'numeric', precision: 18, scale: 2, nullable: true })
   mainFiatAmount: number;
 
   @Expose()
@@ -231,6 +228,14 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @ApiProperty()
   @Column({ nullable: true })
   blockchainTxId: string;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Human-readable message for the transaction type',
+    example: 'You requested USDC',
+  })
+  @Column()
+  transactionMessage: string;
 }
 
 export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransactionEntity {
@@ -309,9 +314,14 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   @Type(() => Date)
   expiresAt: Date;
 
+  @ApiProperty({ type: () => [ITransactionHistoryDto] })
+  @Expose()
+  @Type(() => ITransactionHistoryDto)
+  transaction: ITransactionHistoryDto[];
+
   @Expose()
   @ApiProperty()
-  transaction: TransactionHistoryEntity[];
+  transactionMessage: string;
 }
 
 export class IRateDto {

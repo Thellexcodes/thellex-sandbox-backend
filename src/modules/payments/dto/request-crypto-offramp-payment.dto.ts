@@ -1,8 +1,7 @@
 import {
   CountryEnum,
-  FiatEnum,
   SupportedBlockchainTypeEnum,
-  SupportedFiatCurrencyEnum,
+  FiatEnum,
   TokenEnum,
 } from '@/config/settings';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';

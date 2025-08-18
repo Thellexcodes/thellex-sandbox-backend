@@ -3,10 +3,10 @@ import { CrashReportService } from './crash-report.service';
 import { CreateCrashReportDto } from './dto/create-crash-report.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { VersionedController001 } from '@/modules/controller/base.controller';
+import { VersionedController101 } from '@/modules/controller/base.controller';
 import { ApiBody } from '@nestjs/swagger';
 
-@VersionedController001('crash-report')
+@VersionedController101('crash-report')
 export class CrashReportController {
   constructor(private readonly crashReportService: CrashReportService) {}
 

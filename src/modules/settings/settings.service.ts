@@ -19,7 +19,9 @@ import { v4 as uuidV4 } from 'uuid';
 import { YellowCardService } from '../payments/yellowcard.service';
 import { MapleradService } from '../payments/maplerad.service';
 import { toUTCDate } from '@/utils/helpers';
+import { UserService } from '../users/user.service';
 
+//[x] handle erros with enums
 @Injectable()
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
@@ -32,6 +34,7 @@ export class SettingsService {
     private readonly bankAccountRepo: Repository<BankAccountEntity>,
     private readonly ycService: YellowCardService,
     private readonly malperadService: MapleradService,
+    private readonly userService: UserService,
   ) {
     // Inject other repositories as needed (e.g., TaxSettingEntity, PayoutSettingEntity)
   }
@@ -62,20 +65,34 @@ export class SettingsService {
   async addBankAccount(
     userId: string,
     dto: ICreateBankRequestAccountDto,
-  ): Promise<BankAccountEntity> {
+  ): Promise<BankAccountEntity | any> {
     try {
       const existing = await this.bankAccountRepo.findOne({
         where: { user: { id: userId }, accountNumber: dto.accountNumber },
+        relations: ['user'],
       });
+
+      const user = await this.userService.findOneById(userId);
 
       if (existing) {
-        throw new CustomHttpException('', HttpStatus.FORBIDDEN);
+        throw new CustomHttpException(
+          'Bank account already exists',
+          HttpStatus.FORBIDDEN,
+        );
       }
 
-      const bankInfo = await this.malperadService.resolveInstitutionAccount({
-        account_number: dto.accountNumber,
-        bank_code: dto.bankCode,
-      });
+      let accountName: string;
+      try {
+        const bankInfo = await this.malperadService.resolveInstitutionAccount({
+          account_number: dto.accountNumber,
+          bank_code: dto.bankCode,
+        });
+        accountName =
+          bankInfo.account_name ?? `${user.kyc.firstName} ${user.kyc.lastName}`;
+      } catch (err) {
+        this.logger.warn(`Failed to resolve bank info: ${err.message}`);
+        accountName = `${user.kyc.firstName} ${user.kyc.lastName}`; // Fallback to KYC info
+      }
 
       const isFirstAccount =
         (await this.bankAccountRepo.count({
@@ -87,7 +104,7 @@ export class SettingsService {
         isPrimary: isFirstAccount,
         user: { id: userId },
         external_customer_id: uuidV4(),
-        accountName: bankInfo.account_name,
+        accountName,
         external_createdAt: toUTCDate(new Date().toString()),
       });
 

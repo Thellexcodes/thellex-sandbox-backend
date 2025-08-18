@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@/middleware/http.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { KycErrorEnum } from '@/models/kyc-error.enum';
@@ -42,6 +42,8 @@ import { ConfigService } from '@/config/config.service';
 //[x]: Move the Dojah services out
 @Injectable()
 export class KycService {
+  private readonly logger = new Logger(KycService.name);
+
   constructor(
     @InjectRepository(KycEntity)
     private readonly kycRepo: Repository<KycEntity>,
@@ -51,7 +53,6 @@ export class KycService {
     private readonly userService: UserService,
     private readonly mapleradService: MapleradService,
     private readonly dataSource: DataSource,
-    private readonly configService: ConfigService,
   ) {}
 
   private get dojahUrl(): string {
@@ -380,26 +381,48 @@ export class KycService {
             AppId: getAppConfig().DOJAH.APP_ID,
             Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
           },
-          params: { bvn: dto.bvnNumber },
+          params: { bvn: dto.bvn },
         },
       );
 
       const isValid = response.entity?.bvn?.status ?? false;
 
-      if (isValid) {
-        const userKycRecord = await this.getUserKyc(userId);
-
-        if (!userKycRecord) {
-          return { isValid };
-        }
-
-        userKycRecord.bvn = String(dto.bvnNumber);
-        await this.kycRepo.save(userKycRecord);
+      if (!isValid) {
+        this.logger.warn(
+          `BVN validation failed for user ${userId}: Invalid BVN ${dto.bvn}`,
+        );
+        return { isValid };
       }
+
+      const userKycRecord = await this.getUserKyc(userId);
+      if (!userKycRecord) {
+        this.logger.warn(`No KYC record found for user ${userId}`);
+        return { isValid };
+      }
+
+      // Update KYC record
+      userKycRecord.bvn = String(dto.bvn);
+      userKycRecord.phone = dto.phoneNumber.fullPhone;
+      if (!userKycRecord.idTypes.includes(IdTypeEnum.BVN)) {
+        userKycRecord.idTypes = [...userKycRecord.idTypes, IdTypeEnum.BVN];
+        this.logger.log(
+          `Added BVN to idTypes for user ${userId}: ${userKycRecord.idTypes}`,
+        );
+      } else {
+        this.logger.log(
+          `BVN already in idTypes for user ${userId}: ${userKycRecord.idTypes}`,
+        );
+      }
+
+      await this.kycRepo.save(userKycRecord);
+      this.logger.log(`Saved KYC record for user ${userId}`);
 
       return { isValid };
     } catch (error) {
-      console.error('BVN validation failed:', error?.message || error);
+      this.logger.error(
+        `BVN validation failed for user ${userId}: ${error.message}`,
+        error.stack,
+      );
     }
   }
 

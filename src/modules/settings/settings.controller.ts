@@ -3,10 +3,10 @@ import { SettingsService } from './settings.service';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { VersionedController001 } from '../controller/base.controller';
+import { VersionedController101 } from '../controller/base.controller';
 import { ICreateBankRequestAccountDto } from './dto/payment-settings';
 
-@VersionedController001('settings')
+@VersionedController101('settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 

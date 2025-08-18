@@ -13,11 +13,11 @@ import {
   WalletBalanceSummaryResponseDto,
   WalletMapDto,
 } from './dto/get-balance-response.dto';
-import { VersionedController001 } from '@/modules/controller/base.controller';
+import { VersionedController101 } from '@/modules/controller/base.controller';
 
 @ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
-@VersionedController001('wallet-manager')
+@VersionedController101('wallet-manager')
 export class WalletManagerController {
   constructor(private readonly walletManagerService: WalletManagerService) {}
 

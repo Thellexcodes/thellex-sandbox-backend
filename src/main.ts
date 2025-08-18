@@ -52,7 +52,7 @@ async function bootstrap() {
   // Create NestJS app with or without HTTPS
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
-    logger: false,
+    // logger: false,
   });
   app.setGlobalPrefix('api');
 
@@ -62,7 +62,7 @@ async function bootstrap() {
 
   const isProd = getEnv() === ENV_PRODUCTION;
 
-  if (isProd) {
+  if (!isProd) {
     const config = new DocumentBuilder()
       .setTitle('Thellex API')
       .setDescription('Thellex API Documentation')
@@ -75,8 +75,7 @@ async function bootstrap() {
         },
         'access-token',
       )
-      .setVersion(API_VERSIONS.V100)
-      .addServer(`/${enableHttps ? 'https' : 'http'}`)
+      .setVersion(API_VERSIONS.V101)
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
@@ -88,7 +87,7 @@ async function bootstrap() {
   const serverPort = getAppConfig().SERVER.PORT;
 
   app.enableCors();
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalInterceptors(new ErrorInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
 
