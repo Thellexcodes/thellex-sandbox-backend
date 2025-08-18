@@ -19,7 +19,6 @@ import { TransactionHistoryService } from '@/modules/transaction-history/transac
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
 import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
 import { QWalletStatus } from '@/modules/wallets/qwallet/qwallet-status.enum';
-import { NotificationsService } from '@/modules/notifications/notifications.service';
 import {
   NotificationEventEnum,
   NotificationStatusEnum,
@@ -38,7 +37,6 @@ export class QwalletHooksService {
 
   constructor(
     private readonly qwalletService: QwalletService,
-    private readonly notificationService: NotificationsService,
     private readonly transactionHistoryService: TransactionHistoryService,
     private readonly notificationGateway: NotificationsGateway,
     private readonly transactionService: TransactionsService,
@@ -87,16 +85,6 @@ export class QwalletHooksService {
       id: wallet.id,
       networkMetadata: updatedNetworkMetadata,
     });
-
-    // await this.notificationService.createAndSendNotification({
-    //   user,
-    //   data: { updated: true },
-    //   event: normalizeEnumValue(
-    //     WalletWebhookEventEnum.WalletAddressGenerated,
-    //     WalletWebhookEventEnum,
-    //   ),
-    //   status: NotificationStatusEnum.SUCCESS,
-    // });
   }
 
   handleDepositConfirmation(payload: any) {
@@ -106,7 +94,6 @@ export class QwalletHooksService {
   async handleDepositSuccessful(
     payload: QWalletWebhookPayloadDto,
   ): Promise<void> {
-    this.logger.log(payload);
     try {
       const data = payload.data as IQwalletHookDepositSuccessfulData;
 
