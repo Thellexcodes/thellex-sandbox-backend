@@ -185,9 +185,9 @@ export class MapleradService {
       const path = '/transfers';
       const url = `${this.baseUrl}${path}`;
       const headers = this.generateAuthHeaders(RequestMethodsEnum.POST, path);
-      const response = await this.httpService.post(url, payload, { headers });
-      this.logger.log(response);
-      return null;
+      const response: IMapleradTransferResponseDto =
+        await this.httpService.post(url, payload, { headers });
+      return response;
     } catch (err) {
       console.log(err);
     }

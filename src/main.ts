@@ -6,8 +6,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { writeFileSync } from 'fs';
-import { ENV_PRODUCTION } from './models/settings.types';
-import { getAppConfig, getEnv } from './constants/env';
+import { getAppConfig } from './constants/env';
 import * as bodyParser from 'body-parser';
 import {
   FILE_UPLOAD_LIMIT,

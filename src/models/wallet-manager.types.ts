@@ -73,6 +73,7 @@ export enum WalletType {
 export enum CircleNotificationTypeEnum {
   TransactionsOutbound = 'transactions.outbound',
   TransactionsInbound = 'transactions.inbound',
+  WebhookTest = 'webhooks.test',
 }
 
 export enum CircleTransactionType {
