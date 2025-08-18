@@ -8,6 +8,7 @@ import { jwtConfigurations } from 'src/config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@/modules/users/user.service';
 import { AuthErrorEnum } from '@/models/auth-error.enum';
+import { isProd } from '@/utils/helpers';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,7 +21,9 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const access_token = this.extractTokenFromHeader(request);
 
-    console.log({ access_token });
+    if (!isProd) {
+      console.log({ access_token });
+    }
 
     if (!access_token) {
       throw new UnauthorizedException({
