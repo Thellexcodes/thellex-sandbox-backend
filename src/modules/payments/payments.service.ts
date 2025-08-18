@@ -375,6 +375,7 @@ export class PaymentsService {
           recipientInfo: {
             destinationAddress: dto.destinationAddress,
             assetCode: dto.assetCode,
+            network: dto.network,
           },
           expiresAt: yellowCardResponse.expiresAt,
           transactionMessage,
@@ -406,15 +407,15 @@ export class PaymentsService {
       const { user: _user, ...transaction } =
         await this.transactionHistoryService.create(txnData, user);
 
-      const tokens = await this.deviceService.getUserDeviceTokens(user.id);
+      // const tokens = await this.deviceService.getUserDeviceTokens(user.id);
 
       // Notify user
-      await this.notificationGateway.emitNotificationToUser({
-        event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
-        status: NotificationStatusEnum.PROCESSING,
-        data: { transaction },
-        tokens,
-      });
+      // await this.notificationGateway.emitNotificationToUser({
+      //   event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
+      //   status: NotificationStatusEnum.PROCESSING,
+      //   data: { transaction },
+      //   tokens,
+      // });
 
       await queryRunner.commitTransaction();
 
@@ -440,6 +441,7 @@ export class PaymentsService {
           createdAt: savedTxn.createdAt,
           mainFiatAmount: savedTxn.mainFiatAmount,
           paymentReason: savedTxn.paymentReason,
+          transaction,
         },
         { excludeExtraneousValues: true },
       );
