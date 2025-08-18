@@ -14,6 +14,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { PhoneDto } from './phone.dto';
+import { NGBankDto } from '@/utils/nigeria-banks';
 
 //upload documents
 export enum UploadDocumentInputTypeEnum {
@@ -166,6 +167,15 @@ export class KycResultDto {
   })
   @Type(() => TierInfoDto)
   remainingTiers: TierInfoDto[];
+
+  @Expose()
+  @ApiProperty({
+    type: () => [NGBankDto],
+    description:
+      'List of Nigerian banks, included if the user’s country supports offramp',
+  })
+  @Type(() => NGBankDto)
+  banks?: NGBankDto[] = undefined;
 }
 
 export class KycResponseDto extends BaseResponseDto<KycResultDto> {

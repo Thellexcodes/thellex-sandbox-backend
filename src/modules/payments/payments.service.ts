@@ -305,20 +305,6 @@ export class PaymentsService {
 
       const sequenceId = uuidV4();
 
-      console.log({
-        sequenceId,
-        channelId: channel.id,
-        currency: channel.currency,
-        country: channel.country,
-        reason: dto.paymentReason,
-        localAmount: dto.userAmount,
-        recipient,
-        forceAccept: true,
-        source: { accountType: YCTxnAccountTypes.BANK },
-        customerType: userPlain.kyc.customerType,
-        customerUID: userPlain.uid.toString(),
-      });
-
       // Submit to YellowCard
       const yellowCardResponse = await this.ycService.submitCollectionRequest({
         sequenceId,
@@ -388,7 +374,6 @@ export class PaymentsService {
           },
           recipientInfo: {
             destinationAddress: dto.destinationAddress,
-            network: dto.network,
             assetCode: dto.assetCode,
           },
           expiresAt: yellowCardResponse.expiresAt,
