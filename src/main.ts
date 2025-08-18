@@ -50,10 +50,12 @@ async function bootstrap() {
   }
 
   // Create NestJS app with or without HTTPS
+
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
-    // logger: false,
+    logger: isProd ? false : ['log', 'error', 'warn', 'debug', 'verbose'],
   });
+
   app.setGlobalPrefix('api');
 
   app.enableVersioning({

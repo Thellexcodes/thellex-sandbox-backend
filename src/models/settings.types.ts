@@ -77,6 +77,9 @@ export type ApiConfig = {
     PUBLIC_KEY: string;
     SECRET_KEY: string;
   };
+  FIREBASE: {
+    SERVICE_ACCOUNT: string;
+  };
   ALCHEMY_API: string;
   KYC_ENCRYPTION_KEY: string;
   IPINFO_TOKEN: string;

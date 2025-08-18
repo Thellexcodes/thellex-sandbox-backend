@@ -1,3 +1,4 @@
+import { getAppConfig } from '@/constants/env';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { AnyObject } from '@/models/any.types';
 import {
@@ -18,77 +19,64 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import * as admin from 'firebase-admin';
 import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
-import * as fs from 'fs';
-import * as path from 'path';
 import { LessThan, Repository } from 'typeorm';
 
-const serviceAccountPath = (): string => {
+const getServiceAccountConfig = (): string => {
   const TAG = 'NotificationsGateway';
-  const defaultPath = path.join(
-    process.cwd(),
-    'firebase',
-    'serviceAccountKey.json',
-  );
 
-  Logger.log(
-    `[${TAG}] Resolving Firebase service account path (cwd: ${process.cwd()})`,
-  );
+  Logger.log(`[${TAG}] Resolving Firebase service account configuration`);
 
-  // If using environment variable path, verify it exists
-  if (defaultPath) {
-    if (!fs.existsSync(defaultPath)) {
+  const serviceAccountJson = getAppConfig().FIREBASE.SERVICE_ACCOUNT;
+  if (!serviceAccountJson) {
+    Logger.error(
+      `[${TAG}] FIREBASE_SERVICE_ACCOUNT environment variable is not set`,
+    );
+    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is missing');
+  }
+
+  try {
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
+    // Validate required fields
+    const requiredFields = [
+      'type',
+      'project_id',
+      'private_key_id',
+      'private_key',
+      'client_email',
+      'client_id',
+    ];
+    const missingFields = requiredFields.filter(
+      (field) => !serviceAccount[field],
+    );
+    if (missingFields.length > 0) {
       Logger.error(
-        `[${TAG}] Environment variable path does not exist: ${defaultPath}`,
+        `[${TAG}] Invalid service account JSON: missing fields ${missingFields.join(', ')}`,
       );
       throw new Error(
-        `Firebase service account file not found at ${defaultPath}`,
+        `Service account JSON is missing required fields: ${missingFields.join(', ')}`,
       );
     }
-    Logger.log(`[${TAG}] Using environment variable path: ${defaultPath}`);
-    return defaultPath;
-  }
 
-  // For default path, ensure folder and file exist
-  const firebaseDir = path.dirname(defaultPath);
-  if (!fs.existsSync(firebaseDir)) {
+    if (serviceAccount.type !== 'service_account') {
+      Logger.error(
+        `[${TAG}] Invalid service account type: ${serviceAccount.type}`,
+      );
+      throw new Error('Service account JSON must have type "service_account"');
+    }
+
     Logger.log(
-      `[${TAG}] Firebase directory does not exist, creating: ${firebaseDir}`,
+      `[${TAG}] Successfully parsed Firebase service account configuration`,
     );
-    fs.mkdirSync(firebaseDir, { recursive: true });
-  }
-
-  if (!fs.existsSync(defaultPath)) {
-    Logger.log(
-      `[${TAG}] Service account file does not exist, creating placeholder: ${defaultPath}`,
+    return serviceAccount;
+  } catch (error) {
+    Logger.error(
+      `[${TAG}] Failed to parse FIREBASE_SERVICE_ACCOUNT: ${error.message}`,
     );
-    fs.writeFileSync(
-      defaultPath,
-      JSON.stringify(
-        {
-          type: 'service_account',
-          project_id: 'your-project-id',
-          private_key_id: 'your-private-key-id',
-          private_key: 'your-private-key',
-          client_email: 'your-client-email',
-          client_id: 'your-client-id',
-          auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-          token_uri: 'https://oauth2.googleapis.com/token',
-          auth_provider_x509_cert_url:
-            'https://www.googleapis.com/oauth2/v1/certs',
-          client_x509_cert_url: 'your-client-x509-cert-url',
-          universe_domain: 'googleapis.com',
-        },
-        null,
-        2,
-      ),
-    );
-    Logger.warn(
-      `[${TAG}] Placeholder serviceAccountKey.json created. Please update with actual credentials.`,
+    throw new Error(
+      `Failed to parse FIREBASE_SERVICE_ACCOUNT: ${error.message}`,
     );
   }
-
-  Logger.log(`[${TAG}] Resolved Firebase service account path: ${defaultPath}`);
-  return defaultPath;
 };
 
 @Injectable()
@@ -99,10 +87,7 @@ export class NotificationsGateway {
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
-  ) {
-    // Firebase initialization deferred to emitNotificationToUser
-    serviceAccountPath();
-  }
+  ) {}
 
   private initializeFirebase() {
     if (this.isFirebaseInitialized) {
@@ -111,16 +96,7 @@ export class NotificationsGateway {
     }
 
     try {
-      const resolvedPath = serviceAccountPath();
-      // Verify file exists
-      if (!fs.existsSync(resolvedPath)) {
-        throw new Error(
-          `Firebase service account file not found at: ${resolvedPath}`,
-        );
-      }
-
-      // Load and parse JSON
-      const serviceAccount = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+      const serviceAccount = getServiceAccountConfig();
 
       // Initialize Firebase Admin SDK
       admin.initializeApp({
@@ -129,7 +105,7 @@ export class NotificationsGateway {
 
       this.isFirebaseInitialized = true;
       this.logger.log(
-        `✅ Firebase Admin initialized with service account from: ${resolvedPath}`,
+        `✅ Firebase Admin initialized with service account from environment`,
       );
     } catch (error) {
       this.logger.error(
