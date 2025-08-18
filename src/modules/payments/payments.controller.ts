@@ -106,6 +106,7 @@ export class PaymentsController {
       user,
       dto,
     );
+
     responseHandler(response, res, req);
   }
 

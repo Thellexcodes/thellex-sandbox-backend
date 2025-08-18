@@ -6,7 +6,7 @@ export class MpPaymentHooksService {
   private readonly logger = new Logger(MpPaymentHooksService.name);
 
   create(createMpPaymentHookDto) {
-    this.logger.log(createMpPaymentHookDto);
+    console.log({ createMpPaymentHookDto }, MpPaymentHooksService.name);
   }
 
   findAll() {

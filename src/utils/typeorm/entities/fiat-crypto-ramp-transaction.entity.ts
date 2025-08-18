@@ -24,6 +24,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { ITransactionHistoryDto } from './transactions/transaction-history.entity';
 
 //[x] improve with all treasuery addresses
 const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>
@@ -142,7 +143,7 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   walletId: string;
 
   // ========== AMOUNTS ==========
-  @Column({ type: 'decimal', precision: 18, scale: 2 })
+  @Column({ type: 'numeric', precision: 18, scale: 2 })
   userAmount: number;
 
   @Expose()
@@ -157,12 +158,12 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
 
   @Expose()
   @ApiProperty()
-  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  @Column({ type: 'numeric', precision: 18, scale: 2, nullable: true })
   mainAssetAmount: number;
 
   @Expose()
   @ApiProperty()
-  @Column({ type: 'decimal', precision: 18, scale: 2, nullable: true })
+  @Column({ type: 'numeric', precision: 18, scale: 2, nullable: true })
   mainFiatAmount: number;
 
   @Expose()
@@ -227,6 +228,14 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @ApiProperty()
   @Column({ nullable: true })
   blockchainTxId: string;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Human-readable message for the transaction type',
+    example: 'You requested USDC',
+  })
+  @Column()
+  transactionMessage: string;
 }
 
 export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransactionEntity {
@@ -304,6 +313,15 @@ export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransact
   @IsDate()
   @Type(() => Date)
   expiresAt: Date;
+
+  @ApiProperty({ type: () => [ITransactionHistoryDto] })
+  @Expose()
+  @Type(() => ITransactionHistoryDto)
+  transaction: ITransactionHistoryDto[];
+
+  @Expose()
+  @ApiProperty()
+  transactionMessage: string;
 }
 
 export class IRateDto {

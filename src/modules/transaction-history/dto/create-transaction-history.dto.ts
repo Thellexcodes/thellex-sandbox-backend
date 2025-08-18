@@ -34,4 +34,5 @@ export class TransactionHistoryDto {
   user: UserEntity;
   rampID?: string;
   mainAssetAmount?: number;
+  transactionMessage?: string;
 }

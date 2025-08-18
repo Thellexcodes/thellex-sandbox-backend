@@ -172,6 +172,14 @@ export class TransactionHistoryEntity extends BaseEntity {
   @ApiProperty()
   @Column({ nullable: true })
   mainAssetAmount: number;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Human-readable message for the transaction type',
+    example: 'You requested USDC',
+  })
+  @Column({ nullable: true })
+  transactionMessage: string;
 }
 
 @Exclude()
