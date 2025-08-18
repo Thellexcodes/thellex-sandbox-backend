@@ -334,8 +334,6 @@ export class PaymentsService {
         customerUID: userPlain.uid.toString(),
       });
 
-      console.log(yellowCardResponse);
-
       // Calculate values
       const {
         netFiatAmount,
