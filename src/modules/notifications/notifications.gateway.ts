@@ -22,6 +22,75 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { LessThan, Repository } from 'typeorm';
 
+const serviceAccountPath = (): string => {
+  const TAG = 'NotificationsGateway';
+  const defaultPath = path.join(
+    process.cwd(),
+    'firebase',
+    'serviceAccountKey.json',
+  );
+
+  Logger.log(
+    `[${TAG}] Resolving Firebase service account path (cwd: ${process.cwd()})`,
+  );
+
+  // If using environment variable path, verify it exists
+  if (defaultPath) {
+    if (!fs.existsSync(defaultPath)) {
+      Logger.error(
+        `[${TAG}] Environment variable path does not exist: ${defaultPath}`,
+      );
+      throw new Error(
+        `Firebase service account file not found at ${defaultPath}`,
+      );
+    }
+    Logger.log(`[${TAG}] Using environment variable path: ${defaultPath}`);
+    return defaultPath;
+  }
+
+  // For default path, ensure folder and file exist
+  const firebaseDir = path.dirname(defaultPath);
+  if (!fs.existsSync(firebaseDir)) {
+    Logger.log(
+      `[${TAG}] Firebase directory does not exist, creating: ${firebaseDir}`,
+    );
+    fs.mkdirSync(firebaseDir, { recursive: true });
+  }
+
+  if (!fs.existsSync(defaultPath)) {
+    Logger.log(
+      `[${TAG}] Service account file does not exist, creating placeholder: ${defaultPath}`,
+    );
+    fs.writeFileSync(
+      defaultPath,
+      JSON.stringify(
+        {
+          type: 'service_account',
+          project_id: 'your-project-id',
+          private_key_id: 'your-private-key-id',
+          private_key: 'your-private-key',
+          client_email: 'your-client-email',
+          client_id: 'your-client-id',
+          auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+          token_uri: 'https://oauth2.googleapis.com/token',
+          auth_provider_x509_cert_url:
+            'https://www.googleapis.com/oauth2/v1/certs',
+          client_x509_cert_url: 'your-client-x509-cert-url',
+          universe_domain: 'googleapis.com',
+        },
+        null,
+        2,
+      ),
+    );
+    Logger.warn(
+      `[${TAG}] Placeholder serviceAccountKey.json created. Please update with actual credentials.`,
+    );
+  }
+
+  Logger.log(`[${TAG}] Resolved Firebase service account path: ${defaultPath}`);
+  return defaultPath;
+};
+
 @Injectable()
 export class NotificationsGateway {
   private readonly logger = new Logger(NotificationsGateway.name);
@@ -36,25 +105,21 @@ export class NotificationsGateway {
 
   private initializeFirebase() {
     if (this.isFirebaseInitialized) {
-      return; // Skip if already initialized
+      this.logger.log('Firebase already initialized, skipping');
+      return;
     }
 
-    const serviceAccountPath =
-      process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-      path.join(__dirname, '../../../firebase/serviceAccountKey.json');
-
     try {
+      const resolvedPath = serviceAccountPath();
       // Verify file exists
-      if (!fs.existsSync(serviceAccountPath)) {
+      if (!fs.existsSync(resolvedPath)) {
         throw new Error(
-          `Firebase service account file not found at: ${serviceAccountPath}`,
+          `Firebase service account file not found at: ${resolvedPath}`,
         );
       }
 
       // Load and parse JSON
-      const serviceAccount = JSON.parse(
-        fs.readFileSync(serviceAccountPath, 'utf8'),
-      );
+      const serviceAccount = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
 
       // Initialize Firebase Admin SDK
       admin.initializeApp({
@@ -63,7 +128,7 @@ export class NotificationsGateway {
 
       this.isFirebaseInitialized = true;
       this.logger.log(
-        `✅ Firebase Admin initialized with service account from: ${serviceAccountPath}`,
+        `✅ Firebase Admin initialized with service account from: ${resolvedPath}`,
       );
     } catch (error) {
       this.logger.error(
@@ -76,6 +141,45 @@ export class NotificationsGateway {
       );
     }
   }
+
+  // private initializeFirebase() {
+  //   if (this.isFirebaseInitialized) {
+  //     return; // Skip if already initialized
+  //   }
+
+  //   try {
+  //     // Verify file exists
+  //     if (!fs.existsSync(serviceAccountPath)) {
+  //       throw new Error(
+  //         `Firebase service account file not found at: ${serviceAccountPath}`,
+  //       );
+  //     }
+
+  //     // Load and parse JSON
+  //     const serviceAccount = JSON.parse(
+  //       fs.readFileSync(serviceAccountPath, 'utf8'),
+  //     );
+
+  //     // Initialize Firebase Admin SDK
+  //     admin.initializeApp({
+  //       credential: admin.credential.cert(serviceAccount),
+  //     });
+
+  //     this.isFirebaseInitialized = true;
+  //     this.logger.log(
+  //       `✅ Firebase Admin initialized with service account from: ${serviceAccountPath}`,
+  //     );
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `❌ Failed to initialize Firebase: ${error.message}`,
+  //       error.stack,
+  //     );
+  //     throw new CustomHttpException(
+  //       NotificationErrorEnum.FIREBASE_INIT_FAILED,
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async emitNotificationToUser({
     event,
