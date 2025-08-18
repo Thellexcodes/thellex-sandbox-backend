@@ -54,10 +54,6 @@ import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { WalletErrorEnum } from '@/models/wallet-manager.types';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
-import {
-  NotificationEventEnum,
-  NotificationStatusEnum,
-} from '@/models/notifications.enum';
 import { PaymentErrorEnum } from '@/models/payment-error.enum';
 import { MapleradService } from './maplerad.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
@@ -563,40 +559,40 @@ export class PaymentsService {
 
       // Step 1: Transfer crypto from user wallet to treasury address
       let cryptoTxResult;
-      // try {
-      //   this.inProgressTxnCache.set(sequenceId, true);
-      //   cryptoTxResult = await this.payoutCrypto({
-      //     user,
-      //     userId: user.id,
-      //     recipientInfo: {
-      //       destinationAddress: networkInfo.treasuryAddress,
-      //       network: dto.network,
-      //       assetCode: dto.assetCode,
-      //     },
-      //     userAmount: dto.mainAssetAmount,
-      //     sourceAddress: dto.sourceAddress,
-      //     grossCrypto: netCryptoAmount,
-      //     serviceFeeAmountUSD: parseFloat(
-      //       (feeAmount / fiatRate.rate.sell).toFixed(2),
-      //     ),
-      //     sequenceId,
-      //     transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
-      //     providerTransactionId: uuidV4(),
-      //   });
+      try {
+        this.inProgressTxnCache.set(sequenceId, true);
+        cryptoTxResult = await this.payoutCrypto({
+          user,
+          userId: user.id,
+          recipientInfo: {
+            destinationAddress: networkInfo.treasuryAddress,
+            network: dto.network,
+            assetCode: dto.assetCode,
+          },
+          userAmount: dto.mainAssetAmount,
+          sourceAddress: dto.sourceAddress,
+          grossCrypto: netCryptoAmount,
+          serviceFeeAmountUSD: parseFloat(
+            (feeAmount / fiatRate.rate.sell).toFixed(2),
+          ),
+          sequenceId,
+          transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+          providerTransactionId: uuidV4(),
+        });
 
-      //   if (!cryptoTxResult.success) {
-      //     throw new Error(`Crypto transfer failed: ${cryptoTxResult.error}`);
-      //   }
-      // } catch (error) {
-      //   this.inProgressTxnCache.delete(sequenceId);
-      //   this.logger.error(
-      //     `Crypto transfer failed for sequenceId ${sequenceId}: ${error.message}`,
-      //   );
-      //   throw new CustomHttpException(
-      //     'Crypto transfer failed',
-      //     HttpStatus.INTERNAL_SERVER_ERROR,
-      //   );
-      // }
+        if (!cryptoTxResult.success) {
+          throw new Error(`Crypto transfer failed: ${cryptoTxResult.error}`);
+        }
+      } catch (error) {
+        this.inProgressTxnCache.delete(sequenceId);
+        this.logger.error(
+          `Crypto transfer failed for sequenceId ${sequenceId}: ${error.message}`,
+        );
+        throw new CustomHttpException(
+          'Crypto transfer failed',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
       const transactionMessage = `${RampTransactionMessage.CASH_OUT_CRYPTO} ${dto.assetCode.toUpperCase()}`;
 
@@ -647,14 +643,6 @@ export class PaymentsService {
       let bankRecord = await this.mapleradService.resolveInstitutionAccount({
         account_number: dto.bankInfo.accountNumber,
         bank_code: bankInfoAndCode.code,
-      });
-
-      this.logger.log({
-        bank_code: bankInfoAndCode.code,
-        account_number: dto.bankInfo.accountNumber,
-        amount: toLowestDenomination(dto.userAmount),
-        reason: dto.paymentReason,
-        currency: dto.fiatCode,
       });
 
       const payoutServices = [

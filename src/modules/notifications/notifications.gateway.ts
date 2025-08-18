@@ -101,6 +101,7 @@ export class NotificationsGateway {
     private readonly notificationRepo: Repository<NotificationEntity>,
   ) {
     // Firebase initialization deferred to emitNotificationToUser
+    serviceAccountPath();
   }
 
   private initializeFirebase() {
