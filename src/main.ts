@@ -15,6 +15,7 @@ import {
 } from './config/settings';
 import { API_VERSIONS } from './config/versions';
 import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
+import { isProd } from './utils/helpers';
 
 const certFolder = path.join(__dirname, '../../cert');
 
@@ -59,8 +60,6 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
   });
-
-  const isProd = getEnv() === ENV_PRODUCTION;
 
   if (!isProd) {
     const config = new DocumentBuilder()

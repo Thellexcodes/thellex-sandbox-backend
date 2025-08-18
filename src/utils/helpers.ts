@@ -25,6 +25,8 @@ import { IdTypeEnum } from '@/models/kyc.types';
 import { compareTwoStrings } from 'string-similarity';
 import { Injectable, PipeTransform } from '@nestjs/common';
 import { NGBankDto, NigeriaBanks } from './nigeria-banks';
+import { getEnv } from '@/constants/env';
+import { ENV_PRODUCTION } from '@/models/settings.types';
 
 //TODO: handle errors with enums
 
@@ -467,3 +469,5 @@ export async function getServerIp(): Promise<string> {
   const data = await response.json();
   return data.ip;
 }
+
+export const isProd = getEnv() === ENV_PRODUCTION;
