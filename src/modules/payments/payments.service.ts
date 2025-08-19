@@ -459,9 +459,7 @@ export class PaymentsService {
     dto: RequestCryptoOffRampPaymentDto,
   ) {
     const sequenceId = uuidV4();
-    const serverIp = await getServerIp();
-    this.logger.log(`Outbound IP: ${serverIp}`);
-    dto.userAmount = 100;
+    //[x] check if enough liquidity
     try {
       const fiatRate = await this.ycService.getRateFromCache(
         dto.fiatCode.toUpperCase(),
@@ -558,7 +556,10 @@ export class PaymentsService {
       }
 
       // Step 1: Transfer crypto from user wallet to treasury address
-      let cryptoTxResult;
+      let cryptoTxResult: {
+        success: boolean;
+        transactionHistory?: TransactionHistoryDto;
+      };
       try {
         this.inProgressTxnCache.set(sequenceId, true);
         cryptoTxResult = await this.payoutCrypto({
@@ -578,11 +579,8 @@ export class PaymentsService {
           sequenceId,
           transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
           providerTransactionId: uuidV4(),
+          customerType: userPlain.kyc.customerType,
         });
-
-        if (!cryptoTxResult.success) {
-          throw new Error(`Crypto transfer failed: ${cryptoTxResult.error}`);
-        }
       } catch (error) {
         this.inProgressTxnCache.delete(sequenceId);
         this.logger.error(
@@ -615,7 +613,7 @@ export class PaymentsService {
       newTxn.currency = channel.currency;
       newTxn.country = dto.country;
       newTxn.sourceAddress = dto.sourceAddress;
-      newTxn.blockchainTxId = '0x';
+      newTxn.blockchainTxId = cryptoTxResult.transactionHistory.blockchainTxId;
       newTxn.bankInfo = {
         bankName: dto.bankInfo.bankName,
         accountNumber: dto.bankInfo.accountNumber,
@@ -640,7 +638,7 @@ export class PaymentsService {
 
       const bankInfoAndCode = findBankByName(dto.bankInfo.bankName);
 
-      let bankRecord = await this.mapleradService.resolveInstitutionAccount({
+      await this.mapleradService.resolveInstitutionAccount({
         account_number: dto.bankInfo.accountNumber,
         bank_code: bankInfoAndCode.code,
       });
@@ -649,8 +647,6 @@ export class PaymentsService {
         {
           name: PaymentPartnerEnum.MAPLERAD,
           execute: async () => {
-            //[x] resolve bank
-
             const response = await this.mapleradService.localTransferAfrica({
               bank_code: bankInfoAndCode.code,
               account_number: dto.bankInfo.accountNumber,
@@ -761,8 +757,7 @@ export class PaymentsService {
         assetCode: dto.assetCode,
         amount: netCryptoAmount.toString(),
         fee: newTxn.serviceFeeAmountUSD.toString(),
-        // blockchainTxId: cryptoTxResult.txHash,
-        blockchainTxId: '0x',
+        blockchainTxId: cryptoTxResult.transactionHistory.blockchainTxId,
         walletId: wallet.id,
         sourceAddress: dto.sourceAddress,
         destinationAddress: networkInfo.treasuryAddress,
@@ -824,11 +819,9 @@ export class PaymentsService {
 
   async payoutCrypto(
     params: Partial<FiatCryptoRampTransactionEntity>,
-    createTransactionHistory: boolean = false,
+    createRampHistory: boolean = false,
   ): Promise<{
     success: boolean;
-    txHash?: string;
-    error?: string;
     transactionHistory?: TransactionHistoryDto;
   }> {
     const {
@@ -842,30 +835,30 @@ export class PaymentsService {
     } = params;
 
     // Input validation (re-enabled from commented-out code)
-    if (
-      !recipientInfo ||
-      !grossCrypto ||
-      !userId ||
-      !user ||
-      !sourceAddress ||
-      !userAmount ||
-      !transactionId
-    ) {
-      const errorMsg = `Missing required fields: ${JSON.stringify({
-        recipientInfo: !!recipientInfo,
-        grossCrypto: !!grossCrypto,
-        userId: !!userId,
-        user: !!user,
-        sourceAddress: !!sourceAddress,
-        userAmount: !!userAmount,
-        transactionId: !!transactionId,
-      })}`;
-      this.logger.error(`Crypto payout failed for user ${userId}: ${errorMsg}`);
-      throw new CustomHttpException(
-        PaymentErrorEnum.INVALID_REQUEST,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    // if (
+    //   !recipientInfo ||
+    //   !grossCrypto ||
+    //   !userId ||
+    //   !user ||
+    //   !sourceAddress ||
+    //   !userAmount ||
+    //   !transactionId
+    // ) {
+    //   const errorMsg = `Missing required fields: ${JSON.stringify({
+    //     recipientInfo: !!recipientInfo,
+    //     grossCrypto: !!grossCrypto,
+    //     userId: !!userId,
+    //     user: !!user,
+    //     sourceAddress: !!sourceAddress,
+    //     userAmount: !!userAmount,
+    //     transactionId: !!transactionId,
+    //   })}`;
+    //   this.logger.error(`Crypto payout failed for user ${userId}: ${errorMsg}`);
+    //   throw new CustomHttpException(
+    //     PaymentErrorEnum.INVALID_REQUEST,
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
 
     // Validate asset and network (re-enabled from commented-out code)
     if (!recipientInfo.assetCode) {
@@ -957,61 +950,35 @@ export class PaymentsService {
       // Step 3: Update transaction entity
       params.paymentStatus = PaymentStatus.Processing;
 
-      // Step 4: Create transaction history (conditional)
-      let txnHistory: TransactionHistoryEntity | null = null;
-      if (createTransactionHistory) {
-        txnHistory = new TransactionHistoryEntity();
-        const transaction: TransactionHistoryDto = {
-          event: YCRampPaymentEventEnum.PAYMENT_PROCESSING,
-          transactionId,
-          transactionDirection: TransactionDirectionEnum.OUTBOUND,
-          assetCode: recipientInfo.assetCode,
-          amount: grossCrypto.toString(),
-          fee: params.serviceFeeAmountUSD?.toString() ?? '0',
-          walletId,
-          sourceAddress,
-          destinationAddress: recipientInfo.destinationAddress,
-          paymentNetwork: recipientInfo.network,
-          user,
-          paymentStatus: PaymentStatus.Processing,
-          transactionType: params.transactionType,
-        };
-
-        Object.assign(txnHistory, transaction);
+      // Step 5: Save transaction history and update transaction entity
+      if (createRampHistory) {
+        await Promise.all([
+          this.fiatCryptoRampTransactionRepo.save(
+            params as FiatCryptoRampTransactionEntity,
+          ),
+        ]);
       }
 
-      // Step 5: Save transaction history and update transaction entity
-      await Promise.all([
-        createTransactionHistory && txnHistory
-          ? this.transactionHistoryService.create(txnHistory, user)
-          : Promise.resolve(),
-        this.fiatCryptoRampTransactionRepo.save(
-          params as FiatCryptoRampTransactionEntity,
-        ),
-      ]);
-
-      return { success: true, transactionHistory: txnHistory };
+      return { success: true, transactionHistory: txResult };
     } catch (error) {
       this.logger.error(
         `❌ Crypto payout failed for user ${userId}, transaction ${transactionId}: ${error.message}`,
         error.stack,
       );
-
-      // Update transaction status to Failed on error
-      params.paymentStatus = PaymentStatus.Failed;
-      params.blockchainTxId = params.blockchainTxId ?? 'no-id';
-      await this.fiatCryptoRampTransactionRepo.save(
-        params as FiatCryptoRampTransactionEntity,
-      );
-
-      return {
-        success: false,
-        error:
-          error instanceof CustomHttpException
-            ? error.message
-            : PaymentErrorEnum.UNKNOWN,
-        transactionHistory: null,
-      };
+      // // Update transaction status to Failed on error
+      // params.paymentStatus = PaymentStatus.Failed;
+      // params.blockchainTxId = params.blockchainTxId ?? 'no-id';
+      // await this.fiatCryptoRampTransactionRepo.save(
+      //   params as FiatCryptoRampTransactionEntity,
+      // );
+      // return {
+      //   success: false,
+      //   error:
+      //     error instanceof CustomHttpException
+      //       ? error.message
+      //       : PaymentErrorEnum.UNKNOWN,
+      //   transactionHistory: null,
+      // };
     }
   }
 
