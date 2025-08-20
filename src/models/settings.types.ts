@@ -84,6 +84,7 @@ export type ApiConfig = {
   KYC_ENCRYPTION_KEY: string;
   IPINFO_TOKEN: string;
   ENABLE_HTTPS: string;
+  APP_CERTIFICATE_FINGERPRINT: string;
 };
 
 export type Env =
