@@ -64,9 +64,9 @@ export class SignatureGuard implements CanActivate {
     const currentTime = Math.floor(Date.now() / 1000);
 
     if (isNaN(requestTime) || Math.abs(currentTime - requestTime) > 600) {
-      console.log(
-        `Timestamp invalid. Current: ${currentTime}, Received: ${requestTime}, Diff: ${Math.abs(currentTime - requestTime)}s`,
-      );
+      // console.log(
+      //   `Timestamp invalid. Current: ${currentTime}, Received: ${requestTime}, Diff: ${Math.abs(currentTime - requestTime)}s`,
+      // );
       throw new UnauthorizedException('Invalid or expired timestamp');
     }
 
@@ -77,7 +77,7 @@ export class SignatureGuard implements CanActivate {
       .digest('hex')
       .toLowerCase();
 
-    console.log(`signature=${signature}, expected=${expectedSignature}`);
+    // console.log(`signature=${signature}, expected=${expectedSignature}`);
 
     // if (signature !== expectedSignature) {
     //   console.log('Signature mismatch');

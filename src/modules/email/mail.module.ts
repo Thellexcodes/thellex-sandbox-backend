@@ -17,16 +17,19 @@ import { getAppConfig } from '@/constants/env';
           port: 465,
           secure: true,
           auth: {
-            user: getAppConfig().EMAIL.MAIL_USER,
-            pass: getAppConfig().EMAIL.MAIL_APP_PASSWORD,
+            user: getAppConfig().EMAIL.SUPPORT_USER,
+            pass: getAppConfig().EMAIL.SUPPORT_PASSWORD,
           },
         },
         defaults: {
-          from: `"${getAppConfig().EMAIL.APPLICATION_NAME}" <${getAppConfig().EMAIL.MAIL_USER}>`,
+          from: `"${getAppConfig().EMAIL.APPLICATION_NAME}" <${getAppConfig().EMAIL.SUPPORT_USER}>`,
         },
         template: {
-          dir: join(__dirname, '../..', '../src/modules/mail/templates'),
+          dir: join(process.cwd() + '/src/modules', 'email/templates'),
           adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
         },
       }),
       inject: [],
