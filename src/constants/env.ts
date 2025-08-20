@@ -84,6 +84,7 @@ export function getAppConfig(): ApiConfig {
     },
     IPINFO_TOKEN: config.get('IPINFO_TOKEN'),
     ENABLE_HTTPS: config.get('ENABLE_HTTPS'),
+    APP_CERTIFICATE_FINGERPRINT: config.get('APP_CERTIFICATE_FINGERPRINT'),
   };
 }
 
