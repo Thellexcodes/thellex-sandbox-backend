@@ -15,6 +15,7 @@ import {
 import { API_VERSIONS } from './config/versions';
 import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
 import { isProd } from './utils/helpers';
+import helmet from 'helmet';
 
 const certFolder = path.join(__dirname, '../../cert');
 
@@ -93,6 +94,7 @@ async function bootstrap() {
 
   app.use(bodyParser.json({ limit: FILE_UPLOAD_LIMIT }));
   app.use(bodyParser.urlencoded({ limit: FILE_UPLOAD_LIMIT, extended: true }));
+  app.use(helmet());
 
   const server = await app.listen(serverPort, serverIp);
   server.setTimeout(SERVER_REQUEST_TIMEOUT_MS);
