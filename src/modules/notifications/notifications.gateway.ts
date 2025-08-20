@@ -1,3 +1,4 @@
+import { getAppConfig } from '@/constants/env';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { AnyObject } from '@/models/any.types';
 import {
@@ -18,9 +19,65 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import * as admin from 'firebase-admin';
 import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
-import * as fs from 'fs';
-import * as path from 'path';
 import { LessThan, Repository } from 'typeorm';
+
+const getServiceAccountConfig = (): string => {
+  const TAG = 'NotificationsGateway';
+
+  Logger.log(`[${TAG}] Resolving Firebase service account configuration`);
+
+  const serviceAccountJson = getAppConfig().FIREBASE.SERVICE_ACCOUNT;
+  if (!serviceAccountJson) {
+    Logger.error(
+      `[${TAG}] FIREBASE_SERVICE_ACCOUNT environment variable is not set`,
+    );
+    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is missing');
+  }
+
+  try {
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
+    // Validate required fields
+    const requiredFields = [
+      'type',
+      'project_id',
+      'private_key_id',
+      'private_key',
+      'client_email',
+      'client_id',
+    ];
+    const missingFields = requiredFields.filter(
+      (field) => !serviceAccount[field],
+    );
+    if (missingFields.length > 0) {
+      Logger.error(
+        `[${TAG}] Invalid service account JSON: missing fields ${missingFields.join(', ')}`,
+      );
+      throw new Error(
+        `Service account JSON is missing required fields: ${missingFields.join(', ')}`,
+      );
+    }
+
+    if (serviceAccount.type !== 'service_account') {
+      Logger.error(
+        `[${TAG}] Invalid service account type: ${serviceAccount.type}`,
+      );
+      throw new Error('Service account JSON must have type "service_account"');
+    }
+
+    Logger.log(
+      `[${TAG}] Successfully parsed Firebase service account configuration`,
+    );
+    return serviceAccount;
+  } catch (error) {
+    Logger.error(
+      `[${TAG}] Failed to parse FIREBASE_SERVICE_ACCOUNT: ${error.message}`,
+    );
+    throw new Error(
+      `Failed to parse FIREBASE_SERVICE_ACCOUNT: ${error.message}`,
+    );
+  }
+};
 
 @Injectable()
 export class NotificationsGateway {
@@ -30,31 +87,16 @@ export class NotificationsGateway {
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepo: Repository<NotificationEntity>,
-  ) {
-    // Firebase initialization deferred to emitNotificationToUser
-  }
+  ) {}
 
   private initializeFirebase() {
     if (this.isFirebaseInitialized) {
-      return; // Skip if already initialized
+      this.logger.log('Firebase already initialized, skipping');
+      return;
     }
 
-    const serviceAccountPath =
-      process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-      path.join(__dirname, '../../../firebase/serviceAccountKey.json');
-
     try {
-      // Verify file exists
-      if (!fs.existsSync(serviceAccountPath)) {
-        throw new Error(
-          `Firebase service account file not found at: ${serviceAccountPath}`,
-        );
-      }
-
-      // Load and parse JSON
-      const serviceAccount = JSON.parse(
-        fs.readFileSync(serviceAccountPath, 'utf8'),
-      );
+      const serviceAccount = getServiceAccountConfig();
 
       // Initialize Firebase Admin SDK
       admin.initializeApp({
@@ -63,7 +105,7 @@ export class NotificationsGateway {
 
       this.isFirebaseInitialized = true;
       this.logger.log(
-        `✅ Firebase Admin initialized with service account from: ${serviceAccountPath}`,
+        `✅ Firebase Admin initialized with service account from environment`,
       );
     } catch (error) {
       this.logger.error(
@@ -76,6 +118,45 @@ export class NotificationsGateway {
       );
     }
   }
+
+  // private initializeFirebase() {
+  //   if (this.isFirebaseInitialized) {
+  //     return; // Skip if already initialized
+  //   }
+
+  //   try {
+  //     // Verify file exists
+  //     if (!fs.existsSync(serviceAccountPath)) {
+  //       throw new Error(
+  //         `Firebase service account file not found at: ${serviceAccountPath}`,
+  //       );
+  //     }
+
+  //     // Load and parse JSON
+  //     const serviceAccount = JSON.parse(
+  //       fs.readFileSync(serviceAccountPath, 'utf8'),
+  //     );
+
+  //     // Initialize Firebase Admin SDK
+  //     admin.initializeApp({
+  //       credential: admin.credential.cert(serviceAccount),
+  //     });
+
+  //     this.isFirebaseInitialized = true;
+  //     this.logger.log(
+  //       `✅ Firebase Admin initialized with service account from: ${serviceAccountPath}`,
+  //     );
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `❌ Failed to initialize Firebase: ${error.message}`,
+  //       error.stack,
+  //     );
+  //     throw new CustomHttpException(
+  //       NotificationErrorEnum.FIREBASE_INIT_FAILED,
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async emitNotificationToUser({
     event,

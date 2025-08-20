@@ -235,11 +235,11 @@ export class KycService {
 
       await queryRunner.commitTransaction();
 
-      const { nextTier, currentTier } = formatUserWithTiers(updatedUser);
+      const { nextTier, currentTier, banks } = formatUserWithTiers(updatedUser);
 
       return plainToInstance(
         KycResultDto,
-        { isVerified: true, currentTier, nextTier },
+        { isVerified: true, currentTier, nextTier, banks },
         { excludeExtraneousValues: true },
       );
     } catch (error) {

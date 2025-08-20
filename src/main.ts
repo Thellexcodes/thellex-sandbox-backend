@@ -6,8 +6,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { writeFileSync } from 'fs';
-import { ENV_PRODUCTION } from './models/settings.types';
-import { getAppConfig, getEnv } from './constants/env';
+import { getAppConfig } from './constants/env';
 import * as bodyParser from 'body-parser';
 import {
   FILE_UPLOAD_LIMIT,
@@ -15,6 +14,8 @@ import {
 } from './config/settings';
 import { API_VERSIONS } from './config/versions';
 import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
+import { isProd } from './utils/helpers';
+import helmet from 'helmet';
 
 const certFolder = path.join(__dirname, '../../cert');
 
@@ -50,17 +51,17 @@ async function bootstrap() {
   }
 
   // Create NestJS app with or without HTTPS
+
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
-    // logger: false,
+    logger: isProd ? false : ['log', 'error', 'warn', 'debug', 'verbose'],
   });
+
   app.setGlobalPrefix('api');
 
   app.enableVersioning({
     type: VersioningType.URI,
   });
-
-  const isProd = getEnv() === ENV_PRODUCTION;
 
   if (!isProd) {
     const config = new DocumentBuilder()
@@ -93,6 +94,7 @@ async function bootstrap() {
 
   app.use(bodyParser.json({ limit: FILE_UPLOAD_LIMIT }));
   app.use(bodyParser.urlencoded({ limit: FILE_UPLOAD_LIMIT, extended: true }));
+  app.use(helmet());
 
   const server = await app.listen(serverPort, serverIp);
   server.setTimeout(SERVER_REQUEST_TIMEOUT_MS);

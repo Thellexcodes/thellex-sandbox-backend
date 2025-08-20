@@ -14,6 +14,7 @@ export class YellowCardCron {
   async cacheRates() {
     try {
       const { rates } = await this.yellowCardService.getRates();
+
       if (rates) {
         const now = new Date();
         const expiresAt = new Date(now.getTime() + 15 * 1000);

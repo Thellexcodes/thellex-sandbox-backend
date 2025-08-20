@@ -79,9 +79,12 @@ export function getAppConfig(): ApiConfig {
       SECRET_KEY: config.get('YC_SECRET_KEY'),
       PAYMENT_API: config.get('YC_PAYMENT_API'),
     },
-
+    FIREBASE: {
+      SERVICE_ACCOUNT: config.get('FIREBASE_SERVICE_ACCOUNT'),
+    },
     IPINFO_TOKEN: config.get('IPINFO_TOKEN'),
     ENABLE_HTTPS: config.get('ENABLE_HTTPS'),
+    APP_CERTIFICATE_FINGERPRINT: config.get('APP_CERTIFICATE_FINGERPRINT'),
   };
 }
 

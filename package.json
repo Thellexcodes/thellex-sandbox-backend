@@ -46,6 +46,7 @@
     "firebase-admin": "^13.4.0",
     "googleapis": "^144.0.0",
     "handlebars": "^4.7.8",
+    "helmet": "^8.1.0",
     "lru-cache": "^11.0.2",
     "nest-winston": "^1.10.2",
     "node-cache": "^5.1.2",
