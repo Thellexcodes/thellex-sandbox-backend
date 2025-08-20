@@ -13,17 +13,17 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
 import { VersionedController101 } from '../controller/base.controller';
-import { SignatureGuard } from '@/middleware/guards/signature.guard';
+import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 
 //TODO: middleware for outstanding verifications
 @ApiTags('User')
 @VersionedController101('user')
+@UseGuards(ClientAuthGuard)
 @ApiBearerAuth('access-token')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('access')
-  @UseGuards(SignatureGuard)
   @ApiBody({ type: CreateUserDto, description: 'Data required to create user' })
   @ApiOkResponse({ type: AccessResponseDto })
   async create(
@@ -36,7 +36,7 @@ export class UserController {
   }
 
   @Post('authenticate')
-  @UseGuards(AuthGuard, SignatureGuard)
+  @UseGuards(AuthGuard)
   @ApiOkResponse({ type: VerifiedResponseDto })
   async tokenLogin(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
@@ -48,7 +48,7 @@ export class UserController {
   }
 
   @Post('verify')
-  @UseGuards(AuthGuard, SignatureGuard)
+  @UseGuards(AuthGuard)
   @ApiOkResponse({ type: VerifiedResponseDto })
   async verify(
     @Body() verifyUserDto: VerifyUserDto,

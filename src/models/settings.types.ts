@@ -44,6 +44,12 @@ export type ApiConfig = {
     MAIL_USER: string;
     MAIL_APP_PASSWORD: string;
     APPLICATION_NAME: string;
+    NOREPLY_USER: string;
+    NOREPLY_PASSWORD: string;
+    SUPPORT_USER: string;
+    SUPPORT_PASSWORD: string;
+    CEO_USER: string;
+    CEO_PASSWORD: string;
   };
   BLOCKCHAIN: {
     ETHEREUM_RPC_URL: string;

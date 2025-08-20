@@ -20,6 +20,7 @@ import { FiatCryptoRampTransactionEntity } from './entities/fiat-crypto-ramp-tra
 import { BankingNetworkEntity } from './entities/banking/banking-network.entity';
 import { TransactionHistoryEntity } from './entities/transactions/transaction-history.entity';
 import { TransactionEntity } from './entities/transactions/transaction.entity';
+import { BetaTesterEntity } from './entities/beta.testers.entity';
 
 export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
   const isProd = getEnv() === ENV_PRODUCTION;
@@ -39,6 +40,7 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
       DeviceEntity,
       CwalletsEntity,
       QWalletsEntity,
+      BetaTesterEntity,
       TaxSettingEntity,
       TransactionEntity,
       BankAccountEntity,
