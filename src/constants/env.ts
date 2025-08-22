@@ -63,7 +63,7 @@ export function getAppConfig(): ApiConfig {
     },
     DOJAH: {
       APP_ID: config.get('DOJAH_APP_ID'),
-      AUTH_PUBLIC_KEY: config.get('DOJAH_AUTH_PUBLIC_KEY'),
+      AUTH_PRIVATE_KEY: config.get('DOJAH_AUTH_PRIVATE_KEY'),
       API: config.get('DOJAH_API'),
     },
     CWALLET: {
