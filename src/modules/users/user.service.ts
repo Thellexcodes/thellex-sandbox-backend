@@ -17,6 +17,7 @@ import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { TierEnum } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
 import { getAppConfig } from '@/constants/env';
+import { SendEmailOptions, TransportTypes } from '@/models/email-types';
 
 @Injectable()
 export class UserService {
@@ -76,7 +77,10 @@ export class UserService {
     }
 
     // Now it's safe to call services that depend on committed data
-    const { expires_at } = await this.emailVerificationComposer(user);
+    const { expires_at } = await this.emailVerificationComposer(
+      user,
+      'support',
+    );
     const access_token = await this.signToken({ id: user.id });
     return { access_token, expires_at };
   }
@@ -101,7 +105,10 @@ export class UserService {
       );
     }
 
-    const { expires_at } = await this.emailVerificationComposer(user);
+    const { expires_at } = await this.emailVerificationComposer(
+      user,
+      'support',
+    );
     return expires_at;
   }
 
@@ -152,18 +159,19 @@ export class UserService {
 
   async emailVerificationComposer(
     user: UserEntity,
+    fromType: TransportTypes = 'support',
   ): Promise<{ expires_at: Date }> {
     const { code, expires_at } = await this.generateAuthVerificationCode(
       'email',
       user,
     );
 
-    const emailOptions = {
+    const emailOptions: SendEmailOptions = {
       to: user.email,
-      from: getAppConfig().EMAIL.MAIL_USER,
-      subject: 'Verify your account',
-      template: 'welcome',
+      template: 'auth-code',
       context: { code },
+      subject: 'Verify your account',
+      transport: fromType,
     };
 
     await this.mailService.sendEmail(emailOptions);

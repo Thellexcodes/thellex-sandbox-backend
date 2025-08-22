@@ -36,6 +36,7 @@ import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.mo
 import { typeOrmConfig } from './utils/typeorm/typeOrm.config';
 import { ConfigService } from './config/config.service';
 import { CrashReportModule } from './crash-report/crash-report.module';
+import { BetaTesterEntity } from './utils/typeorm/entities/beta.testers.entity';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { CrashReportModule } from './crash-report/crash-report.module';
       UserEntity,
       AuthEntity,
       DeviceEntity,
+      BetaTesterEntity,
       AuthVerificationCodesEntity,
     ]),
     TypeOrmModule.forRootAsync({

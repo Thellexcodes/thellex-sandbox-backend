@@ -46,6 +46,12 @@ export function getAppConfig(): ApiConfig {
       MAIL_USER: config.get('EMAIL_USER'),
       MAIL_APP_PASSWORD: config.get('EMAIL_APP_PASSWORD'),
       APPLICATION_NAME: config.get('EMAIL_APPLICATION_NAME'),
+      NOREPLY_USER: config.get('NOREPLY_USER'),
+      NOREPLY_PASSWORD: config.get('NOREPLY_PASSWORD'),
+      SUPPORT_USER: config.get('SUPPORT_USER'),
+      SUPPORT_PASSWORD: config.get('SUPPORT_PASSWORD'),
+      CEO_USER: config.get('CEO_USER'),
+      CEO_PASSWORD: config.get('CEO_PASSWORD'),
     },
     BLOCKCHAIN: {
       ETHEREUM_RPC_URL: config.get('ETHEREUM_RPC_URL'),
@@ -57,7 +63,7 @@ export function getAppConfig(): ApiConfig {
     },
     DOJAH: {
       APP_ID: config.get('DOJAH_APP_ID'),
-      AUTH_PUBLIC_KEY: config.get('DOJAH_AUTH_PUBLIC_KEY'),
+      AUTH_PRIVATE_KEY: config.get('DOJAH_AUTH_PRIVATE_KEY'),
       API: config.get('DOJAH_API'),
     },
     CWALLET: {

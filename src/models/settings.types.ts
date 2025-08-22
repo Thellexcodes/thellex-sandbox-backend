@@ -44,6 +44,12 @@ export type ApiConfig = {
     MAIL_USER: string;
     MAIL_APP_PASSWORD: string;
     APPLICATION_NAME: string;
+    NOREPLY_USER: string;
+    NOREPLY_PASSWORD: string;
+    SUPPORT_USER: string;
+    SUPPORT_PASSWORD: string;
+    CEO_USER: string;
+    CEO_PASSWORD: string;
   };
   BLOCKCHAIN: {
     ETHEREUM_RPC_URL: string;
@@ -56,7 +62,7 @@ export type ApiConfig = {
   DOJAH: {
     APP_ID: string;
     API: string;
-    AUTH_PUBLIC_KEY: string;
+    AUTH_PRIVATE_KEY: string;
   };
   QWALLET: {
     SECRET_KEY: string;

@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { getAppConfig } from '@/constants/env';
+import { SendEmailOptions } from '@/models/email-types';
 
 @Injectable()
 export class MailService {
@@ -9,25 +10,29 @@ export class MailService {
   async sendEmail({
     to,
     subject,
-    template: templateName,
+    template,
     context,
-  }: {
-    to: string;
-    subject: string;
-    template: string;
-    context: Record<string, number>;
-  }) {
+    transport,
+  }: SendEmailOptions) {
     try {
+      if (!to || !subject || !template) {
+        console.error(
+          `Invalid input: to=${to}, subject=${subject}, template=${template}`,
+        );
+        throw new BadRequestException(
+          'To, subject, and template must be provided',
+        );
+      }
+
       const mailData = {
         from: {
-          name: getAppConfig().EMAIL.APPLICATION_NAME,
-          address: getAppConfig().EMAIL.MAIL_USER,
+          name: 'Thellex',
+          address: getAppConfig().EMAIL[`${transport.toUpperCase()}_USER`],
         },
         to,
-        templateName,
         subject,
-        context,
-        html: `Your authenication code is: <b>${context.code}</b>`,
+        template: `./${template}`,
+        context: { ...context, subject },
       };
 
       return await this.mailerService.sendMail(mailData);
@@ -36,4 +41,40 @@ export class MailService {
       throw new Error('Failed to send email');
     }
   }
+
+  // async sendEmail({
+  //   to,
+  //   subject,
+  //   template,
+  //   context,
+  //   transport,
+  // }: SendEmailOptions) {
+  //   try {
+  //     const transporter = createTransport({
+  //       host: 'mail.privateemail.com',
+  //       port: 465,
+  //       secure: true,
+  //       auth: {
+  //         user: getAppConfig().EMAIL[`${transport.toUpperCase()}_USER`],
+  //         pass: getAppConfig().EMAIL[`${transport.toUpperCase()}_PASSWORD`],
+  //       },
+  //     });
+
+  //     const mailData = {
+  //       from: {
+  //         name: 'Thellex',
+  //         address: getAppConfig().EMAIL[`${transport.toUpperCase()}_USER`],
+  //       },
+  //       to,
+  //       subject,
+  //       template: `./${template}`,
+  //       context: { ...context, subject },
+  //     };
+
+  //     return await transporter.sendMail(mailData);
+  //   } catch (err) {
+  //     console.error('Error sending email:', err);
+  //     throw err;
+  //   }
+  // }
 }

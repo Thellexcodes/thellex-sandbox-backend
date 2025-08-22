@@ -6,17 +6,17 @@ import {
   CircleDeveloperControlledWalletsClient,
 } from '@circle-fin/developer-controlled-wallets';
 import { getAppConfig } from '@/constants/env';
+import { Injectable } from '@nestjs/common';
 
-export class CircleWalletManager {
+export class CircleWalletManagerService {
   apiKey: string;
   publicKeyPem: string;
   entitySecret: string;
   encryptedEntitySecret: string;
   client: CircleDeveloperControlledWalletsClient | null;
 
-  constructor(apiKey: string) {
-    if (!apiKey) throw new Error('API key is required');
-    this.apiKey = apiKey;
+  constructor() {
+    this.apiKey = getAppConfig().CWALLET.API_KEY;
     this.publicKeyPem = null;
     this.entitySecret = null;
     this.encryptedEntitySecret = null;
