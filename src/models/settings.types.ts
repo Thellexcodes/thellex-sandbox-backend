@@ -62,7 +62,7 @@ export type ApiConfig = {
   DOJAH: {
     APP_ID: string;
     API: string;
-    AUTH_PUBLIC_KEY: string;
+    AUTH_PRIVATE_KEY: string;
   };
   QWALLET: {
     SECRET_KEY: string;

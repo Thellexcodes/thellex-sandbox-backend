@@ -271,7 +271,7 @@ export class KycService {
         {
           headers: {
             AppId: getAppConfig().DOJAH.APP_ID,
-            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+            Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
           },
           params: { nin },
         },
@@ -305,7 +305,7 @@ export class KycService {
         {
           headers: {
             AppId: getAppConfig().DOJAH.APP_ID,
-            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+            Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
           },
           params: { bvn },
         },
@@ -342,7 +342,7 @@ export class KycService {
           {
             headers: {
               AppId: getAppConfig().DOJAH.APP_ID,
-              Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+              Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
             },
             params: { phone_number },
           },
@@ -379,7 +379,7 @@ export class KycService {
         {
           headers: {
             AppId: getAppConfig().DOJAH.APP_ID,
-            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+            Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
           },
           params: { bvn: dto.bvn },
         },
@@ -491,7 +491,7 @@ export class KycService {
         {
           headers: {
             AppId: getAppConfig().DOJAH.APP_ID,
-            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+            Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
           },
           params: { email_address },
         },
@@ -524,7 +524,7 @@ export class KycService {
         {
           headers: {
             AppId: getAppConfig().DOJAH.APP_ID,
-            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+            Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
           },
           params: { phone_number },
         },
@@ -582,7 +582,7 @@ export class KycService {
           headers: {
             'Content-Type': 'application/json',
             AppId: getAppConfig().DOJAH.APP_ID,
-            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+            Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
           },
         },
       );
@@ -628,7 +628,7 @@ export class KycService {
           headers: {
             'Content-Type': 'application/json',
             AppId: getAppConfig().DOJAH.APP_ID,
-            Authorization: getAppConfig().DOJAH.AUTH_PUBLIC_KEY,
+            Authorization: getAppConfig().DOJAH.AUTH_PRIVATE_KEY,
           },
         },
       );
