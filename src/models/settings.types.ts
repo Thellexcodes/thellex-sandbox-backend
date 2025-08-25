@@ -91,6 +91,9 @@ export type ApiConfig = {
   IPINFO_TOKEN: string;
   ENABLE_HTTPS: string;
   APP_CERTIFICATE_FINGERPRINT: string;
+  TREASURER: {
+    EVM_WALLET: string;
+  };
 };
 
 export type Env =

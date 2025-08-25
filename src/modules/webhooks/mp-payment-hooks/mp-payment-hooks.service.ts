@@ -7,6 +7,16 @@ export class MpPaymentHooksService {
 
   create(createMpPaymentHookDto) {
     console.log({ createMpPaymentHookDto }, MpPaymentHooksService.name);
+
+    //      {
+    // [1]   createMpPaymentHookDto: {
+    // [1]     created_at: '2025-08-25 21:38:39.734689 +0000 UTC',
+    // [1]     event: 'transfer.successful',
+    // [1]     id: 'e405c61d-ecff-4d7d-8564-038411401160',
+    // [1]     reference: null,
+    // [1]     status: 'SUCCESS',
+    // [1]     updated_at: '2025-08-25 21:39:16.038069089 +0000 UTC'
+    // [1]   }
   }
 
   findAll() {

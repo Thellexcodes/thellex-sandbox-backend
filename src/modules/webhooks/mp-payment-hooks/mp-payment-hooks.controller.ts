@@ -22,7 +22,8 @@ export class MpPaymentHooksController {
   constructor(private readonly mpPaymentHooksService: MpPaymentHooksService) {}
 
   @Post()
-  create(@Body() createMpPaymentHookDto: CreateMpPaymentHookDto) {
+  // create(@Body() createMpPaymentHookDto: CreateMpPaymentHookDto) {
+  create(@Body() createMpPaymentHookDto: any) {
     return this.mpPaymentHooksService.create(createMpPaymentHookDto);
   }
 

@@ -88,6 +88,9 @@ export function getAppConfig(): ApiConfig {
     FIREBASE: {
       SERVICE_ACCOUNT: config.get('FIREBASE_SERVICE_ACCOUNT'),
     },
+    TREASURER: {
+      EVM_WALLET: config.get('EVM_TREASURY_ADDRESS'),
+    },
     IPINFO_TOKEN: config.get('IPINFO_TOKEN'),
     ENABLE_HTTPS: config.get('ENABLE_HTTPS'),
     APP_CERTIFICATE_FINGERPRINT: config.get('APP_CERTIFICATE_FINGERPRINT'),

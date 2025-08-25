@@ -142,7 +142,7 @@ export const BlockchainNetworkSettings: Record<
 > = {
   [SupportedBlockchainTypeEnum.BEP20]: {
     name: 'Binance Smart Chain',
-    treasuryAddress: process.env.EVM_TREASURY_ADDRESS!,
+    treasuryAddress: getAppConfig().TREASURER.EVM_WALLET!,
     rpcUrl: getAppConfig().BLOCKCHAIN.BEP20_RPC_URL,
     explorerUrl: 'https://bscscan.com/address/',
     decimals: 18,
@@ -158,7 +158,7 @@ export const BlockchainNetworkSettings: Record<
   // },
   [SupportedBlockchainTypeEnum.MATIC]: {
     name: 'Polygon',
-    treasuryAddress: process.env.EVM_TREASURY_ADDRESS!,
+    treasuryAddress: getAppConfig().TREASURER.EVM_WALLET!,
     rpcUrl: getAppConfig().BLOCKCHAIN.MATIC_POL_RPC_URL,
     explorerUrl: 'https://polygonscan.com/address/',
     decimals: 18,
@@ -291,3 +291,17 @@ export enum PlatformEnum {
   ANDROID = 'Android',
   IOS = 'iOS',
 }
+
+interface RampBalance {
+  amount: number;
+}
+
+interface RampBalances {
+  [currencyCode: string]: RampBalance;
+}
+
+export const RAMP_BALANCES: RampBalances = {
+  NGN: {
+    amount: 3000,
+  },
+};
