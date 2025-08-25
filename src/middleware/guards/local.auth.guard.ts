@@ -28,7 +28,7 @@ export class AuthGuard implements CanActivate {
     if (!access_token) {
       throw new UnauthorizedException({
         statusCode: 401,
-        message: 'Unauthorized. Please login',
+        message: 'Unauthorized',
         errorCode: AuthErrorEnum.UNAUTHORIZED,
       });
     }

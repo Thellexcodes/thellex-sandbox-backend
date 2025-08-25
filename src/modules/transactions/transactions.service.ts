@@ -23,7 +23,7 @@ export class TransactionsService {
     transaction.fiatCurrency = payload.fiatCurrency;
     transaction.cryptoAsset = payload.cryptoAsset;
     transaction.paymentStatus = payload.paymentStatus;
-    this.logger.log(
+    console.log(
       `Creating transaction: ${payload.transactionType}, amounts: ${payload.fiatAmount}: ${payload.cryptoAmount}, currency: ${payload.cryptoAsset}`,
     );
     return this.transactionRepository.save(transaction);

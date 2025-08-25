@@ -7,7 +7,6 @@ import {
 } from './utils/typeorm/entities/beta.testers.entity';
 import { MailService } from './modules/email/mail.service';
 import { CustomHttpException } from './middleware/custom.http.exception';
-import { CircleWalletManagerService } from './utils/services/circle-wallet.manager';
 
 @Injectable()
 export class AppService {

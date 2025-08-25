@@ -74,6 +74,7 @@ export enum CircleNotificationTypeEnum {
   TransactionsOutbound = 'transactions.outbound',
   TransactionsInbound = 'transactions.inbound',
   WebhookTest = 'webhooks.test',
+  Cleared = 'cleared',
 }
 
 export enum CircleTransactionType {

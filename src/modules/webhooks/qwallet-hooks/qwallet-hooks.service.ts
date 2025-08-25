@@ -199,7 +199,7 @@ export class QwalletHooksService {
       await this.transactionService.createTransaction({
         transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
         fiatAmount: transaction.mainFiatAmount ?? 0,
-        cryptoAmount: transaction.mainAssetAmount ?? 0,
+        cryptoAmount: Number(transaction.amount) ?? 0,
         cryptoAsset: transaction.assetCode,
         paymentStatus: transaction.paymentStatus,
         paymentReason: transaction.paymentReason,
@@ -282,17 +282,11 @@ export class QwalletHooksService {
         );
 
       if (!transaction) {
-        throw new CustomHttpException(
-          QWalletStatus.TRANSACTION_NOT_FOUND,
-          HttpStatus.CONFLICT,
-        );
+        return this.logger.error(QWalletStatus.TRANSACTION_NOT_FOUND);
       }
 
       if (transaction.paymentStatus === PaymentStatus.Done) {
-        throw new CustomHttpException(
-          QWalletStatus.UNSUPPORTED_EVENT,
-          HttpStatus.CONFLICT,
-        );
+        return this.logger.log(QWalletStatus.UNSUPPORTED_EVENT);
       }
 
       const qwalletProfile = await this.qwalletService.lookupSubAccountByQid(
@@ -345,8 +339,8 @@ export class QwalletHooksService {
 
       await this.transactionService.createTransaction({
         transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
-        fiatAmount: transaction.mainFiatAmount ?? 0,
-        cryptoAmount: transaction.mainAssetAmount ?? 0,
+        fiatAmount: Number(transaction.mainFiatAmount) ?? 0,
+        cryptoAmount: Number(transaction.amount) ?? 0,
         cryptoAsset: transaction.assetCode,
         paymentStatus: transaction.paymentStatus,
         paymentReason: transaction.paymentReason,

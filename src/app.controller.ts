@@ -12,12 +12,12 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import { VersionedController101 } from './modules/controller/base.controller';
 import { CustomRequest, CustomResponse } from './models/request.types';
 import { responseHandler } from './utils/helpers';
-import { ClientAuthGuard } from './middleware/guards/client-auth.guard';
+// import { ClientAuthGuard } from './middleware/guards/signature.guard';
 
 // @ApiExcludeController()
 @VersionedController101('')
 @Controller('')
-@UseGuards(ClientAuthGuard)
+// @UseGuards(ClientAuthGuard)
 export class AppController {
   constructor(private readonly appService: AppService) {}
 

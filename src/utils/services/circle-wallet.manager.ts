@@ -43,10 +43,10 @@ export class CircleWalletManagerService {
   }
 
   generateEntitySecret() {
-    this.entitySecret = getAppConfig().CWALLET.ENTITY_SECRET;
-    // const bytes = forge.random.getBytesSync(32);
-    // this.entitySecret = forge.util.bytesToHex(bytes);
-    // console.log('✅ Entity Secret:', this.entitySecret);
+    // this.entitySecret = getAppConfig().CWALLET.ENTITY_SECRET;
+    const bytes = forge.random.getBytesSync(32);
+    this.entitySecret = forge.util.bytesToHex(bytes);
+    console.log('✅ Entity Secret:', this.entitySecret);
   }
 
   encryptEntitySecret() {
