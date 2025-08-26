@@ -13,6 +13,8 @@ import { VersionedController101 } from './modules/controller/base.controller';
 import { CustomRequest, CustomResponse } from './models/request.types';
 import { responseHandler } from './utils/helpers';
 // import { ClientAuthGuard } from './middleware/guards/signature.guard';
+import * as fs from 'fs';
+import * as path from 'path';
 
 class BackendErrorDto {
   screen: string;
@@ -49,8 +51,24 @@ export class AppController {
 
   @Post('/error-report')
   reportError(@Body() body: BackendErrorDto) {
-    console.log('Received error from client:', body);
-    // You can save it to DB, logging service, or monitoring tool
-    return { status: 'ok' };
+    try {
+      // Add a timestamp if not provided
+      const timestamp = body.timestamp || Date.now();
+      const logFileName = `error-${timestamp}.json`;
+
+      const logFolder = path.join(process.cwd(), 'api-error-logs');
+      if (!fs.existsSync(logFolder)) {
+        fs.mkdirSync(logFolder, { recursive: true });
+      }
+
+      const filePath = path.join(logFolder, logFileName);
+
+      // Write the error as JSON
+      fs.writeFileSync(filePath, JSON.stringify(body, null, 2), 'utf-8');
+
+      console.log(`Error saved to file: ${filePath}`);
+    } catch (err) {
+      console.error('Failed to save error:', err);
+    }
   }
 }
