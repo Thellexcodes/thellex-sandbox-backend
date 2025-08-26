@@ -476,7 +476,6 @@ export class PaymentsService {
       }
 
       const mpBalance = await this.mapleradService.checkLiquidity(dto.fiatCode);
-      console.log(mpBalance);
 
       //[x] calcualte the normal amount
       if (
