@@ -26,7 +26,7 @@ import { compareTwoStrings } from 'string-similarity';
 import { Injectable, PipeTransform } from '@nestjs/common';
 import { NGBankDto, NigeriaBanks } from './nigeria-banks';
 import { getEnv } from '@/constants/env';
-import { ENV_PRODUCTION } from '@/models/settings.types';
+import { ENV_DEVELOPMENT, ENV_PRODUCTION } from '@/models/settings.types';
 
 //TODO: handle errors with enums
 
@@ -471,3 +471,4 @@ export async function getServerIp(): Promise<string> {
 }
 
 export const isProd = getEnv() === ENV_PRODUCTION;
+export const isDev = getEnv() === ENV_DEVELOPMENT;

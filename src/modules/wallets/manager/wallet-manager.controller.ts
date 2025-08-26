@@ -29,6 +29,7 @@ export class WalletManagerController {
   async getBalance(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
     const result = await this.walletManagerService.getBalance(user);
+
     responseHandler(result, res, req);
   }
 

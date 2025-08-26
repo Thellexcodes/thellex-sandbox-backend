@@ -64,15 +64,15 @@ export class ClientAuthGuard implements CanActivate {
     //     throw new UnauthorizedException('Missing required headers');
     //   }
 
-    //   const isValid = this.verifySignature(
-    //     fingerprint,
-    //     timestamp,
-    //     payload,
-    //     signature,
-    //   );
-    //   if (!isValid) {
-    //     throw new UnauthorizedException('Invalid signature');
-    //   }
+    //   // const isValid = this.verifySignature(
+    //   //   fingerprint,
+    //   //   timestamp,
+    //   //   payload,
+    //   //   signature,
+    //   // );
+    //   // if (!isValid) {
+    //   //   throw new UnauthorizedException('Invalid signature');
+    //   // }
 
     //   return true;
     // } else if (clientType === 'web') {
@@ -104,7 +104,7 @@ export class ClientAuthGuard implements CanActivate {
     return true;
     // }
 
-    return false;
+    // return false;
   }
 
   verifySignature(

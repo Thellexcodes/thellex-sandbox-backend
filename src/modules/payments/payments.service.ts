@@ -7,6 +7,7 @@ import {
   FiatEnum,
   ONE_DAY_LATER,
   PAYMENT_PROVIDER_PRIORITY,
+  RAMP_BALANCES,
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
@@ -67,6 +68,7 @@ import {
 import { TransactionsService } from '../transactions/transactions.service';
 import { DevicesService } from '../devices/devices.service';
 import { RampTransactionMessage } from '@/models/ramp-types';
+import { IMapleradTransferResponseDto } from '@/models/maplerad.types';
 
 //[x] properly throw error using enum
 @Injectable()
@@ -459,7 +461,9 @@ export class PaymentsService {
     dto: RequestCryptoOffRampPaymentDto,
   ) {
     const sequenceId = uuidV4();
-    //[x] check if enough liquidity
+
+    //[x] check for minimum fiat amount and crypto amounts
+
     try {
       const fiatRate = await this.ycService.getRateFromCache(
         dto.fiatCode.toUpperCase(),
@@ -468,6 +472,19 @@ export class PaymentsService {
         throw new CustomHttpException(
           PaymentErrorEnum.RATES_NOT_YET_ACTIVE,
           HttpStatus.FORBIDDEN,
+        );
+      }
+
+      const mpBalance = await this.mapleradService.checkLiquidity(dto.fiatCode);
+
+      //[x] calcualte the normal amount
+      if (
+        mpBalance.available_balance <=
+        RAMP_BALANCES[dto.fiatCode.toUpperCase()].amount
+      ) {
+        throw new CustomHttpException(
+          WalletErrorEnum.MAPLERAD_BALANCE_LOW,
+          HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
 
@@ -633,7 +650,7 @@ export class PaymentsService {
       newTxn.transactionMessage = transactionMessage;
 
       // Step 3: Attempt fiat payout with prioritized providers
-      let payoutResponse;
+      let payoutResponse: IMapleradTransferResponseDto;
       let paymentProvider;
 
       const bankInfoAndCode = findBankByName(dto.bankInfo.bankName);
@@ -696,7 +713,8 @@ export class PaymentsService {
         try {
           paymentProvider = service.name;
           payoutResponse = await service.execute();
-          newTxn.providerTransactionId = payoutResponse.id;
+
+          newTxn.providerTransactionId = payoutResponse.data.id;
           newTxn.paymentProvider = paymentProvider;
           if (service.name === PaymentPartnerEnum.MAPLERAD) {
             newTxn.sentCrypto = true;
@@ -711,7 +729,7 @@ export class PaymentsService {
           this.logger.log(`Fiat payout succeeded with ${service.name}`);
           break;
         } catch (error) {
-          this.inProgressTxnCache.delete(sequenceId); // Clean up cache after each failed attempt
+          this.inProgressTxnCache.delete(sequenceId);
           this.logger.error(
             `Fiat payout failed with ${service.name}: ${error.message}`,
           );
@@ -722,7 +740,7 @@ export class PaymentsService {
             error.message === PaymentErrorEnum.INSUFFICIENT_LIQUIDITY
               ? PaymentErrorEnum.INSUFFICIENT_LIQUIDITY
               : 'OTHER';
-          await this.fiatCryptoRampTransactionRepo.save(newTxn);
+
           if (
             service.name ===
             PAYMENT_PROVIDER_PRIORITY[PAYMENT_PROVIDER_PRIORITY.length - 1]
@@ -787,7 +805,6 @@ export class PaymentsService {
           netFiatAmount,
           netCryptoAmount,
           grossFiat,
-          expiresAt: payoutResponse.expiresAt,
           bankInfo: dto.bankInfo,
           recipientInfo: newTxn.recipientInfo,
           seen: false,

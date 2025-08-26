@@ -1,4 +1,4 @@
-import { getAppConfig, getEnv } from '@/constants/env';
+import { getAppConfig } from '@/constants/env';
 import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
@@ -15,16 +15,14 @@ import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
-import { ENV_PRODUCTION } from '@/models/settings.types';
 import { FiatCryptoRampTransactionEntity } from './entities/fiat-crypto-ramp-transaction.entity';
 import { BankingNetworkEntity } from './entities/banking/banking-network.entity';
 import { TransactionHistoryEntity } from './entities/transactions/transaction-history.entity';
 import { TransactionEntity } from './entities/transactions/transaction.entity';
 import { BetaTesterEntity } from './entities/beta.testers.entity';
+import { isDev, isProd } from '../helpers';
 
 export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
-  const isProd = getEnv() === ENV_PRODUCTION;
-
   return {
     type: 'postgres',
     host: getAppConfig().POSTGRES.HOST,
@@ -58,7 +56,7 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
     extra: {
       charset: 'utf8mb4_unicode_ci',
     },
-    synchronize: !isProd,
+    synchronize: isDev,
     autoLoadEntities: true,
     logging: false,
     ssl: isProd ? { rejectUnauthorized: true } : false,

@@ -54,7 +54,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
-    logger: isProd ? false : ['error', 'warn', 'debug'],
+    // logger: isProd ? false : ['error', 'warn', 'debug'],
   });
 
   app.setGlobalPrefix('api');

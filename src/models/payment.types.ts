@@ -29,6 +29,7 @@ export enum PaymentStatus {
   Queued = 'queued',
   Sent = 'sent',
   Failed = 'failed',
+  Cleared = 'cleared',
 }
 
 export enum TransactionDirectionEnum {

@@ -8,7 +8,7 @@ import {
 } from '@/models/notifications.enum';
 import { YCRampPaymentEventEnum } from '@/models/payment.types';
 import { WalletWebhookEventEnum } from '@/models/wallet-manager.types';
-import { getUtcExpiryDateMonthsFromNow } from '@/utils/helpers';
+import { getUtcExpiryDateMonthsFromNow, isDev } from '@/utils/helpers';
 import {
   INotificationDto,
   NotificationEntity,
@@ -24,7 +24,9 @@ import { LessThan, Repository } from 'typeorm';
 const getServiceAccountConfig = (): string => {
   const TAG = 'NotificationsGateway';
 
-  Logger.log(`[${TAG}] Resolving Firebase service account configuration`);
+  isDev
+    ? Logger.log(`[${TAG}] Resolving Firebase service account configuration`)
+    : '';
 
   const serviceAccountJson = getAppConfig().FIREBASE.SERVICE_ACCOUNT;
   if (!serviceAccountJson) {
@@ -65,9 +67,12 @@ const getServiceAccountConfig = (): string => {
       throw new Error('Service account JSON must have type "service_account"');
     }
 
-    Logger.log(
-      `[${TAG}] Successfully parsed Firebase service account configuration`,
-    );
+    isDev
+      ? Logger.log(
+          `[${TAG}] Successfully parsed Firebase service account configuration`,
+        )
+      : '';
+
     return serviceAccount;
   } catch (error) {
     Logger.error(

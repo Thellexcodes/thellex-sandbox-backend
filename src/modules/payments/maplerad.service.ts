@@ -481,7 +481,7 @@ export class MapleradService {
     const result = (await this.httpService.get(url, {
       headers,
     })) as IMapleradWalletResponseDto;
-    return result.data.find((c) => c.currency === 'NGN');
+    return result.data.find((c) => c.currency === currency.toUpperCase());
   }
 }
 

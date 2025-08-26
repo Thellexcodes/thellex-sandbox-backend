@@ -63,6 +63,12 @@ export enum WalletErrorEnum {
   // Wallet lookup errors
   WALLET_NOT_FOUND = 'WALLET_NOT_FOUND',
   MISSING_WALLET_ID = 'MISSING_WALLET_ID',
+
+  // Balance errors
+  MAPLERAD_BALANCE_LOW = 'MAPLERAD_BALANCE_LOW',
+  YELLOWCARD_BALANCE_LOW = 'YELLOWCARD_BALANCE_LOW',
+  KOTANIPAY_BALANCE_LOW = 'KOTANIPAY_BALANCE_LOW',
+  VFD_BALANCE_LOW = 'VFD_BALANCE_LOW',
 }
 
 export enum WalletType {
@@ -74,6 +80,7 @@ export enum CircleNotificationTypeEnum {
   TransactionsOutbound = 'transactions.outbound',
   TransactionsInbound = 'transactions.inbound',
   WebhookTest = 'webhooks.test',
+  Cleared = 'cleared',
 }
 
 export enum CircleTransactionType {

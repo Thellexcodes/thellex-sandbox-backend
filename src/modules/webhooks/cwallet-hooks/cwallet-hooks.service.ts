@@ -67,11 +67,9 @@ export class CwalletHooksService {
             txnID,
           );
 
-        if (transactionHistoryExists)
-          throw new CustomHttpException(
-            QWalletStatus.TRANSACTION_FOUND,
-            HttpStatus.CONFLICT,
-          );
+        if (transactionHistoryExists) {
+          return this.logger.error(QWalletStatus.TRANSACTION_FOUND);
+        }
 
         const txnToken = await this.cwalletService.getToken({
           id: notificationPayload.tokenId,
@@ -109,7 +107,7 @@ export class CwalletHooksService {
 
         await this.transactionService.createTransaction({
           transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
-          cryptoAmount: transaction.mainAssetAmount ?? 0,
+          cryptoAmount: Number(transaction.amount) ?? 0,
           cryptoAsset: transaction.assetCode,
           paymentStatus: transaction.paymentStatus,
           paymentReason: transaction.paymentReason,
@@ -193,17 +191,11 @@ export class CwalletHooksService {
           !transaction ||
           transaction.transactionDirection !== TransactionDirectionEnum.OUTBOUND
         ) {
-          throw new CustomHttpException(
-            QWalletStatus.TRANSACTION_NOT_FOUND,
-            HttpStatus.NOT_FOUND,
-          );
+          return this.logger.error(QWalletStatus.TRANSACTION_FOUND);
         }
 
         if (transaction.paymentStatus === PaymentStatus.Complete) {
-          throw new CustomHttpException(
-            QWalletStatus.TRANSACTION_ALREADY_PROCESSED,
-            HttpStatus.CONFLICT,
-          );
+          return this.logger.error(QWalletStatus.TRANSACTION_ALREADY_PROCESSED);
         }
 
         // Update transaction
@@ -232,10 +224,10 @@ export class CwalletHooksService {
 
         await this.transactionService.createTransaction({
           transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
-          cryptoAmount: updatedTxn.mainAssetAmount ?? 0,
           cryptoAsset: updatedTxn.assetCode,
           paymentStatus: updatedTxn.paymentStatus,
           paymentReason: updatedTxn.paymentReason,
+          cryptoAmount: Number(updatedTxn.amount) ?? 0,
           fiatAmount: updatedTxn.mainFiatAmount ?? 0,
         });
 
