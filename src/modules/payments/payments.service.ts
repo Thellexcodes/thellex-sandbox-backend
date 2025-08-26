@@ -460,7 +460,6 @@ export class PaymentsService {
     user: UserEntity,
     dto: RequestCryptoOffRampPaymentDto,
   ) {
-    dto.userAmount = 100;
     const sequenceId = uuidV4();
 
     //[x] check for minimum fiat amount and crypto amounts
