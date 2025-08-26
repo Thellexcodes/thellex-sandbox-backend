@@ -14,6 +14,14 @@ import { CustomRequest, CustomResponse } from './models/request.types';
 import { responseHandler } from './utils/helpers';
 // import { ClientAuthGuard } from './middleware/guards/signature.guard';
 
+class BackendErrorDto {
+  screen: string;
+  errorType: string;
+  message: string;
+  code?: string;
+  timestamp: number;
+}
+
 // @ApiExcludeController()
 @VersionedController101('')
 @Controller('')
@@ -37,5 +45,12 @@ export class AppController {
       createSubscribeBetaDto,
     );
     responseHandler(response, res, req);
+  }
+
+  @Post('/error-report')
+  reportError(@Body() body: BackendErrorDto) {
+    console.log('Received error from client:', body);
+    // You can save it to DB, logging service, or monitoring tool
+    return { status: 'ok' };
   }
 }
