@@ -7,7 +7,6 @@ export class RampTransactionDTO {
   mainFiatAmount: number;
   transactionType: TransactionTypeEnum;
   userUID: number;
-  providerTransactionID?: string;
   approved: Boolean;
 }
 
@@ -20,7 +19,5 @@ class Revenue {
 export class RevenuesDTO {
   totalRevenue: Revenue;
   fiatRevenue: Revenue;
-  cryptoRevnue: Revenue;
+  cryptoRevenue: Revenue;
 }
-
-export type AllRevenuDto = RevenuesDTO[];

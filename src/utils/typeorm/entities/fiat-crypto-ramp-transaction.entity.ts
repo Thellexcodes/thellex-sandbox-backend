@@ -236,6 +236,11 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   })
   @Column()
   transactionMessage: string;
+
+  @Expose()
+  @ApiProperty()
+  @Column({ default: false, nullable: true })
+  approved: Boolean;
 }
 
 export class IFiatToCryptoQuoteSummaryResponseDto extends FiatCryptoRampTransactionEntity {

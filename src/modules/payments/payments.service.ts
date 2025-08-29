@@ -1139,6 +1139,12 @@ export class PaymentsService {
     }
   }
 
+  async allRampTransactions(): Promise<FiatCryptoRampTransactionEntity[]> {
+    return this.fiatCryptoRampTransactionRepo.find({
+      relations: ['user'],
+    });
+  }
+
   private readonly inProgressTxnCache = new LRUCache<string, boolean>({
     max: 10000, // Max concurrent keys to track
     ttl: 1000 * 60 * 10, // 10 minutes TTL (auto evict old ones)

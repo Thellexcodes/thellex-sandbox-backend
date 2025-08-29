@@ -1,3 +1,4 @@
 export enum AdminRoutes {
-  AllRampTransactions = 'AllRampTransactions',
+  Revenue = 'revenues',
+  AllRampTransactions = 'ramp_transactions',
 }
