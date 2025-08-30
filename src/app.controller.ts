@@ -24,7 +24,6 @@ class BackendErrorDto {
   timestamp: number;
 }
 
-// @ApiExcludeController()
 @VersionedController101('')
 @Controller('')
 // @UseGuards(ClientAuthGuard)

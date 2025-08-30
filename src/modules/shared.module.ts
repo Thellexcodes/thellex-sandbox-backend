@@ -38,6 +38,7 @@ import { TransactionEntity } from '@/utils/typeorm/entities/transactions/transac
 import { TransactionsService } from './transactions/transactions.service';
 import { DevicesModule } from './devices/devices.module';
 import { DevicesService } from './devices/devices.service';
+import { AdminModule } from './admin/admin.module';
 
 @Global()
 @Module({
@@ -68,6 +69,7 @@ import { DevicesService } from './devices/devices.service';
     MpPaymentHooksModule,
     TransactionsModule,
     DevicesModule,
+    AdminModule,
   ],
   providers: [
     EtherService,

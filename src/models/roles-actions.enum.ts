@@ -6,7 +6,7 @@ export enum RoleEnum {
 }
 
 export enum ActionEnum {
-  MANAGE = 'manage', // full access
+  MANAGE = 'manage',
   CREATE = 'create',
   READ = 'read',
   UPDATE = 'update',

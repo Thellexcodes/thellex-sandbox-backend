@@ -76,6 +76,7 @@ export class UserEntity extends BaseEntity {
   })
   tier: TierEnum;
 
+  @Expose()
   @Column({
     type: 'enum',
     enum: RoleEnum,

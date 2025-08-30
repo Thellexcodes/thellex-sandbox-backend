@@ -7,6 +7,7 @@ import {
 } from './utils/typeorm/entities/beta.testers.entity';
 import { MailService } from './modules/email/mail.service';
 import { CustomHttpException } from './middleware/custom.http.exception';
+import { TransactionsService } from './modules/transactions/transactions.service';
 
 @Injectable()
 export class AppService {
@@ -19,6 +20,10 @@ export class AppService {
 
   getHello(): string {
     return 'Hello World!';
+  }
+
+  async findAll(): Promise<BetaTesterEntity[]> {
+    return await this.betaTesterRepo.find();
   }
 
   async subscribeToBeta(dto: CreateSubscribeBetaDto): Promise<any> {
@@ -36,16 +41,16 @@ export class AppService {
     const newTester = this.betaTesterRepo.create({ email: dto.email });
     await this.betaTesterRepo.save(newTester);
 
-    await this.mailService.sendEmail({
-      to: dto.email,
-      subject: 'Welcome to Thellex Beta!',
-      template: 'beta-welcome',
-      context: {
-        email: dto.email,
-        miStoreUrl: 'https://app.mi.com/details?id=your.app.id',
-      },
-      transport: 'support',
-    });
+    // await this.mailService.sendEmail({
+    //   to: dto.email,
+    //   subject: 'Welcome to Thellex Beta!',
+    //   template: 'beta-welcome',
+    //   context: {
+    //     email: dto.email,
+    //     miStoreUrl: 'https://app.mi.com/details?id=your.app.id',
+    //   },
+    //   transport: 'support',
+    // });
 
     return { key: 'success', msg: 'Subscribed' };
   }

@@ -29,6 +29,10 @@ export class TransactionsService {
     return this.transactionRepository.save(transaction);
   }
 
+  async getAllRevenue(): Promise<TransactionEntity[]> {
+    return await this.transactionRepository.find();
+  }
+
   // async getTransactionsByType(type: TransactionType): Promise<Transaction[]> {
   //   this.logger.log(`Fetching transactions for type: ${type}`);
   //   return this.transactionRepository.find({ where: { type } });
