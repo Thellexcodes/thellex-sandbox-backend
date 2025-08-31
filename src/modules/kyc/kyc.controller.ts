@@ -1,5 +1,5 @@
 import { Post, Body, UseGuards, Req, Res } from '@nestjs/common';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import { FullAuthGuard } from '@/middleware/guards/local.auth.guard';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -26,7 +26,7 @@ export class kycController {
 
   //[x] implement guard check for ensure user can't make this request again
   @Post('basic-nin-bvn')
-  @UseGuards(AuthGuard)
+  @UseGuards(FullAuthGuard)
   @ApiBody({ type: BasicTierKycDto, description: 'Basic KYC information' })
   @ApiOkResponse({ type: KycResponseDto })
   async createBasicTierKyc(
@@ -42,7 +42,7 @@ export class kycController {
 
   //[x] implement guard check for ensure user can't make this request again
   @Post('basic-document-verify-selfie')
-  @UseGuards(AuthGuard)
+  @UseGuards(FullAuthGuard)
   @ApiOkResponse({ type: KycResponseDto })
   async verifySelfieWithPhotoIdDto(
     @Body() body: VerifySelfieWithPhotoIdDto,
@@ -58,7 +58,7 @@ export class kycController {
   }
 
   @Post('verify-bvn')
-  @UseGuards(AuthGuard)
+  @UseGuards(FullAuthGuard)
   @ApiOkResponse({ type: ValidateBvnResponseDto })
   async verifyBvn(
     @Body() body: VerifyBvnDto,

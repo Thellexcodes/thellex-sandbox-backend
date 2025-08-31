@@ -1,4 +1,4 @@
-import { Post, Body, Req, Res, UseGuards } from '@nestjs/common';
+import { Post, Body, Req, Res, UseGuards, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AccessResponseDto, CreateUserDto } from './dto/user.dto';
 import {
@@ -9,10 +9,9 @@ import {
 } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { LoginUserDto } from './dto/login-user.dto';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
 import { VersionedController101 } from '../controller/base.controller';
+import { VerifyAuthGuard } from '@/middleware/guards/local.auth.guard';
 // import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 
 //TODO: middleware for outstanding verifications
@@ -36,19 +35,16 @@ export class UserController {
   }
 
   @Post('authenticate')
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifyAuthGuard)
   @ApiOkResponse({ type: VerifiedResponseDto })
   async tokenLogin(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
-    const authRecords = await this.userService.login({
-      identifier: user.email,
-    } as LoginUserDto);
-
+    const authRecords = await this.userService.authenticateLogin(user);
     responseHandler(authRecords, res, req);
   }
 
   @Post('verify')
-  @UseGuards(AuthGuard)
+  @UseGuards(VerifyAuthGuard)
   @ApiOkResponse({ type: VerifiedResponseDto })
   async verify(
     @Body() verifyUserDto: VerifyUserDto,
@@ -58,5 +54,44 @@ export class UserController {
     const user = req.user;
     const result = await this.userService.verifyUser(verifyUserDto, user);
     responseHandler(result, res, req);
+  }
+
+  @Get('transactions')
+  @UseGuards(VerifyAuthGuard)
+  @ApiOkResponse({ type: VerifiedResponseDto })
+  async transactions(
+    // @Body() verifyUserDto: VerifyUserDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    // const user = req.user;
+    // const result = await this.userService.verifyUser(verifyUserDto, user);
+    // responseHandler(result, res, req);
+  }
+
+  @Get('ramp_transactions')
+  @UseGuards(VerifyAuthGuard)
+  @ApiOkResponse({ type: VerifiedResponseDto })
+  async rampTransactions(
+    // @Body() verifyUserDto: VerifyUserDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    // const user = req.user;
+    // const result = await this.userService.verifyUser(verifyUserDto, user);
+    // responseHandler(result, res, req);
+  }
+
+  @Get('notifications')
+  @UseGuards(VerifyAuthGuard)
+  @ApiOkResponse({ type: VerifiedResponseDto })
+  async notifications(
+    // @Body() verifyUserDto: VerifyUserDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+  ) {
+    // const user = req.user;
+    // const result = await this.userService.verifyUser(verifyUserDto, user);
+    // responseHandler(result, res, req);
   }
 }

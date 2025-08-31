@@ -1,88 +1,27 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { jwtConfigurations } from 'src/config/jwt.config';
-import { JwtService } from '@nestjs/jwt';
-import { UserService } from '@/modules/users/user.service';
-import { AuthErrorEnum } from '@/models/auth-error.enum';
-import { isProd } from '@/utils/helpers';
+import { Injectable } from '@nestjs/common';
+
+import { BaseAuthGuard } from './base-auth.guard';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(
-    private userService: UserService,
-    private jwtService: JwtService,
-  ) {}
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const access_token = this.extractTokenFromHeader(request);
-
-    if (!isProd) {
-      console.log({ access_token });
-    }
-
-    if (!access_token) {
-      throw new UnauthorizedException({
-        statusCode: 401,
-        message: 'Unauthorized',
-        errorCode: AuthErrorEnum.UNAUTHORIZED,
-      });
-    }
-
-    let payload: any;
-    try {
-      payload = await this.jwtService.verifyAsync(access_token, {
-        secret: jwtConfigurations().secret,
-      });
-    } catch (err) {
-      throw new UnauthorizedException({
-        statusCode: 401,
-        message: 'Invalid or expired token',
-        errorCode: AuthErrorEnum.INVALID_TOKEN,
-      });
-    }
-
-    const { id } = payload;
-
-    if (!id) {
-      throw new UnauthorizedException({
-        statusCode: 401,
-        message: 'Invalid token payload',
-        errorCode: AuthErrorEnum.UNAUTHORIZED,
-      });
-    }
-
-    const user = await this.userService.findOneById(id);
-
-    if (!user) {
-      throw new UnauthorizedException({
-        statusCode: 401,
-        message: 'User account no longer exists. It may have been deleted.',
-        errorCode: AuthErrorEnum.USER_NOT_FOUND,
-      });
-    }
-
-    if (user.suspended) {
-      throw new UnauthorizedException({
-        statusCode: 403,
-        message: 'Your account is currently suspended.',
-        errorCode: AuthErrorEnum.USER_SUSPENDED,
-      });
-    }
-
-    const { password, ...userData } = user;
-    request.user = userData;
-
-    return true;
+export class LightAuthGuard extends BaseAuthGuard {
+  protected fetchUser(id: string): Promise<UserEntity | null> {
+    return this.userService.findOneDynamicById(id, {
+      selectFields: ['id', 'email', 'suspended', 'role', 'uid'],
+    });
   }
+}
 
-  private extractTokenFromHeader(request: any): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+@Injectable()
+export class FullAuthGuard extends BaseAuthGuard {
+  protected fetchUser(id: string): Promise<UserEntity | null> {
+    return this.userService.findOneById(id);
+  }
+}
 
-    return type === 'Bearer' ? token : undefined;
+@Injectable()
+export class VerifyAuthGuard extends BaseAuthGuard {
+  protected fetchUser(id: string): Promise<UserEntity | null> {
+    return this.userService.findOneForVerifyById(id);
   }
 }

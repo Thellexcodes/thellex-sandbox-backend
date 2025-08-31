@@ -1,6 +1,6 @@
 import { Get, Patch, Param, UseGuards, Req, Res } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import { FullAuthGuard } from '@/middleware/guards/local.auth.guard';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { VersionedController101 } from '../controller/base.controller';
 import { responseHandler } from '@/utils/helpers';
@@ -8,7 +8,7 @@ import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { NoficationConsumeResponse } from './dto/notification.dto';
 
 @VersionedController101('notifications')
-@UseGuards(AuthGuard)
+@UseGuards(FullAuthGuard)
 @ApiBearerAuth('access-token')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}

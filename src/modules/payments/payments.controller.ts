@@ -7,7 +7,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import { FullAuthGuard } from '@/middleware/guards/local.auth.guard';
 import { PaymentsService } from './payments.service';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
@@ -35,7 +35,7 @@ export class PaymentsController {
   constructor(private readonly paymentService: PaymentsService) {}
 
   @Post('withdraw-fiat')
-  @UseGuards(AuthGuard)
+  @UseGuards(FullAuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
   @ApiOkResponse({ type: CreateWithdrawalResponseDto })
   async withdrawPayment(
@@ -52,7 +52,7 @@ export class PaymentsController {
   }
 
   @Post('withdraw-crypto')
-  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @UseGuards(FullAuthGuard, BasicKycCheckerGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
   @ApiOkResponse({ type: CreateWithdrawalResponseDto })
   async withdrawFiat(
@@ -66,7 +66,7 @@ export class PaymentsController {
   }
 
   @Post('fiat-to-crypto/onramp')
-  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @UseGuards(FullAuthGuard, BasicKycCheckerGuard)
   @ApiBody({ type: FiatToCryptoOnRampRequestDto })
   @ApiResponse({
     status: 201,
@@ -89,7 +89,7 @@ export class PaymentsController {
   }
 
   @Post('crypto-to-fiat/offramp')
-  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @UseGuards(FullAuthGuard, BasicKycCheckerGuard)
   @ApiOperation({ summary: 'Request a fiat payment (off-ramp)' })
   @ApiResponse({
     status: 201,
@@ -112,7 +112,7 @@ export class PaymentsController {
 
   @Get('rates/:fiatCode?')
   @ApiOkResponse({ type: IRatesResponseDto })
-  @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  @UseGuards(FullAuthGuard, BasicKycCheckerGuard)
   async rates(
     @Query('fiatCode') fiatCode: FiatEnum,
     @Req() req: CustomRequest,
@@ -125,7 +125,7 @@ export class PaymentsController {
 
   // @Get('supported-banks')
   // @ApiOkResponse({ type: IRatesResponseDto })
-  // @UseGuards(AuthGuard, BasicKycCheckerGuard)
+  // @UseGuards(FullAuthGuard, BasicKycCheckerGuard)
   // async rates(
   //   @Query('fiatCode') fiatCode: FiatEnum,
   //   @Req() req: CustomRequest,
@@ -139,7 +139,7 @@ export class PaymentsController {
   // @UseGuards(PoliciesGuard, SuperAdminGuard)
   // @CheckPolicies(CanManageCompany)
   @Post('set-yc-hook')
-  @UseGuards(AuthGuard)
+  @UseGuards(FullAuthGuard)
   async setYcWebhookConfig(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,

@@ -1,4 +1,4 @@
-import { TransactionTypeEnum } from './payment.types';
+import { PaymentStatus, TransactionTypeEnum } from './payment.types';
 
 export class RampTransactionDTO {
   rampId: string;
@@ -8,6 +8,9 @@ export class RampTransactionDTO {
   transactionType: TransactionTypeEnum;
   userUID: number;
   approved: Boolean;
+  paymentStatus: PaymentStatus;
+  sequenceId: string;
+  createdAt: any;
 }
 
 export type AllRampTransactions = RampTransactionDTO[];

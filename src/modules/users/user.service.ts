@@ -45,7 +45,8 @@ export class UserService {
 
     try {
       const email = createUserDto.email.toLowerCase();
-      user = await this.findOneByEmail(email);
+      // user = await this.findOneByEmail(email);
+      user = await this.findUserIDAndEmail(email);
 
       if (user) {
         const expires_at = await this.resendVerification(user);
@@ -112,10 +113,7 @@ export class UserService {
     return expires_at;
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<IUserDto> {
-    const identifier = loginUserDto.identifier.trim().toLowerCase();
-
-    const user = await this.findOneByEmail(identifier);
+  async authenticateLogin(user: UserEntity): Promise<IUserDto> {
     if (!user) {
       throw new CustomHttpException(
         UserErrorEnum.INVALID_CREDENTIAL,
@@ -129,7 +127,12 @@ export class UserService {
       );
     }
 
-    const userPlain = formatUserWithTiers(user);
+    const userData = await this.findOneDynamicById(user.id, {
+      selectFields: ['id', 'email', 'emailVerified', 'role', 'tier', 'uid'],
+      joinRelations: ['kyc'],
+    });
+
+    const userPlain = formatUserWithTiers(userData);
 
     return plainToInstance(IUserDto, userPlain, {
       excludeExtraneousValues: true,
@@ -233,10 +236,11 @@ export class UserService {
     }
 
     if (user.emailVerified) {
-      // Already verified, return current user data with tiers
-      const verifiedUser = await this.userRepository.findOne({
-        where: { id: user.id },
+      const verifiedUser = await this.findOneDynamicById(user.id, {
+        selectFields: ['id', 'email', 'emailVerified', 'role', 'tier', 'uid'],
+        joinRelations: ['kyc'],
       });
+
       if (!verifiedUser)
         throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
 
@@ -274,4 +278,89 @@ export class UserService {
   async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {
     await this.userRepository.update(userId, { tier: newTier });
   }
+
+  async findUserIDAndEmail(email: string): Promise<UserEntity | null> {
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .select(['user.id', 'user.email'])
+      .where('user.email = :email', { email })
+      .getOne();
+  }
+
+  async findOneForVerifyById(id: string): Promise<UserEntity | null> {
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .select(['user.id', 'user.email', 'user.emailVerified'])
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
+  async findOneDynamicById(
+    id: string,
+    options?: {
+      selectFields?: string[]; // fields to include from the user table
+      joinRelations?: string[]; // relations to join, supports nested like 'qWalletProfile.wallets'
+    },
+  ): Promise<UserEntity | null> {
+    try {
+      const query = this.userRepository.createQueryBuilder('user');
+
+      // Default fields
+      const defaultFields = ['user.id', 'user.email', 'user.emailVerified'];
+      const fieldsToSelect =
+        options?.selectFields?.map((f) => `user.${f}`) ?? defaultFields;
+      query.select(fieldsToSelect);
+
+      // Handle joinRelations
+      options?.joinRelations?.forEach((relation) => {
+        const parts = relation.split('.'); // e.g., ['qWalletProfile', 'wallets']
+        let parentAlias = 'user';
+
+        parts.forEach((part, index) => {
+          const alias = parts.slice(0, index + 1).join('_'); // e.g., 'qWalletProfile_wallets'
+          query.leftJoinAndSelect(`${parentAlias}.${part}`, alias);
+          parentAlias = alias; // next join is from this alias
+        });
+      });
+
+      query.where('user.id = :id', { id });
+
+      return await query.getOne();
+    } catch (error) {
+      this.logger.error('Error fetching user dynamically by ID:', error);
+      return null;
+    }
+  }
+
+  // async findOneDynamicById(
+  //   id: string,
+  //   options?: {
+  //     selectFields?: string[];
+  //     joinRelations?: string[];
+  //   },
+  // ): Promise<UserEntity | null> {
+  //   try {
+  //     const query = this.userRepository.createQueryBuilder('user');
+
+  //     // Default fields if none specified
+  //     const defaultFields = ['user.id', 'user.email', 'user.emailVerified'];
+  //     const fieldsToSelect =
+  //       options?.selectFields?.map((f) => `user.${f}`) ?? defaultFields;
+
+  //     query.select(fieldsToSelect);
+
+  //     // Join relations dynamically, supports nested relations
+  //     options?.joinRelations?.forEach((relation) => {
+  //       const alias = relation.replace('.', '_'); // alias for nested relations
+  //       query.leftJoinAndSelect(`user.${relation}`, alias);
+  //     });
+
+  //     query.where('user.id = :id', { id });
+
+  //     return await query.getOne();
+  //   } catch (error) {
+  //     this.logger.error('Error fetching user dynamically by ID:', error);
+  //     return null;
+  //   }
+  // }
 }

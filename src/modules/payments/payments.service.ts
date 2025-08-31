@@ -1139,10 +1139,76 @@ export class PaymentsService {
     }
   }
 
-  async allRampTransactions(): Promise<FiatCryptoRampTransactionEntity[]> {
-    return this.fiatCryptoRampTransactionRepo.find({
-      relations: ['user'],
-    });
+  async findDynamicRampTransactions(options?: {
+    page?: number;
+    limit?: number;
+    selectFields?: string[];
+    joinRelations?: { relation: string; selectFields?: string[] }[];
+  }): Promise<{
+    data: FiatCryptoRampTransactionEntity[];
+    total: number;
+    page: number;
+    lastPage: number;
+  }> {
+    try {
+      const page = options?.page ?? 1;
+      const limit = options?.limit ?? 10;
+      const offset = (page - 1) * limit;
+
+      const query =
+        this.fiatCryptoRampTransactionRepo.createQueryBuilder('ramp');
+
+      // Default fields
+      const defaultFields = ['ramp.id'];
+      const fieldsToSelect =
+        options?.selectFields?.map((f) => `ramp.${f}`) ?? defaultFields;
+      query.select(fieldsToSelect);
+
+      // Track joined aliases to prevent duplicate joins
+      const joined = new Set<string>();
+
+      // Handle joinRelations
+      options?.joinRelations?.forEach((joinOption) => {
+        const parts = joinOption.relation.split('.');
+        let parentAlias = 'ramp';
+
+        parts.forEach((part, index) => {
+          const alias = parts.slice(0, index + 1).join('_');
+
+          if (!joined.has(alias)) {
+            query.leftJoin(`${parentAlias}.${part}`, alias); // use leftJoin only first
+            joined.add(alias);
+          }
+
+          // If specific fields for this relation are provided
+          if (index === parts.length - 1 && joinOption.selectFields?.length) {
+            const selectFields = joinOption.selectFields.map(
+              (f) => `${alias}.${f}`,
+            );
+            query.addSelect(selectFields);
+          } else {
+            query.addSelect(alias); // include all by default if no selectFields
+          }
+
+          parentAlias = alias;
+        });
+      });
+
+      // Pagination
+      query.skip(offset).take(limit).orderBy('ramp.createdAt', 'DESC');
+
+      const [items, total] = await query.getManyAndCount();
+
+      return {
+        data: items,
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      this.logger.error('Error fetching ramp transactions:', error);
+      throw error;
+    }
   }
 
   private readonly inProgressTxnCache = new LRUCache<string, boolean>({

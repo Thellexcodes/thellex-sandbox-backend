@@ -55,6 +55,8 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     extra: {
       charset: 'utf8mb4_unicode_ci',
+      max: 20, // pool size
+      connectionTimeoutMillis: 5000,
     },
     synchronize: isDev,
     autoLoadEntities: true,

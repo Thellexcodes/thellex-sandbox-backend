@@ -3,7 +3,7 @@ import { AuthnService } from './auth.service';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { responseHandler } from '@/utils/helpers';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import {} from '@/middleware/guards/local.auth.guard';
 import { VerifyRegistrationDto } from './dto/verify-registeration.dto';
 import { VerifyAuthenticationDto } from './dto/verify-auth.dto';
 import { VersionedController101 } from '../controller/base.controller';

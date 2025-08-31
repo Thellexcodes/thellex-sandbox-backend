@@ -16,9 +16,7 @@ export class AdminService {
     private betaTesterRepo: Repository<BetaTesterEntity>,
     private transactionService: TransactionsService,
     private paymentsService: PaymentsService,
-  ) {
-    this.allRampTransactions();
-  }
+  ) {}
 
   async getAllBetaTesters() {
     await this.betaTesterRepo.find();
@@ -65,11 +63,37 @@ export class AdminService {
     };
   }
 
-  async allRampTransactions(): Promise<AllRampTransactions> {
-    const allRampTransactions =
-      await this.paymentsService.allRampTransactions();
+  async allRampTransactions(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    data: AllRampTransactions;
+    total: number;
+    pageNumber: number;
+    lastPage: number;
+  }> {
+    const rampTransactionsResponse =
+      await this.paymentsService.findDynamicRampTransactions({
+        page,
+        limit,
+        selectFields: [
+          'id',
+          'createdAt',
+          'transactionType',
+          'approved',
+          'sequenceId',
+          'netFiatAmount',
+          'netCryptoAmount',
+          'paymentStatus',
+          'providerTransactionId',
+        ],
+        joinRelations: [{ relation: 'user', selectFields: ['uid'] }],
+      });
 
-    const rampTxns = allRampTransactions
+    const { lastPage, page: pageNumber, total } = rampTransactionsResponse;
+
+    // Filter and map
+    const rampTransactions = rampTransactionsResponse.data
       .filter(
         (txn) =>
           txn.transactionType === TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT ||
@@ -82,12 +106,15 @@ export class AdminService {
         mainFiatAmount: txn.netFiatAmount,
         transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
         userUID: txn.user.uid,
-        approved: txn?.approved,
+        approved: txn.approved,
+        paymentStatus: txn.paymentStatus,
+        sequenceId: txn.sequenceId,
+        createdAt: txn.createdAt,
       }));
 
-    console.log({ rampTxns });
+    console.log({ data: rampTransactions, lastPage, pageNumber, total });
 
-    return rampTxns;
+    return { data: rampTransactions, lastPage, pageNumber, total };
   }
 
   findOne(id: number) {
