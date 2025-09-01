@@ -117,7 +117,7 @@ export class AdminService {
     } = rampTransactionsResponse;
 
     // Filter and map
-    const rampTransactions = data
+    const rampTransactions: AllRampTransactions = data
       .filter(
         (txn) =>
           (txn.transactionType === TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT ||
@@ -137,6 +137,7 @@ export class AdminService {
         paymentStatus: txn.paymentStatus,
         sequenceId: txn.sequenceId,
         createdAt: txn.createdAt,
+        recipientInfo: { ...txn.recipientInfo },
       }));
 
     return { data: rampTransactions, lastPage, pageNumber, total };
