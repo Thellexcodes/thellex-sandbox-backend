@@ -12,13 +12,13 @@ import { CreateDeviceDto } from './dto/create-device.dto';
 import { VersionedController101 } from '../controller/base.controller';
 import { responseHandler } from '@/utils/helpers';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import { LightAuthGuard } from '@/middleware/guards/local.auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Devices')
 @VersionedController101('devices')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
+@UseGuards(LightAuthGuard)
 export class DevicesController {
   private readonly logger = new Logger(DevicesController.name);
 

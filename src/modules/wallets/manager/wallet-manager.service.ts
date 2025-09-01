@@ -19,6 +19,7 @@ import {
 } from './dto/get-balance-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { EtherService } from '@/utils/services/ethers.service';
+import { UserService } from '@/modules/users/user.service';
 
 //TODO: for each hook, you're to update the balance of the wallet in db and sue that here instead of making request everythime to fetch wallet addresses
 @Injectable()
@@ -27,25 +28,39 @@ export class WalletManagerService {
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
     private readonly ethersService: EtherService,
+    private readonly userService: UserService,
   ) {}
 
   async getBalance(user: UserEntity): Promise<WalletBalanceSummaryResponseDto> {
     try {
-      const qwallets = user.qWalletProfile?.wallets ?? [];
-      const cwallets = user.cWalletProfile?.wallets ?? [];
-      const qwalletId = user.qWalletProfile?.qid;
+      // Fetch user with optional joins
+      const userWithWallets = await this.userService.findOneDynamicById(
+        user.id,
+        {
+          joinRelations: ['qWalletProfile.wallets', 'cWalletProfile.wallets'],
+        },
+      );
+
+      if (!userWithWallets) {
+        throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      const qwallets = userWithWallets.qWalletProfile?.wallets ?? [];
+      const cwallets = userWithWallets.cWalletProfile?.wallets ?? [];
+      const qwalletId = userWithWallets.qWalletProfile?.qid;
 
       const walletMap: Record<string, WalletMapDto> = {};
       const queue = new PQueue({ concurrency: 3 });
-      const tasks: Promise<any>[] = [];
+      const tasks: Promise<void>[] = [];
 
       for (const [walletTypeKey, walletTypeConfig] of Object.entries(
         walletConfig,
       )) {
         const walletType = walletTypeKey as SupportedWalletTypes;
-        const providers = walletTypeConfig.providers;
 
-        for (const [providerKey, providerConfig] of Object.entries(providers)) {
+        for (const [providerKey, providerConfig] of Object.entries(
+          walletTypeConfig.providers,
+        )) {
           const provider = providerKey as WalletProviderEnum;
 
           for (const [networkKey, networkDetails] of Object.entries(
@@ -60,6 +75,9 @@ export class WalletManagerService {
 
               tasks.push(
                 queue.add(async () => {
+                  let total = 0;
+
+                  // QWallet
                   const qwallet = qwallets.find(
                     (w) =>
                       w.walletProvider === provider &&
@@ -67,16 +85,21 @@ export class WalletManagerService {
                       w.networkMetadata?.[network],
                   );
 
-                  let qbalanceUsd = 0;
-
-                  if (qwallet) {
-                    const az = await this.qwalletService
-                      .getUserWallet(qwalletId, TokenEnum.USDT)
-                      .then((d) => d.data);
-
-                    qbalanceUsd += Number(az.balance);
+                  if (qwallet && qwalletId) {
+                    try {
+                      const az = await this.qwalletService
+                        .getUserWallet(qwalletId, token)
+                        .then((d) => d.data);
+                      total += Number(az.balance || 0);
+                    } catch (err) {
+                      console.error(
+                        `QWallet error for ${token} ${network}:`,
+                        err,
+                      );
+                    }
                   }
 
+                  // CWallet
                   const cwallet = cwallets.find(
                     (w) =>
                       w.walletProvider === provider &&
@@ -84,24 +107,27 @@ export class WalletManagerService {
                       w.networkMetadata?.[network],
                   );
 
-                  let cbalanceUsd = 0;
-
                   if (cwallet) {
-                    const cwalletBalanceRecord =
-                      await this.cwalletService.getBalanceByAddress(
-                        cwallet?.walletID,
-                        TokenEnum.USDC,
+                    try {
+                      const cbalance =
+                        await this.cwalletService.getBalanceByAddress(
+                          cwallet.walletID,
+                          token,
+                        );
+                      total += Number(cbalance || 0);
+                    } catch (err) {
+                      console.error(
+                        `CWallet error for ${token} ${network}:`,
+                        err,
                       );
-
-                    cbalanceUsd += cwalletBalanceRecord;
+                    }
                   }
-
-                  const total = qbalanceUsd + cbalanceUsd;
 
                   const address =
                     qwallet?.networkMetadata?.[network]?.address ||
                     cwallet?.networkMetadata?.[network]?.address;
 
+                  // Update walletMap safely
                   if (!walletMap[tokenLower]) {
                     walletMap[tokenLower] = {
                       totalBalance: toNumber(total.toFixed(3)),
@@ -112,21 +138,17 @@ export class WalletManagerService {
                       transactionHistory: [],
                     };
                   } else {
-                    walletMap[tokenLower].totalBalance = toNumber(
+                    walletMap[tokenLower].totalBalance += total;
+                    walletMap[tokenLower].valueInLocal = toNumber(
                       (
-                        parseFloat(
-                          walletMap[tokenLower].totalBalance.toString(),
-                        ) + total
+                        walletMap[tokenLower].totalBalance * NAIRA_RATE
                       ).toString(),
                     );
 
-                    // Only replace network if it's different
                     if (walletMap[tokenLower].network !== network) {
                       walletMap[tokenLower].network = network;
                     }
                   }
-
-                  return total;
                 }),
               );
             }
@@ -134,31 +156,17 @@ export class WalletManagerService {
         }
       }
 
-      const balances = await Promise.all(tasks);
-      const validBalances = balances.filter(
-        (v) => typeof v === 'number' && !isNaN(v),
-      );
-      const totalSum = validBalances.reduce((sum, value) => sum + value, 0);
-      const totalInUsd = totalSum.toFixed(2);
+      // Wait for all tasks to finish before using walletMap
+      await Promise.all(tasks);
 
-      // Filter out usdt from walletMap before returning
-      // const filteredWalletMap = Object.fromEntries(
-      //   Object.entries(walletMap).filter(([key]) => key !== 'usdt'),
-      // );
-
-      // return plainToInstance(
-      //   WalletBalanceSummaryResponseDto,
-      //   {
-      //     totalInUsd,
-      //     wallets: filteredWalletMap,
-      //   },
-      //   { excludeExtraneousValues: true },
-      // );
+      const totalSum = Object.values(walletMap)
+        .map((w) => w.totalBalance)
+        .reduce((sum, val) => sum + val, 0);
 
       return plainToInstance(
         WalletBalanceSummaryResponseDto,
         {
-          totalInUsd,
+          totalInUsd: totalSum.toFixed(2),
           wallets: walletMap,
         },
         { excludeExtraneousValues: true },

@@ -1,6 +1,6 @@
 import { Body, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
+import { FullAuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { VersionedController101 } from '../controller/base.controller';
@@ -28,7 +28,7 @@ export class SettingsController {
   // }
 
   @Post('bank-account/add')
-  @UseGuards(AuthGuard)
+  @UseGuards(FullAuthGuard)
   async addBankAccount(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,

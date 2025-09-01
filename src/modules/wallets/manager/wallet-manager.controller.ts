@@ -6,7 +6,6 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@/middleware/guards/local.auth.guard';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import {
@@ -14,9 +13,11 @@ import {
   WalletMapDto,
 } from './dto/get-balance-response.dto';
 import { VersionedController101 } from '@/modules/controller/base.controller';
+import { LightAuthGuard } from '@/middleware/guards/local.auth.guard';
 
 @ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
+@UseGuards(LightAuthGuard)
 @VersionedController101('wallet-manager')
 export class WalletManagerController {
   constructor(private readonly walletManagerService: WalletManagerService) {}
@@ -24,18 +25,15 @@ export class WalletManagerController {
   // Get overall wallet balance across all assets
   @ApiExtraModels(WalletMapDto)
   @Get('balance')
-  @UseGuards(AuthGuard)
   @ApiOkResponse({ type: WalletBalanceSummaryResponseDto })
   async getBalance(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
     const result = await this.walletManagerService.getBalance(user);
-
     responseHandler(result, res, req);
   }
 
   // Get balance for a single asset by asset identifier (e.g., token symbol, contract address)
   @Get('balance/:assetId')
-  @UseGuards(AuthGuard)
   async getSingleAssetBalance(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
@@ -52,7 +50,6 @@ export class WalletManagerController {
 
   // Get detailed breakdown of assets held in wallet (tokens, coins, NFTs, etc.)
   @Get('assets')
-  @UseGuards(AuthGuard)
   async getAssets(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
     const result = await this.walletManagerService.getAssets(user.id);
@@ -61,7 +58,6 @@ export class WalletManagerController {
 
   // Get transaction history
   @Get('transactions')
-  @UseGuards(AuthGuard)
   async getTransactionHistory(
     @Query('limit') limit: number = 20,
     @Req() req: CustomRequest,
@@ -77,7 +73,6 @@ export class WalletManagerController {
 
   // Get the wallet addresses associated with the user across different chains
   @Get('addresses')
-  @UseGuards(AuthGuard)
   async getWalletAddresses(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
@@ -89,7 +84,6 @@ export class WalletManagerController {
 
   // Refresh or sync wallet state (e.g., fetch latest balances from chains)
   @Post('sync')
-  @UseGuards(AuthGuard)
   async syncWallet(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const user = req.user;
     const result = await this.walletManagerService.syncWallet(user);
@@ -98,7 +92,6 @@ export class WalletManagerController {
 
   // Get rewards info (e.g., earned rewards, claimable rewards)
   @Get('rewards')
-  @UseGuards(AuthGuard)
   async getRewards(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const userId = req.user.id;
     const result = await this.walletManagerService.getRewards(userId);
