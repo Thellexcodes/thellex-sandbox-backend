@@ -1,3 +1,5 @@
+import { BankInfoDto } from '../modules/payments/dto/fiat-to-crypto-request.dto';
+import { RampReciepientInfoDto } from '../utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { PaymentStatus, TransactionTypeEnum } from './payment.types';
 
 export class RampTransactionDTO {
@@ -10,7 +12,8 @@ export class RampTransactionDTO {
   approved: Boolean;
   paymentStatus: PaymentStatus;
   sequenceId: string;
-  createdAt: any;
+  createdAt: Date;
+  recipientInfo: RampReciepientInfoDto;
 }
 
 export type AllRampTransactions = RampTransactionDTO[];
