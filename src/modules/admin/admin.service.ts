@@ -112,8 +112,6 @@ export class AdminService {
         createdAt: txn.createdAt,
       }));
 
-    console.log({ data: rampTransactions, lastPage, pageNumber, total });
-
     return { data: rampTransactions, lastPage, pageNumber, total };
   }
 
