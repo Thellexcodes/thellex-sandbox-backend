@@ -1,20 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ErrorInterceptor } from '@/middleware/error.interceptor';
+import { ErrorInterceptor } from '@/v1/middleware/error.interceptor';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { writeFileSync } from 'fs';
-import { getAppConfig } from './constants/env';
+import { getAppConfig } from './v1/constants/env';
 import * as bodyParser from 'body-parser';
 import {
   FILE_UPLOAD_LIMIT,
   SERVER_REQUEST_TIMEOUT_MS,
-} from './config/settings';
-import { API_VERSIONS } from './config/versions';
-import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
-import { isProd } from './utils/helpers';
+} from './v1/config/settings';
+import { API_VERSIONS } from './v1/config/versions';
+import { AllExceptionsFilter } from './v1/middleware/filters/http-exception.filter';
+import { isProd } from './v1/utils/helpers';
 import helmet from 'helmet';
 
 const certFolder = path.join(__dirname, '../../cert');
