@@ -25,7 +25,7 @@ import { getAppConfig } from '@/v1/constants/env';
           from: `"${getAppConfig().EMAIL.APPLICATION_NAME}" <${getAppConfig().EMAIL.SUPPORT_USER}>`,
         },
         template: {
-          dir: join(process.cwd() + '/src/modules', 'email/templates'),
+          dir: join(process.cwd() + '/src/v1/modules', 'email/templates'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
