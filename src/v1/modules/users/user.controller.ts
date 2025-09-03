@@ -1,4 +1,4 @@
-import { Post, Body, Req, Res, UseGuards, Get } from '@nestjs/common';
+import { Post, Body, Req, Res, UseGuards, Get, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AccessResponseDto, CreateUserDto } from './dto/user.dto';
 import {
@@ -12,6 +12,9 @@ import { responseHandler } from '@/v1/utils/helpers';
 import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
 import { VersionedController101 } from '../controller/base.controller';
 import { VerificationAuthGuard } from '@/v1/middleware/guards/local.auth.guard';
+import { PaymentsService } from '../payments/payments.service';
+import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { NotificationsService } from '../notifications/notifications.service';
 // import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 
 //TODO: middleware for outstanding verifications
@@ -20,7 +23,12 @@ import { VerificationAuthGuard } from '@/v1/middleware/guards/local.auth.guard';
 // @UseGuards(ClientAuthGuard)
 @ApiBearerAuth('access-token')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly paymentService: PaymentsService,
+    private readonly transactionHistoryService: TransactionHistoryService,
+    private readonly notificationService: NotificationsService,
+  ) {}
 
   @Post('access')
   @ApiBody({ type: CreateUserDto, description: 'Data required to create user' })
@@ -59,11 +67,21 @@ export class UserController {
   @Get('transactions')
   @UseGuards(VerificationAuthGuard)
   @ApiOkResponse({ type: VerifiedResponseDto })
-  async transactions(@Req() req: CustomRequest, @Res() res: CustomResponse) {
-    const transactions = await this.userService.getAllUserTransactions({
-      page: 1,
-      limit: 10,
-    });
+  async transactions(
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+    @Query() query: { page?: string; limit?: string },
+  ) {
+    const { page = '1', limit = '10' } = query;
+
+    const transactions =
+      await this.transactionHistoryService.getAllUserTransactions(
+        {
+          page: Number(page),
+          limit: Number(limit),
+        },
+        req.user.id,
+      );
 
     responseHandler(transactions, res, req);
   }
@@ -74,11 +92,17 @@ export class UserController {
   async rampTransactions(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
+    @Query() query: { page?: string; limit?: string },
   ) {
-    const rampTransactions = await this.userService.getAllUserRampTransactions({
-      page: 1,
-      limit: 10,
-    });
+    const { page = '1', limit = '10' } = query;
+    const rampTransactions =
+      await this.paymentService.getAllUserRampTransactions(
+        {
+          page: Number(page),
+          limit: Number(limit),
+        },
+        req.user.id,
+      );
 
     responseHandler(rampTransactions, res, req);
   }
@@ -86,11 +110,20 @@ export class UserController {
   @Get('notifications')
   @UseGuards(VerificationAuthGuard)
   @ApiOkResponse({ type: VerifiedResponseDto })
-  async notifications(@Req() req: CustomRequest, @Res() res: CustomResponse) {
-    const notifications = await this.userService.getAllUserNotifications({
-      page: 1,
-      limit: 10,
-    });
+  async notifications(
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+    @Query() query: { page?: string; limit?: string },
+  ) {
+    const { page = '1', limit = '10' } = query;
+    const notifications =
+      await this.notificationService.getAllUserNotifications(
+        {
+          page: Number(page),
+          limit: Number(limit),
+        },
+        req.user.id,
+      );
 
     responseHandler(notifications, res, req);
   }

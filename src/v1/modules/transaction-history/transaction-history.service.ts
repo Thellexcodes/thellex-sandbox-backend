@@ -8,7 +8,7 @@ import { QWalletStatus } from '../wallets/qwallet/qwallet-status.enum';
 import { IQWalletHookWithdrawSuccessfulEvent } from '../webhooks/qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
 import { IUpdateCwalletTransactionDto } from '../webhooks/cwallet-hooks/dto/update-cwallet-hook.dto';
 import { TransactionHistoryEntity } from '@/v1/utils/typeorm/entities/transactions/transaction-history.entity';
-import { findDynamic } from '@/v2/utils/DynamicSource';
+import { findDynamic, FindDynamicOptions } from '@/v2/utils/DynamicSource';
 
 //TODO: add try catch block for error handling
 @Injectable()
@@ -28,35 +28,47 @@ export class TransactionHistoryService {
     return this.transactionRepo.save(transactionRecord);
   }
 
-  async getAllUserTransactions({ page, limit }) {
-    const result = await findDynamic(this.transactionRepo, {
-      page,
-      limit,
-      selectFields: [
-        'id',
-        'transactionId',
-        'transactionDirection',
-        'transactionType',
-        'assetCode',
-        'amount',
-        'fee',
-        'feeLevel',
-        'blockchainTxId',
-        'reason',
-        'paymentStatus',
-        'sourceAddress',
-        'destinationAddress',
-        'paymentNetwork',
-        'createdAt',
-        'rampID',
-        'mainFiatAmount',
-        'mainAssetAmount',
-        'transactionMessage',
-      ],
-      sortBy: [{ field: 'createdAt', order: 'DESC' }],
-    });
+  async getAllUserTransactions({ page, limit }, userId: string) {
+    try {
+      const options: FindDynamicOptions & { where?: { [key: string]: any } } = {
+        page,
+        limit,
+        selectFields: [
+          'id',
+          'transactionId',
+          'transactionDirection',
+          'transactionType',
+          'assetCode',
+          'amount',
+          'fee',
+          'feeLevel',
+          'blockchainTxId',
+          'reason',
+          'paymentStatus',
+          'sourceAddress',
+          'destinationAddress',
+          'paymentNetwork',
+          'createdAt',
+          'rampID',
+          'mainFiatAmount',
+          'mainAssetAmount',
+          'transactionMessage',
+        ],
+        sortBy: [{ field: 'createdAt', order: 'DESC' }],
+      };
 
-    return result;
+      // Add userId filter if provided
+      if (userId) {
+        options.where = { 'user.id': userId };
+        options.joinRelations = [{ relation: 'user' }]; // Join user relation
+      }
+
+      const result = await findDynamic(this.transactionRepo, options);
+      return result;
+    } catch (error) {
+      console.error('Error in getAllUserTransactions:', error);
+      throw error;
+    }
   }
 
   async findTransactionByTransactionId(

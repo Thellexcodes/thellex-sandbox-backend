@@ -69,7 +69,7 @@ import { TransactionsService } from '../transactions/transactions.service';
 import { DevicesService } from '../devices/devices.service';
 import { RampTransactionMessage } from '@/v1/models/ramp-types';
 import { IMapleradTransferResponseDto } from '@/v1/models/maplerad.types';
-import { findDynamic } from '@/v2/utils/DynamicSource';
+import { findDynamic, FindDynamicOptions } from '@/v2/utils/DynamicSource';
 
 //[x] properly throw error using enum
 @Injectable()
@@ -158,35 +158,52 @@ export class PaymentsService {
     }
   }
 
-  async getAllUserRampTransactions({ page, limit }) {
-    return await findDynamic(this.fiatCryptoRampTransactionRepo, {
-      page,
-      limit,
-      selectFields: [
-        'id',
-        'expiresAt',
-        'netFiatAmount',
-        'netCryptoAmount',
-        'mainAssetAmount',
-        'mainFiatAmount',
-        'feeLabel',
-        'serviceFeeAmountLocal',
-        'serviceFeeAmountUSD',
-        'rate',
-        'grossCrypto',
-        'grossFiat',
-        'recipientInfo',
-        'bankInfo',
-        'blockchainTxId',
-        'seen',
-        'paymentStatus',
-        'transactionType',
-        'createdAt',
-        'paymentReason',
-        'transactionMessage',
-      ],
-      sortBy: [{ field: 'createdAt', order: 'DESC' }],
-    });
+  async getAllUserRampTransactions({ page, limit }, userId: string) {
+    try {
+      const options: FindDynamicOptions & { where?: { [key: string]: any } } = {
+        page,
+        limit,
+        selectFields: [
+          'id',
+          'expiresAt',
+          'netFiatAmount',
+          'netCryptoAmount',
+          'mainAssetAmount',
+          'mainFiatAmount',
+          'feeLabel',
+          'serviceFeeAmountLocal',
+          'serviceFeeAmountUSD',
+          'rate',
+          'grossCrypto',
+          'grossFiat',
+          'recipientInfo',
+          'bankInfo',
+          'blockchainTxId',
+          'seen',
+          'paymentStatus',
+          'transactionType',
+          'createdAt',
+          'paymentReason',
+          'transactionMessage',
+        ],
+        sortBy: [{ field: 'createdAt', order: 'DESC' }],
+      };
+
+      // Add userId filter if provided
+      if (userId) {
+        options.where = { 'user.id': userId };
+        options.joinRelations = [{ relation: 'user' }]; // Join user relation
+      }
+
+      const result = await findDynamic(
+        this.fiatCryptoRampTransactionRepo,
+        options,
+      );
+      return result;
+    } catch (error) {
+      console.error('Error in getAllUserTransactions:', error);
+      throw error;
+    }
   }
 
   /**

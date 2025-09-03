@@ -7,7 +7,7 @@ import { plainToInstance } from 'class-transformer';
 import { INotificationConsumeResponseDto } from './dto/notification.dto';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationErrorEnum } from '@/v1/models/notifications.enum';
-import { findDynamic } from '@/v2/utils/DynamicSource';
+import { findDynamic, FindDynamicOptions } from '@/v2/utils/DynamicSource';
 
 //TODO: properly handle errors
 @Injectable()
@@ -20,23 +20,37 @@ export class NotificationsService {
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  async getAllUserNotifications({ page, limit }) {
-    return await findDynamic(this.notificationRepo, {
-      page,
-      limit,
-      selectFields: [
-        'id',
-        'title',
-        'message',
-        'consumed',
-        'assetCode',
-        'amount',
-        'txnID',
-        'kind',
-        'createdAt',
-      ],
-      sortBy: [{ field: 'createdAt', order: 'DESC' }],
-    });
+  async getAllUserNotifications({ page, limit }, userId: string) {
+    try {
+      const options: FindDynamicOptions & { where?: { [key: string]: any } } = {
+        page,
+        limit,
+        selectFields: [
+          'id',
+          'title',
+          'message',
+          'consumed',
+          'assetCode',
+          'amount',
+          'txnID',
+          'kind',
+          'createdAt',
+        ],
+        sortBy: [{ field: 'createdAt', order: 'DESC' }],
+      };
+
+      // Add userId filter if provided
+      if (userId) {
+        options.where = { 'user.id': userId };
+        options.joinRelations = [{ relation: 'user' }]; // Join user relation
+      }
+
+      const result = await findDynamic(this.notificationRepo, options);
+      return result;
+    } catch (error) {
+      console.error('Error in getAllUserTransactions:', error);
+      throw error;
+    }
   }
 
   async markAsConsumed(id: string): Promise<INotificationConsumeResponseDto> {

@@ -1,16 +1,26 @@
 import { Repository, SelectQueryBuilder } from 'typeorm';
 
-interface FindDynamicOptions {
+interface SortBy {
+  field: string;
+  order?: 'ASC' | 'DESC';
+}
+
+interface JoinOption {
+  relation: string;
+  selectFields?: string[];
+}
+
+export interface FindDynamicOptions {
   page?: number;
   limit?: number;
   selectFields?: string[];
-  joinRelations?: { relation: string; selectFields?: string[] }[];
-  sortBy?: { field: string; order?: 'ASC' | 'DESC' }[];
+  sortBy?: SortBy[];
+  joinRelations?: JoinOption[];
 }
 
 export async function findDynamic<T>(
   repo: Repository<T>,
-  options: FindDynamicOptions = {},
+  options: FindDynamicOptions & { where?: { [key: string]: any } } = {},
 ): Promise<{
   data: T[];
   total: number;
@@ -22,7 +32,7 @@ export async function findDynamic<T>(
     const limit = options.limit ?? 10;
     const offset = (page - 1) * limit;
 
-    const alias = repo.metadata.tableName; // Use table name as alias
+    const alias = repo.metadata.tableName;
     const query: SelectQueryBuilder<T> = repo.createQueryBuilder(alias);
 
     // Select fields
@@ -55,6 +65,13 @@ export async function findDynamic<T>(
         parentAlias = joinAlias;
       });
     });
+
+    // Handle where conditions
+    if (options.where) {
+      Object.entries(options.where).forEach(([key, value]) => {
+        query.andWhere(`${key} = :value`, { value });
+      });
+    }
 
     // Pagination
     query.skip(offset).take(limit);

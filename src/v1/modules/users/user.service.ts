@@ -37,9 +37,6 @@ export class UserService {
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
     private readonly dataSource: DataSource,
-    private readonly transactionHistoryService: TransactionHistoryService,
-    private readonly paymentService: PaymentsService,
-    private readonly notificationService: NotificationsService,
   ) {}
 
   async create(
@@ -337,26 +334,5 @@ export class UserService {
       this.logger.error('Error fetching user dynamically by ID:', error);
       return null;
     }
-  }
-
-  async getAllUserTransactions({ page, limit }) {
-    return await this.transactionHistoryService.getAllUserTransactions({
-      page,
-      limit,
-    });
-  }
-
-  async getAllUserRampTransactions({ page, limit }) {
-    return await this.paymentService.getAllUserRampTransactions({
-      page,
-      limit,
-    });
-  }
-
-  async getAllUserNotifications({ page, limit }) {
-    return await this.notificationService.getAllUserNotifications({
-      page,
-      limit,
-    });
   }
 }
