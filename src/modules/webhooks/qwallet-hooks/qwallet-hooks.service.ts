@@ -196,14 +196,17 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
-      await this.transactionService.createTransaction({
-        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
-        fiatAmount: transaction.mainFiatAmount ?? 0,
-        cryptoAmount: Number(transaction.amount) ?? 0,
-        cryptoAsset: transaction.assetCode,
-        paymentStatus: transaction.paymentStatus,
-        paymentReason: transaction.paymentReason,
-      });
+      await this.transactionService.createTransaction(
+        {
+          transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+          fiatAmount: transaction.mainFiatAmount ?? 0,
+          cryptoAmount: Number(transaction.amount) ?? 0,
+          cryptoAsset: transaction.assetCode,
+          paymentStatus: transaction.paymentStatus,
+          paymentReason: transaction.paymentReason,
+        },
+        qwalletProfile.user,
+      );
 
       // Notify the user
       const notification = await this.notificationGateway.createNotification({
@@ -337,14 +340,17 @@ export class QwalletHooksService {
         latestWalletInfo.data.balance,
       );
 
-      await this.transactionService.createTransaction({
-        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
-        fiatAmount: Number(transaction.mainFiatAmount) ?? 0,
-        cryptoAmount: Number(transaction.amount) ?? 0,
-        cryptoAsset: transaction.assetCode,
-        paymentStatus: transaction.paymentStatus,
-        paymentReason: transaction.paymentReason,
-      });
+      await this.transactionService.createTransaction(
+        {
+          transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+          fiatAmount: Number(transaction.mainFiatAmount) ?? 0,
+          cryptoAmount: Number(transaction.amount) ?? 0,
+          cryptoAsset: transaction.assetCode,
+          paymentStatus: transaction.paymentStatus,
+          paymentReason: transaction.paymentReason,
+        },
+        qwalletProfile.user,
+      );
 
       const notification = await this.notificationGateway.createNotification({
         user: qwalletProfile.user,

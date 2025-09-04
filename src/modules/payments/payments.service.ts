@@ -1009,15 +1009,18 @@ export class PaymentsService {
       }
 
       // Revenue tracker for crypto payout
-      await this.transactionService.createTransaction({
-        transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
-        fiatAmount: txResult.mainFiatAmount ?? 0,
-        cryptoAmount: txResult.mainAssetAmount ?? 0,
-        cryptoAsset: txResult.assetCode,
-        fiatCurrency: params.fiatCode,
-        paymentStatus: params.paymentStatus,
-        paymentReason: params.paymentReason,
-      });
+      await this.transactionService.createTransaction(
+        {
+          transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+          fiatAmount: txResult.mainFiatAmount ?? 0,
+          cryptoAmount: txResult.mainAssetAmount ?? 0,
+          cryptoAsset: txResult.assetCode,
+          fiatCurrency: params.fiatCode,
+          paymentStatus: params.paymentStatus,
+          paymentReason: params.paymentReason,
+        },
+        user,
+      );
 
       // Step 3: Update transaction entity
       params.paymentStatus = PaymentStatus.Processing;

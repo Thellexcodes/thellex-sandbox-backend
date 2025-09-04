@@ -105,14 +105,17 @@ export class CwalletHooksService {
             assetCode as TokenEnum,
           );
 
-        await this.transactionService.createTransaction({
-          transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
-          cryptoAmount: Number(transaction.amount) ?? 0,
-          cryptoAsset: transaction.assetCode,
-          paymentStatus: transaction.paymentStatus,
-          paymentReason: transaction.paymentReason,
-          fiatAmount: transaction.mainFiatAmount ?? 0,
-        });
+        await this.transactionService.createTransaction(
+          {
+            transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+            cryptoAmount: Number(transaction.amount) ?? 0,
+            cryptoAsset: transaction.assetCode,
+            paymentStatus: transaction.paymentStatus,
+            paymentReason: transaction.paymentReason,
+            fiatAmount: transaction.mainFiatAmount ?? 0,
+          },
+          user,
+        );
 
         await this.cwalletService.updateWalletTokenBalance(
           wallet,
@@ -222,14 +225,17 @@ export class CwalletHooksService {
             updatedAssetCode as TokenEnum,
           );
 
-        await this.transactionService.createTransaction({
-          transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
-          cryptoAsset: updatedTxn.assetCode,
-          paymentStatus: updatedTxn.paymentStatus,
-          paymentReason: updatedTxn.paymentReason,
-          cryptoAmount: Number(updatedTxn.amount) ?? 0,
-          fiatAmount: updatedTxn.mainFiatAmount ?? 0,
-        });
+        await this.transactionService.createTransaction(
+          {
+            transactionType: TransactionTypeEnum.CRYPTO_WITHDRAWAL,
+            cryptoAsset: updatedTxn.assetCode,
+            paymentStatus: updatedTxn.paymentStatus,
+            paymentReason: updatedTxn.paymentReason,
+            cryptoAmount: Number(updatedTxn.amount) ?? 0,
+            fiatAmount: updatedTxn.mainFiatAmount ?? 0,
+          },
+          updatedTxn.user,
+        );
 
         await this.cwalletService.updateWalletTokenBalance(
           wallet,

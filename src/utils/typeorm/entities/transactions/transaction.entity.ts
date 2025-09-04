@@ -1,10 +1,20 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
 import { FiatEnum, TokenEnum } from '@/config/settings';
+import { Exclude } from 'class-transformer';
+import { UserEntity } from '../user.entity';
 
 @Entity('transactions')
 export class TransactionEntity extends BaseEntity {
+  @Exclude()
+  @ManyToOne(() => UserEntity, (user) => user.bankAccounts, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: UserEntity;
+
   @Column({
     type: 'enum',
     enum: TransactionTypeEnum,

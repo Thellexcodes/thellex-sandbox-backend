@@ -11,7 +11,6 @@ import {
   ApproveRampRequestDTO,
   ApproveRampRequestResponseDTO,
 } from './dto/approve-transaction.dto';
-import { toUTCString } from '@/utils/helpers';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import {
   NotificationEventEnum,
@@ -126,6 +125,7 @@ export class AdminService {
           (txn.transactionType === TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT ||
             txn.transactionType ===
               TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL) &&
+          txn.paymentStatus === PaymentStatus.Complete &&
           txn.providerTransactionId !== 'no-id-yet' &&
           !txn.approved,
       )
@@ -134,7 +134,7 @@ export class AdminService {
         txnID: txn.providerTransactionId,
         mainCryptoAmount: txn.netCryptoAmount,
         mainFiatAmount: txn.netFiatAmount,
-        transactionType: TransactionTypeEnum.CRYPTO_DEPOSIT,
+        transactionType: txn.transactionType,
         userUID: txn.user.uid,
         approved: txn.approved,
         paymentStatus: txn.paymentStatus,
@@ -178,16 +178,19 @@ export class AdminService {
         { approved: dto.approved },
       );
 
-    await this.transactionService.createTransaction({
-      transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
-      fiatAmount: rampTransaction.userAmount ?? 0,
-      cryptoAmount: rampTransaction.mainAssetAmount ?? 0,
-      cryptoAsset: rampTransaction.recipientInfo.assetCode,
-      fiatCurrency: rampTransaction.fiatCode,
-      paymentStatus: rampTransaction.paymentStatus,
-      paymentReason:
-        rampTransaction.paymentReason ?? rampTransaction.paymentReason,
-    });
+    await this.transactionService.createTransaction(
+      {
+        transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+        fiatAmount: rampTransaction.userAmount ?? 0,
+        cryptoAmount: rampTransaction.mainAssetAmount ?? 0,
+        cryptoAsset: rampTransaction.recipientInfo.assetCode,
+        fiatCurrency: rampTransaction.fiatCode,
+        paymentStatus: rampTransaction.paymentStatus,
+        paymentReason:
+          rampTransaction.paymentReason ?? rampTransaction.paymentReason,
+      },
+      user,
+    );
 
     const { ...transaction } =
       await this.transactionHistoryService.updateTransactionByTransactionId(

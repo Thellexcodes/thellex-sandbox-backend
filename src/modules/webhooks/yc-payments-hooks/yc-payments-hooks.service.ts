@@ -102,14 +102,17 @@ export class YcPaymentHookService {
         { paymentStatus: dto.status },
       );
 
-    await this.transactionService.createTransaction({
-      transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
-      cryptoAmount: transaction.mainAssetAmount ?? 0,
-      fiatAmount: transaction.mainFiatAmount ?? 0,
-      cryptoAsset: transaction.assetCode,
-      paymentStatus: transaction.paymentStatus,
-      paymentReason: transaction.paymentReason,
-    });
+    await this.transactionService.createTransaction(
+      {
+        transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
+        cryptoAmount: transaction.mainAssetAmount ?? 0,
+        fiatAmount: transaction.mainFiatAmount ?? 0,
+        cryptoAsset: transaction.assetCode,
+        paymentStatus: transaction.paymentStatus,
+        paymentReason: transaction.paymentReason,
+      },
+      user,
+    );
 
     const notification = await this.notificationGateway.createNotification({
       user,

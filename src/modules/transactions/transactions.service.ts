@@ -3,6 +3,7 @@ import { TransactionEntity } from '@/utils/typeorm/entities/transactions/transac
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 @Injectable()
 export class TransactionsService {
@@ -15,6 +16,7 @@ export class TransactionsService {
 
   async createTransaction(
     payload: CreateTransactionDto,
+    user: UserEntity,
   ): Promise<TransactionEntity> {
     const transaction = new TransactionEntity();
     transaction.transactionType = payload.transactionType;

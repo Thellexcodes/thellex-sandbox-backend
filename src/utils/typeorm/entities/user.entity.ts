@@ -32,6 +32,7 @@ import { RoleEnum } from '@/models/roles-actions.enum';
 import { BankingNetworkEntity } from './banking/banking-network.entity';
 import { TransactionHistoryEntity } from './transactions/transaction-history.entity';
 import { NGBankDto } from '@/utils/nigeria-banks';
+import { TransactionEntity } from './transactions/transaction.entity';
 
 @Index(['email'])
 @Entity({ name: 'users' })
@@ -165,6 +166,14 @@ export class UserEntity extends BaseEntity {
     eager: true,
   })
   bankAccounts: BankAccountEntity[];
+
+  @Expose()
+  @ApiProperty({ type: () => [TransactionEntity] })
+  @Type(() => TransactionEntity)
+  @OneToMany(() => TransactionEntity, (b) => b.user, {
+    cascade: true,
+  })
+  transactions: TransactionEntity[];
 
   @Type(() => PayoutSettingEntity)
   @OneToOne(() => PayoutSettingEntity, (p) => p.user, {
