@@ -24,5 +24,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "./thellex-sdk", "src/v1/thellex-sdk"]
+  "exclude": ["node_modules", "dist", "./thellex-sdk", "src/thellex-sdk"]
 }
