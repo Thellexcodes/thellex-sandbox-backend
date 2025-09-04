@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { VersionedController101 } from './v1/modules/controller/base.controller';
-import { CustomRequest, CustomResponse } from './v1/models/request.types';
-import { responseHandler } from './v1/utils/helpers';
+import { VersionedController101 } from './modules/controller/base.controller';
+import { CustomRequest, CustomResponse } from './models/request.types';
+import { responseHandler } from './utils/helpers';
 // import { ClientAuthGuard } from './middleware/guards/signature.guard';
 
 class BackendErrorDto {

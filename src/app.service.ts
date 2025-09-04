@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import {
   BetaTesterEntity,
   CreateSubscribeBetaDto,
-} from './v1/utils/typeorm/entities/beta.testers.entity';
-import { MailService } from './v1/modules/email/mail.service';
-import { CustomHttpException } from './v1/middleware/custom.http.exception';
-import { TransactionsService } from './v1/modules/transactions/transactions.service';
+} from './utils/typeorm/entities/beta.testers.entity';
+import { MailService } from './modules/email/mail.service';
+import { CustomHttpException } from './middleware/custom.http.exception';
+import { TransactionsService } from './modules/transactions/transactions.service';
 
 @Injectable()
 export class AppService {
