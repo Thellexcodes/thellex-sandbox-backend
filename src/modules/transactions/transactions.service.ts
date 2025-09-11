@@ -18,17 +18,19 @@ export class TransactionsService {
     payload: CreateTransactionDto,
     user: UserEntity,
   ): Promise<TransactionEntity> {
-    const transaction = new TransactionEntity();
-    transaction.transactionType = payload.transactionType;
-    transaction.fiatAmount = payload.fiatAmount;
-    transaction.cryptoAmount = payload.cryptoAmount;
-    transaction.fiatCurrency = payload.fiatCurrency;
-    transaction.cryptoAsset = payload.cryptoAsset;
-    transaction.paymentStatus = payload.paymentStatus;
-    this.logger.log(
-      `Creating transaction: ${payload.transactionType}, amounts: ${payload.fiatAmount}: ${payload.cryptoAmount}, currency: ${payload.cryptoAsset}`,
-    );
-    return this.transactionRepository.save(transaction);
+    try {
+      const transaction = new TransactionEntity();
+      transaction.transactionType = payload.transactionType;
+      transaction.fiatAmount = payload.fiatAmount;
+      transaction.cryptoAmount = payload.cryptoAmount;
+      transaction.fiatCurrency = payload.fiatCurrency;
+      transaction.cryptoAsset = payload.cryptoAsset;
+      transaction.paymentStatus = payload.paymentStatus;
+      transaction.user = user;
+      return this.transactionRepository.save(transaction);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async getAllRevenue(): Promise<TransactionEntity[]> {

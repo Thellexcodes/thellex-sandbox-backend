@@ -280,8 +280,12 @@ export class QwalletHooksService {
       data.done_at = toUTCDate(data.wallet.updated_at);
 
       const transaction =
-        await this.transactionHistoryService.findTransactionByTransactionId(
-          data.id,
+        await this.transactionHistoryService.findOneTransactionDynamic(
+          { transactionId: data.id },
+          {
+            selectFields: ['id', 'paymentStatus', 'transactionDirection'],
+            joinRelations: [{ relation: 'user', selectFields: ['id'] }],
+          },
         );
 
       if (!transaction) {

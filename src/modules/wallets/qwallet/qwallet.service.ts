@@ -516,14 +516,13 @@ export class QwalletService {
     wallet: QWalletsEntity,
   ): Promise<ITransactionHistoryDto> {
     try {
-      console.log({ wallet });
-      return;
       const user = wallet.profile.user;
       const uuid = wallet.profile.qid;
 
       const { network, assetCode, amount } = dto;
 
       const networkMeta = wallet.networkMetadata?.[network];
+
       if (!networkMeta) {
         throw new CustomHttpException(
           WalletErrorEnum.NETWORK_UNSUPPORTED,

@@ -24,6 +24,10 @@ import { NotificationsGateway } from '@/modules/notifications/notifications.gate
 import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
 import { TransactionsService } from '@/modules/transactions/transactions.service';
 import { DevicesService } from '@/modules/devices/devices.service';
+import { findDynamic, FindDynamicOptions } from '@/utils/DynamicSource';
+import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 //TODO: handle errors with enums
 //TODO: update all date in system to UTC
@@ -32,11 +36,13 @@ export class CwalletHooksService {
   private readonly logger = new Logger(CwalletHooksService.name);
 
   constructor(
-    private readonly transactionHistoryServie: TransactionHistoryService,
+    private readonly transactionHistoryService: TransactionHistoryService,
     private readonly cwalletService: CwalletService,
     private readonly notificationGateway: NotificationsGateway,
     private readonly transactionService: TransactionsService,
     private readonly deviceService: DevicesService,
+    @InjectRepository(TransactionHistoryEntity)
+    private readonly transactionRepo: Repository<TransactionHistoryEntity>,
   ) {}
 
   async handleDepositSuccessful(payload: CwalletHookDto) {
@@ -63,8 +69,9 @@ export class CwalletHooksService {
         const userProfile = wallet.profile.user;
 
         const transactionHistoryExists =
-          await this.transactionHistoryServie.findTransactionByTransactionId(
-            txnID,
+          await this.transactionHistoryService.findOneTransactionDynamic(
+            { transactionId: txnID },
+            { selectFields: ['id'] },
           );
 
         if (transactionHistoryExists) {
@@ -97,7 +104,7 @@ export class CwalletHooksService {
         };
 
         const { user, ...transaction } =
-          await this.transactionHistoryServie.create(txnData, userProfile);
+          await this.transactionHistoryService.create(txnData, userProfile);
 
         const latestWalletBalance =
           await this.cwalletService.getBalanceByAddress(
@@ -186,15 +193,19 @@ export class CwalletHooksService {
         }
 
         const transaction =
-          await this.transactionHistoryServie.findTransactionByTransactionId(
-            txnID,
+          await this.transactionHistoryService.findOneTransactionDynamic(
+            { transactionId: txnID },
+            {
+              selectFields: ['id', 'paymentStatus', 'transactionDirection'],
+              joinRelations: [{ relation: 'user', selectFields: ['id'] }],
+            },
           );
 
         if (
           !transaction ||
           transaction.transactionDirection !== TransactionDirectionEnum.OUTBOUND
         ) {
-          return this.logger.error(QWalletStatus.TRANSACTION_FOUND);
+          return this.logger.error(QWalletStatus.TRANSACTION_NOT_FOUND);
         }
 
         if (transaction.paymentStatus === PaymentStatus.Complete) {
@@ -203,10 +214,9 @@ export class CwalletHooksService {
 
         // Update transaction
         const updatedTxn =
-          await this.transactionHistoryServie.updateCwalletTransaction({
+          await this.transactionHistoryService.updateCwalletTransaction({
             transactionId: txnID,
             updates: {
-              event: WalletWebhookEventEnum.WithdrawalSuccessful,
               blockchainTxId: notificationPayload.txHash,
               updatedAt: toUTCDate(notificationPayload.updateDate),
               paymentStatus: PaymentStatus.Complete,
@@ -302,33 +312,3 @@ export class CwalletHooksService {
     }
   }
 }
-
-//[x]  handle incoming
-// {
-// [1]     "subscriptionId": "2f0a742e-cef7-42a3-b0e6-e6dfee9ea77d",
-// [1]     "notificationId": "3479b431-e357-48a0-9b66-12d103735e8c",
-// [1]     "notificationType": "transactions.inbound",
-// [1]     "notification": {
-// [1]       "id": "a5b88780-5129-5dea-a583-92a7e8ac77de",
-// [1]       "blockchain": "MATIC",
-// [1]       "walletId": "2bad2907-bf5d-5ae9-b24a-d4321d1a05d4",
-// [1]       "tokenId": "db6905b9-8bcd-5537-8b08-f5548bdf7925",
-// [1]       "sourceAddress": "0xee7ae85f2fe2239e27d9c1e23fffe168d63b4055",
-// [1]       "destinationAddress": "0x229e78435bb9cc24916300ddd2204e71bba351b4",
-// [1]       "amounts": [
-// [1]         "0.9936"
-// [1]       ],
-// [1]       "nftTokenIds": [],
-// [1]       "state": "CONFIRMED",
-// [1]       "errorReason": "",
-// [1]       "transactionType": "INBOUND",
-// [1]       "txHash": "0x8e48cb5bb961f7418659bff31520287c4087678d1ac56e713326f4791514b1c3",
-// [1]       "createDate": "2025-08-16T06:53:12Z",
-// [1]       "updateDate": "2025-08-16T06:53:12Z",
-// [1]       "errorDetails": null,
-// [1]       "networkFeeInUSD": "0.0015824700963759361984",
-// [1]       "networkFee": "0.006790260014485888"
-// [1]     },
-// [1]     "timestamp": "2025-08-16T06:53:12.491934311Z",
-// [1]     "version": 2
-// [1]   }

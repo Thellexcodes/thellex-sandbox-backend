@@ -57,10 +57,9 @@ export class TransactionHistoryService {
         sortBy: [{ field: 'createdAt', order: 'DESC' }],
       };
 
-      // Add userId filter if provided
       if (userId) {
         options.where = { 'user.id': userId };
-        options.joinRelations = [{ relation: 'user' }]; // Join user relation
+        options.joinRelations = [{ relation: 'user' }];
       }
 
       const result = await findDynamic(this.transactionRepo, options);
@@ -73,11 +72,15 @@ export class TransactionHistoryService {
 
   async findTransactionByTransactionId(
     transactionId: string,
-  ): Promise<TransactionHistoryEntity | null> {
-    return this.transactionRepo.findOne({
-      where: { transactionId },
-      relations: ['user'],
-    });
+  ): Promise<Partial<TransactionHistoryEntity> | null> {
+    const transaction = await this.findOneTransactionDynamic(
+      { transactionId },
+      {
+        selectFields: ['id', 'paymentStatus', 'transactionDirection'],
+        joinRelations: [{ relation: 'user', selectFields: ['id'] }],
+      },
+    );
+    return transaction;
   }
 
   async updateQWalletTransactionByTransactionId(
@@ -104,20 +107,40 @@ export class TransactionHistoryService {
   async updateCwalletTransaction(
     params: IUpdateCwalletTransactionDto,
   ): Promise<TransactionHistoryEntity | null> {
-    const existing = await this.findTransactionByTransactionId(
-      params.transactionId,
+    const transaction = await this.findOneTransactionDynamic(
+      { transactionId: params.transactionId },
+      {
+        selectFields: [
+          'id',
+          'transactionId',
+          'transactionDirection',
+          'transactionType',
+          'assetCode',
+          'amount',
+          'fee',
+          'feeLevel',
+          'blockchainTxId',
+          'reason',
+          'paymentStatus',
+          'sourceAddress',
+          'destinationAddress',
+          'paymentNetwork',
+          'createdAt',
+        ],
+        joinRelations: [{ relation: 'user', selectFields: ['id'] }],
+      },
     );
 
-    if (!existing) {
+    if (!transaction) {
       throw new CustomHttpException(
         'Transaction not found',
         HttpStatus.NOT_FOUND,
       );
     }
 
-    Object.assign(existing, params.updates);
+    Object.assign(transaction, params.updates);
 
-    return this.transactionRepo.save(existing);
+    return this.transactionRepo.save(transaction);
   }
 
   async updateTransactionByTransactionId(
@@ -137,5 +160,69 @@ export class TransactionHistoryService {
     Object.assign(transaction, updates);
 
     return this.transactionRepo.save(transaction);
+  }
+
+  async findOneTransactionDynamic(
+    identifier: { transactionId?: string },
+    options?: {
+      selectFields?: string[]; // fields from transaction
+      joinRelations?: {
+        // join relations with optional select fields
+        relation: string;
+        selectFields?: string[]; // only fields to select from this relation
+      }[];
+    },
+  ): Promise<TransactionHistoryEntity | null> {
+    try {
+      const query = this.transactionRepo.createQueryBuilder('transaction');
+
+      // Default fields from transaction
+      const defaultFields = [
+        'transaction.id',
+        'transaction.event',
+        'transaction.paymentStatus',
+        'transaction.updatedAt',
+        'transaction.blockchainTxId',
+        'transaction.reason',
+      ];
+      const fieldsToSelect =
+        options?.selectFields?.map((f) => `transaction.${f}`) ?? defaultFields;
+      query.select(fieldsToSelect);
+
+      // Handle joinRelations dynamically with selected fields
+      options?.joinRelations?.forEach((join) => {
+        const parts = join.relation.split('.'); // support nested relations
+        let parentAlias = 'transaction';
+
+        parts.forEach((part, index) => {
+          const alias = parts.slice(0, index + 1).join('_'); // e.g., transaction_user
+          query.leftJoin(`${parentAlias}.${part}`, alias); // join relation
+
+          // select only specified fields from relation
+          if (index === parts.length - 1 && join.selectFields?.length) {
+            const relationFields = join.selectFields.map(
+              (f) => `${alias}.${f}`,
+            );
+            query.addSelect(relationFields);
+          }
+
+          parentAlias = alias;
+        });
+      });
+
+      // WHERE clause
+      if (identifier.transactionId) {
+        query.where('transaction.transactionId = :transactionId', {
+          transactionId: identifier.transactionId,
+        });
+      } else {
+        throw new Error('transactionId must be provided');
+      }
+
+      return await query.getOne();
+    } catch (error) {
+      this.logger.error('Error fetching transaction dynamically:', error);
+      return null;
+    }
   }
 }
