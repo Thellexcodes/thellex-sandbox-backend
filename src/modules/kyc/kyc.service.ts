@@ -691,7 +691,7 @@ export class KycService {
       await this.userService.updateUserTier(user.id, TierEnum.BASIC);
       const updatedUser = await this.userService.findOneById(user.id);
 
-      const { currentTier, nextTier, remainingTiers, outstandingKyc } =
+      const { currentTier, nextTier, remainingTiers, outstandingKyc, banks } =
         formatUserWithTiers(updatedUser);
 
       return plainToInstance(
@@ -702,6 +702,7 @@ export class KycService {
           nextTier,
           outstandingKyc,
           remainingTiers,
+          banks,
         },
         { excludeExtraneousValues: true },
       );

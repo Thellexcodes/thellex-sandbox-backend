@@ -436,6 +436,34 @@ export class QwalletService {
         await this.createAndStoreWalletsWithTokens(profile.qid, profile);
       }
 
+      //checks if address is empty for a particular network
+      const emptyWallet = profile.wallets.find((w) =>
+        Object.entries(w.networkMetadata || {}).some(
+          ([network, meta]) =>
+            meta.address === 'no-address' && network === 'bep20',
+        ),
+      );
+
+      if (emptyWallet) {
+        const assetWallet = await this.getUserWallet(
+          profile.qid,
+          TokenEnum.USDT,
+        );
+
+        const updatedNetworkMetadata = {
+          ...emptyWallet.networkMetadata,
+          ['bep20']: {
+            ...(emptyWallet.networkMetadata?.['bep20'] || {}),
+            address: assetWallet.data.deposit_address,
+          },
+        };
+
+        await this.updateWalletAddress({
+          id: walletsExist.id,
+          networkMetadata: updatedNetworkMetadata,
+        });
+      }
+
       return profile;
     } catch (error) {
       console.log(error);

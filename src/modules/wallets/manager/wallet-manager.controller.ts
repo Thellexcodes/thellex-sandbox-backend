@@ -14,20 +14,31 @@ import {
 } from './dto/get-balance-response.dto';
 import { VersionedController101 } from '@/modules/controller/base.controller';
 import { BasicAuthGuard } from '@/middleware/guards/local.auth.guard';
+import { QwalletService } from '../qwallet/qwallet.service';
 
 @ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
 @UseGuards(BasicAuthGuard)
 @VersionedController101('wallet-manager')
 export class WalletManagerController {
-  constructor(private readonly walletManagerService: WalletManagerService) {}
+  constructor(
+    private readonly walletManagerService: WalletManagerService,
+    private readonly qwalletService: QwalletService,
+  ) {}
 
   // Get overall wallet balance across all assets
   @ApiExtraModels(WalletMapDto)
   @Get('balance')
   @ApiOkResponse({ type: WalletBalanceSummaryResponseDto })
-  async getBalance(@Req() req: CustomRequest, @Res() res: CustomResponse) {
+  async getBalance(
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
+    @Query() query: { action?: string },
+  ) {
     const user = req.user;
+    if (query.action === 'activate' && !user.qWalletProfile) {
+      await this.qwalletService.ensureUserHasProfileAndWallets(req.user);
+    }
     const result = await this.walletManagerService.getBalance(user);
     responseHandler(result, res, req);
   }
