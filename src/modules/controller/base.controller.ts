@@ -7,3 +7,7 @@ export function VersionedController101(
 ) {
   return Controller({ path, version: version });
 }
+
+export function VersionedControllerV2(path: string, version = API_VERSIONS.V2) {
+  return Controller({ path, version: version });
+}

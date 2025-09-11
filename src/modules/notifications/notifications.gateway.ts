@@ -200,7 +200,7 @@ export class NotificationsGateway {
 
     try {
       const response = await admin.messaging().sendEachForMulticast(message);
-      this.logger.log(`✅ Notification sent: ${response}`);
+      isDev && this.logger.log(`✅ Notification sent: ${response}`);
       return response;
     } catch (error) {
       this.logger.error('❌ Failed to send notification', error.stack || error);

@@ -91,7 +91,8 @@ export class DevicesService {
     const devices = await this.deviceRepo.find({
       where: { user: { id: userId } },
     });
-    this.logger.log(`Retrieved ${devices.length} devices for user ${userId}`);
+    isDev &&
+      this.logger.log(`Retrieved ${devices.length} devices for user ${userId}`);
     return devices.map((device) => device.fcmToken);
   }
 
