@@ -14,7 +14,7 @@ import {
 } from './config/settings';
 import { API_VERSIONS } from './config/versions';
 import { AllExceptionsFilter } from './middleware/filters/http-exception.filter';
-import { isProd } from './utils/helpers';
+import { isDev, isProd } from './utils/helpers';
 import helmet from 'helmet';
 
 const certFolder = path.join(__dirname, '../../cert');
@@ -54,7 +54,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
-    // logger: isProd ? false : ['error', 'warn', 'debug'],
+    logger: !isProd ? false : ['error', 'warn', 'debug', 'log'],
   });
 
   app.setGlobalPrefix('api');
@@ -63,7 +63,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
-  if (!isProd) {
+  if (isDev) {
     const config = new DocumentBuilder()
       .setTitle('Thellex API')
       .setDescription('Thellex API Documentation')

@@ -35,5 +35,6 @@ import { getAppConfig } from '@/constants/env';
       inject: [],
     }),
   ],
+  exports: [MailService],
 })
 export class MailModule {}

@@ -37,6 +37,8 @@ import { typeOrmConfig } from './utils/typeorm/typeOrm.config';
 import { ConfigService } from './config/config.service';
 import { CrashReportModule } from './crash-report/crash-report.module';
 import { BetaTesterEntity } from './utils/typeorm/entities/beta.testers.entity';
+import { FirebaseModule } from './modules/firebase/firebase.module';
+import { ProcessedBuildEntity } from './utils/typeorm/entities/processed-build.entity';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { BetaTesterEntity } from './utils/typeorm/entities/beta.testers.entity';
       AuthEntity,
       DeviceEntity,
       BetaTesterEntity,
+      ProcessedBuildEntity,
       AuthVerificationCodesEntity,
     ]),
     TypeOrmModule.forRootAsync({
@@ -76,6 +79,7 @@ import { BetaTesterEntity } from './utils/typeorm/entities/beta.testers.entity';
     WalletManagerModule,
     CwalletModule,
     CrashReportModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [

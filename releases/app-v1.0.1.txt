@@ -1,0 +1,10 @@
+Version 1.0.1 (Build 1)
+
+What's New:
+- Added push notifications for important updates
+- Improved app startup speed by 30%
+- Fixed crash when opening the profile page
+- Updated UI for the settings screen
+- Minor bug fixes and performance improvements
+
+Please test the new features and report any issues via the beta feedback form.

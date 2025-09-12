@@ -29,6 +29,7 @@ import { NGBankDto, NigeriaBanks } from './nigeria-banks';
 import { getEnv } from '@/constants/env';
 import { ENV_DEVELOPMENT, ENV_PRODUCTION } from '@/models/settings.types';
 import { RequestCryptoOffRampPaymentDto } from '../modules/payments/dto/request-crypto-offramp-payment.dto';
+import { createReadStream } from 'fs';
 
 //TODO: handle errors with enums
 
@@ -505,4 +506,14 @@ export function validateOffRampRequest(
   }
 
   return { valid: true };
+}
+
+export function sha256File(filePath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    const stream = createReadStream(filePath);
+    stream.on('error', reject);
+    stream.on('data', (chunk) => hash.update(chunk));
+    stream.on('end', () => resolve(hash.digest('hex')));
+  });
 }

@@ -85,6 +85,8 @@ export type ApiConfig = {
   };
   FIREBASE: {
     SERVICE_ACCOUNT: string;
+    PROJECT_NUMBER: string;
+    APP_ID: string;
   };
   ALCHEMY_API: string;
   KYC_ENCRYPTION_KEY: string;
