@@ -87,6 +87,8 @@ export function getAppConfig(): ApiConfig {
     },
     FIREBASE: {
       SERVICE_ACCOUNT: config.get('FIREBASE_SERVICE_ACCOUNT'),
+      PROJECT_NUMBER: config.get('FIREBASE_PROJECT_NUMBER'),
+      APP_ID: config.get('FIREBASE_APP_ID'),
     },
     TREASURER: {
       EVM_WALLET: config.get('EVM_TREASURY_ADDRESS'),

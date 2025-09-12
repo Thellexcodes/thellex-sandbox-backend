@@ -75,4 +75,24 @@ export class HttpService {
     });
     return response.data;
   }
+
+  async head<T = any>(
+    url: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<T>> {
+    try {
+      const response = await this.request<T>({
+        method: 'HEAD',
+        url,
+        ...config,
+      });
+      return response;
+    } catch (error: any) {
+      const message =
+        error?.response?.data || error.message || 'HEAD request failed';
+      const status =
+        error?.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      throw new HttpException(message, status);
+    }
+  }
 }

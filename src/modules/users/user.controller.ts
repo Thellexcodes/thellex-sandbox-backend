@@ -20,7 +20,6 @@ import { NotificationsService } from '../notifications/notifications.service';
 //TODO: middleware for outstanding verifications
 @ApiTags('User')
 @VersionedController101('user')
-// @UseGuards(ClientAuthGuard)
 @ApiBearerAuth('access-token')
 export class UserController {
   constructor(

@@ -2,6 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { getAppConfig } from '@/constants/env';
 import { SendEmailOptions } from '@/models/email-types';
+import * as hbs from 'hbs';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class MailService {
@@ -39,6 +42,28 @@ export class MailService {
     } catch (error) {
       console.error('Error sending email:', error);
       throw new Error('Failed to send email');
+    }
+  }
+
+  async notifySubscribers(
+    release: { name: string; releaseNotes?: string },
+    emails: string[],
+  ) {
+    const templatePath = join(process.cwd(), 'templates/release-email.hbs');
+    const template = hbs.compile(readFileSync(templatePath, 'utf8'));
+
+    const html = template({
+      releaseId: release.name,
+      notes: release.releaseNotes,
+    });
+
+    for (const email of emails) {
+      await this.mailerService.sendMail({
+        from: `"Thellex Beta" <${process.env.MAIL_USER}>`,
+        to: email,
+        subject: `New Beta Release Available`,
+        html,
+      });
     }
   }
 

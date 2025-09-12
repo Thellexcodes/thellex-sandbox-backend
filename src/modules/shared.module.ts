@@ -39,6 +39,8 @@ import { TransactionsService } from './transactions/transactions.service';
 import { DevicesModule } from './devices/devices.module';
 import { DevicesService } from './devices/devices.service';
 import { AdminModule } from './admin/admin.module';
+import { FirebaseModule } from './firebase/firebase.module';
+import { VersionModule } from './version/version.module';
 
 @Global()
 @Module({
@@ -70,6 +72,8 @@ import { AdminModule } from './admin/admin.module';
     TransactionsModule,
     DevicesModule,
     AdminModule,
+    FirebaseModule,
+    VersionModule,
   ],
   providers: [
     EtherService,

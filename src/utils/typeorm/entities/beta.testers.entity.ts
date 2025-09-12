@@ -4,9 +4,11 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  Unique,
 } from 'typeorm';
 
 @Entity('beta_testers')
+@Unique(['email'])
 export class BetaTesterEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -7,7 +7,7 @@ import {
 } from './utils/typeorm/entities/beta.testers.entity';
 import { MailService } from './modules/email/mail.service';
 import { CustomHttpException } from './middleware/custom.http.exception';
-import { TransactionsService } from './modules/transactions/transactions.service';
+import { FirebaseDistributionService } from './modules/firebase/firebase-distribution.service';
 
 @Injectable()
 export class AppService {
@@ -15,7 +15,9 @@ export class AppService {
   constructor(
     @InjectRepository(BetaTesterEntity)
     private betaTesterRepo: Repository<BetaTesterEntity>,
+
     private readonly mailService: MailService,
+    private readonly fad: FirebaseDistributionService,
   ) {}
 
   getHello(): string {
@@ -30,27 +32,27 @@ export class AppService {
     const existing = await this.betaTesterRepo.findOne({
       where: { email: dto.email },
     });
-
-    if (existing) {
+    if (existing)
       throw new CustomHttpException(
         'Email already subscribed',
         HttpStatus.CONFLICT,
       );
-    }
 
     const newTester = this.betaTesterRepo.create({ email: dto.email });
     await this.betaTesterRepo.save(newTester);
 
-    // await this.mailService.sendEmail({
-    //   to: dto.email,
-    //   subject: 'Welcome to Thellex Beta!',
-    //   template: 'beta-welcome',
-    //   context: {
-    //     email: dto.email,
-    //     miStoreUrl: 'https://app.mi.com/details?id=your.app.id',
-    //   },
-    //   transport: 'support',
-    // });
+    const result = await this.fad.getLatestReleaseAndDistribute(dto.email);
+
+    await this.mailService.sendEmail({
+      to: dto.email,
+      subject: 'Welcome to Thellex Beta!',
+      template: 'beta-welcome',
+      context: {
+        email: dto.email,
+        fV1TestersLink: result.downloadUrl,
+      },
+      transport: 'support',
+    });
 
     return { key: 'success', msg: 'Subscribed' };
   }

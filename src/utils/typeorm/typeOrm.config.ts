@@ -21,6 +21,7 @@ import { TransactionHistoryEntity } from './entities/transactions/transaction-hi
 import { TransactionEntity } from './entities/transactions/transaction.entity';
 import { BetaTesterEntity } from './entities/beta.testers.entity';
 import { isDev, isProd } from '../helpers';
+import { ProcessedBuildEntity } from './entities/processed-build.entity';
 
 export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
   return {

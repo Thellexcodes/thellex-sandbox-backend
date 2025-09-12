@@ -1,0 +1,15 @@
+{
+  "title": "Firebase App Distribution Manager",
+  "description": "Custom role to manage Firebase App Distribution testers and releases",
+  "stage": "GA",
+  "includedPermissions": [
+    "firebaseappdistro.groups.get",
+    "firebaseappdistro.testers.create",
+    "firebaseappdistro.testers.update",
+    "firebaseappdistro.testers.delete",
+    "firebaseappdistro.releases.upload",
+    "firebaseappdistro.releases.get",
+    "firebaseappdistro.releases.distribute"
+  ]
+}
+
