@@ -24,8 +24,10 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+
     @InjectRepository(AuthVerificationCodesEntity)
     private readonly authenticationRepository: Repository<AuthVerificationCodesEntity>,
+
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly qwalletService: QwalletService,
