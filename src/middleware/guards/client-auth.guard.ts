@@ -60,9 +60,9 @@ export class ClientAuthGuard implements CanActivate {
 
     if (clientType === 'mobile') {
       // Mobile validation
-      if (!signature || !timestamp || !fingerprint) {
-        throw new UnauthorizedException('Missing required headers');
-      }
+      // if (!signature || !timestamp || !fingerprint) {
+      //   throw new UnauthorizedException('Missing required headers');
+      // }
       // const isValid = this.verifySignature(
       //   fingerprint,
       //   timestamp,
