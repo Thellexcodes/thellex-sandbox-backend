@@ -63,7 +63,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
-  if (!isDev) {
+  if (isDev) {
     const config = new DocumentBuilder()
       .setTitle('Thellex API')
       .setDescription('Thellex API Documentation')

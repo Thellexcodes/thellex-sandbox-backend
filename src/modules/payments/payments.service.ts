@@ -501,7 +501,6 @@ export class PaymentsService {
     dto: RequestCryptoOffRampPaymentDto,
   ) {
     const { valid } = validateOffRampRequest(dto);
-    dto.userAmount = 100;
 
     if (!valid)
       throw new CustomHttpException(
