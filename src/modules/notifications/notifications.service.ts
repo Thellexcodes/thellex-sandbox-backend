@@ -8,6 +8,9 @@ import { INotificationConsumeResponseDto } from './dto/notification.dto';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationErrorEnum } from '@/models/notifications.enum';
 import { findDynamic, FindDynamicOptions } from '@/utils/DynamicSource';
+import PQueue from 'p-queue';
+
+const queue = new PQueue({ concurrency: 3 });
 
 //TODO: properly handle errors
 @Injectable()
@@ -53,43 +56,86 @@ export class NotificationsService {
     }
   }
 
-  async markAsConsumed(id: string): Promise<INotificationConsumeResponseDto> {
-    try {
-      const notification = await this.notificationRepo.findOneBy({ id });
+  async markAsConsumed(
+    id: string,
+  ): Promise<INotificationConsumeResponseDto | void> {
+    return queue.add(async () => {
+      try {
+        const notification = await this.notificationRepo.findOneBy({ id });
 
-      if (!notification) {
+        if (!notification) {
+          throw new CustomHttpException(
+            NotificationErrorEnum.NOTIFICATION_NOT_FOUND,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        if (notification.consumed) {
+          throw new CustomHttpException(
+            NotificationErrorEnum.NOTIFICATION_ALREADY_CONSUMED,
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        await this.notificationRepo.update({ id }, { consumed: true });
+
+        return plainToInstance(
+          INotificationConsumeResponseDto,
+          { id, consumed: true, kind: notification.kind },
+          { excludeExtraneousValues: true },
+        );
+      } catch (error) {
+        console.error('Error consuming notification:', error);
+
+        if (error instanceof CustomHttpException) {
+          throw error;
+        }
+
         throw new CustomHttpException(
-          NotificationErrorEnum.NOTIFICATION_NOT_FOUND,
-          HttpStatus.NOT_FOUND,
+          NotificationErrorEnum.INTERNAL_ERROR,
+          HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-
-      if (notification.consumed) {
-        throw new CustomHttpException(
-          NotificationErrorEnum.NOTIFICATION_ALREADY_CONSUMED,
-          HttpStatus.CONFLICT,
-        );
-      }
-
-      await this.notificationRepo.update({ id }, { consumed: true });
-      return plainToInstance(
-        INotificationConsumeResponseDto,
-        { id, consumed: true, kind: notification.kind },
-        { excludeExtraneousValues: true },
-      );
-    } catch (error) {
-      console.error('Error consuming notification:', error);
-
-      if (error instanceof CustomHttpException) {
-        throw error;
-      }
-
-      throw new CustomHttpException(
-        NotificationErrorEnum.INTERNAL_ERROR,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    });
   }
+
+  // async markAsConsumed(id: string): Promise<INotificationConsumeResponseDto> {
+  //   try {
+  //     const notification = await this.notificationRepo.findOneBy({ id });
+
+  //     if (!notification) {
+  //       throw new CustomHttpException(
+  //         NotificationErrorEnum.NOTIFICATION_NOT_FOUND,
+  //         HttpStatus.NOT_FOUND,
+  //       );
+  //     }
+
+  //     if (notification.consumed) {
+  //       throw new CustomHttpException(
+  //         NotificationErrorEnum.NOTIFICATION_ALREADY_CONSUMED,
+  //         HttpStatus.CONFLICT,
+  //       );
+  //     }
+
+  //     await this.notificationRepo.update({ id }, { consumed: true });
+  //     return plainToInstance(
+  //       INotificationConsumeResponseDto,
+  //       { id, consumed: true, kind: notification.kind },
+  //       { excludeExtraneousValues: true },
+  //     );
+  //   } catch (error) {
+  //     console.error('Error consuming notification:', error);
+
+  //     if (error instanceof CustomHttpException) {
+  //       throw error;
+  //     }
+
+  //     throw new CustomHttpException(
+  //       NotificationErrorEnum.INTERNAL_ERROR,
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async deleteExpiredNotifications(): Promise<void> {
     await this.notificationRepo.delete({

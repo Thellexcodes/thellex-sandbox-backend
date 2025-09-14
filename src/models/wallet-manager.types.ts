@@ -23,6 +23,24 @@ export enum WalletWebhookEventEnum {
   SwapTransactionFailed = 'swap_transaction.failed',
 }
 
+export enum RampWebhookEventEnum {
+  // --- On-Ramp (Fiat → Crypto) ---
+  OnRampTransactionPending = 'onramp.transaction.pending',
+  OnRampTransactionProcessing = 'onramp.transaction.processing',
+  OnRampTransactionSuccessful = 'onramp.transaction.successful',
+  OnRampTransactionFailed = 'onramp.transaction.failed',
+  OnRampTransactionCancelled = 'onramp.transaction.cancelled',
+  OnRampTransactionExpired = 'onramp.transaction.expired',
+
+  // --- Off-Ramp (Crypto → Fiat) ---
+  OffRampTransactionPending = 'offramp.transaction.pending',
+  OffRampTransactionProcessing = 'offramp.transaction.processing',
+  OffRampTransactionSuccessful = 'offramp.transaction.successful',
+  OffRampTransactionFailed = 'offramp.transaction.failed',
+  OffRampTransactionCancelled = 'offramp.transaction.cancelled',
+  OffRampTransactionExpired = 'offramp.transaction.expired',
+}
+
 export enum WalletErrorEnum {
   // Sub-account management
   SUBACCOUNT_ALREADY_EXISTS = 'SUBACCOUNT_ALREADY_EXISTS',

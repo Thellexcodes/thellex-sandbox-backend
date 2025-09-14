@@ -1,19 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Res,
-  Req,
-} from '@nestjs/common';
+import { Controller, Post, Body, Res, Req } from '@nestjs/common';
 import { MpPaymentHooksService } from './mp-payment-hooks.service';
-import { CreateMpPaymentHookDto } from './dto/create-mp-payment-hook.dto';
-import { UpdateMpPaymentHookDto } from './dto/update-mp-payment-hook.dto';
+import {
+  CreateMpPaymentHookDto,
+  MpPaymentStatus,
+} from './dto/create-mp-payment-hook.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { responseHandler } from '@/utils/helpers';
+import { normalizeEnumValue, responseHandler } from '@/utils/helpers';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 
 @ApiTags('Web Hooks')
@@ -22,31 +14,22 @@ export class MpPaymentHooksController {
   constructor(private readonly mpPaymentHooksService: MpPaymentHooksService) {}
 
   @Post()
-  // create(@Body() createMpPaymentHookDto: CreateMpPaymentHookDto) {
-  create(@Body() createMpPaymentHookDto: any) {
-    return this.mpPaymentHooksService.create(createMpPaymentHookDto);
-  }
-
-  @Get()
-  findAll(@Req() req: CustomRequest, @Res() res: CustomResponse) {
-    return responseHandler('Hello world', res, req);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.mpPaymentHooksService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateMpPaymentHookDto: UpdateMpPaymentHookDto,
+  async create(
+    @Body() createMpPaymentHookDto: CreateMpPaymentHookDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
   ) {
-    return this.mpPaymentHooksService.update(+id, updateMpPaymentHookDto);
-  }
+    const status = normalizeEnumValue(
+      createMpPaymentHookDto.status,
+      MpPaymentStatus,
+    );
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.mpPaymentHooksService.remove(+id);
+    switch (status) {
+      case MpPaymentStatus.SUCCESS:
+        await this.mpPaymentHooksService.success(createMpPaymentHookDto);
+        break;
+      default:
+        return responseHandler('', res, req);
+    }
   }
 }

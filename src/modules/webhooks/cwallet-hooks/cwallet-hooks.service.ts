@@ -24,7 +24,6 @@ import { NotificationsGateway } from '@/modules/notifications/notifications.gate
 import { NotificationKindEnum } from '@/utils/typeorm/entities/notification.entity';
 import { TransactionsService } from '@/modules/transactions/transactions.service';
 import { DevicesService } from '@/modules/devices/devices.service';
-import { findDynamic, FindDynamicOptions } from '@/utils/DynamicSource';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';

@@ -15,12 +15,14 @@ import { VerificationAuthGuard } from '@/middleware/guards/local.auth.guard';
 import { PaymentsService } from '../payments/payments.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 // import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 
 //TODO: middleware for outstanding verifications
 @ApiTags('User')
 @VersionedController101('user')
 @ApiBearerAuth('access-token')
+@UseGuards(ClientAuthGuard)
 export class UserController {
   constructor(
     private readonly userService: UserService,

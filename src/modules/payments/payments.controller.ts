@@ -51,8 +51,9 @@ export class PaymentsController {
     responseHandler(response, res, req);
   }
 
+  // BasicKycCheckerGuard
   @Post('withdraw-crypto')
-  @UseGuards(ProfileAuthGuard, BasicKycCheckerGuard)
+  @UseGuards(ProfileAuthGuard)
   @ApiOperation({ summary: 'Withdrawal of crypto payment' })
   @ApiOkResponse({ type: CreateWithdrawalResponseDto })
   async withdrawFiat(
@@ -63,6 +64,7 @@ export class PaymentsController {
     const response =
       await this.paymentService.handleWithdrawCryptoPayment(withdrawPaymentDto);
     responseHandler(response, res, req);
+    console.log({ response });
   }
 
   @Post('fiat-to-crypto/onramp')
@@ -106,6 +108,8 @@ export class PaymentsController {
       user,
       dto,
     );
+
+    console.log({ response });
 
     responseHandler(response, res, req);
   }

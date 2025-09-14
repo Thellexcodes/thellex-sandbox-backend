@@ -31,8 +31,9 @@ import {
   capitalizeName,
   extractFirstName,
   findBankByName,
+  flexiTruncate,
   formatUserWithTiers,
-  getServerIp,
+  isDev,
   toLowestDenomination,
   toUTCDate,
   validateOffRampRequest,
@@ -81,7 +82,6 @@ export class PaymentsService {
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
     private readonly ycService: YellowCardService,
-    private readonly notificationGateway: NotificationsGateway,
     @InjectRepository(FiatCryptoRampTransactionEntity)
     private readonly fiatCryptoRampTransactionRepo: Repository<FiatCryptoRampTransactionEntity>,
     private readonly dataSource: DataSource,
@@ -455,16 +455,6 @@ export class PaymentsService {
       const { user: _user, ...transaction } =
         await this.transactionHistoryService.create(txnData, user);
 
-      // const tokens = await this.deviceService.getUserDeviceTokens(user.id);
-
-      // Notify user
-      // await this.notificationGateway.emitNotificationToUser({
-      //   event: NotificationEventEnum.FIAT_TO_CRYPTO_DEPOSIT,
-      //   status: NotificationStatusEnum.PROCESSING,
-      //   data: { transaction },
-      //   tokens,
-      // });
-
       await queryRunner.commitTransaction();
 
       // Return summary DTO
@@ -511,6 +501,7 @@ export class PaymentsService {
     dto: RequestCryptoOffRampPaymentDto,
   ) {
     const { valid } = validateOffRampRequest(dto);
+    dto.userAmount = 100;
 
     if (!valid)
       throw new CustomHttpException(
@@ -664,6 +655,12 @@ export class PaymentsService {
         );
       }
 
+      if (!cryptoTxResult.success)
+        throw new CustomHttpException(
+          'Crypto transaction unsuccessful',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+
       const transactionMessage = `${RampTransactionMessage.CASH_OUT_CRYPTO} ${dto.assetCode.toUpperCase()}`;
 
       // Step 2: Create transaction entity
@@ -714,6 +711,10 @@ export class PaymentsService {
         account_number: dto.bankInfo.accountNumber,
         bank_code: bankInfoAndCode.code,
       });
+
+      //   this.logger.log(
+      //   `Processing crypto payout for user ${userId}, wallet: ${walletId}, asset: ${recipientInfo.assetCode}, amount: ${userAmount}`,
+      // );
 
       const payoutServices = [
         {
@@ -781,7 +782,8 @@ export class PaymentsService {
             );
           }
           // For YellowCard, keep sentCrypto: false for cron processing
-          this.logger.log(`Fiat payout succeeded with ${service.name}`);
+          isDev &&
+            this.logger.log(`Fiat payout succeeded with ${service.name}`);
           break;
         } catch (error) {
           this.inProgressTxnCache.delete(sequenceId);
@@ -829,7 +831,7 @@ export class PaymentsService {
         transactionDirection: TransactionDirectionEnum.INBOUND,
         assetCode: dto.assetCode,
         amount: netCryptoAmount.toString(),
-        fee: newTxn.serviceFeeAmountUSD.toString(),
+        fee: flexiTruncate(newTxn.serviceFeeAmountUSD, 4).toString(),
         blockchainTxId: cryptoTxResult.transactionHistory.blockchainTxId,
         walletId: wallet.id,
         sourceAddress: dto.sourceAddress,
@@ -845,6 +847,8 @@ export class PaymentsService {
 
       const { user: u, ...transaction } =
         await this.transactionHistoryService.create(txnData, user);
+
+      console.log({ transaction });
 
       this.inProgressTxnCache.delete(sequenceId);
 
@@ -873,6 +877,7 @@ export class PaymentsService {
         { excludeExtraneousValues: true },
       );
     } catch (err) {
+      console.log(err);
       this.inProgressTxnCache.delete(sequenceId);
       this.logger.error('Error in handleCryptoToFiatOffRamp:', err);
       throw err;
@@ -970,10 +975,6 @@ export class PaymentsService {
       if (!walletId) {
         this.logger.warn(`⚠️ Wallet found but no wallet ID for user ${userId}`);
       }
-
-      this.logger.log(
-        `Processing crypto payout for user ${userId}, wallet: ${walletId}, asset: ${recipientInfo.assetCode}, amount: ${userAmount}`,
-      );
 
       // Step 2: Create crypto withdrawal
       const cryptoPaymentObj: CreateCryptoWithdrawPaymentDto = {
