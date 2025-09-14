@@ -36,75 +36,69 @@ export class ClientAuthGuard implements CanActivate {
   }
 
   canActivate(context: ExecutionContext): boolean {
-    // const request = context.switchToHttp().getRequest();
-    // const signature = request.headers['x-signature'];
-    // const timestamp = request.headers['x-timestamp'];
-    // const fingerprint = request.headers['x-certificate-fingerprint'];
-    // const userAgent = request.headers['user-agent'];
-    // const clientTypeHeader = request.headers['x-client-type']; // Optional override
-    // const payload = JSON.stringify(request.body || {});
+    const request = context.switchToHttp().getRequest();
+    const signature = request.headers['x-signature'];
+    const timestamp = request.headers['x-timestamp'];
+    const fingerprint = request.headers['x-certificate-fingerprint'];
+    const userAgent = request.headers['user-agent'];
+    const clientTypeHeader = request.headers['x-client-type'];
+    const payload = JSON.stringify(request.body || {});
 
     // // Auto-detect client type from User-Agent
-    // let clientType: 'mobile' | 'web';
-    // if (clientTypeHeader && ['mobile', 'web'].includes(clientTypeHeader)) {
-    //   clientType = clientTypeHeader; // Allow header override for backward compatibility
-    // } else if (!userAgent) {
-    //   throw new UnauthorizedException('Missing User-Agent header');
-    // } else {
-    //   this.parser.setUA(userAgent);
-    //   const { device, os } = this.parser.getResult();
-    //   const isMobile =
-    //     device.type === 'mobile' && ['Android', 'iOS'].includes(os.name);
-    //   clientType = isMobile ? 'mobile' : 'web';
-    // }
+    let clientType: 'mobile' | 'web';
+    if (clientTypeHeader && ['mobile', 'web'].includes(clientTypeHeader)) {
+      clientType = clientTypeHeader;
+    } else if (!userAgent) {
+      throw new UnauthorizedException('Missing User-Agent header');
+    } else {
+      this.parser.setUA(userAgent);
+      const { device, os } = this.parser.getResult();
+      const isMobile =
+        device.type === 'mobile' && ['Android', 'iOS'].includes(os.name);
+      clientType = isMobile ? 'mobile' : 'web';
+    }
 
-    // if (clientType === 'mobile') {
-    //   // Mobile validation
-    //   if (!signature || !timestamp || !fingerprint) {
-    //     throw new UnauthorizedException('Missing required headers');
-    //   }
+    if (clientType === 'mobile') {
+      // Mobile validation
+      if (!signature || !timestamp || !fingerprint) {
+        throw new UnauthorizedException('Missing required headers');
+      }
+      // const isValid = this.verifySignature(
+      //   fingerprint,
+      //   timestamp,
+      //   payload,
+      //   signature,
+      // );
 
-    //   // const isValid = this.verifySignature(
-    //   //   fingerprint,
-    //   //   timestamp,
-    //   //   payload,
-    //   //   signature,
-    //   // );
-    //   // if (!isValid) {
-    //   //   throw new UnauthorizedException('Invalid signature');
-    //   // }
+      // if (!isValid) {
+      //   throw new UnauthorizedException('Invalid signature');
+      // }
+      return true;
+    } else if (clientType === 'web') {
+      //   // Validate web request origin
+      //   const origin = request.headers['origin'] || request.headers['referer'];
+      //   if (!origin && isProd) {
+      //     throw new UnauthorizedException('Missing Origin or Referer header');
+      //   }
+      //   // Skip origin validation in non-production if no origin is provided
+      //   if (!origin && !isProd) {
+      //     return true;
+      //   }
+      //   // Choose allowed domains based on environment
+      //   const allowedDomains = isProd
+      //     ? this.allowedDomains
+      //     : this.devAllowedDomains;
+      //   // Check if the origin matches any allowed domain
+      //   const isAllowed = allowedDomains.some((regex) => regex.test(origin));
+      //   if (!isAllowed) {
+      //     if (!isProd) {
+      //       console.log(`Unauthorized request: ${origin}`);
+      //     }
+      //     throw new UnauthorizedException('Request origin not allowed');
+      return true;
+    }
 
-    //   return true;
-    // } else if (clientType === 'web') {
-    //   // Validate web request origin
-    //   const origin = request.headers['origin'] || request.headers['referer'];
-    //   if (!origin && isProd) {
-    //     throw new UnauthorizedException('Missing Origin or Referer header');
-    //   }
-
-    //   // Skip origin validation in non-production if no origin is provided
-    //   if (!origin && !isProd) {
-    //     return true;
-    //   }
-
-    //   // Choose allowed domains based on environment
-    //   const allowedDomains = isProd
-    //     ? this.allowedDomains
-    //     : this.devAllowedDomains;
-
-    //   // Check if the origin matches any allowed domain
-    //   const isAllowed = allowedDomains.some((regex) => regex.test(origin));
-    //   if (!isAllowed) {
-    //     if (!isProd) {
-    //       console.log(`Unauthorized request: ${origin}`);
-    //     }
-    //     throw new UnauthorizedException('Request origin not allowed');
-    //   }
-
-    return true;
-    // }
-
-    // return false;
+    return false;
   }
 
   verifySignature(

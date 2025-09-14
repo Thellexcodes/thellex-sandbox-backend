@@ -57,6 +57,7 @@ export class kycController {
       user,
       body,
     );
+
     responseHandler(data, res, req);
   }
 

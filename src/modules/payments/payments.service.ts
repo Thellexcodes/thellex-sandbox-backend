@@ -33,7 +33,6 @@ import {
   findBankByName,
   flexiTruncate,
   formatUserWithTiers,
-  getServerIp,
   isDev,
   toLowestDenomination,
   toUTCDate,

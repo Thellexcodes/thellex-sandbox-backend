@@ -36,7 +36,6 @@ import { plainToInstance } from 'class-transformer';
 import { VerifyBvnDto } from './dto/validate-bvn.dto';
 import { MapleradService } from '../payments/maplerad.service';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
-import { ConfigService } from '@/config/config.service';
 
 //TODO: Handle errors with enum
 //[x]: Move the Dojah services out
@@ -672,6 +671,7 @@ export class KycService {
         keyed['nationality']?.value ||
         keyed['issuing_state_name']?.value ||
         null;
+
       const firstName = keyed['first_name']?.value || null;
       const lastName = keyed['last_name']?.value || null;
       const dob = keyed['dob']?.value || '';

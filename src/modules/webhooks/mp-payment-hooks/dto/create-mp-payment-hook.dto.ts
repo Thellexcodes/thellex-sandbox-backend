@@ -1,7 +1,7 @@
 import { normalizeEnumValue } from '@/utils/helpers';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export enum MpPaymentStatus {
   SUCCESS = 'SUCCESS',

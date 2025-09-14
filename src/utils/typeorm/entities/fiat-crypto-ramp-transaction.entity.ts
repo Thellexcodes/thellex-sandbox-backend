@@ -198,7 +198,12 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   grossFiat: number;
 
   // ========== CURRENCY / COUNTRY ==========
-  @Column({ type: 'enum', nullable: true, enum: FiatEnum })
+  @Column({
+    type: 'enum',
+    nullable: false,
+    enum: FiatEnum,
+    default: FiatEnum.NGN,
+  })
   fiatCode: FiatEnum;
 
   @Column({ type: 'varchar', nullable: true })
