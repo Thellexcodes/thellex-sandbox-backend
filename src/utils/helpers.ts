@@ -517,3 +517,29 @@ export function sha256File(filePath: string): Promise<string> {
     stream.on('end', () => resolve(hash.digest('hex')));
   });
 }
+
+export function flexiTruncate(value, maxLength) {
+  if (value === null || value === undefined) return '';
+
+  // If it's a number, handle decimals specially
+  if (typeof value === 'number') {
+    const str = String(value);
+
+    // Check if it's a decimal
+    if (str.includes('.')) {
+      const [intPart, decPart] = str.split('.');
+      const truncatedDec =
+        decPart.length > maxLength
+          ? decPart.slice(0, maxLength) + '…'
+          : decPart;
+      return intPart + '.' + truncatedDec;
+    } else {
+      // Integer number: just truncate like a string
+      return str.length > maxLength ? str.slice(0, maxLength) + '…' : str;
+    }
+  }
+
+  // For strings (and other types), just convert to string and truncate normally
+  const str = String(value);
+  return str.length > maxLength ? str.slice(0, maxLength) + '…' : str;
+}

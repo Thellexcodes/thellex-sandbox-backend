@@ -37,7 +37,6 @@ export class QwalletHooksController {
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
   ) {
-    console.log(payload);
     switch (payload.event) {
       case WalletWebhookEventEnum.DepositSuccessful:
         await this.qwalletHooksService.handleDepositSuccessful(payload);
