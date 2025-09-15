@@ -62,7 +62,8 @@ export class QwalletHooksService {
     const wallet = qwalletProfile.wallets.find((w) =>
       Object.entries(w.networkMetadata || {}).some(
         ([network, meta]) =>
-          meta.address === 'no-address' && network === data.network,
+          (meta?.address === 'no-address' || meta?.address == null) &&
+          network === data.network,
       ),
     );
 
