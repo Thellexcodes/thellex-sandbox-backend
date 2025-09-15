@@ -146,7 +146,8 @@ export class QwalletService {
     network: string,
   ): IQCreatePaymentAddressResponse {
     return await this.httpService.post(
-      `${this.qwalletUrl}/users/${qid}/wallets/${assetCode}/addresses?network=${network}`,
+      // `${this.qwalletUrl}/users/${qid}/wallets/${assetCode}/addresses?network=${network}`,
+      `${this.qwalletUrl}/users/${qid}/wallets/${assetCode}/addresses`,
       {},
       { headers: this.getAuthHeaders() },
     );
@@ -436,12 +437,11 @@ export class QwalletService {
         await this.createAndStoreWalletsWithTokens(profile.qid, profile);
       }
 
-      //checks if address is empty for a particular network
-      const emptyWallet = profile.wallets.find((w) =>
-        Object.entries(w.networkMetadata || {}).some(
-          ([network, meta]) =>
-            meta.address === 'no-address' && network === 'bep20',
-        ),
+      const emptyWallet = profile.wallets.find((wallet) =>
+        Object.entries(wallet.networkMetadata ?? {}).some(([network, meta]) => {
+          const address = meta?.address;
+          return address === 'no-address' || (network === 'bep20' && !address);
+        }),
       );
 
       if (emptyWallet) {
@@ -450,11 +450,25 @@ export class QwalletService {
           TokenEnum.USDT,
         );
 
+        // console.log({ assetWallet, pid: profile.qid });
+
+        let address: string;
+        if (!assetWallet.data.deposit_address) {
+          const getPaymentAddresses = await this.createPaymentAddress(
+            profile.qid,
+            TokenEnum.USDT,
+            SupportedBlockchainTypeEnum.BEP20,
+          );
+          address = getPaymentAddresses.data.address;
+        } else {
+          address = assetWallet.data.deposit_address;
+        }
+
         const updatedNetworkMetadata = {
           ...emptyWallet.networkMetadata,
           ['bep20']: {
             ...(emptyWallet.networkMetadata?.['bep20'] || {}),
-            address: assetWallet.data.deposit_address,
+            address,
           },
         };
 
