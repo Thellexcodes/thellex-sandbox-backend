@@ -848,8 +848,6 @@ export class PaymentsService {
       const { user: u, ...transaction } =
         await this.transactionHistoryService.create(txnData, user);
 
-      console.log({ transaction });
-
       this.inProgressTxnCache.delete(sequenceId);
 
       return plainToInstance(
