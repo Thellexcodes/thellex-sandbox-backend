@@ -609,7 +609,7 @@ export class PaymentsService {
         await calculateNetFiatAmount(
           dto.mainAssetAmount,
           userPlain.currentTier.txnFee.withdrawal.feePercentage,
-          fiatRate.rate.buy,
+          fiatRate.rate.sell,
         );
 
       const bank = findBankByName(dto.bankInfo.bankName);
@@ -671,7 +671,7 @@ export class PaymentsService {
       newTxn.transactionType = TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL;
       newTxn.paymentStatus = PaymentStatus.Processing;
       newTxn.customerType = userPlain.kyc.customerType;
-      newTxn.userAmount = dto.userAmount;
+      newTxn.userAmount = netFiatAmount;
       newTxn.netFiatAmount = netFiatAmount;
       newTxn.grossFiat = grossFiat;
       newTxn.netCryptoAmount = netCryptoAmount;
@@ -711,9 +711,10 @@ export class PaymentsService {
         bank_code: bankInfoAndCode.code,
       });
 
-      //   this.logger.log(
-      //   `Processing crypto payout for user ${userId}, wallet: ${walletId}, asset: ${recipientInfo.assetCode}, amount: ${userAmount}`,
-      // );
+      isDev &&
+        this.logger.log(
+          `Processing crypto payout for user ${user.id}, wallet: ${wallet.id}, asset: ${newTxn.recipientInfo.assetCode}, amount: ${netFiatAmount}`,
+        );
 
       const payoutServices = [
         {
@@ -722,7 +723,7 @@ export class PaymentsService {
             const response = await this.mapleradService.localTransferAfrica({
               bank_code: bankInfoAndCode.code,
               account_number: dto.bankInfo.accountNumber,
-              amount: toLowestDenomination(dto.userAmount),
+              amount: toLowestDenomination(netFiatAmount),
               reason: dto.paymentReason,
               currency: dto.fiatCode,
             });
@@ -846,8 +847,6 @@ export class PaymentsService {
 
       const { user: u, ...transaction } =
         await this.transactionHistoryService.create(txnData, user);
-
-      console.log({ transaction });
 
       this.inProgressTxnCache.delete(sequenceId);
 
