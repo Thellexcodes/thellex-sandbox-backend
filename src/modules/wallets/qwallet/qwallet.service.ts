@@ -146,8 +146,7 @@ export class QwalletService {
     network: string,
   ): IQCreatePaymentAddressResponse {
     return await this.httpService.post(
-      // `${this.qwalletUrl}/users/${qid}/wallets/${assetCode}/addresses?network=${network}`,
-      `${this.qwalletUrl}/users/${qid}/wallets/${assetCode}/addresses`,
+      `${this.qwalletUrl}/users/${qid}/wallets/${assetCode}/addresses?network=${network}`,
       {},
       { headers: this.getAuthHeaders() },
     );
@@ -170,6 +169,7 @@ export class QwalletService {
     qid: string,
     profile: QWalletProfileEntity,
   ) {
+    // return;
     const walletTypes = profile.walletTypes;
     const walletProvider = profile.walletProvider;
 
@@ -415,6 +415,7 @@ export class QwalletService {
       if (profile && !profile.id) {
         profile = await this.qwalletProfilesRepo.save(profile);
       }
+
       // If profile doesn't exist even after lookup
       if (!profile) {
         const remote = await this.fetchSubAccountFromRemote(user.email);
@@ -450,16 +451,20 @@ export class QwalletService {
           TokenEnum.USDT,
         );
 
-        // console.log({ assetWallet, pid: profile.qid });
-
         let address: string;
         if (!assetWallet.data.deposit_address) {
-          const getPaymentAddresses = await this.createPaymentAddress(
+          const createPaymentAddresses = await this.createPaymentAddress(
             profile.qid,
             TokenEnum.USDT,
             SupportedBlockchainTypeEnum.BEP20,
           );
-          address = getPaymentAddresses.data.address;
+
+          // const abc = await this.reenqueueWalletAddress(
+          //   TokenEnum.USDT,
+          //   profile.qid,
+          //   createPaymentAddresses.data.id,
+          // );
+          address = createPaymentAddresses.data.address;
         } else {
           address = assetWallet.data.deposit_address;
         }
@@ -679,5 +684,40 @@ export class QwalletService {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getAppConfig().QWALLET.SECRET_KEY}`,
     };
+  }
+
+  /**
+   * Re-enqueue a generated wallet address in Quidax
+   *
+   * @param token - Your Quidax API Bearer token
+   * @param currency - The currency code (e.g. 'btc', 'usdt', 'eth')
+   * @param addressId - The ID of the wallet address to re-enqueue
+   */
+  async reenqueueWalletAddress(
+    currency: TokenEnum,
+    qid: string,
+    address_id: string,
+  ) {
+    try {
+      const url = `${this.qwalletUrl}/users/${qid}/wallets/${currency}/address/${address_id}`;
+      const response = await this.httpService.post(
+        url,
+        { currency, address_id },
+        {
+          headers: {
+            Authorization: `Bearer ${getAppConfig().QWALLET.SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        'Error re-enqueuing wallet address:',
+        error.response?.data || error.message,
+      );
+      throw error;
+    }
   }
 }

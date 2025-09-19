@@ -321,12 +321,12 @@ interface TransactionRequirements {
 // Example: Stablecoins & crypto assets
 export const TRANSACTION_REQUIREMENTS: TransactionRequirements = {
   USDC: {
-    minAmount: 10, // user must have at least 10 USDC
+    minAmount: 5, // user must have at least 10 USDC
     maxAmount: 10000,
     decimals: 6,
   },
   USDT: {
-    minAmount: 10, // minimum 10 USDT
+    minAmount: 5, // minimum 10 USDT
     decimals: 6,
   },
   BTC: {
