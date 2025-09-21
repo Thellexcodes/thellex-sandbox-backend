@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 import {
   Entity,
@@ -22,6 +23,7 @@ export class BetaTesterEntity {
 
 export class CreateSubscribeBetaDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
+  @Transform(({ value }) => value.toLowerCase())
   @IsNotEmpty()
   email: string;
 }
