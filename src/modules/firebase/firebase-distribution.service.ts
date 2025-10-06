@@ -238,11 +238,6 @@ export class FirebaseDistributionService {
 
       const { token, projectNumber, appId } =
         await this.auth.getFirebaseAuthData();
-      if (projectNumber !== '30201908784') {
-        throw new Error(
-          `Invalid projectNumber: expected 30201908784, got ${projectNumber}`,
-        );
-      }
 
       // Fetch the latest release
       const releasesUrl = `${this.base}/v1/projects/${projectNumber}/apps/${appId}/releases?sortBy=createTime&orderBy=DESC&pageSize=1`;
