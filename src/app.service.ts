@@ -29,8 +29,9 @@ export class AppService {
   }
 
   async subscribeToBeta(dto: CreateSubscribeBetaDto): Promise<any> {
+    const email = dto.email.toLowerCase();
     const existing = await this.betaTesterRepo.findOne({
-      where: { email: dto.email },
+      where: { email },
     });
     if (existing)
       throw new CustomHttpException(
