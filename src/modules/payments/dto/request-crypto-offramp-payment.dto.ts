@@ -47,7 +47,7 @@ export class RequestCryptoOffRampPaymentDto {
     description: 'Amount in crypto',
     type: Number,
   })
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 8 })
   @IsNotEmpty()
   userAmount: number;
 
