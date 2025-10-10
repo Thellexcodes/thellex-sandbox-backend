@@ -39,6 +39,7 @@ import { CrashReportModule } from './crash-report/crash-report.module';
 import { BetaTesterEntity } from './utils/typeorm/entities/beta.testers.entity';
 import { FirebaseModule } from './modules/firebase/firebase.module';
 import { ProcessedBuildEntity } from './utils/typeorm/entities/processed-build.entity';
+import { GlobalJwtModule } from './modules/jwt/jwt.module';
 
 @Module({
   imports: [
@@ -54,13 +55,14 @@ import { ProcessedBuildEntity } from './utils/typeorm/entities/processed-build.e
       useFactory: async () => await typeOrmConfig(),
       inject: [],
     }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (): Promise<JwtModuleOptions> => ({
-        ...jwtConfigurations(),
-      }),
-      inject: [ConfigService],
-    }),
+    GlobalJwtModule,
+    // JwtModule.registerAsync({
+    //   imports: [ConfigModule],
+    //   useFactory: async (): Promise<JwtModuleOptions> => ({
+    //     ...jwtConfigurations(),
+    //   }),
+    //   inject: [ConfigService],
+    // }),
     SharedModule,
     UserModule,
     AuthModule,

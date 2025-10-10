@@ -36,6 +36,8 @@ import { plainToInstance } from 'class-transformer';
 import { VerifyBvnDto } from './dto/validate-bvn.dto';
 import { MapleradService } from '../payments/maplerad.service';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
+import { VfdService } from '../payments/vfd.service';
+import { CountryEnum } from '@/config/settings';
 
 //TODO: Handle errors with enum
 //[x]: Move the Dojah services out
@@ -50,17 +52,9 @@ export class KycService {
     private readonly bankingNetworkRepo: Repository<BankingNetworkEntity>,
     private readonly httpService: HttpService,
     private readonly userService: UserService,
-    private readonly mapleradService: MapleradService,
+    private readonly vfdService: VfdService,
     private readonly dataSource: DataSource,
   ) {}
-
-  private get dojahUrl(): string {
-    return getAppConfig().DOJAH.API;
-  }
-
-  private stripBase64Prefix(data: string) {
-    return data.replace(/^data:image\/\w+;base64,/, '');
-  }
 
   async createBasicKyc(
     kydataDto: BasicTierKycDto,
@@ -136,7 +130,7 @@ export class KycService {
         houseNumber: kydataDto.houseNumber,
         streetName: kydataDto.streetName,
         state: kydataDto.state,
-        country: 'Nigeria',
+        country: 'Nigeria' as CountryEnum,
         lga: kydataDto.lga,
         provider: KycProviderEnum.DOJAH,
         phone: `${kydataDto.phoneNumber}`,
@@ -713,5 +707,13 @@ export class KycService {
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
     }
+  }
+
+  private get dojahUrl(): string {
+    return getAppConfig().DOJAH.API;
+  }
+
+  private stripBase64Prefix(data: string) {
+    return data.replace(/^data:image\/\w+;base64,/, '');
   }
 }

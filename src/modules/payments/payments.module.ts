@@ -24,5 +24,6 @@ import { VfdService } from './vfd.service';
     CwalletService,
     VfdService,
   ],
+  exports: [VfdService],
 })
 export class PaymentsModule {}

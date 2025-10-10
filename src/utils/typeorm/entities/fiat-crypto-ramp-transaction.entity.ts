@@ -9,7 +9,7 @@ import {
 } from '@/models/payment.types';
 import { PaymentPartnerEnum } from '@/models/payments.providers';
 import {
-  CountryEnum,
+  CountryCodeEnum,
   CustomerTypesEnum,
   FiatEnum,
   SupportedBlockchainTypeEnum,
@@ -209,8 +209,8 @@ export class FiatCryptoRampTransactionEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   currency: string;
 
-  @Column({ type: 'enum', nullable: false, enum: CountryEnum })
-  country: CountryEnum;
+  @Column({ type: 'enum', nullable: false, enum: CountryCodeEnum })
+  country: CountryCodeEnum;
 
   // ========== PAYMENT DETAILS ==========
   @Expose()

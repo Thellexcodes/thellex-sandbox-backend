@@ -79,14 +79,63 @@ export enum TokenEnum {
 }
 
 export enum FiatEnum {
-  NGN = 'ngn',
-  GHC = 'ghc',
+  // African Currencies
+  NGN = 'ngn', // Nigerian Naira
+  GHS = 'ghs', // Ghanaian Cedi
+  KES = 'kes', // Kenyan Shilling
+  ZAR = 'zar', // South African Rand
+  XAF = 'xaf', // Central African CFA Franc
+  XOF = 'xof', // West African CFA Franc
+  EGP = 'egp', // Egyptian Pound
+  TZS = 'tzs', // Tanzanian Shilling
+  UGX = 'ugx', // Ugandan Shilling
+  MWK = 'mwk', // Malawian Kwacha
+  MZN = 'mzn', // Mozambican Metical
+  BWP = 'bwp', // Botswana Pula
+  ETB = 'etb', // Ethiopian Birr
+
+  // Global Currencies
+  USD = 'usd', // US Dollar
+  EUR = 'eur', // Euro
+  GBP = 'gbp', // British Pound
+  CAD = 'cad', // Canadian Dollar
+  AUD = 'aud', // Australian Dollar
+  JPY = 'jpy', // Japanese Yen
+  CHF = 'chf', // Swiss Franc
+  CNY = 'cny', // Chinese Yuan
+  INR = 'inr', // Indian Rupee
   NONE = 'none',
 }
 
-export enum CountryEnum {
+// ISO-style short country codes
+export enum CountryCodeEnum {
   NG = 'ng',
   GH = 'gh',
+  ZA = 'za',
+  KE = 'ke',
+  US = 'us',
+  GB = 'gb',
+  FR = 'fr',
+  DE = 'de',
+  IT = 'it',
+  ES = 'es',
+  EG = 'eg',
+  CM = 'cm',
+  CI = 'ci',
+  SN = 'sn',
+  TZ = 'tz',
+  UG = 'ug',
+  RW = 'rw',
+  DZ = 'dz',
+  MA = 'ma',
+}
+
+export enum CountryEnum {
+  NIGERIA = 'Nigeria',
+  GHANA = 'Ghana',
+  SOUTH_AFRICA = 'South Africa',
+  KENYA = 'Kenya',
+  UNITED_STATES = 'United States',
 }
 
 export enum ThemeMode {

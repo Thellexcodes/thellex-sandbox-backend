@@ -93,7 +93,10 @@ export type ApiConfig = {
     APP_ID: string;
   };
   ALCHEMY_API: string;
-  KYC_ENCRYPTION_KEY: string;
+  ENCRYPTION_KEYS: {
+    KYC_ENCRYPTION_KEY: string;
+    WALLETS_ENCRYPTION_KEY: string;
+  };
   IPINFO_TOKEN: string;
   ENABLE_HTTPS: string;
   APP_CERTIFICATE_FINGERPRINT: string;

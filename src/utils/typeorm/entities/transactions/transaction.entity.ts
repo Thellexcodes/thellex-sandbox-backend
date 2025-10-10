@@ -8,7 +8,7 @@ import { UserEntity } from '../user.entity';
 @Entity('transactions')
 export class TransactionEntity extends BaseEntity {
   @Exclude()
-  @ManyToOne(() => UserEntity, (user) => user.bankAccounts, {
+  @ManyToOne(() => UserEntity, (user) => user.transactions, {
     onDelete: 'CASCADE',
     nullable: false,
   })

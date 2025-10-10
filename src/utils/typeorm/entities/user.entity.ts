@@ -15,7 +15,6 @@ import {
 import { IKycDto, KycEntity } from './kyc/kyc.entity';
 import { TierEnum } from '@/config/tier.lists';
 import { UserSettingEntity } from './settings/user.settings.entity';
-import { BankAccountEntity } from './settings/bank-account.entity';
 import { PayoutSettingEntity } from './settings/payout-settings.entity';
 import { TaxSettingEntity } from './settings/tax.entity';
 import {
@@ -33,6 +32,7 @@ import { BankingNetworkEntity } from './banking/banking-network.entity';
 import { TransactionHistoryEntity } from './transactions/transaction-history.entity';
 import { NGBankDto } from '@/utils/nigeria-banks';
 import { TransactionEntity } from './transactions/transaction.entity';
+import { FiatWalletProfileEntity } from './wallets/fiatwallet/fiatwalletprofile.entity';
 
 @Index(['email'])
 @Entity({ name: 'users' })
@@ -159,15 +159,6 @@ export class UserEntity extends BaseEntity {
   settings: UserSettingEntity[];
 
   @Expose()
-  @ApiProperty({ type: () => [BankAccountEntity] })
-  @Type(() => BankAccountEntity)
-  @OneToMany(() => BankAccountEntity, (b) => b.user, {
-    cascade: true,
-    eager: true,
-  })
-  bankAccounts: BankAccountEntity[];
-
-  @Expose()
   @ApiProperty({ type: () => [TransactionEntity] })
   @Type(() => TransactionEntity)
   @OneToMany(() => TransactionEntity, (b) => b.user, {
@@ -204,6 +195,11 @@ export class UserEntity extends BaseEntity {
     cascade: true,
   })
   bankingNetworks: BankingNetworkEntity;
+
+  @OneToOne(() => FiatWalletProfileEntity, (profile) => profile.user, {
+    cascade: true,
+  })
+  fiatWalletProfile: FiatWalletProfileEntity;
 }
 
 @Exclude()

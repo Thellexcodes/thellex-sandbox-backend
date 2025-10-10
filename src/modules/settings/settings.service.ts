@@ -1,4 +1,3 @@
-import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
 import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,8 +29,6 @@ export class SettingsService {
     @InjectRepository(UserSettingEntity)
     private readonly settingsRepo: Repository<UserSettingEntity>,
 
-    @InjectRepository(BankAccountEntity)
-    private readonly bankAccountRepo: Repository<BankAccountEntity>,
     private readonly ycService: YellowCardService,
     private readonly malperadService: MapleradService,
     private readonly userService: UserService,
@@ -62,82 +59,12 @@ export class SettingsService {
     // return this.bankAccountRepo.find({ where: { userId } });
   }
 
-  async addBankAccount(
-    userId: string,
-    dto: ICreateBankRequestAccountDto,
-  ): Promise<BankAccountEntity | any> {
-    try {
-      const existing = await this.bankAccountRepo.findOne({
-        where: { user: { id: userId }, accountNumber: dto.accountNumber },
-        relations: ['user'],
-      });
-
-      const user = await this.userService.findOneDynamic(
-        { id: userId },
-        {
-          selectFields: ['id'],
-          joinRelations: ['kyc'],
-        },
-      );
-
-      if (existing) {
-        throw new CustomHttpException(
-          'Bank account already exists',
-          HttpStatus.FORBIDDEN,
-        );
-      }
-
-      let accountName: string;
-      try {
-        const bankInfo = await this.malperadService.resolveInstitutionAccount({
-          account_number: dto.accountNumber,
-          bank_code: dto.bankCode,
-        });
-        accountName =
-          bankInfo.account_name ?? `${user.kyc.firstName} ${user.kyc.lastName}`;
-      } catch (err) {
-        this.logger.warn(`Failed to resolve bank info: ${err.message}`);
-        accountName = `${user.kyc.firstName} ${user.kyc.lastName}`; // Fallback to KYC info
-      }
-
-      const isFirstAccount =
-        (await this.bankAccountRepo.count({
-          where: { user: { id: userId } },
-        })) === 0;
-
-      const newBankRecord = this.bankAccountRepo.create({
-        ...dto,
-        isPrimary: isFirstAccount,
-        user: { id: userId },
-        external_customer_id: uuidV4(),
-        accountName,
-        external_createdAt: toUTCDate(new Date().toString()),
-      });
-
-      return await this.bankAccountRepo.save(newBankRecord);
-    } catch (err) {
-      this.logger.error(err);
-      throw new Error('Failed to add bank account');
-    }
-  }
-
   async updateBankAccount(userId: number, id: number) {
     // const existing = await this.bankAccountRepo.findOne({
     //   where: { userId },
     // });
     // if (!existing) throw new NotFoundException('Bank account not found');
     // return this.bankAccountRepo.save({ ...existing, ...dto });
-  }
-
-  async deleteBankAccount(userId: string, accountName: string) {
-    const account = await this.bankAccountRepo.findOne({
-      where: { accountName, user: { id: userId } },
-    });
-    if (!account)
-      throw new CustomHttpException(
-        BankAccountErrorEnum.BANK_ACCOUNT_NOT_FOUND,
-      );
-    return this.bankAccountRepo.remove(account);
   }
 
   // ------------------- Tax Settings -------------------

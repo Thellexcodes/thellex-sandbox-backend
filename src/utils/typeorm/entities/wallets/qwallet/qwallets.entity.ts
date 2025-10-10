@@ -104,5 +104,6 @@ export class IQWalletDto extends QWalletsEntity {
   @ApiProperty({ type: () => [TokenEntity] })
   tokens: TokenEntity[];
 
-  @Exclude() profile: QWalletProfileEntity;
+  @Exclude()
+  profile: QWalletProfileEntity;
 }

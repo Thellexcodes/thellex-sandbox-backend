@@ -3,16 +3,16 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { HttpService } from '@/middleware/http.service';
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
-import { AbstractVfdService } from './abstracts/vfd';
+import { AbstractVfdService } from './abstracts/vfd.abstract';
 import { RequestResponseTypeDto } from '@/models/base-response.dto';
 import {
   CreateIndividualClientResponseDataDto,
   CreateIndividualClientWithBvnDto,
   CreateIndividualClientWithNinDto,
   CreateIndividualConsentDto,
-  CreateUpgradeAccountOfBvnToTier3,
-  CreateUpgradeAccountOfNinToTier3,
-  UpdateAccountOfBvnToTier3Response,
+  CreateUpgradeAccountOfBvnToTier3Dto,
+  CreateUpgradeAccountOfNinToTier3Dto,
+  UpdateAccountOfBvnToTier3ResponseDto,
   VFDBankDto,
   VFDBankResponseDto,
 } from '@/models/vfd.types';
@@ -46,11 +46,11 @@ export class VfdService extends AbstractVfdService {
     // [1]   }
     // [1] }
 
-    this.upgradeAccountOfBvnToTier3({
-      accountNo: '1001674530',
-      bvn: '22222222253',
-      address: '5, Johnson Str, Ikeja, Lagos',
-    });
+    // this.upgradeAccountOfBvnToTier3({
+    //   accountNo: '1001674530',
+    //   bvn: '22222222253',
+    //   address: '5, Johnson Str, Ikeja, Lagos',
+    // });
   }
 
   // ============================================
@@ -241,25 +241,27 @@ export class VfdService extends AbstractVfdService {
   }
 
   async upgradeAccountOfBvnToTier3(
-    data: CreateUpgradeAccountOfBvnToTier3,
-  ): Promise<AxiosResponse | any> {
+    data: CreateUpgradeAccountOfBvnToTier3Dto,
+  ): Promise<UpdateAccountOfBvnToTier3ResponseDto> {
     try {
-      const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3Response> =
+      const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3ResponseDto> =
         await this.http.post(
           `${this.baseUrl}/client/update`,
           data,
           this.authHeader(),
         );
+
+      return res.data;
     } catch (err) {
       console.log(err);
     }
   }
 
   async upgradeAccountOfNinToTier3(
-    data: CreateUpgradeAccountOfNinToTier3,
-  ): Promise<AxiosResponse | any> {
+    data: CreateUpgradeAccountOfNinToTier3Dto,
+  ): Promise<UpdateAccountOfBvnToTier3ResponseDto> {
     try {
-      const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3Response> =
+      const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3ResponseDto> =
         await this.http.post(
           `${this.baseUrl}/client/update`,
           data,
@@ -267,6 +269,8 @@ export class VfdService extends AbstractVfdService {
         );
 
       console.log(res);
+
+      return res.data;
     } catch (err) {
       console.log(err);
     }

@@ -18,13 +18,14 @@ export type EnvType =
   | typeof ENV_QA
   | typeof ENV_PRODUCTION;
 
-export const ENV_KYC_ENCRYPTION = process.env.ENV_KYC_ENCRYPTION;
-
 export function getAppConfig(): ApiConfig {
   const config = new ConfigService();
 
   return {
-    KYC_ENCRYPTION_KEY: config.get('KYC_ENCRYPTION_KEY'),
+    ENCRYPTION_KEYS: {
+      KYC_ENCRYPTION_KEY: config.get('KYC_ENCRYPTION_KEY'),
+      WALLETS_ENCRYPTION_KEY: config.get('FIAT_WALLET_KEY'),
+    },
     ALCHEMY_API: config.get('ALCHEMY_API'),
     SERVER: {
       PORT: config.getNumber('SERVER_PORT'),

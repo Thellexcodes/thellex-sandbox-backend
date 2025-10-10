@@ -1,5 +1,5 @@
 import {
-  CountryEnum,
+  CountryCodeEnum,
   SupportedBlockchainTypeEnum,
   FiatEnum,
   TokenEnum,
@@ -66,11 +66,11 @@ export class RequestCryptoOffRampPaymentDto {
   @ApiProperty({
     description: '2-letter ISO country code (e.g., ng, gh)',
     example: 'ng',
-    enum: CountryEnum,
+    enum: CountryCodeEnum,
   })
   @IsString()
   @IsNotEmpty()
-  country: CountryEnum;
+  country: CountryCodeEnum;
 
   @ApiProperty({
     example: 'bank_transfer',

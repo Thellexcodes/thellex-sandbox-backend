@@ -1,6 +1,7 @@
 import {
   CreateIndividualClientResponseDataDto,
   CreateIndividualConsentDto,
+  UpdateAccountOfBvnToTier3ResponseDto,
   VFDBankDto,
 } from '@/models/vfd.types';
 import { AxiosResponse } from 'axios';
@@ -57,8 +58,12 @@ export abstract class AbstractVfdService {
   // New Account Creation (Tiers)
   // ============================================
   abstract createIndividualTierAccount(data: any): Promise<AxiosResponse>;
-  abstract upgradeAccountOfNinToTier3(data: any): Promise<AxiosResponse>;
-  abstract upgradeAccountOfBvnToTier3(data: any): Promise<AxiosResponse>;
+  abstract upgradeAccountOfNinToTier3(
+    data: any,
+  ): Promise<UpdateAccountOfBvnToTier3ResponseDto>;
+  abstract upgradeAccountOfBvnToTier3(
+    data: any,
+  ): Promise<UpdateAccountOfBvnToTier3ResponseDto>;
   abstract createCorporateTierAccount(data: any): Promise<AxiosResponse>;
   abstract createCorporateSubAccount(data: any): Promise<AxiosResponse>;
 

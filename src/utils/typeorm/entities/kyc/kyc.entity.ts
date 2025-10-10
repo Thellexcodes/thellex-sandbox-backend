@@ -12,6 +12,13 @@ import { Exclude } from 'class-transformer';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { EncryptionErrorType } from '@/models/encryption-types';
 import { EncryptionError } from '@/models/encrypto-error.class';
+import { createEncryptionTransformer } from '@/utils/encryption.transformer';
+
+const KYC_KEY = Buffer.from(
+  getAppConfig()
+    .ENCRYPTION_KEYS.KYC_ENCRYPTION_KEY.padEnd(32, '\0')
+    .slice(0, 32),
+);
 
 @Entity({ name: 'kyc' })
 export class KycEntity extends BaseEntity {
@@ -19,81 +26,70 @@ export class KycEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  private static getEncryptionKey(): Buffer {
-    const key = getAppConfig().KYC_ENCRYPTION_KEY?.trim();
-    if (!key || key.length < 32) {
-      throw new EncryptionError(
-        EncryptionErrorType.INVALID_KEY,
-        'Invalid or missing encryption key',
-      );
-    }
-    return Buffer.from(key.padEnd(32, '\0').slice(0, 32));
-  }
+  // private static encryptionTransformer = {
+  //   to(value: string | null | undefined): Buffer | null {
+  //     try {
+  //       if (!value) return null;
 
-  private static encryptionTransformer = {
-    to(value: string | null | undefined): Buffer | null {
-      try {
-        if (!value) return null;
+  //       const key = KycEntity.getEncryptionKey();
+  //       const iv = randomBytes(16);
+  //       const cipher = createCipheriv('aes-256-cbc', key, iv);
 
-        const key = KycEntity.getEncryptionKey();
-        const iv = randomBytes(16);
-        const cipher = createCipheriv('aes-256-cbc', key, iv);
+  //       const encrypted = Buffer.concat([
+  //         cipher.update(value, 'utf8'),
+  //         cipher.final(),
+  //       ]);
 
-        const encrypted = Buffer.concat([
-          cipher.update(value, 'utf8'),
-          cipher.final(),
-        ]);
+  //       return Buffer.concat([iv, encrypted]);
+  //     } catch (error) {
+  //       throw new EncryptionError(
+  //         EncryptionErrorType.ENCRYPTION_FAILED,
+  //         `Encryption failed: ${error.message}`,
+  //       );
+  //     }
+  //   },
 
-        return Buffer.concat([iv, encrypted]);
-      } catch (error) {
-        throw new EncryptionError(
-          EncryptionErrorType.ENCRYPTION_FAILED,
-          `Encryption failed: ${error.message}`,
-        );
-      }
-    },
+  //   from(value: Buffer | null): string | null {
+  //     try {
+  //       if (!value) return null;
 
-    from(value: Buffer | null): string | null {
-      try {
-        if (!value) return null;
+  //       const key = KycEntity.getEncryptionKey();
+  //       const iv = value.subarray(0, 16);
+  //       const encrypted = value.subarray(16);
 
-        const key = KycEntity.getEncryptionKey();
-        const iv = value.subarray(0, 16);
-        const encrypted = value.subarray(16);
+  //       if (iv.length !== 16) {
+  //         throw new EncryptionError(
+  //           EncryptionErrorType.INVALID_INPUT,
+  //           'Invalid IV length',
+  //         );
+  //       }
 
-        if (iv.length !== 16) {
-          throw new EncryptionError(
-            EncryptionErrorType.INVALID_INPUT,
-            'Invalid IV length',
-          );
-        }
-
-        const decipher = createDecipheriv('aes-256-cbc', key, iv);
-        return Buffer.concat([
-          decipher.update(encrypted),
-          decipher.final(),
-        ]).toString('utf8');
-      } catch (error) {
-        throw new EncryptionError(
-          EncryptionErrorType.DECRYPTION_FAILED,
-          `Decryption failed: ${error.message}`,
-        );
-      }
-    },
-  };
+  //       const decipher = createDecipheriv('aes-256-cbc', key, iv);
+  //       return Buffer.concat([
+  //         decipher.update(encrypted),
+  //         decipher.final(),
+  //       ]).toString('utf8');
+  //     } catch (error) {
+  //       throw new EncryptionError(
+  //         EncryptionErrorType.DECRYPTION_FAILED,
+  //         `Decryption failed: ${error.message}`,
+  //       );
+  //     }
+  //   },
+  // };
 
   @Column({
     name: 'dob',
     type: 'bytea', // Changed to bytea for binary data
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   dob: string;
 
   @Column({
     name: 'bvn',
     type: 'bytea',
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
     nullable: true,
   })
   bvn: string;
@@ -113,7 +109,7 @@ export class KycEntity extends BaseEntity {
     name: 'first_name',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   @ApiPropertyOptional()
   firstName: string;
@@ -122,7 +118,7 @@ export class KycEntity extends BaseEntity {
     name: 'middle_name',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   @ApiPropertyOptional()
   middleName: string;
@@ -131,7 +127,7 @@ export class KycEntity extends BaseEntity {
     name: 'last_name',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   @ApiPropertyOptional()
   lastName: string;
@@ -140,16 +136,17 @@ export class KycEntity extends BaseEntity {
     name: 'phone_number',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   @ApiPropertyOptional()
   phone: string;
 
+  //[x] migrate carefully to enum later
   @Column({
     name: 'country_of_residence',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   @ApiPropertyOptional()
   country: string;
@@ -158,7 +155,7 @@ export class KycEntity extends BaseEntity {
     name: 'home_address',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   @ApiPropertyOptional()
   address: string;
@@ -169,7 +166,7 @@ export class KycEntity extends BaseEntity {
   @Column({
     name: 'id_number',
     type: 'bytea',
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
     nullable: true,
   })
   idNumber: string;
@@ -178,7 +175,7 @@ export class KycEntity extends BaseEntity {
     name: 'business_id',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   businessId: string;
 
@@ -186,7 +183,7 @@ export class KycEntity extends BaseEntity {
     name: 'business_name',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   @ApiPropertyOptional()
   businessName: string;
@@ -207,7 +204,7 @@ export class KycEntity extends BaseEntity {
     name: 'house_number',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   houseNumber: string;
 
@@ -215,7 +212,7 @@ export class KycEntity extends BaseEntity {
     name: 'street_name',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   streetName: string;
 
@@ -223,7 +220,7 @@ export class KycEntity extends BaseEntity {
     name: 'state',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   state: string;
 
@@ -231,7 +228,7 @@ export class KycEntity extends BaseEntity {
     name: 'lga',
     type: 'bytea',
     nullable: true,
-    transformer: KycEntity.encryptionTransformer,
+    transformer: createEncryptionTransformer(KYC_KEY),
   })
   lga: string;
 }

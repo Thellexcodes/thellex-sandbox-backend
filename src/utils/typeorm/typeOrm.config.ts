@@ -7,7 +7,6 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
-import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
 import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
 import { PayoutSettingEntity } from '@/utils/typeorm/entities/settings/payout-settings.entity';
 import { TaxSettingEntity } from '@/utils/typeorm/entities/settings/tax.entity';
@@ -22,6 +21,8 @@ import { TransactionEntity } from './entities/transactions/transaction.entity';
 import { BetaTesterEntity } from './entities/beta.testers.entity';
 import { isDev, isProd } from '../helpers';
 import { ProcessedBuildEntity } from './entities/processed-build.entity';
+import { FiatWalletProfileEntity } from './entities/wallets/fiatwallet/fiatwalletprofile.entity';
+import { FiatWalletEntity } from './entities/wallets/fiatwallet/fiatwallet.entity';
 
 export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
   return {
@@ -39,16 +40,17 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
       DeviceEntity,
       CwalletsEntity,
       QWalletsEntity,
+      FiatWalletEntity,
       BetaTesterEntity,
       TaxSettingEntity,
       TransactionEntity,
-      BankAccountEntity,
       UserSettingEntity,
       NotificationEntity,
       PayoutSettingEntity,
       CardManagementEntity,
       BankingNetworkEntity,
       CwalletProfilesEntity,
+      FiatWalletProfileEntity,
       TransactionHistoryEntity,
       AuthVerificationCodesEntity,
       FiatCryptoRampTransactionEntity,

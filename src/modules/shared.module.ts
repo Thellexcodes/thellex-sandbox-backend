@@ -11,7 +11,6 @@ import { YellowCardService } from './payments/yellowcard.service';
 import { QwalletService } from './wallets/qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { SettingsModule } from './settings/settings.module';
-import { BankAccountEntity } from '@/utils/typeorm/entities/settings/bank-account.entity';
 import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
 import { JwtService } from '@nestjs/jwt';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
@@ -41,6 +40,7 @@ import { DevicesService } from './devices/devices.service';
 import { AdminModule } from './admin/admin.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { VersionModule } from './version/version.module';
+import { FiatwalletModule } from './fiatwallet/fiatwallet.module';
 
 @Global()
 @Module({
@@ -53,7 +53,6 @@ import { VersionModule } from './version/version.module';
       DeviceEntity,
       QWalletsEntity,
       CwalletsEntity,
-      BankAccountEntity,
       UserSettingEntity,
       TransactionEntity,
       NotificationEntity,
@@ -74,6 +73,7 @@ import { VersionModule } from './version/version.module';
     AdminModule,
     FirebaseModule,
     VersionModule,
+    FiatwalletModule,
   ],
   providers: [
     EtherService,

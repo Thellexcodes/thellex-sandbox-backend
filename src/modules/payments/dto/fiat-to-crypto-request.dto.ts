@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 import { Expose, Transform, Type } from 'class-transformer';
 import {
-  CountryEnum,
+  CountryCodeEnum,
   FiatEnum,
   SupportedBlockchainTypeEnum,
   TokenEnum,
@@ -68,11 +68,11 @@ export class FiatToCryptoOnRampRequestDto {
   @ApiProperty({
     description: '2-letter ISO country code (e.g., ng, gh)',
     example: 'ng',
-    enum: CountryEnum,
+    enum: CountryCodeEnum,
   })
   @IsString()
   @IsNotEmpty()
-  country: CountryEnum;
+  country: CountryCodeEnum;
 
   @ApiProperty({
     example: PaymentReasonEnum.TRAVEL,
