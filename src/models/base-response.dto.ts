@@ -12,3 +12,9 @@ export class BaseResponseDto<T> {
   @ApiProperty({ example: 201 })
   statusCode: number;
 }
+
+export class RequestResponseTypeDto<T> {
+  status: string;
+  message: string;
+  data: T;
+}

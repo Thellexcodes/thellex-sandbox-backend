@@ -66,8 +66,6 @@ export class KycService {
     kydataDto: BasicTierKycDto,
     user: UserEntity,
   ): Promise<KycResultDto> {
-    // const institutions = await this.mapleradService.getAllInstitutions(); //825 ( Pay)
-
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
