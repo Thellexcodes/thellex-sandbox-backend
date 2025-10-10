@@ -3,7 +3,7 @@ import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { HttpService } from '@/middleware/http.service';
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
-import { AbstractVfdService } from './abstracts/vfd.abstract';
+import { AbstractVfdService } from '../abstracts/vfd.abstract';
 import { RequestResponseTypeDto } from '@/models/base-response.dto';
 import {
   CreateIndividualClientResponseDataDto,
@@ -13,9 +13,11 @@ import {
   CreateUpgradeAccountOfBvnToTier3Dto,
   CreateUpgradeAccountOfNinToTier3Dto,
   UpdateAccountOfBvnToTier3ResponseDto,
+  VFDAuthenticateResponseDto,
   VFDBankDto,
   VFDBankResponseDto,
-} from '@/models/vfd.types';
+} from '@/models/payments/vfd.types';
+import { VfdWalletApiEndpoints } from '@/models/payments/vfd-endpoints.enum';
 
 @Injectable()
 export class VfdService extends AbstractVfdService {
@@ -46,11 +48,30 @@ export class VfdService extends AbstractVfdService {
     // [1]   }
     // [1] }
 
-    // this.upgradeAccountOfBvnToTier3({
-    //   accountNo: '1001674530',
-    //   bvn: '22222222253',
-    //   address: '5, Johnson Str, Ikeja, Lagos',
-    // });
+    this.upgradeAccountOfBvnToTier3({
+      accountNo: '1001674530',
+      bvn: '22222222253',
+      address: '5, Johnson Str, Ikeja, Lagos',
+    });
+  }
+
+  async onModuleInit() {}
+
+  async authenticate() {
+    const response: RequestResponseTypeDto<VFDAuthenticateResponseDto> =
+      await this.http.post(
+        `${this.baasUrl}${VfdWalletApiEndpoints.AUTHENTICATE}`,
+        {
+          consumerKey: getAppConfig().VFD.CONSUMER_KEY,
+          consumerSecret: getAppConfig().VFD.CONSUMER_SECRET,
+          validityTime: '-1',
+        },
+      );
+
+    console.log(response);
+
+    const { access_token, token_type } = response.data;
+    return { access_token, token_type };
   }
 
   // ============================================
@@ -60,7 +81,7 @@ export class VfdService extends AbstractVfdService {
   async getAllBanks(): Promise<VFDBankDto[]> {
     try {
       const response: RequestResponseTypeDto<VFDBankResponseDto> =
-        await this.http.get(`${this.baseUrl}/bank`, this.authHeader());
+        await this.http.get(`${this.walletUrl}/bank`, this.authHeader());
 
       return response.data.bank;
     } catch (err) {
@@ -72,11 +93,19 @@ export class VfdService extends AbstractVfdService {
   // 2.0 Wallet Implementations
   // ============================================
   async createPoolWallet(): Promise<AxiosResponse> {
-    return this.http.post(`${this.baseUrl}/wallet/pool`, {}, this.authHeader());
+    return this.http.post(
+      `${this.walletUrl}/wallet/pool`,
+      {},
+      this.authHeader(),
+    );
   }
 
   async createOneToOneWallet(): Promise<AxiosResponse> {
-    return this.http.post(`${this.baseUrl}/wallet/1-1`, {}, this.authHeader());
+    return this.http.post(
+      `${this.walletUrl}/wallet/1-1`,
+      {},
+      this.authHeader(),
+    );
   }
 
   // ============================================
@@ -84,7 +113,7 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async getAllowedOperations(): Promise<AxiosResponse> {
     return this.http.get(
-      `${this.baseUrl}/wallet/allowed-operations`,
+      `${this.walletUrl}/wallet/allowed-operations`,
       this.authHeader(),
     );
   }
@@ -94,7 +123,7 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async inwardCreditNotification(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/wallet/inward-credit`,
+      `${this.walletUrl}/wallet/inward-credit`,
       data,
       this.authHeader(),
     );
@@ -102,7 +131,7 @@ export class VfdService extends AbstractVfdService {
 
   async initialInwardCreditNotification(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/wallet/inward-credit/initial`,
+      `${this.walletUrl}/wallet/inward-credit/initial`,
       data,
       this.authHeader(),
     );
@@ -110,7 +139,7 @@ export class VfdService extends AbstractVfdService {
 
   async retriggerWebhookNotification(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/wallet/webhook/retrigger`,
+      `${this.walletUrl}/wallet/webhook/retrigger`,
       data,
       this.authHeader(),
     );
@@ -125,7 +154,7 @@ export class VfdService extends AbstractVfdService {
     try {
       const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
         await this.http.post(
-          `${this.baseUrl}/client/tiers/individual?nin=${data.nin}&dateOfBirth=${data.dob}`,
+          `${this.walletUrl}/client/tiers/individual?nin=${data.nin}&dateOfBirth=${data.dob}`,
           data,
           this.authHeader(),
         );
@@ -142,7 +171,7 @@ export class VfdService extends AbstractVfdService {
     try {
       const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
         await this.http.post(
-          `${this.baseUrl}/client/create?bvn=${data.bvn}&dateOfBirth=${data.dob}`,
+          `${this.walletUrl}/client/create?bvn=${data.bvn}&dateOfBirth=${data.dob}`,
           data,
           this.authHeader(),
         );
@@ -154,7 +183,7 @@ export class VfdService extends AbstractVfdService {
 
   async createCorporateClient(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/corporateclient/create`,
+      `${this.walletUrl}/corporateclient/create`,
       data,
       this.authHeader(),
     );
@@ -162,7 +191,7 @@ export class VfdService extends AbstractVfdService {
 
   async createVirtualAccount(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/virtualaccount/create`,
+      `${this.walletUrl}/virtualaccount/create`,
       data,
       this.authHeader(),
     );
@@ -170,7 +199,7 @@ export class VfdService extends AbstractVfdService {
 
   async updateVirtualAccount(data: any): Promise<AxiosResponse> {
     return this.http.put(
-      `${this.baseUrl}/virtualaccount/update`,
+      `${this.walletUrl}/virtualaccount/update`,
       data,
       this.authHeader(),
     );
@@ -181,7 +210,7 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async createIndividualWithConsent(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/client/individual`,
+      `${this.walletUrl}/client/individual`,
       data,
       this.authHeader(),
     );
@@ -189,7 +218,7 @@ export class VfdService extends AbstractVfdService {
 
   async createCorporateWithConsent(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/client/corporate`,
+      `${this.walletUrl}/client/corporate`,
       data,
       this.authHeader(),
     );
@@ -202,7 +231,7 @@ export class VfdService extends AbstractVfdService {
     try {
       const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
         await this.http.post(
-          `${this.baseUrl}/v2/wallet2/bvn-consent?bvn=${data.bvn}&type=${data.type}&reference=${data.reference}`,
+          `${this.walletUrl}/v2/wallet2/bvn-consent?bvn=${data.bvn}&type=${data.type}&reference=${data.reference}`,
           data,
           this.authHeader(),
         );
@@ -215,7 +244,7 @@ export class VfdService extends AbstractVfdService {
 
   async igreeNotifications(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/bvn/igree-notifications`,
+      `${this.walletUrl}/bvn/igree-notifications`,
       data,
       this.authHeader(),
     );
@@ -223,7 +252,7 @@ export class VfdService extends AbstractVfdService {
 
   async releaseAccount(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/account/release`,
+      `${this.walletUrl}/account/release`,
       data,
       this.authHeader(),
     );
@@ -234,7 +263,7 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async createIndividualTierAccount(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/client/tiers/individual`,
+      `${this.walletUrl}/client/tiers/individual`,
       data,
       this.authHeader(),
     );
@@ -246,7 +275,7 @@ export class VfdService extends AbstractVfdService {
     try {
       const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3ResponseDto> =
         await this.http.post(
-          `${this.baseUrl}/client/update`,
+          `${this.walletUrl}/client/update`,
           data,
           this.authHeader(),
         );
@@ -263,7 +292,7 @@ export class VfdService extends AbstractVfdService {
     try {
       const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3ResponseDto> =
         await this.http.post(
-          `${this.baseUrl}/client/update`,
+          `${this.walletUrl}/client/update`,
           data,
           this.authHeader(),
         );
@@ -279,7 +308,7 @@ export class VfdService extends AbstractVfdService {
   async createCorporateTierAccount(data: any): Promise<AxiosResponse | any> {
     try {
       const response = await this.http.post(
-        `${this.baseUrl}/client/tiers/corporate`,
+        `${this.walletUrl}/client/tiers/corporate`,
         data,
         this.authHeader(),
       );
@@ -292,7 +321,7 @@ export class VfdService extends AbstractVfdService {
 
   async createCorporateSubAccount(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/corporate/subaccount/create`,
+      `${this.walletUrl}/corporate/subaccount/create`,
       data,
       this.authHeader(),
     );
@@ -303,14 +332,14 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async getClientByBvn(bvn: string): Promise<AxiosResponse> {
     return this.http.get(
-      `${this.baseUrl}/client/bvn/${bvn}`,
+      `${this.walletUrl}/client/bvn/${bvn}`,
       this.authHeader(),
     );
   }
 
   async lookupBvnAccount(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/bvn/lookup`,
+      `${this.walletUrl}/bvn/lookup`,
       data,
       this.authHeader(),
     );
@@ -321,7 +350,7 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async getSubAccounts(clientId: string): Promise<AxiosResponse> {
     return this.http.get(
-      `${this.baseUrl}/account/${clientId}/subaccounts`,
+      `${this.walletUrl}/account/${clientId}/subaccounts`,
       this.authHeader(),
     );
   }
@@ -330,23 +359,27 @@ export class VfdService extends AbstractVfdService {
   // TRANSFER SERVICES
   // ============================================
   async transferFunds(data: any): Promise<AxiosResponse> {
-    return this.http.post(`${this.baseUrl}/transfer`, data, this.authHeader());
+    return this.http.post(
+      `${this.walletUrl}/transfer`,
+      data,
+      this.authHeader(),
+    );
   }
 
   async getBankList(): Promise<AxiosResponse> {
-    return this.http.get(`${this.baseUrl}/banks`, this.authHeader());
+    return this.http.get(`${this.walletUrl}/banks`, this.authHeader());
   }
 
   async checkTransferStatus(reference: string): Promise<AxiosResponse> {
     return this.http.get(
-      `${this.baseUrl}/transfer/status/${reference}`,
+      `${this.walletUrl}/transfer/status/${reference}`,
       this.authHeader(),
     );
   }
 
   async reverseTransaction(reference: string): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/transfer/reverse/${reference}`,
+      `${this.walletUrl}/transfer/reverse/${reference}`,
       {},
       this.authHeader(),
     );
@@ -357,14 +390,14 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async getAccountTransactions(accountNumber: string): Promise<AxiosResponse> {
     return this.http.get(
-      `${this.baseUrl}/transactions/${accountNumber}`,
+      `${this.walletUrl}/transactions/${accountNumber}`,
       this.authHeader(),
     );
   }
 
   async getTransactionLimit(): Promise<AxiosResponse> {
     return this.http.get(
-      `${this.baseUrl}/transactions/limit`,
+      `${this.walletUrl}/transactions/limit`,
       this.authHeader(),
     );
   }
@@ -374,18 +407,21 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async generateQrCode(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/qr/generate`,
+      `${this.walletUrl}/qr/generate`,
       data,
       this.authHeader(),
     );
   }
 
   async queryQrCode(code: string): Promise<AxiosResponse> {
-    return this.http.get(`${this.baseUrl}/qr/query/${code}`, this.authHeader());
+    return this.http.get(
+      `${this.walletUrl}/qr/query/${code}`,
+      this.authHeader(),
+    );
   }
 
   async payWithQrCode(data: any): Promise<AxiosResponse> {
-    return this.http.post(`${this.baseUrl}/qr/pay`, data, this.authHeader());
+    return this.http.post(`${this.walletUrl}/qr/pay`, data, this.authHeader());
   }
 
   // ============================================
@@ -393,7 +429,7 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   async updateAccountWithBvn(data: any): Promise<AxiosResponse> {
     return this.http.put(
-      `${this.baseUrl}/account/update/bvn`,
+      `${this.walletUrl}/account/update/bvn`,
       data,
       this.authHeader(),
     );
@@ -401,7 +437,7 @@ export class VfdService extends AbstractVfdService {
 
   async updateAccountCompliance(data: any): Promise<AxiosResponse> {
     return this.http.put(
-      `${this.baseUrl}/account/update/compliance`,
+      `${this.walletUrl}/account/update/compliance`,
       data,
       this.authHeader(),
     );
@@ -409,7 +445,7 @@ export class VfdService extends AbstractVfdService {
 
   async upgradeIndividualToCorporate(data: any): Promise<AxiosResponse> {
     return this.http.post(
-      `${this.baseUrl}/account/upgrade/corporate`,
+      `${this.walletUrl}/account/upgrade/corporate`,
       data,
       this.authHeader(),
     );
@@ -421,14 +457,18 @@ export class VfdService extends AbstractVfdService {
   private authHeader() {
     return {
       headers: {
-        AccessToken: getAppConfig().Vfd.AUTH_TOKEN,
+        AccessToken: getAppConfig().VFD.AUTH_TOKEN,
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
     };
   }
 
-  private get baseUrl(): string {
-    return getAppConfig().Vfd.API;
+  private get walletUrl(): string {
+    return getAppConfig().VFD.WALLET_API;
+  }
+
+  private get baasUrl(): string {
+    return getAppConfig().VFD.BAAS_API;
   }
 }

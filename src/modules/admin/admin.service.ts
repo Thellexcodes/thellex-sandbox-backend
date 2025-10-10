@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BetaTesterEntity } from '@/utils/typeorm/entities/beta.testers.entity';
 import { TransactionEntity } from '@/utils/typeorm/entities/transactions/transaction.entity';
-import { PaymentsService } from '../payments/payments.service';
+import { PaymentsService } from '../payments/v1/payments.service';
 import {
   ApproveRampRequestDTO,
   ApproveRampRequestResponseDTO,

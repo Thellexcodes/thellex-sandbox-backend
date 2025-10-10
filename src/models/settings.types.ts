@@ -79,9 +79,12 @@ export type ApiConfig = {
     SECRET_KEY: string;
     PAYMENT_API: string;
   };
-  Vfd: {
-    API: string;
+  VFD: {
+    BAAS_API: string;
+    WALLET_API: string;
     AUTH_TOKEN: string;
+    CONSUMER_KEY: string;
+    CONSUMER_SECRET: string;
   };
   MPR: {
     PUBLIC_KEY: string;

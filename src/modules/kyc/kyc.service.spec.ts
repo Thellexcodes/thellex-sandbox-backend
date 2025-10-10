@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DkycService } from './kyc.service';
+import { DkycService } from './v1/kyc.service';
 
 describe('DkycService', () => {
   let service: DkycService;

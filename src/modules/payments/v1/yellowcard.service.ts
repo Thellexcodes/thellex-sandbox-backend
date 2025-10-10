@@ -17,7 +17,7 @@ import { rateCache } from '@/utils/constants';
 import {
   IYellowCardRateDto,
   IYellowCardRatesResponseDto,
-} from './dto/yellocard.dto';
+} from '../dto/yellocard.dto';
 import axios, { AxiosRequestHeaders } from 'axios';
 
 @Injectable()

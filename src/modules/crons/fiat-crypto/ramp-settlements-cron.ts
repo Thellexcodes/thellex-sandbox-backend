@@ -1,7 +1,7 @@
 import { EVERY_15_SECONDS_CRON } from '@/config/settings';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
-import { MapleradService } from '@/modules/payments/maplerad.service';
-import { PaymentsService } from '@/modules/payments/payments.service';
+import { MapleradService } from '@/modules/payments/v1/maplerad.service';
+import { PaymentsService } from '@/modules/payments/v1/payments.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { LRUCache } from 'lru-cache';

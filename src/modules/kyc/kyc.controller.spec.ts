@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DkycController } from './kyc.controller';
-import { DkycService } from './kyc.service';
+import { DkycController } from './v1/kyc.controller';
+import { DkycService } from './v1/kyc.service';
 
 describe('DkycController', () => {
   let controller: DkycController;

@@ -3,10 +3,18 @@ import {
   CreateIndividualConsentDto,
   UpdateAccountOfBvnToTier3ResponseDto,
   VFDBankDto,
-} from '@/models/vfd.types';
+} from '@/models/payments/vfd.types';
 import { AxiosResponse } from 'axios';
 
 export abstract class AbstractVfdService {
+  // ============================================
+  // 1.0 Authorization
+  // ============================================
+  abstract authenticate(): Promise<{
+    access_token: string;
+    token_type: string;
+  }>;
+
   // ============================================
   // 1.0 Banks
   // ============================================

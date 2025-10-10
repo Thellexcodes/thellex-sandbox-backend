@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { YcHookDataDto } from './dto/yc-hook-data.dto';
-import { PaymentsService } from '@/modules/payments/payments.service';
+import { PaymentsService } from '@/modules/payments/v1/payments.service';
 import { toUTCDate, toUTCString } from '@/utils/helpers';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
 import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';

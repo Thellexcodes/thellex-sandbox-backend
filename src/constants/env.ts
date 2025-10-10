@@ -86,9 +86,12 @@ export function getAppConfig(): ApiConfig {
       SECRET_KEY: config.get('YC_SECRET_KEY'),
       PAYMENT_API: config.get('YC_PAYMENT_API'),
     },
-    Vfd: {
-      API: config.get('VFD_API'),
+    VFD: {
+      BAAS_API: config.get('VFD_BAAS_API'),
+      WALLET_API: config.get('VFD_WALLET_API'),
       AUTH_TOKEN: config.get('VFD_AUTH_TOKEN'),
+      CONSUMER_KEY: config.get('VFD_CONSUMER_KEY'),
+      CONSUMER_SECRET: config.get('VFD_CONSUMER_SECRET'),
     },
     FIREBASE: {
       SERVICE_ACCOUNT: config.get('FIREBASE_SERVICE_ACCOUNT'),

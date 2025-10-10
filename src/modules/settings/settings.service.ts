@@ -15,10 +15,10 @@ import {
 import { UpdateTaxSettingsDto } from './dto/tax-settings.dto';
 import { UpdatePayoutSettingsDto } from './dto/payout-settings.dto';
 import { v4 as uuidV4 } from 'uuid';
-import { YellowCardService } from '../payments/yellowcard.service';
-import { MapleradService } from '../payments/maplerad.service';
+import { YellowCardService } from '../payments/v1/yellowcard.service';
 import { toUTCDate } from '@/utils/helpers';
 import { UserService } from '../users/user.service';
+import { MapleradService } from '../payments/v1/maplerad.service';
 
 //[x] handle erros with enums
 @Injectable()

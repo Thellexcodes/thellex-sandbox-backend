@@ -1,7 +1,7 @@
 import { EVERY_15_SECONDS_CRON } from '@/config/settings';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MapleradService } from '../payments/maplerad.service';
+import { MapleradService } from '../payments/v1/maplerad.service';
 
 @Injectable()
 export class MapleradCron {

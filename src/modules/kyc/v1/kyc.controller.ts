@@ -13,9 +13,9 @@ import {
   KycResponseDto,
   ValidateBvnResponseDto,
   VerifySelfieWithPhotoIdDto,
-} from './dto/kyc-data.dto';
-import { VersionedController101 } from '../controller/base.controller';
-import { VerifyBvnDto } from './dto/validate-bvn.dto';
+} from '../dto/kyc-data.dto';
+import { VersionedController101 } from '../../controller/base.controller';
+import { VerifyBvnDto } from '../dto/validate-bvn.dto';
 import {
   BasicAuthGuard,
   ProfileAuthGuard,

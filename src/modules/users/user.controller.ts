@@ -12,7 +12,7 @@ import { responseHandler } from '@/utils/helpers';
 import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
 import { VersionedController101 } from '../controller/base.controller';
 import { VerificationAuthGuard } from '@/middleware/guards/local.auth.guard';
-import { PaymentsService } from '../payments/payments.service';
+import { PaymentsService } from '../payments/v1/payments.service';
 import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';

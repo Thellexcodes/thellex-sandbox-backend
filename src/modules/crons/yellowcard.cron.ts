@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { YellowCardService } from '../payments/yellowcard.service';
+import { YellowCardService } from '../payments/v1/yellowcard.service';
 import { rateCache } from '@/utils/constants';
 import { EVERY_15_SECONDS_CRON } from '@/config/settings';
 

@@ -7,7 +7,7 @@ import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
-import { YellowCardService } from './payments/yellowcard.service';
+import { YellowCardService } from './payments/v1/yellowcard.service';
 import { QwalletService } from './wallets/qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
 import { SettingsModule } from './settings/settings.module';
@@ -22,12 +22,11 @@ import { EtherService } from '@/utils/services/ethers.service';
 import { FiatCryptoRampTransactionEntity } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { YcPaymentHookModule } from './webhooks/yc-payments-hooks/yc-payments-hooks.module';
-import { PaymentsService } from './payments/payments.service';
+import { PaymentsService } from './payments/v1/payments.service';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationsGateway } from './notifications/notifications.gateway';
 import { TronService } from '@/utils/services/tron.service';
 import { ConfigService } from '@/config/config.service';
-import { MapleradService } from './payments/maplerad.service';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
 import { CustomConfigModule } from '@/config/config.module';
 import { MpPaymentHooksModule } from './webhooks/mp-payment-hooks/mp-payment-hooks.module';
@@ -41,6 +40,7 @@ import { AdminModule } from './admin/admin.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { VersionModule } from './version/version.module';
 import { FiatwalletModule } from './fiatwallet/fiatwallet.module';
+import { MapleradService } from './payments/v1/maplerad.service';
 
 @Global()
 @Module({

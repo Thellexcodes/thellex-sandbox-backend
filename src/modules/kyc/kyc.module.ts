@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { KycService } from './kyc.service';
+import { KycService } from './v1/kyc.service';
 import { UserService } from '../users/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { MailService } from '../email/mail.service';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
-import { kycController } from './kyc.controller';
+import { kycController } from './v1/kyc.controller';
 import { GlobalJwtModule } from '../jwt/jwt.module';
-import { VfdService } from '../payments/vfd.service';
+import { VfdService } from '../payments/v2/vfd.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity, KycEntity]), GlobalJwtModule],

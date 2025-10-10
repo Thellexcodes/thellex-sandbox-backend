@@ -11,9 +11,9 @@ import {
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
-import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
-import { QwalletService } from '../wallets/qwallet/qwallet.service';
-import { CwalletService } from '../wallets/cwallet/cwallet.service';
+import { CreateCryptoWithdrawPaymentDto } from '../dto/create-withdraw-crypto.dto';
+import { QwalletService } from '../../wallets/qwallet/qwallet.service';
+import { CwalletService } from '../../wallets/cwallet/cwallet.service';
 import { YellowCardService } from './yellowcard.service';
 import { v4 as uuidV4 } from 'uuid';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
@@ -49,29 +49,29 @@ import {
   YCRampPaymentEventEnum,
 } from '@/models/payment.types';
 import { plainToInstance } from 'class-transformer';
-import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
-import { IYellowCardRateDto } from './dto/yellocard.dto';
-import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
-import { TransactionHistoryDto } from '../transaction-history/dto/create-transaction-history.dto';
+import { FiatToCryptoOnRampRequestDto } from '../dto/fiat-to-crypto-request.dto';
+import { IYellowCardRateDto } from '../dto/yellocard.dto';
+import { RequestCryptoOffRampPaymentDto } from '../dto/request-crypto-offramp-payment.dto';
+import { TransactionHistoryDto } from '../../transaction-history/dto/create-transaction-history.dto';
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { WalletErrorEnum } from '@/models/wallet-manager.types';
-import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { NotificationsGateway } from '../../notifications/notifications.gateway';
 import { PaymentErrorEnum } from '@/models/payment-error.enum';
-import { MapleradService } from './maplerad.service';
-import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
+import { TransactionHistoryService } from '../../transaction-history/transaction-history.service';
 import { YCTxnAccountTypes } from '@/models/yellow-card.types';
 import { LRUCache } from 'lru-cache';
-import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
+import { ICreateMalperadFiatWithdrawPaymentDto } from '../dto/create-withdraw-fiat.dto';
 import {
   ITransactionHistoryDto,
   TransactionHistoryEntity,
 } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
-import { TransactionsService } from '../transactions/transactions.service';
-import { DevicesService } from '../devices/devices.service';
+import { TransactionsService } from '../../transactions/transactions.service';
+import { DevicesService } from '../../devices/devices.service';
 import { RampTransactionMessage } from '@/models/ramp-types';
 import { IMapleradTransferResponseDto } from '@/models/maplerad.types';
 import { findDynamic, FindDynamicOptions } from '@/utils/DynamicSource';
+import { MapleradService } from './maplerad.service';
 
 //[x] properly throw error using enum
 @Injectable()

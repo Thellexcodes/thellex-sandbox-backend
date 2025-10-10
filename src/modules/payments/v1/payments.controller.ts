@@ -8,25 +8,22 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ProfileAuthGuard } from '@/middleware/guards/local.auth.guard';
-import { PaymentsService } from './payments.service';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { CreateCryptoWithdrawPaymentDto } from './dto/create-withdraw-crypto.dto';
 import { BasicKycCheckerGuard } from '@/middleware/guards/basic-kyc-checker.guard';
-import { FiatToCryptoOnRampRequestDto } from './dto/fiat-to-crypto-request.dto';
-import { CreateWithdrawalResponseDto } from './dto/payment.dto';
-import { VersionedController101 } from '../controller/base.controller';
 import { FiatEnum } from '@/config/settings';
-import { RequestCryptoOffRampPaymentDto } from './dto/request-crypto-offramp-payment.dto';
 import { SuperAdminGuard } from '@/middleware/guards/super-admin.guard';
-import { PoliciesGuard } from '../auth/guards/policies.guard';
-import { CheckPolicies } from '../auth/decorators/check-policy.decorator';
-import { CanManageCompany } from '../auth/policies/company-admin.policy';
 import {
   IFiatToCryptoQuoteSummaryResponseDto,
   IRatesResponseDto,
 } from '@/utils/typeorm/entities/fiat-crypto-ramp-transaction.entity';
-import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
+import { VersionedController101 } from '@/modules/controller/base.controller';
+import { PaymentsService } from './payments.service';
+import { CreateWithdrawalResponseDto } from '../dto/payment.dto';
+import { ICreateMalperadFiatWithdrawPaymentDto } from '../dto/create-withdraw-fiat.dto';
+import { CreateCryptoWithdrawPaymentDto } from '../dto/create-withdraw-crypto.dto';
+import { FiatToCryptoOnRampRequestDto } from '../dto/fiat-to-crypto-request.dto';
+import { RequestCryptoOffRampPaymentDto } from '../dto/request-crypto-offramp-payment.dto';
 
 ApiTags('Payments');
 @VersionedController101('payments')

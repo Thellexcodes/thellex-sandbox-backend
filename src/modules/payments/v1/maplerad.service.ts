@@ -11,8 +11,8 @@ import {
 } from '@/models/maplerad.types';
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import { ICreateMalperadFiatWithdrawPaymentDto } from './dto/create-withdraw-fiat.dto';
 import { FiatEnum } from '@/config/settings';
+import { ICreateMalperadFiatWithdrawPaymentDto } from '../dto/create-withdraw-fiat.dto';
 
 @Injectable()
 export class MapleradService {

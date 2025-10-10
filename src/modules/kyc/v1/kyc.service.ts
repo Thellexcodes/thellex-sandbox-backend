@@ -21,7 +21,7 @@ import {
   ValidateBvnResponseDto,
   VerificationResponseDto,
   VerifySelfieWithPhotoIdDto,
-} from './dto/kyc-data.dto';
+} from '../dto/kyc-data.dto';
 import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { getAppConfig } from '@/constants/env';
 import {
@@ -31,12 +31,11 @@ import {
 } from '@/utils/helpers';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { TierEnum } from '@/config/tier.lists';
-import { UserService } from '../users/user.service';
+import { UserService } from '../../users/user.service';
 import { plainToInstance } from 'class-transformer';
-import { VerifyBvnDto } from './dto/validate-bvn.dto';
-import { MapleradService } from '../payments/maplerad.service';
+import { VerifyBvnDto } from '../dto/validate-bvn.dto';
 import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
-import { VfdService } from '../payments/vfd.service';
+import { VfdService } from '../../payments/v2/vfd.service';
 import { CountryEnum } from '@/config/settings';
 
 //TODO: Handle errors with enum
@@ -49,12 +48,13 @@ export class KycService {
     @InjectRepository(KycEntity)
     private readonly kycRepo: Repository<KycEntity>,
     @InjectRepository(BankingNetworkEntity)
-    private readonly bankingNetworkRepo: Repository<BankingNetworkEntity>,
     private readonly httpService: HttpService,
     private readonly userService: UserService,
-    private readonly vfdService: VfdService,
     private readonly dataSource: DataSource,
-  ) {}
+    private readonly vfdService: VfdService,
+  ) {
+    // this.vfdService.authenticate();
+  }
 
   async createBasicKyc(
     kydataDto: BasicTierKycDto,

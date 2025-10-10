@@ -1,5 +1,12 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+export class VFDAuthenticateResponseDto {
+  access_token: string;
+  scope: string;
+  token_type: 'Bearer';
+  expires_in: number;
+}
+
 export class VFDBankDto {
   id: number;
   code: string;
@@ -32,10 +39,6 @@ export class CreateIndividualClientWithNinDto {
   dob: string;
 }
 
-// @IsString()
-// @IsOptional()
-// nin?: string;
-
 export class CreateIndividualConsentDto {
   type: string;
   bvn: string;
@@ -60,9 +63,9 @@ export class CreateUpgradeAccountOfBvnToTier3Dto {
 }
 
 export class CreateUpgradeAccountOfNinToTier3Dto {
-  accountNo: '1001640294';
-  nin: '22228819111';
-  address: '5, Johnson Str, Ikeja, Lagos';
+  accountNo: string;
+  nin: string;
+  address: string;
 }
 
 export class UpdateAccountOfBvnToTier3ResponseDto {
