@@ -10,7 +10,6 @@ import {
   IYCPaymentRequestResponse,
   IYellowCardWebhookConfig,
 } from '@/models/yellocard.models';
-
 import { generateYcSignature } from '@/utils/helpers';
 import { Injectable, Logger } from '@nestjs/common';
 import { rateCache } from '@/utils/constants';
@@ -18,17 +17,20 @@ import {
   IYellowCardRateDto,
   IYellowCardRatesResponseDto,
 } from '../dto/yellocard.dto';
-import axios, { AxiosRequestHeaders } from 'axios';
+import axios from 'axios';
+import { AbstractYellowCardService } from '../abstracts/abstract.yellowcard';
 
 @Injectable()
-export class YellowCardService {
+export class YellowCardService extends AbstractYellowCardService {
   private readonly logger = new Logger(YellowCardService.name);
-  constructor(private readonly httpService: HttpService) {}
+  constructor(readonly httpService: HttpService) {
+    super();
+  }
 
   // --- Payments API ---
 
   // Get Channels
-  async getChannels(crypto?: boolean): IYCChannelsResponseType {
+  async getChannels(crypto?: boolean): Promise<IYCChannelsResponseType> {
     const method = 'GET';
     const path = crypto ? '/business/channels/crypto' : '/business/channels';
     const url = crypto
@@ -41,7 +43,7 @@ export class YellowCardService {
   }
 
   // Get Networks
-  async getNetworks(): IYCNetworksResponseType {
+  async getNetworks(): Promise<IYCNetworksResponseType> {
     const method = 'GET';
     const path = '/business/networks';
     const url = `${this.ycUrl}${path}`;
@@ -165,7 +167,7 @@ export class YellowCardService {
   // --- Collections ---
   async submitCollectionRequest(
     body: AnyObject,
-  ): IYCollectionRequestResponseType {
+  ): Promise<IYCollectionRequestResponseType> {
     try {
       const method = 'POST';
       const path = '/business/collections';

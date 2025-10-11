@@ -39,7 +39,7 @@ import { DevicesService } from './devices/devices.service';
 import { AdminModule } from './admin/admin.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { VersionModule } from './version/version.module';
-import { FiatwalletModule } from './fiatwallet/fiatwallet.module';
+import { FiatwalletModule } from './wallets/fiatwallet/fiatwallet.module';
 import { MapleradService } from './payments/v1/maplerad.service';
 
 @Global()

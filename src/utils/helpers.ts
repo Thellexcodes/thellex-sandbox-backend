@@ -30,6 +30,8 @@ import { getEnv } from '@/constants/env';
 import { ENV_DEVELOPMENT, ENV_PRODUCTION } from '@/models/settings.types';
 import { RequestCryptoOffRampPaymentDto } from '../modules/payments/dto/request-crypto-offramp-payment.dto';
 import { createReadStream } from 'fs';
+import { BaseResponseDto } from '@/models/base-response.dto';
+import { Response } from 'express';
 
 //TODO: handle errors with enums
 
@@ -47,13 +49,13 @@ export function isSessionNotExpired(expiredAt: string) {
   return expiredAtTimestamp > currentTimestamp;
 }
 
-export function responseHandler(
-  result: unknown | any,
-  res: CustomResponse,
+export function responseHandler<T>(
+  result: T,
+  res: Response,
   req: CustomRequest,
-) {
+): Response<BaseResponseDto<T>> {
   const sessionId = req?.sessionId;
-  const statusCode = res?.statusCode;
+  const statusCode = res?.statusCode ?? 200;
 
   return res.status(statusCode).send({
     result,

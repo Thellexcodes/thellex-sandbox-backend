@@ -34,7 +34,6 @@ import { TierEnum } from '@/config/tier.lists';
 import { UserService } from '../../users/user.service';
 import { plainToInstance } from 'class-transformer';
 import { VerifyBvnDto } from '../dto/validate-bvn.dto';
-import { BankingNetworkEntity } from '@/utils/typeorm/entities/banking/banking-network.entity';
 import { VfdService } from '../../payments/v2/vfd.service';
 import { CountryEnum } from '@/config/settings';
 
@@ -47,199 +46,24 @@ export class KycService {
   constructor(
     @InjectRepository(KycEntity)
     private readonly kycRepo: Repository<KycEntity>,
-    @InjectRepository(BankingNetworkEntity)
     private readonly httpService: HttpService,
     private readonly userService: UserService,
     private readonly dataSource: DataSource,
     private readonly vfdService: VfdService,
   ) {
-    // this.vfdService.authenticate();
-  }
-
-  async createBasicKyc(
-    kydataDto: BasicTierKycDto,
-    user: UserEntity,
-  ): Promise<KycResultDto> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      let ninResponse: NinLookupResponse | undefined;
-      let bvnResponse: BvnLookupResponse | undefined;
-
-      if (kydataDto.nin) {
-        ninResponse = await this.lookupNIN(Number(kydataDto.nin));
-        if (!ninResponse?.entity) {
-          throw new CustomHttpException(
-            KycErrorEnum.NIN_NOT_FOUND,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-      }
-
-      if (kydataDto.bvn) {
-        bvnResponse = await this.lookupBVN(Number(kydataDto.bvn));
-        if (!bvnResponse?.entity) {
-          throw new CustomHttpException(
-            KycErrorEnum.BVN_NOT_FOUND,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-      }
-
-      const matchThreshold = 0.5;
-
-      if (ninResponse?.entity) {
-        const firstNameScore = calculateNameMatchScore(
-          kydataDto.firstName,
-          ninResponse.entity.first_name,
-        );
-
-        if (firstNameScore < matchThreshold) {
-          throw new CustomHttpException(
-            KycErrorEnum.NAME_MISMATCH,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-      }
-
-      if (bvnResponse?.entity) {
-        const lastNameScore = calculateNameMatchScore(
-          kydataDto.lastName,
-          bvnResponse.entity.last_name,
-        );
-
-        if (lastNameScore < matchThreshold) {
-          throw new CustomHttpException(
-            KycErrorEnum.NAME_MISMATCH,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-      }
-
-      const userKycData: Partial<KycEntity> = {
-        idNumber: kydataDto.nin,
-        bvn: kydataDto.bvn,
-        user,
-        firstName: ninResponse?.entity?.first_name ?? kydataDto.firstName,
-        middleName: kydataDto?.middleName,
-        lastName: ninResponse?.entity?.last_name ?? kydataDto.lastName,
-        dob: ninResponse?.entity?.date_of_birth ?? kydataDto.dob,
-        idTypes: [IdTypeEnum.BVN, IdTypeEnum.NIN],
-        houseNumber: kydataDto.houseNumber,
-        streetName: kydataDto.streetName,
-        state: kydataDto.state,
-        country: 'Nigeria' as CountryEnum,
-        lga: kydataDto.lga,
-        provider: KycProviderEnum.DOJAH,
-        phone: `${kydataDto.phoneNumber}`,
-      };
-
-      // Create KycEntity with queryRunner.manager
-      const kycRecord = queryRunner.manager.create(KycEntity, userKycData);
-      await queryRunner.manager.save(kycRecord);
-
-      // Update user tier also via queryRunner.manager
-      await this.updateUserTierWithManager(
-        queryRunner.manager,
-        user.id,
-        TierEnum.BASIC,
-      );
-
-      // Use updated user data from the main service, outside transaction
-      const updatedUser = await this.userService.findOneById(user.id);
-
-      // Format dob string for mapleRad
-      // const dobParts = kydataDto.dob.split('-');
-      // const formattedDob = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
-      // const country = kydataDto.country?.toUpperCase() || 'NG';
-
-      // const mapleRadCustomerInfo = {
-      //   first_name: savedKycRecord.firstName,
-      //   last_name: savedKycRecord.lastName,
-      //   email: savedKycRecord.user.email,
-      //   country,
-      //   identification_number: kydataDto.bvn,
-      //   dob: formattedDob,
-      //   phone: {
-      //     phone_country_code: kydataDto.phone.phone_country_code,
-      //     phone_number: kydataDto.phone.phone_number,
-      //   },
-      //   identity: {
-      //     type: userKycData.idTypes[1],
-      //     image: 'https://example.com/image',
-      //     number: kydataDto.nin,
-      //     country,
-      //   },
-      //   address: {
-      //     street: kydataDto.streetName,
-      //     street2: null,
-      //     city: kydataDto.city,
-      //     state: kydataDto.state,
-      //     country,
-      //     postal_code: kydataDto.postal_code,
-      //   },
-      // };
-
-      // const enrolledCustomerResponse =
-      //   await this.mapleradService.enrollCustomer(mapleRadCustomerInfo);
-
-      // const enrolledCustomer = enrolledCustomerResponse.data;
-      // const bankingNetwork = queryRunner.manager.create(BankingNetworkEntity, {
-      //   external_customer_id: enrolledCustomer.id,
-      //   first_name: enrolledCustomer.first_name,
-      //   last_name: enrolledCustomer.last_name,
-      //   email: enrolledCustomer.email,
-      //   country: enrolledCustomer.country,
-      //   status: enrolledCustomer.status,
-      //   tier: enrolledCustomer.tier,
-      //   external_created_at: enrolledCustomer.created_at,
-      //   external_updated_at: enrolledCustomer.updated_at,
-      //   provider: BankingNetworkProviderEnum.MAPLERAD,
-      //   user,
-      // });
-
-      // await queryRunner.manager.save(bankingNetwork);
-
-      // const createAccountResponse =
-      //   await this.mapleradService.createBankingAccount({
-      //     customer_id: enrolledCustomer.id,
-      //     currency: 'NGN',
-      //     preferred_bank:
-      //       this.configService.getRaw('NODE_ENV') !== ENV_PRODUCTION
-      //         ? ''
-      //         : '824',
-      //   });
-
-      // const bankAccountInfo = queryRunner.manager.create(BankAccountEntity, {
-      //   user,
-      //   external_customer_id: createAccountResponse.data.id,
-      //   bankName: createAccountResponse.data.bank_name,
-      //   accountName: createAccountResponse.data.account_name,
-      //   accountNumber: createAccountResponse.data.account_number,
-      //   iban: createAccountResponse.data.account_number,
-      //   external_createdAt: createAccountResponse.data.created_at,
-      // });
-
-      // await queryRunner.manager.save(bankAccountInfo);
-
-      await queryRunner.commitTransaction();
-
-      const { nextTier, currentTier, banks } = formatUserWithTiers(updatedUser);
-
-      return plainToInstance(
-        KycResultDto,
-        { isVerified: true, currentTier, nextTier, banks },
-        { excludeExtraneousValues: true },
-      );
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      console.error('Transaction rollback due to:', error);
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    // this.vfdService.createIndividualClientWithBvn({
+    //   bvn: '22222222253',
+    //   dob: '05-Apr-1994',
+    // });
+    // this.vfdService.requestBvnConsent({
+    //   type: '02',
+    //   bvn: '22222222253',
+    // });
+    // this.vfdService.upgradeAccountOfBvnToTier3({
+    //   accountNo: '1001674530',
+    //   bvn: '22222222253',
+    //   address: '5, Johnson Str, Ikeja, Lagos',
+    // });
   }
 
   async updateUserTierWithManager(
@@ -635,7 +459,7 @@ export class KycService {
   async createBasicSelfieWithPhotoKyc(
     user: UserEntity,
     dto: VerifySelfieWithPhotoIdDto,
-  ): Promise<any> {
+  ): Promise<KycResultDto> {
     try {
       const selfieBase64 = this.stripBase64Prefix(dto.selfie_image);
       const photoIdBase64 = this.stripBase64Prefix(dto.photoid_image);

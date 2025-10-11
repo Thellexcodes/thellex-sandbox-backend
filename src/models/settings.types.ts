@@ -82,7 +82,7 @@ export type ApiConfig = {
   VFD: {
     BAAS_API: string;
     WALLET_API: string;
-    AUTH_TOKEN: string;
+    WALLET_AUTH_TOKEN: string;
     CONSUMER_KEY: string;
     CONSUMER_SECRET: string;
   };

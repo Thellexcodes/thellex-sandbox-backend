@@ -11,7 +11,7 @@ export abstract class AbstractVfdService {
   // 1.0 Authorization
   // ============================================
   abstract authenticate(): Promise<{
-    access_token: string;
+    baasToken: string;
     token_type: string;
   }>;
 

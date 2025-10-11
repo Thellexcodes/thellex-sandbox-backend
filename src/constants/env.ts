@@ -89,7 +89,7 @@ export function getAppConfig(): ApiConfig {
     VFD: {
       BAAS_API: config.get('VFD_BAAS_API'),
       WALLET_API: config.get('VFD_WALLET_API'),
-      AUTH_TOKEN: config.get('VFD_AUTH_TOKEN'),
+      WALLET_AUTH_TOKEN: config.get('VFD_WALLET_AUTH_TOKEN'),
       CONSUMER_KEY: config.get('VFD_CONSUMER_KEY'),
       CONSUMER_SECRET: config.get('VFD_CONSUMER_SECRET'),
     },

@@ -1,6 +1,5 @@
 import { Get, UseGuards, Req, Res, Query, Put, Body } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { AdminRoutes } from '@/routes/admint-routes';
 import { VersionedController101 } from '../controller/base.controller';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BasicAuthGuard } from '@/middleware/guards/local.auth.guard';
@@ -8,17 +7,16 @@ import { SuperAdminGuard } from '@/middleware/guards/super-admin.guard';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { ApproveRampRequestDTO } from './dto/approve-transaction.dto';
+import { AdminEndpoints } from '@/routes/admin-endpoints';
 
 @ApiTags('Admin')
 @VersionedController101('admin')
 @UseGuards(BasicAuthGuard, SuperAdminGuard)
 @ApiBearerAuth('access-token')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {
-    this.adminService.allRampTransactions();
-  }
+  constructor(private readonly adminService: AdminService) {}
 
-  @Get(AdminRoutes.AllRampTransactions)
+  @Get(AdminEndpoints.AllRampTransactions)
   async allRampTransactions(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
@@ -32,13 +30,13 @@ export class AdminController {
     responseHandler(transactions, res, req);
   }
 
-  @Get(AdminRoutes.Revenue)
+  @Get(AdminEndpoints.Revenue)
   async allRevenue(@Req() req: CustomRequest, @Res() res: CustomResponse) {
     const revenues = await this.adminService.allRevenues();
     responseHandler(revenues, res, req);
   }
 
-  @Put(AdminRoutes.ApproveRampTransactions)
+  @Put(AdminEndpoints.ApproveRampTransactions)
   async approveRampTransactions(
     @Body() body: ApproveRampRequestDTO,
     @Req() req: CustomRequest,

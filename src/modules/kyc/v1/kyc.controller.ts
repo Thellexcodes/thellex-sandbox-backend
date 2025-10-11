@@ -1,10 +1,5 @@
 import { Post, Body, UseGuards, Req, Res } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { KycService } from './kyc.service';
@@ -20,14 +15,17 @@ import {
   BasicAuthGuard,
   ProfileAuthGuard,
 } from '@/middleware/guards/local.auth.guard';
+import { KycServiceV2 } from '../v2/v2.kyc.service';
 
-@ApiTags('Kyc')
 @VersionedController101('kyc')
 @ApiBearerAuth('access-token')
 export class kycController {
-  constructor(private readonly kycService: KycService) {}
+  constructor(
+    private readonly kycService: KycService,
+    private readonly kycServiceV2: KycServiceV2,
+  ) {}
 
-  //[x] implement guard check for ensure user can't make this request again
+  // //[x] implement guard check for ensure user can't make this request again
   @Post('basic-nin-bvn')
   @UseGuards(ProfileAuthGuard)
   @ApiBody({ type: BasicTierKycDto, description: 'Basic KYC information' })
@@ -38,7 +36,10 @@ export class kycController {
     @Res() res: CustomResponse,
   ) {
     const user = req.user;
-    const data = await this.kycService.createBasicKyc(basicKycDto, user);
+    const data = await this.kycServiceV2.createKycWithBvnOrNin(
+      basicKycDto,
+      user,
+    );
 
     responseHandler(data, res, req);
   }

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
-
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { BaseAuthGuard } from './base-auth.guard';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { TierEnum } from '@/config/tier.lists';
+import { AuthErrorEnum } from '@/models/auth-error.enum';
 
 @Injectable()
 export class BasicAuthGuard extends BaseAuthGuard {
@@ -32,5 +33,28 @@ export class ProfileAuthGuard extends BaseAuthGuard {
         joinRelations: ['kyc'],
       },
     );
+  }
+}
+
+@Injectable()
+export class KycGuard extends BaseAuthGuard {
+  protected async ensureUserCanPerformKyc(id: string): Promise<boolean> {
+    const user = await this.userService.findOneDynamic(
+      { id },
+      {
+        selectFields: ['id', 'tier'],
+        joinRelations: ['kyc'],
+      },
+    );
+
+    if (user.tier !== TierEnum.NONE) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Unauthorized',
+        errorCode: AuthErrorEnum.FORBIDDEN,
+      });
+    }
+
+    return true;
   }
 }

@@ -56,7 +56,6 @@ import { TransactionHistoryDto } from '../../transaction-history/dto/create-tran
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import { CwalletsEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet.entity';
 import { WalletErrorEnum } from '@/models/wallet-manager.types';
-import { NotificationsGateway } from '../../notifications/notifications.gateway';
 import { PaymentErrorEnum } from '@/models/payment-error.enum';
 import { TransactionHistoryService } from '../../transaction-history/transaction-history.service';
 import { YCTxnAccountTypes } from '@/models/yellow-card.types';
@@ -67,10 +66,13 @@ import {
   TransactionHistoryEntity,
 } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
 import { TransactionsService } from '../../transactions/transactions.service';
-import { DevicesService } from '../../devices/devices.service';
 import { RampTransactionMessage } from '@/models/ramp-types';
 import { IMapleradTransferResponseDto } from '@/models/maplerad.types';
-import { findDynamic, FindDynamicOptions } from '@/utils/DynamicSource';
+import {
+  FindDynamicOptions,
+  findManyDynamic,
+  FindManyDynamicOptions,
+} from '@/utils/DynamicSource';
 import { MapleradService } from './maplerad.service';
 
 //[x] properly throw error using enum
@@ -79,16 +81,16 @@ export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
 
   constructor(
+    private readonly dataSource: DataSource,
+    private readonly ycService: YellowCardService,
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
-    private readonly ycService: YellowCardService,
+    private readonly mapleradService: MapleradService,
+    private readonly transactionService: TransactionsService,
+    private readonly transactionHistoryService: TransactionHistoryService,
+
     @InjectRepository(FiatCryptoRampTransactionEntity)
     private readonly fiatCryptoRampTransactionRepo: Repository<FiatCryptoRampTransactionEntity>,
-    private readonly dataSource: DataSource,
-    private readonly mapleradService: MapleradService,
-    private readonly transactionHistoryService: TransactionHistoryService,
-    private readonly transactionService: TransactionsService,
-    private readonly deviceService: DevicesService,
   ) {}
 
   async handleRates(
@@ -161,9 +163,9 @@ export class PaymentsService {
 
   async getAllUserRampTransactions({ page, limit }, userId: string) {
     try {
-      const options: FindDynamicOptions & { where?: { [key: string]: any } } = {
-        page,
-        limit,
+      const options: FindManyDynamicOptions = {
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 10,
         selectFields: [
           'id',
           'expiresAt',
@@ -188,15 +190,18 @@ export class PaymentsService {
           'transactionMessage',
         ],
         sortBy: [{ field: 'createdAt', order: 'DESC' }],
+        joinRelations: [
+          { relation: 'profile', selectFields: ['bio', 'avatar'] },
+        ],
       };
 
       // Add userId filter if provided
       if (userId) {
         options.where = { 'user.id': userId };
-        options.joinRelations = [{ relation: 'user' }]; // Join user relation
+        options.joinRelation = [{ relation: 'user' }]; // Join user relation
       }
 
-      const result = await findDynamic(
+      const result = await findManyDynamic(
         this.fiatCryptoRampTransactionRepo,
         options,
       );
@@ -1343,4 +1348,10 @@ export class PaymentsService {
     max: 10000, // Max concurrent keys to track
     ttl: 1000 * 60 * 10, // 10 minutes TTL (auto evict old ones)
   });
+}
+function findDynamic(
+  fiatCryptoRampTransactionRepo: Repository<FiatCryptoRampTransactionEntity>,
+  options: FindDynamicOptions & { where?: { [key: string]: any } },
+) {
+  throw new Error('Function not implemented.');
 }

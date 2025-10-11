@@ -17,7 +17,8 @@ export abstract class BaseAuthGuard implements CanActivate {
     protected readonly jwtService: JwtService,
   ) {}
 
-  protected abstract fetchUser(id: string): Promise<UserEntity | null>;
+  protected fetchUser?(id: string): Promise<UserEntity | null>;
+  protected ensureUserCanPerformKyc?(id: string): Promise<boolean>;
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
