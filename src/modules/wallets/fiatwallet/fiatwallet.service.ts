@@ -1,15 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AbstractFiatwalletService } from './abstracts/abstract.fiatwalletService';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob, CronTime } from 'cron';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { Repository } from 'typeorm';
 import { UserService } from '@/modules/users/user.service';
-import { CronTimes } from '@/models/cron.times';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
 import { FiatEnum } from '@/config/settings';
+import { VfdService } from '@/modules/payments/v2/vfd.service';
 
 @Injectable()
 export class FiatwalletService extends AbstractFiatwalletService {
@@ -22,9 +20,8 @@ export class FiatwalletService extends AbstractFiatwalletService {
     @InjectRepository(FiatWalletEntity)
     private readonly walletRepo: Repository<FiatWalletEntity>,
 
-    private schedulerRegistry: SchedulerRegistry,
-
     private userService: UserService,
+    private vfdService: VfdService,
   ) {
     super();
   }
