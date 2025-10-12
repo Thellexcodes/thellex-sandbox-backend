@@ -19,17 +19,24 @@ export class TransactionsService {
     user: UserEntity,
   ): Promise<TransactionEntity> {
     try {
+      const toNumberSafe = (value: any): number | undefined => {
+        const n = Number(value);
+        return isNaN(n) ? undefined : n;
+      };
+
       const transaction = new TransactionEntity();
       transaction.transactionType = payload.transactionType;
-      transaction.fiatAmount = payload.fiatAmount;
-      transaction.cryptoAmount = payload.cryptoAmount;
+      transaction.fiatAmount = toNumberSafe(payload.fiatAmount);
+      transaction.cryptoAmount = toNumberSafe(payload.cryptoAmount);
       transaction.fiatCurrency = payload.fiatCurrency;
       transaction.cryptoAsset = payload.cryptoAsset;
       transaction.paymentStatus = payload.paymentStatus;
       transaction.user = user;
-      return this.transactionRepository.save(transaction);
+
+      return await this.transactionRepository.save(transaction);
     } catch (err) {
-      console.log(err);
+      console.error('Error creating transaction:', err);
+      throw err;
     }
   }
 
