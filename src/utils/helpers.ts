@@ -32,12 +32,27 @@ import { RequestCryptoOffRampPaymentDto } from '../modules/payments/dto/request-
 import { createReadStream } from 'fs';
 import { BaseResponseDto } from '@/models/base-response.dto';
 import { Response } from 'express';
+import { BaseFindArgs, dynamicQuery, findOneDynamic } from './DynamicSource';
 
 //TODO: handle errors with enums
 
+/**
+ * Checks whether the given value is a valid number.
+ *
+ * This function works with both string and number inputs.
+ * If the input is a string, non-digit characters are removed before the check.
+ *
+ * @param n - The value to check. Can be a string or a number.
+ * @returns `true` if the cleaned value is a finite number, otherwise `false`.
+ *
+ * @example
+ * isNumber(123);        // true
+ * isNumber('456');      // true
+ * isNumber('12.3abc');  // true
+ * isNumber('abc');      // false
+ */
 export function isNumber(n: string | number): boolean {
   const cleanedValue = String(n).replace(/\D/g, '');
-
   return !isNaN(parseFloat(cleanedValue)) && isFinite(Number(cleanedValue));
 }
 
@@ -94,18 +109,19 @@ function generateRandomUid(): number {
   return Math.floor(10000000 + Math.random() * 90000000);
 }
 
-export async function generateUniqueUid(
-  userRepository: Repository<UserEntity>,
-): Promise<number> {
+export async function generateUniqueUid(email: string): Promise<number> {
   let uid: number;
   let exists = true;
 
   while (exists) {
     uid = generateRandomUid();
-    const existingUser = await userRepository.findOne({ where: { uid } });
+    const options = dynamicQuery<UserEntity>('findOne', {
+      email,
+      fields: 'uid',
+    } as BaseFindArgs);
+    const existingUser = await findOneDynamic(this.userRepository, options);
     exists = !!existingUser;
   }
-
   return uid;
 }
 
@@ -380,8 +396,6 @@ export class NormalizeEnumPipe implements PipeTransform {
     if (typeof value === 'string') {
       return normalizeEnumValue(value, this.enumType);
     }
-    console.log({ value });
-
     return value;
   }
 }

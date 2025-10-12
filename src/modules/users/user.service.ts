@@ -16,6 +16,13 @@ import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { TierEnum } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
 import { SendEmailOptions, TransportTypes } from '@/models/email-types';
+import {
+  BaseFindArgs,
+  dynamicQuery,
+  FindManyArgs,
+  findManyDynamic,
+  findOneDynamic,
+} from '@/utils/DynamicSource';
 
 @Injectable()
 export class UserService {
@@ -45,10 +52,8 @@ export class UserService {
 
     try {
       const email = createUserDto.email.toLowerCase();
-      user = await this.findOneDynamic(
-        { email },
-        { selectFields: ['email', 'id'] },
-      );
+
+      user = await this.findOne({ email, fields: 'id,email' });
 
       if (user) {
         const expires_at = await this.resendVerification(user);
@@ -56,14 +61,14 @@ export class UserService {
         return { access_token, expires_at };
       }
 
-      const uid = await generateUniqueUid(this.userRepository);
+      const uid = await generateUniqueUid(email);
 
       const newUser = this.userRepository.create({
         email,
         uid,
       });
 
-      // Save user inside the transaction
+      // // Save user inside the transaction
       user = await queryRunner.manager.save(newUser);
 
       // Commit first to persist the user in DB
@@ -88,10 +93,6 @@ export class UserService {
     return { access_token, expires_at };
   }
 
-  /**
-   * Resends verification code only if no valid unexpired and unused code exists.
-   * Throws error if a valid code is still active and unused.
-   */
   private async resendVerification(user: UserEntity): Promise<Date> {
     const existingCode = await this.authenticationRepository.findOne({
       where: {
@@ -129,13 +130,11 @@ export class UserService {
       );
     }
 
-    const userData = await this.findOneDynamic(
-      { id: user.id },
-      {
-        selectFields: ['id', 'email', 'role', 'tier', 'uid'],
-        joinRelations: ['kyc', 'bankAccounts'],
-      },
-    );
+    const userData = await this.findOne({
+      id: user.id,
+      fields: 'id, email, role, tier, uid',
+      relations: 'kyc',
+    });
 
     const userPlain = formatUserWithTiers(userData);
 
@@ -153,17 +152,17 @@ export class UserService {
     }
   }
 
-  async findOneById(id: string): Promise<UserEntity> {
-    try {
-      return await this.userRepository.findOne({ where: { id } });
-    } catch (error) {
-      this.logger.error('Error finding user by ID', error);
-      throw new CustomHttpException(
-        'Error retrieving user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  // async findOneById(id: string): Promise<UserEntity> {
+  //   try {
+  //     return await this.userRepository.findOne({ where: { id } });
+  //   } catch (error) {
+  //     this.logger.error('Error finding user by ID', error);
+  //     throw new CustomHttpException(
+  //       'Error retrieving user',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async emailVerificationComposer(
     user: UserEntity,
@@ -197,8 +196,10 @@ export class UserService {
       code = Math.floor(100000 + Math.random() * 900000);
       exists = await this.authenticationRepository.findOne({ where: { code } });
     }
+    const newCode = new AuthVerificationCodesEntity();
+    newCode.user = user;
+    newCode.code = code;
 
-    const newCode = this.authenticationRepository.create({ user, code });
     const res = await this.authenticationRepository.save(newCode);
 
     return { code, expires_at: res.expires_at };
@@ -241,13 +242,11 @@ export class UserService {
     }
 
     if (user.emailVerified) {
-      const verifiedUser = await this.findOneDynamic(
-        { id: user.id },
-        {
-          selectFields: ['id', 'email', 'emailVerified', 'role', 'tier', 'uid'],
-          joinRelations: ['kyc', 'bankAccounts'],
-        },
-      );
+      const verifiedUser = await this.findOne({
+        id: user.id,
+        fields: 'id, email, emailVerified, role, tier, uid',
+        relations: 'kyc, bankAccounts',
+      });
 
       if (!verifiedUser)
         throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
@@ -295,53 +294,13 @@ export class UserService {
       .getOne();
   }
 
-  async findOneDynamic(
-    identifier: { id?: string; email?: string },
-    options?: {
-      selectFields?: string[];
-      joinRelations?: string[];
-    },
-  ): Promise<UserEntity | null> {
-    try {
-      const query = this.userRepository.createQueryBuilder('user');
+  async findOne(args: BaseFindArgs) {
+    const options = dynamicQuery<UserEntity>('findOne', args);
+    return await findOneDynamic(this.userRepository, options);
+  }
 
-      // Default fields from the main table
-      const defaultFields = ['user.id', 'user.email', 'user.emailVerified'];
-      const fieldsToSelect =
-        options?.selectFields?.map((f) => `user.${f}`) ?? defaultFields;
-      query.select(fieldsToSelect);
-
-      // Handle joinRelations
-      options?.joinRelations?.forEach((relation) => {
-        const parts = relation.split('.'); // e.g., ['qWalletProfile', 'wallets']
-        let parentAlias = 'user';
-
-        parts.forEach((part, index) => {
-          const alias = parts.slice(0, index + 1).join('_'); // e.g., 'qWalletProfile_wallets'
-          if (index === 0) {
-            // top-level relation -> select all fields
-            query.leftJoinAndSelect(`${parentAlias}.${part}`, alias);
-          } else {
-            // nested relation -> only join, don't select all parent fields
-            query.leftJoinAndSelect(`${parentAlias}.${part}`, alias);
-          }
-          parentAlias = alias;
-        });
-      });
-
-      // WHERE condition: support id or email
-      if (identifier.id) {
-        query.where('user.id = :id', { id: identifier.id });
-      } else if (identifier.email) {
-        query.where('user.email = :email', { email: identifier.email });
-      } else {
-        throw new Error('Either id or email must be provided');
-      }
-
-      return await query.getOne();
-    } catch (error) {
-      this.logger.error('Error fetching user dynamically:', error);
-      return null;
-    }
+  async findMany(args: FindManyArgs) {
+    const options = dynamicQuery<UserEntity>('findMany', args);
+    return await findManyDynamic(this.userRepository, options);
   }
 }

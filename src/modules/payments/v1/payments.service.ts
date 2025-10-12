@@ -190,15 +190,12 @@ export class PaymentsService {
           'transactionMessage',
         ],
         sortBy: [{ field: 'createdAt', order: 'DESC' }],
-        joinRelations: [
-          { relation: 'profile', selectFields: ['bio', 'avatar'] },
-        ],
       };
 
       // Add userId filter if provided
       if (userId) {
         options.where = { 'user.id': userId };
-        options.joinRelation = [{ relation: 'user' }]; // Join user relation
+        options.joinRelations = [{ relation: 'user' }];
       }
 
       const result = await findManyDynamic(

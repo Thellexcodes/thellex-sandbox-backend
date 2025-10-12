@@ -2,10 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/users/user.module';
-import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
-import { jwtConfigurations } from './config/jwt.config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ErrorInterceptor } from './middleware/error.interceptor';
 import { AuthnService } from './modules/auth/auth.service';
@@ -33,8 +30,6 @@ import { QwalletModule } from './modules/wallets/qwallet/qwallet.module';
 import { CwalletModule } from './modules/wallets/cwallet/cwallet.module';
 import { AuthEntity } from './utils/typeorm/entities/auth.entity';
 import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.module';
-import { typeOrmConfig } from './utils/typeorm/typeOrm.config';
-import { ConfigService } from './config/config.service';
 import { CrashReportModule } from './crash-report/crash-report.module';
 import { BetaTesterEntity } from './utils/typeorm/entities/beta.testers.entity';
 import { FirebaseModule } from './modules/firebase/firebase.module';
@@ -43,6 +38,7 @@ import { GlobalJwtModule } from './modules/jwt/jwt.module';
 
 @Module({
   imports: [
+    GlobalJwtModule,
     TypeOrmModule.forFeature([
       UserEntity,
       AuthEntity,
@@ -51,18 +47,6 @@ import { GlobalJwtModule } from './modules/jwt/jwt.module';
       ProcessedBuildEntity,
       AuthVerificationCodesEntity,
     ]),
-    TypeOrmModule.forRootAsync({
-      useFactory: async () => await typeOrmConfig(),
-      inject: [],
-    }),
-    GlobalJwtModule,
-    // JwtModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: async (): Promise<JwtModuleOptions> => ({
-    //     ...jwtConfigurations(),
-    //   }),
-    //   inject: [ConfigService],
-    // }),
     SharedModule,
     UserModule,
     AuthModule,
@@ -86,10 +70,10 @@ import { GlobalJwtModule } from './modules/jwt/jwt.module';
   controllers: [AppController],
   providers: [
     AppService,
-    { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
     AuthnService,
     UserService,
     MailService,
+    { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
   ],
 })
 export class AppModule implements NestModule {

@@ -6,13 +6,12 @@ import { AuthErrorEnum } from '@/models/auth-error.enum';
 
 @Injectable()
 export class BasicAuthGuard extends BaseAuthGuard {
-  protected fetchUser(id: string): Promise<UserEntity | null> {
-    return this.userService.findOneDynamic(
-      { id },
-      {
-        selectFields: ['id', 'email', 'suspended', 'role', 'uid', 'tier'],
-      },
-    );
+  protected async fetchUser(id: string): Promise<UserEntity | null> {
+    let user = await this.userService.findOne({
+      id,
+      fields: 'email, id, suspended, role, uid, tier',
+    });
+    return user;
   }
 }
 
@@ -25,27 +24,22 @@ export class VerificationAuthGuard extends BaseAuthGuard {
 
 @Injectable()
 export class ProfileAuthGuard extends BaseAuthGuard {
-  protected fetchUser(id: string): Promise<UserEntity | null> {
-    return this.userService.findOneDynamic(
-      { id },
-      {
-        selectFields: ['id', 'email', 'suspended', 'role', 'uid', 'tier'],
-        joinRelations: ['kyc'],
-      },
-    );
+  protected async fetchUser(id: string): Promise<UserEntity | null> {
+    let user = await this.userService.findOne({
+      id,
+      fields: 'id, email, suspended, role, uid, tier',
+    });
+    return user;
   }
 }
 
 @Injectable()
 export class KycGuard extends BaseAuthGuard {
   protected async ensureUserCanPerformKyc(id: string): Promise<boolean> {
-    const user = await this.userService.findOneDynamic(
-      { id },
-      {
-        selectFields: ['id', 'tier'],
-        joinRelations: ['kyc'],
-      },
-    );
+    let user = await this.userService.findOne({
+      id,
+      fields: 'id,tier',
+    });
 
     if (user.tier !== TierEnum.NONE) {
       throw new UnauthorizedException({

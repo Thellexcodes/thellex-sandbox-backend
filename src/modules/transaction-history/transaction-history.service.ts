@@ -8,7 +8,7 @@ import { QWalletStatus } from '../wallets/qwallet/qwallet-status.enum';
 import { IQWalletHookWithdrawSuccessfulEvent } from '../webhooks/qwallet-hooks/dto/qwallet-hook-withdrawSuccessful.dto';
 import { IUpdateCwalletTransactionDto } from '../webhooks/cwallet-hooks/dto/update-cwallet-hook.dto';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
-import { findDynamic, FindDynamicOptions } from '@/utils/DynamicSource';
+import { findManyDynamic, FindManyDynamicOptions } from '@/utils/DynamicSource';
 
 //TODO: add try catch block for error handling
 @Injectable()
@@ -30,7 +30,7 @@ export class TransactionHistoryService {
 
   async getAllUserTransactions({ page, limit }, userId: string) {
     try {
-      const options: FindDynamicOptions & { where?: { [key: string]: any } } = {
+      const options: FindManyDynamicOptions = {
         page,
         limit,
         selectFields: [
@@ -62,7 +62,7 @@ export class TransactionHistoryService {
         options.joinRelations = [{ relation: 'user' }];
       }
 
-      const result = await findDynamic(this.transactionRepo, options);
+      const result = await findManyDynamic(this.transactionRepo, options);
       return result;
     } catch (error) {
       console.error('Error in getAllUserTransactions:', error);

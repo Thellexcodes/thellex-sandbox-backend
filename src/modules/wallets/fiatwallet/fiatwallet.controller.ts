@@ -1,35 +1,42 @@
-import { Controller } from '@nestjs/common';
+import { Post } from '@nestjs/common';
 import { FiatwalletService } from './fiatwallet.service';
 import { AbstractFiatwalletController } from './abstracts/abstract.fiatwalletController';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
+import { VersionedControllerV2 } from '@/modules/controller/base.controller';
+import { FiatEndpoints } from '@/routes/fiat-endpoints';
+import { responseHandler } from '@/utils/helpers';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@Controller('fiatwallet')
+@ApiTags(FiatEndpoints.MAIN)
+@ApiBearerAuth('access-token')
+@VersionedControllerV2(FiatEndpoints.MAIN)
 export class FiatwalletController extends AbstractFiatwalletController {
   constructor(readonly fiatwalletService: FiatwalletService) {
     super(fiatwalletService);
   }
 
-  createFiatWalletProfile(
+  @Post(FiatEndpoints.CREATE_WALLET)
+  async createFiatWallet(
     body: any,
     req: CustomRequest,
     res: CustomResponse,
   ): Promise<void> {
-    throw new Error('Method not implemented.');
+    const user = req.user;
+    const result = this.fiatwalletService.startCreateWalletJob(user.id, body);
+    responseHandler(result, res, req);
   }
-  createFiatWallet(
-    body: any,
+
+  @Post(FiatEndpoints.GET_WALLET)
+  async getUserFiatWalletProfile(
     req: CustomRequest,
     res: CustomResponse,
   ): Promise<void> {
-    throw new Error('Method not implemented.');
+    const user = req.user;
+    const result = this.fiatwalletService.getUserFiatWalletProfile(user.id);
+    responseHandler(result, res, req);
   }
-  getUserFiatWalletProfile(
-    userId: string,
-    req: CustomRequest,
-    res: CustomResponse,
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
+
+  @Post(FiatEndpoints.GET_BY_COUNTRY)
   getUserFiatWalletByCountry(
     userId: string,
     country: string,
@@ -38,6 +45,8 @@ export class FiatwalletController extends AbstractFiatwalletController {
   ): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
+  @Post(FiatEndpoints.GET_BY_TICKER)
   getUserFiatWalletByTicker(
     userId: string,
     ticker: string,
@@ -46,20 +55,15 @@ export class FiatwalletController extends AbstractFiatwalletController {
   ): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
+  @Post(FiatEndpoints.GET_ALL)
   getAllFiatWallets(req: CustomRequest, res: CustomResponse): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  suspendFiatWallet(
-    walletId: string,
-    req: CustomRequest,
-    res: CustomResponse,
-  ): Promise<void>;
-  suspendFiatWallet(
-    body: { walletIds: string[] },
-    req: CustomRequest,
-    res: CustomResponse,
-  ): Promise<void>;
-  suspendFiatWallet(body: unknown, req: unknown, res: unknown): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  @Post(FiatEndpoints.STOP_ALL_JOBS)
+  stopAll() {
+    this.fiatwalletService.stopAllJobs();
+    return { message: 'All crons stopped' };
   }
 }

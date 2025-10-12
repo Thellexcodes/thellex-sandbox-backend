@@ -10,6 +10,21 @@ interface JoinOption {
   selectFields?: string[];
 }
 
+export interface BaseFindArgs {
+  id?: string;
+  email?: string;
+  name?: string;
+  [key: string]: string | undefined;
+  fields?: string;
+  relations?: string;
+}
+
+export interface FindManyArgs extends BaseFindArgs {
+  sortBy?: string;
+  page?: string;
+  limit?: string;
+}
+
 export interface FindDynamicOptions<T = any> {
   selectFields?: string[];
   joinRelations?: JoinOption[];
@@ -22,14 +37,71 @@ export interface FindManyDynamicOptions<T = any> extends FindDynamicOptions<T> {
   sortBy?: SortBy[];
 }
 
-export interface UpdateDynamicOptions {
-  where: { [key: string]: any };
+export interface UpdateDynamicOptions<T = any> {
+  where?: FindOptionsWhere<T> | { [key: string]: any };
   updateData: { [key: string]: any };
+}
+
+export type DynamicReturnType<T> = Promise<
+  FindDynamicOptions<T> | FindManyDynamicOptions<T[]>
+>;
+
+export function dynamicQuery<T = any>(
+  type: 'findOne' | 'findMany' | 'updateOne' | 'updateMany',
+  query: { [key: string]: string | undefined },
+  updateData?: { [key: string]: any },
+): FindDynamicOptions<T> | FindManyDynamicOptions<T> | UpdateDynamicOptions<T> {
+  const { fields, sortBy, page, limit, relations, ...whereParams } = query;
+
+  // Construct where clause from all non-reserved query parameters
+  const where: { [key: string]: any } = {};
+  Object.entries(whereParams).forEach(([key, value]) => {
+    if (value) {
+      where[key] = key === 'id' ? parseInt(value) : value;
+    }
+  });
+
+  if (type === 'updateOne' || type === 'updateMany') {
+    return {
+      where: Object.keys(where).length > 0 ? where : undefined,
+      updateData: updateData || {},
+    };
+  }
+
+  const baseOptions: FindDynamicOptions<T> = {
+    where: Object.keys(where).length > 0 ? where : undefined,
+    selectFields: fields?.split(','),
+    joinRelations: relations
+      ? [{ relation: relations, selectFields: ['bio', 'avatar'] }]
+      : [],
+  };
+
+  if (type === 'findOne') {
+    return baseOptions;
+  }
+
+  // type === 'findMany'
+  return {
+    ...baseOptions,
+    page: parseInt(page) || 1,
+    limit: parseInt(limit) || 10,
+    sortBy: sortBy
+      ? [
+          {
+            field: sortBy.split(':')[0],
+            order: sortBy.split(':')[1] as 'ASC' | 'DESC',
+          },
+        ]
+      : [],
+    joinRelations: relations
+      ? [{ relation: relations, selectFields: ['bio', 'avatar'] }]
+      : [{ relation: 'profile', selectFields: ['bio', 'avatar'] }],
+  };
 }
 
 export async function findOneDynamic<T>(
   repo: Repository<T>,
-  options: FindDynamicOptions & { where?: { [key: string]: any } } = {},
+  options: FindDynamicOptions<T> = {},
 ): Promise<T | null> {
   try {
     const alias = repo.metadata.tableName;
@@ -68,9 +140,7 @@ export async function findOneDynamic<T>(
 
     // Handle where conditions
     if (options.where) {
-      Object.entries(options.where).forEach(([key, value]) => {
-        query.andWhere(`${alias}.${key} = :value`, { value });
-      });
+      query.andWhere(options.where);
     }
 
     // Default sorting
@@ -85,7 +155,7 @@ export async function findOneDynamic<T>(
 
 export async function findManyDynamic<T>(
   repo: Repository<T>,
-  options: FindManyDynamicOptions & { where?: { [key: string]: any } } = {},
+  options: FindManyDynamicOptions<T> = {},
 ): Promise<{
   data: T[];
   total: number;
@@ -133,9 +203,7 @@ export async function findManyDynamic<T>(
 
     // Handle where conditions
     if (options.where) {
-      Object.entries(options.where).forEach(([key, value]) => {
-        query.andWhere(`${alias}.${key} = :value`, { value });
-      });
+      query.andWhere(options.where);
     }
 
     // Pagination
@@ -166,23 +234,21 @@ export async function findManyDynamic<T>(
 
 export async function updateOneDynamic<T>(
   repo: Repository<T>,
-  options: UpdateDynamicOptions,
+  options: UpdateDynamicOptions<T>,
 ): Promise<T | null> {
   try {
     const alias = repo.metadata.tableName;
     const query: SelectQueryBuilder<T> = repo.createQueryBuilder(alias);
 
-    // Handle where conditions
-    Object.entries(options.where).forEach(([key, value]) => {
-      query.andWhere(`${alias}.${key} = :value`, { value });
-    });
+    if (options.where) {
+      query.andWhere(options.where);
+    }
 
     const entity = await query.getOne();
     if (!entity) {
       return null;
     }
 
-    // Update the entity
     Object.assign(entity, options.updateData);
     return await repo.save(entity);
   } catch (error) {
@@ -193,23 +259,21 @@ export async function updateOneDynamic<T>(
 
 export async function updateManyDynamic<T>(
   repo: Repository<T>,
-  options: UpdateDynamicOptions,
+  options: UpdateDynamicOptions<T>,
 ): Promise<T[]> {
   try {
     const alias = repo.metadata.tableName;
     const query: SelectQueryBuilder<T> = repo.createQueryBuilder(alias);
 
-    // Handle where conditions
-    Object.entries(options.where).forEach(([key, value]) => {
-      query.andWhere(`${alias}.${key} = :value`, { value });
-    });
+    if (options.where) {
+      query.andWhere(options.where);
+    }
 
     const entities = await query.getMany();
     if (!entities.length) {
       return [];
     }
 
-    // Update all entities
     entities.forEach((entity) => {
       Object.assign(entity, options.updateData);
     });

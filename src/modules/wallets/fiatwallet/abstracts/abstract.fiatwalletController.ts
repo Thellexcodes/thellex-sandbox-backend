@@ -7,15 +7,6 @@ export abstract class AbstractFiatwalletController {
   ) {}
 
   /**
-   * Create fiat wallet profile
-   */
-  abstract createFiatWalletProfile(
-    body: any,
-    req: CustomRequest,
-    res: CustomResponse,
-  ): Promise<void>;
-
-  /**
    * Create fiat wallet
    */
   abstract createFiatWallet(
@@ -28,7 +19,6 @@ export abstract class AbstractFiatwalletController {
    * Get user fiat wallet profile
    */
   abstract getUserFiatWalletProfile(
-    userId: string,
     req: CustomRequest,
     res: CustomResponse,
   ): Promise<void>;
@@ -61,21 +51,21 @@ export abstract class AbstractFiatwalletController {
     res: CustomResponse,
   ): Promise<void>;
 
-  /**
-   * Suspend a single fiat wallet
-   */
-  abstract suspendFiatWallet(
-    walletId: string,
-    req: CustomRequest,
-    res: CustomResponse,
-  ): Promise<void>;
+  // /**
+  //  * Suspend a single fiat wallet
+  //  */
+  // abstract suspendFiatWallet(
+  //   walletId: string,
+  //   req: CustomRequest,
+  //   res: CustomResponse,
+  // ): Promise<void>;
 
-  /**
-   * Suspend multiple fiat wallets
-   */
-  abstract suspendFiatWallet(
-    body: { walletIds: string[] },
-    req: CustomRequest,
-    res: CustomResponse,
-  ): Promise<void>;
+  // /**
+  //  * Suspend multiple fiat wallets
+  //  */
+  // abstract suspendFiatWallet(
+  //   body: { walletIds: string[] },
+  //   req: CustomRequest,
+  //   res: CustomResponse,
+  // ): Promise<void>;
 }

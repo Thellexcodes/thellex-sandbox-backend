@@ -505,7 +505,11 @@ export class KycService {
 
       await this.kycRepo.save(userKycData);
       await this.userService.updateUserTier(user.id, TierEnum.BASIC);
-      const updatedUser = await this.userService.findOneById(user.id);
+
+      const updatedUser = await this.userService.findOne({
+        id: user.id,
+        relations: 'kyc',
+      });
 
       const { currentTier, nextTier, remainingTiers, outstandingKyc, banks } =
         formatUserWithTiers(updatedUser);

@@ -33,11 +33,10 @@ export class WalletManagerService {
 
   async getBalance(user: UserEntity): Promise<WalletBalanceSummaryResponseDto> {
     try {
-      // Fetch user with optional joins
-      const userWithWallets = await this.userService.findOneDynamic(
-        { id: user.id },
-        { joinRelations: ['qWalletProfile.wallets', 'cWalletProfile.wallets'] },
-      );
+      const userWithWallets = await this.userService.findOne({
+        id: user.id,
+        relations: 'qWalletProfile.wallets, cWalletProfile.wallets',
+      });
 
       if (!userWithWallets) {
         throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);

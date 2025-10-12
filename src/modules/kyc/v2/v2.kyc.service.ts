@@ -130,7 +130,10 @@ export class KycServiceV2 extends BaseKycService {
       );
 
       // Use updated user data from the main service, outside transaction
-      const updatedUser = await this.userService.findOneById(user.id);
+      const updatedUser = await this.userService.findOne({
+        id: user.id,
+        relations: 'kyc',
+      });
 
       // const [year, month, day] = userKycData.dob.split('-');
       // const dob = `${day}-${month}-${year}`;

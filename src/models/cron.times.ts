@@ -1,0 +1,17 @@
+export enum CronTimes {
+  EVERY_SECOND = '* * * * * *',
+  EVERY_5_SECONDS = '*/5 * * * * *',
+  EVERY_10_SECONDS = '*/10 * * * * *',
+  EVERY_15_SECONDS = '*/15 * * * * *',
+  EVERY_30_SECONDS = '*/30 * * * * *',
+  EVERY_MINUTE = '0 * * * * *',
+  EVERY_5_MINUTES = '0 */5 * * * *',
+  EVERY_10_MINUTES = '0 */10 * * * *',
+  EVERY_30_MINUTES = '0 */30 * * * *',
+  EVERY_HOUR = '0 0 * * * *',
+  EVERY_DAY_MIDNIGHT = '0 0 0 * * *',
+  EVERY_DAY_6AM = '0 0 6 * * *',
+  EVERY_MONDAY = '0 0 0 * * 1',
+  EVERY_SUNDAY = '0 0 0 * * 0',
+  EVERY_MONTH = '0 0 0 1 * *',
+}

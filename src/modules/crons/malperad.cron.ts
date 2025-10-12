@@ -1,7 +1,7 @@
-import { EVERY_15_SECONDS_CRON } from '@/config/settings';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MapleradService } from '../payments/v1/maplerad.service';
+import { CronTimes } from '@/models/cron.times';
 
 @Injectable()
 export class MapleradCron {
@@ -9,7 +9,7 @@ export class MapleradCron {
 
   constructor(private readonly mapleradService: MapleradService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronTimes.EVERY_10_SECONDS)
   async getAllBankingInstitutions() {
     try {
       this.logger.log('🔄 Fetching all Maplerad banking institutions...');

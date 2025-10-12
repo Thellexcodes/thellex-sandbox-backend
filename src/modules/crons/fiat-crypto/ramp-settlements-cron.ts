@@ -1,4 +1,5 @@
-import { EVERY_15_SECONDS_CRON } from '@/config/settings';
+// import { EVERY_15_SECONDS_CRON } from '@/config/settings';
+import { CronTimes } from '@/models/cron.times';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
 import { MapleradService } from '@/modules/payments/v1/maplerad.service';
 import { PaymentsService } from '@/modules/payments/v1/payments.service';
@@ -20,7 +21,7 @@ export class RampSettlementsCron {
     ttl: 1000 * 60 * 10, // 10 minutes TTL (auto evict old ones)
   });
 
-  @Cron(EVERY_15_SECONDS_CRON)
+  @Cron(CronTimes.EVERY_15_SECONDS)
   async processFiatToCryptoSettlements() {
     const txns = await this.paymentService.findAllDirectSettlementTransactions({
       paymentStatus: PaymentStatus.Complete,
@@ -50,12 +51,12 @@ export class RampSettlementsCron {
 
   // Updated processCryptoToFiatSettlements to handle YellowCard fiat payouts and retries
   // Updated processCryptoToFiatSettlements to handle liquidity checks and retries
-  @Cron(EVERY_15_SECONDS_CRON)
+  @Cron(CronTimes.EVERY_15_SECONDS)
   async processCryptoToFiatSettlements() {
     const txns = await this.paymentService.findAllDirectSettlementTransactions({
       paymentStatus: PaymentStatus.Processing,
       transactionType: TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL,
-      sentCrypto: false, // Only process transactions where crypto hasn't been sent or fiat payout is pending
+      sentCrypto: false,
     });
 
     // Check Maplerad liquidity (pseudo-code, replace with actual API call)

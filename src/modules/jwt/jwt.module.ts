@@ -1,8 +1,11 @@
 // src/common/modules/jwt/jwt.module.ts
 import { Global, Module } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { jwtConfigurations } from 'src/config/jwt.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
+import { typeOrmConfig } from '@/utils/typeorm/typeOrm.config';
 
 @Global()
 @Module({
@@ -13,7 +16,11 @@ import { jwtConfigurations } from 'src/config/jwt.config';
         ...jwtConfigurations(),
       }),
     }),
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => await typeOrmConfig(),
+      inject: [],
+    }),
   ],
-  exports: [JwtModule],
+  exports: [JwtModule, TypeOrmModule],
 })
 export class GlobalJwtModule {}

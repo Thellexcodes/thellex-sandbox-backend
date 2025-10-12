@@ -7,7 +7,11 @@ import { plainToInstance } from 'class-transformer';
 import { INotificationConsumeResponseDto } from './dto/notification.dto';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationErrorEnum } from '@/models/notifications.enum';
-import { findDynamic, FindDynamicOptions } from '@/utils/DynamicSource';
+import {
+  FindDynamicOptions,
+  findManyDynamic,
+  FindManyDynamicOptions,
+} from '@/utils/DynamicSource';
 import PQueue from 'p-queue';
 
 const queue = new PQueue({ concurrency: 3 });
@@ -25,7 +29,9 @@ export class NotificationsService {
 
   async getAllUserNotifications({ page, limit }, userId: string) {
     try {
-      const options: FindDynamicOptions & { where?: { [key: string]: any } } = {
+      const options: FindManyDynamicOptions & {
+        where?: { [key: string]: any };
+      } = {
         page,
         limit,
         selectFields: [
@@ -42,13 +48,12 @@ export class NotificationsService {
         sortBy: [{ field: 'createdAt', order: 'DESC' }],
       };
 
-      // Add userId filter if provided
       if (userId) {
         options.where = { 'user.id': userId };
-        options.joinRelations = [{ relation: 'user' }]; // Join user relation
+        options.joinRelations = [{ relation: 'user' }];
       }
 
-      const result = await findDynamic(this.notificationRepo, options);
+      const result = await findManyDynamic(this.notificationRepo, options);
       return result;
     } catch (error) {
       console.error('Error in getAllUserTransactions:', error);

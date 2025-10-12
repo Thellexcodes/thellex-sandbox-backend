@@ -174,16 +174,20 @@ export enum CustomerTypesEnum {
   Institution = 'institution',
 }
 
+export const SUPPORTED_RAMP_COUNTRIES: string[] = ['NIGERIA'];
 export const AUTH_VERIFICATION_CODE_TTL = 120; // TTL = Time To Live
 export const FILE_UPLOAD_LIMIT = '10mb'; // Use string for bodyParser
 export const FILE_UPLOAD_LIMIT_BYTES = 10 * 1024 * 1024; // For Fastify or byte-level limits
-export const KYC_EXPIRATION_DURATION_MS = 18 * 30 * 24 * 60 * 60 * 1000;
-export const SUPPORTED_RAMP_COUNTRIES: string[] = ['NIGERIA'];
-export const THIRTY_DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
-export const SERVER_REQUEST_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes in milliseconds
-export const EVERY_15_SECONDS_CRON = '*/20 * * * * *';
+export const KYC_EXPIRATION_DURATION_MS = 18 * 30 * 24 * 60 * 60 * 1000; // ~18 months validity
 export const DIRECT_SETTLEMENT_THRESHOLD = 100;
-export const ONE_DAY_LATER = Date.now() + 24 * 60 * 60 * 1000;
+
+// ⏰ Timeouts
+export const SERVER_REQUEST_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes in milliseconds
+
+// ⏳ General time durations
+export const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000; // 1 day
+export const THIRTY_DAYS_IN_MS = 30 * ONE_DAY_IN_MS; // 30 days
+export const ONE_DAY_LATER = Date.now() + ONE_DAY_IN_MS; // timestamp for 1 day later
 
 export const BlockchainNetworkSettings: Record<
   Partial<SupportedBlockchainTypeEnum>,

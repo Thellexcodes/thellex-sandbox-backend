@@ -20,7 +20,6 @@ import { TransactionHistoryEntity } from './entities/transactions/transaction-hi
 import { TransactionEntity } from './entities/transactions/transaction.entity';
 import { BetaTesterEntity } from './entities/beta.testers.entity';
 import { isDev, isProd } from '../helpers';
-import { ProcessedBuildEntity } from './entities/processed-build.entity';
 import { FiatWalletProfileEntity } from './entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { FiatWalletEntity } from './entities/wallets/fiatwallet/fiatwallet.entity';
 
@@ -58,7 +57,7 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
     migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
     extra: {
       charset: 'utf8mb4_unicode_ci',
-      max: 20, // pool size
+      max: 20,
       connectionTimeoutMillis: 5000,
     },
     synchronize: isDev,
