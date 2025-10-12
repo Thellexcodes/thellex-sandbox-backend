@@ -1,11 +1,14 @@
 export abstract class AbstractFiatwalletService {
   /**
-   * Get user fiat wallet profile
+   * Get a user's fiat wallet profile
+   * @param userId - ID of the user
    */
   abstract getUserFiatWalletProfile(userId: string): Promise<any>;
 
   /**
-   * Get user fiat wallet by country
+   * Get a user's fiat wallet by country
+   * @param userId - ID of the user
+   * @param country - Country code
    */
   abstract getUserFiatWalletByCountry(
     userId: string,
@@ -13,7 +16,9 @@ export abstract class AbstractFiatwalletService {
   ): Promise<any>;
 
   /**
-   * Get user fiat wallet by ticker
+   * Get a user's fiat wallet by ticker
+   * @param userId - ID of the user
+   * @param ticker - Currency ticker (e.g., USD, NARIA)
    */
   abstract getUserFiatWalletByTicker(
     userId: string,
@@ -21,34 +26,41 @@ export abstract class AbstractFiatwalletService {
   ): Promise<any>;
 
   /**
-   * Get all fiat wallets
+   * Get all fiat wallets in the system
    */
   abstract getAllFiatWallets(): Promise<any[]>;
 
   /**
    * Suspend a single fiat wallet
+   * @param walletId - ID of the wallet
    */
   abstract suspendFiatWallet?(walletId: string): Promise<any>;
 
   /**
    * Suspend multiple fiat wallets
+   * @param walletIds - Array of wallet IDs
    */
   abstract suspendFiatWallets?(walletIds: string[]): Promise<any>;
 
   /**
-   * Start a cron job that creates a fiat wallet profile for a given user.
-   * Should execute only when triggered, not on a schedule.
+   * Create a fiat wallet profile for a user and optionally attach a default wallet
+   * @param userId - ID of the user
    */
-  abstract startCreateProfileJob(userId: string, payload: any): void;
+  abstract createProfileWithWallet(userId: string): Promise<any>;
 
   /**
-   * Start a cron job that creates a fiat wallet for a given user.
-   * Should execute only when triggered, not on a schedule.
+   * Add a new wallet to an existing fiat wallet profile
+   * @param profileId - ID of the profile
+   * @param currency - Fiat currency type (e.g., USD, NARIA)
+   * @param bankName - Optional bank name
+   * @param accountName - Optional account holder name
+   * @param accountNumber - Optional account number
    */
-  abstract startCreateWalletJob(userId: string, payload: any): void;
-
-  /**
-   * Stop all active cron jobs related to fiat wallet creation.
-   */
-  abstract stopAllJobs(): void;
+  abstract addWalletToProfile(
+    profileId: string,
+    currency: string,
+    bankName?: string,
+    accountName?: string,
+    accountNumber?: string,
+  ): Promise<any>;
 }

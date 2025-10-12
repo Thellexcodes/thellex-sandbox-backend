@@ -61,7 +61,7 @@ export class UserService {
         return { access_token, expires_at };
       }
 
-      const uid = await generateUniqueUid(email);
+      const uid = await generateUniqueUid(email, this.userRepository);
 
       const newUser = this.userRepository.create({
         email,

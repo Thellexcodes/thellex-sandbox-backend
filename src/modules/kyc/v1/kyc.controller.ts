@@ -1,5 +1,10 @@
 import { Post, Body, UseGuards, Req, Res } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { KycService } from './kyc.service';
@@ -17,6 +22,7 @@ import {
 } from '@/middleware/guards/local.auth.guard';
 import { KycServiceV2 } from '../v2/v2.kyc.service';
 
+@ApiTags('Kyc')
 @VersionedController101('kyc')
 @ApiBearerAuth('access-token')
 export class kycController {

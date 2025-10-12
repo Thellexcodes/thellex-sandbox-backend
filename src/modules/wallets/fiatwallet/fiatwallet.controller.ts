@@ -7,7 +7,7 @@ import { FiatEndpoints } from '@/routes/fiat-endpoints';
 import { responseHandler } from '@/utils/helpers';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@ApiTags(FiatEndpoints.MAIN)
+@ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
 @VersionedControllerV2(FiatEndpoints.MAIN)
 export class FiatwalletController extends AbstractFiatwalletController {
@@ -21,9 +21,8 @@ export class FiatwalletController extends AbstractFiatwalletController {
     req: CustomRequest,
     res: CustomResponse,
   ): Promise<void> {
-    const user = req.user;
-    const result = this.fiatwalletService.startCreateWalletJob(user.id, body);
-    responseHandler(result, res, req);
+    // const user = req.user;
+    // responseHandler(result, res, req);
   }
 
   @Post(FiatEndpoints.GET_WALLET)
@@ -59,11 +58,5 @@ export class FiatwalletController extends AbstractFiatwalletController {
   @Post(FiatEndpoints.GET_ALL)
   getAllFiatWallets(req: CustomRequest, res: CustomResponse): Promise<void> {
     throw new Error('Method not implemented.');
-  }
-
-  @Post(FiatEndpoints.STOP_ALL_JOBS)
-  stopAll() {
-    this.fiatwalletService.stopAllJobs();
-    return { message: 'All crons stopped' };
   }
 }

@@ -10,7 +10,6 @@ import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity
 import { YellowCardService } from './payments/v1/yellowcard.service';
 import { QwalletService } from './wallets/qwallet/qwallet.service';
 import { HttpService } from '@/middleware/http.service';
-import { SettingsModule } from './settings/settings.module';
 import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
 import { JwtService } from '@nestjs/jwt';
 import { CwalletProfilesEntity } from '@/utils/typeorm/entities/wallets/cwallet/cwallet-profiles.entity';
@@ -65,7 +64,6 @@ import { MapleradService } from './payments/v1/maplerad.service';
     ]),
     CwalletHooksModule,
     QwalletHooksModule,
-    SettingsModule,
     YcPaymentHookModule,
     MpPaymentHooksModule,
     TransactionsModule,

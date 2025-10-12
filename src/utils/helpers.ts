@@ -109,7 +109,10 @@ function generateRandomUid(): number {
   return Math.floor(10000000 + Math.random() * 90000000);
 }
 
-export async function generateUniqueUid(email: string): Promise<number> {
+export async function generateUniqueUid(
+  email: string,
+  userRepository: Repository<UserEntity>,
+): Promise<number> {
   let uid: number;
   let exists = true;
 
@@ -119,7 +122,7 @@ export async function generateUniqueUid(email: string): Promise<number> {
       email,
       fields: 'uid',
     } as BaseFindArgs);
-    const existingUser = await findOneDynamic(this.userRepository, options);
+    const existingUser = await findOneDynamic(userRepository, options);
     exists = !!existingUser;
   }
   return uid;

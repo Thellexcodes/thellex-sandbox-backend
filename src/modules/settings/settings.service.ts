@@ -25,14 +25,7 @@ import { MapleradService } from '../payments/v1/maplerad.service';
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
 
-  constructor(
-    @InjectRepository(UserSettingEntity)
-    private readonly settingsRepo: Repository<UserSettingEntity>,
-
-    private readonly ycService: YellowCardService,
-    private readonly malperadService: MapleradService,
-    private readonly userService: UserService,
-  ) {
+  constructor() {
     // Inject other repositories as needed (e.g., TaxSettingEntity, PayoutSettingEntity)
   }
 

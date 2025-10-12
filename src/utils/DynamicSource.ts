@@ -1,4 +1,10 @@
-import { FindOptionsWhere, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  FindOptionsWhere,
+  In,
+  Like,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 
 interface SortBy {
   field: string;
@@ -8,21 +14,6 @@ interface SortBy {
 interface JoinOption {
   relation: string;
   selectFields?: string[];
-}
-
-export interface BaseFindArgs {
-  id?: string;
-  email?: string;
-  name?: string;
-  [key: string]: string | undefined;
-  fields?: string;
-  relations?: string;
-}
-
-export interface FindManyArgs extends BaseFindArgs {
-  sortBy?: string;
-  page?: string;
-  limit?: string;
 }
 
 export interface FindDynamicOptions<T = any> {
@@ -42,37 +33,62 @@ export interface UpdateDynamicOptions<T = any> {
   updateData: { [key: string]: any };
 }
 
-export type DynamicReturnType<T> = Promise<
-  FindDynamicOptions<T> | FindManyDynamicOptions<T[]>
->;
+export interface BaseFindArgs {
+  id?: string;
+  email?: string;
+  name?: string;
+  [key: string]: string | number | undefined;
+  fields?: string;
+  relations?: string;
+}
+
+export interface FindManyArgs extends BaseFindArgs {
+  sortBy?: string;
+  page?: string;
+  limit?: string;
+}
 
 export function dynamicQuery<T = any>(
   type: 'findOne' | 'findMany' | 'updateOne' | 'updateMany',
-  query: { [key: string]: string | undefined },
+  query: { [key: string]: string | number | undefined },
   updateData?: { [key: string]: any },
 ): FindDynamicOptions<T> | FindManyDynamicOptions<T> | UpdateDynamicOptions<T> {
   const { fields, sortBy, page, limit, relations, ...whereParams } = query;
 
-  // Construct where clause from all non-reserved query parameters
+  // Construct where clause with support for nested properties and UUIDs
   const where: { [key: string]: any } = {};
   Object.entries(whereParams).forEach(([key, value]) => {
-    if (value) {
-      where[key] = key === 'id' ? parseInt(value) : value;
+    if (value !== undefined) {
+      if (key.includes('.')) {
+        // Handle nested properties (e.g., 'user.id')
+        const [parent, child] = key.split('.');
+        where[parent] = where[parent] || {};
+        where[parent][child] = value; // Keep UUID as-is for nested id
+      } else if (typeof value === 'string' && value.startsWith('like:')) {
+        where[key] = Like(value.replace('like:', ''));
+      } else if (typeof value === 'string' && value.startsWith('in:')) {
+        where[key] = In(value.replace('in:', '').split(','));
+      } else {
+        where[key] = value; // Keep id as-is (UUID or number)
+      }
     }
   });
 
   if (type === 'updateOne' || type === 'updateMany') {
+    if (!updateData || Object.keys(updateData).length === 0) {
+      throw new Error('updateData is required for update operations');
+    }
     return {
       where: Object.keys(where).length > 0 ? where : undefined,
-      updateData: updateData || {},
+      updateData,
     };
   }
 
   const baseOptions: FindDynamicOptions<T> = {
     where: Object.keys(where).length > 0 ? where : undefined,
-    selectFields: fields?.split(','),
+    selectFields: fields?.toString().split(','),
     joinRelations: relations
-      ? [{ relation: relations, selectFields: ['bio', 'avatar'] }]
+      ? [{ relation: relations.toString(), selectFields: ['bio', 'avatar'] }]
       : [],
   };
 
@@ -81,20 +97,23 @@ export function dynamicQuery<T = any>(
   }
 
   // type === 'findMany'
+  let sortOptions: SortBy[] = [];
+  if (sortBy) {
+    try {
+      const [field, order] = sortBy.toString().split(':');
+      sortOptions = [{ field, order: order as 'ASC' | 'DESC' }];
+    } catch (error) {
+      console.warn('Invalid sortBy format, ignoring:', sortBy);
+    }
+  }
+
   return {
     ...baseOptions,
-    page: parseInt(page) || 1,
-    limit: parseInt(limit) || 10,
-    sortBy: sortBy
-      ? [
-          {
-            field: sortBy.split(':')[0],
-            order: sortBy.split(':')[1] as 'ASC' | 'DESC',
-          },
-        ]
-      : [],
+    page: parseInt(page?.toString() || '1') || 1,
+    limit: parseInt(limit?.toString() || '10') || 10,
+    sortBy: sortOptions.length > 0 ? sortOptions : [],
     joinRelations: relations
-      ? [{ relation: relations, selectFields: ['bio', 'avatar'] }]
+      ? [{ relation: relations.toString(), selectFields: ['bio', 'avatar'] }]
       : [{ relation: 'profile', selectFields: ['bio', 'avatar'] }],
   };
 }
@@ -149,7 +168,7 @@ export async function findOneDynamic<T>(
     return await query.getOne();
   } catch (error) {
     console.error('Error in findOneDynamic:', error);
-    throw error;
+    throw new Error(`Failed to find one: ${error.message}`);
   }
 }
 
@@ -228,7 +247,7 @@ export async function findManyDynamic<T>(
     };
   } catch (error) {
     console.error('Error in findManyDynamic:', error);
-    throw error;
+    throw new Error(`Failed to find many: ${error.message}`);
   }
 }
 
@@ -253,7 +272,7 @@ export async function updateOneDynamic<T>(
     return await repo.save(entity);
   } catch (error) {
     console.error('Error in updateOneDynamic:', error);
-    throw error;
+    throw new Error(`Failed to update one: ${error.message}`);
   }
 }
 
@@ -281,6 +300,6 @@ export async function updateManyDynamic<T>(
     return await repo.save(entities);
   } catch (error) {
     console.error('Error in updateManyDynamic:', error);
-    throw error;
+    throw new Error(`Failed to update many: ${error.message}`);
   }
 }

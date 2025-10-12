@@ -1,1 +1,3 @@
-export enum KycEndpoints {}
+export enum KycEndpoints {
+  MAIN = 'kyc',
+}

@@ -6,15 +6,16 @@ import {
   VerifySelfieWithPhotoIdDto,
 } from '../dto/kyc-data.dto';
 import { VersionedControllerV2 } from '@/modules/controller/base.controller';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { VerifyBvnDto } from '../dto/validate-bvn.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
 import { KycService } from '../v1/kyc.service';
+import { KycEndpoints } from '@/routes/kyc-endpionts';
 
 @ApiTags('Kyc')
-@VersionedControllerV2('kyc')
-@Injectable()
+@VersionedControllerV2(KycEndpoints.MAIN)
+@ApiBearerAuth('access-token')
 export class KycController extends AbstractKycController {
   constructor(
     protected readonly kycService: KycServiceV2,
@@ -24,9 +25,9 @@ export class KycController extends AbstractKycController {
   }
 
   async createBasicTierKycWithNinOrBvn(
-    basicKycDto: BasicTierKycDto,
-    req: CustomRequest,
-    res: CustomResponse,
+    @Body() basicKycDto: BasicTierKycDto,
+    @Req() req: CustomRequest,
+    @Res() res: CustomResponse,
   ): Promise<void> {
     const user = req.user;
     const data = await this.kycService.createKycWithBvnOrNin(basicKycDto, user);

@@ -1,11 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AbstractFiatwalletService } from './abstracts/abstract.fiatwalletService';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
+import { CronJob, CronTime } from 'cron';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { Repository } from 'typeorm';
 import { UserService } from '@/modules/users/user.service';
+import { CronTimes } from '@/models/cron.times';
+import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
+import { FiatEnum } from '@/config/settings';
 
 @Injectable()
 export class FiatwalletService extends AbstractFiatwalletService {
@@ -13,7 +17,10 @@ export class FiatwalletService extends AbstractFiatwalletService {
 
   constructor(
     @InjectRepository(FiatWalletProfileEntity)
-    private readonly fiatwWalletRepo: Repository<FiatWalletProfileEntity>,
+    private readonly profileRepo: Repository<FiatWalletProfileEntity>,
+
+    @InjectRepository(FiatWalletEntity)
+    private readonly walletRepo: Repository<FiatWalletEntity>,
 
     private schedulerRegistry: SchedulerRegistry,
 
@@ -50,83 +57,55 @@ export class FiatwalletService extends AbstractFiatwalletService {
    * Manually start a one-time cron job for creating fiat wallet profile.
    * Once executed, the job stops and is deleted from memory.
    */
-  startCreateProfileJob(userId: string, payload: any) {
-    const jobName = `createProfileJob-${userId}-${Date.now()}`;
+  async createProfileWithWallet(
+    userId: string,
+  ): Promise<FiatWalletProfileEntity> {
+    // Create profile
+    const profile = new FiatWalletProfileEntity();
+    profile.user = { id: userId } as UserEntity;
 
-    const job = new CronJob('* * * * * *', async () => {
-      console.log(`Running one-time cron job for ${userId}...`);
+    //[x] make request to vfd
 
-      try {
-        // Your actual logic goes here
-        console.log(
-          `Creating fiat wallet profile for user: ${userId}`,
-          payload,
-        );
+    // Create wallet for this profile (example: Naria)
+    const wallet = new FiatWalletEntity();
+    wallet.currency = FiatEnum.NGN;
+    wallet.balance = 0;
+    wallet.bankName = '';
+    wallet.accountName = '';
+    wallet.accountNumber = '';
 
-        // const options = dynamicQuery<UserEntity>('findOne', args);
-        // const user = await findOneDynamic(this.fiatwWalletRepo, options);
-        const user = await this.userService.findOne({
-          id: userId,
-        });
+    // Attach wallet to profile
+    profile.wallets = [wallet];
 
-        console.log(user);
-
-        // const profile = new FiatWalletProfileEntity();
-        // profile.user = user
-
-        // e.g., await this.someService.createProfile(userId, payload);
-      } catch (error) {
-        console.error('Error running create profile job:', error);
-      } finally {
-        // Stop and remove the job to save memory
-        job.stop();
-        this.schedulerRegistry.deleteCronJob(jobName);
-        console.log(`Job ${jobName} stopped and deleted.`);
-      }
-    });
-
-    this.schedulerRegistry.addCronJob(jobName, job);
-    job.start();
-    console.log(`Job ${jobName} started.`);
+    // Save profile and cascade will save wallet as well
+    return await this.profileRepo.save(profile);
   }
 
-  /**
-   * Manually start a one-time cron job for creating fiat wallet.
-   * Once executed, the job stops and deletes itself.
-   */
-  startCreateWalletJob(userId: string, payload: any) {
-    const jobName = `createWalletJob-${userId}-${Date.now()}`;
-
-    const job = new CronJob('* * * * * *', async () => {
-      console.log(`Running one-time cron job for ${userId}...`);
-
-      try {
-        // Your wallet creation logic here
-        console.log(`Creating fiat wallet for user: ${userId}`, payload);
-        // e.g., await this.someService.createWallet(userId, payload);
-      } catch (error) {
-        console.error('Error running create wallet job:', error);
-      } finally {
-        job.stop();
-        this.schedulerRegistry.deleteCronJob(jobName);
-        console.log(`Job ${jobName} stopped and deleted.`);
-      }
+  async addWalletToProfile(
+    profileId: string,
+    currency: FiatEnum,
+    bankName = '',
+    accountName = '',
+    accountNumber = '',
+  ): Promise<FiatWalletEntity> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: profileId },
+      relations: ['wallets'], // make sure to load existing wallets
     });
 
-    this.schedulerRegistry.addCronJob(jobName, job);
-    job.start();
-    console.log(`Job ${jobName} started.`);
-  }
+    if (!profile) {
+      throw new Error('Profile not found');
+    }
 
-  /**
-   * Stop all running jobs manually (optional)
-   */
-  stopAllJobs() {
-    const jobs = this.schedulerRegistry.getCronJobs();
-    jobs.forEach((job, name) => {
-      job.stop();
-      this.schedulerRegistry.deleteCronJob(name);
-      console.log(`Stopped and removed ${name}`);
-    });
+    const wallet = new FiatWalletEntity();
+    wallet.currency = currency;
+    wallet.balance = 0;
+    wallet.bankName = bankName;
+    wallet.accountName = accountName;
+    wallet.accountNumber = accountNumber;
+    wallet.profile = profile;
+
+    // Save wallet (profile does not need to be saved again because we set profile)
+    return await this.walletRepo.save(wallet);
   }
 }

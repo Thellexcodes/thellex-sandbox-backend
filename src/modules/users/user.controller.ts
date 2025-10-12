@@ -19,7 +19,7 @@ import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 // import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 
 //TODO: middleware for outstanding verifications
-@ApiTags('User')
+@ApiTags('User V1')
 @VersionedController101('user')
 @ApiBearerAuth('access-token')
 @UseGuards(ClientAuthGuard)
