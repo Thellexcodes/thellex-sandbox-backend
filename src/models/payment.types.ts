@@ -60,5 +60,4 @@ export enum PaymentReasonEnum {
   ENTERTAINMENT = 'entertainment',
   HOUSING = 'housing',
   SCHOOL_FEES = 'school-fees',
-  NONE = '_',
 }

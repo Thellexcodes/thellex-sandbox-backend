@@ -122,9 +122,7 @@ export class AdminService {
     const rampTransactions: AllRampTransactions = data
       .filter(
         (txn) =>
-          (txn.transactionType === TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT ||
-            txn.transactionType ===
-              TransactionTypeEnum.CRYPTO_TO_FIAT_WITHDRAWAL) &&
+          txn.transactionType === TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT &&
           txn.paymentStatus === PaymentStatus.Complete &&
           txn.providerTransactionId !== 'no-id-yet' &&
           !txn.approved,
@@ -180,7 +178,7 @@ export class AdminService {
 
     await this.transactionService.createTransaction(
       {
-        transactionType: TransactionTypeEnum.FIAT_TO_CRYPTO_DEPOSIT,
+        transactionType: rampTransaction.transactionType,
         fiatAmount: rampTransaction.userAmount ?? 0,
         cryptoAmount: rampTransaction.mainAssetAmount ?? 0,
         cryptoAsset: rampTransaction.recipientInfo.assetCode,
