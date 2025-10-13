@@ -40,6 +40,8 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { VersionModule } from './version/version.module';
 import { FiatwalletModule } from './wallets/fiatwallet/fiatwallet.module';
 import { MapleradService } from './payments/v1/maplerad.service';
+import { DynamicRepositoryService } from '@/utils/DynamicSource';
+import { VfdService } from './payments/v2/vfd.service';
 
 @Global()
 @Module({
@@ -88,6 +90,8 @@ import { MapleradService } from './payments/v1/maplerad.service';
     MapleradService,
     TransactionsService,
     DevicesService,
+    DynamicRepositoryService,
+    VfdService,
   ],
   exports: [
     EtherService,
@@ -105,6 +109,8 @@ import { MapleradService } from './payments/v1/maplerad.service';
     MapleradService,
     TransactionsService,
     DevicesService,
+    DynamicRepositoryService,
+    VfdService,
   ],
 })
 export class SharedModule {}

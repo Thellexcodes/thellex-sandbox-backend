@@ -1,13 +1,21 @@
 import { FiatEnum } from '@/config/settings';
 import { BaseEntity } from '@/utils/typeorm/entities/base.entity';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { FiatWalletProfileEntity } from './fiatwalletprofile.entity';
 import { getAppConfig } from '@/constants/env';
 import { createEncryptionTransformer } from '@/utils/encryption.transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { BankProvidersEnum } from '@/models/banks.types';
+import { PaymentPartnerEnum } from '@/models/payments.providers';
 
 const FIAT_KEY = Buffer.from(
   getAppConfig()
@@ -17,38 +25,47 @@ const FIAT_KEY = Buffer.from(
 
 @Entity('fiat_wallets')
 export class FiatWalletEntity extends BaseEntity {
+  @Expose()
+  @ApiProperty({ description: 'Currency of the wallet' })
   @Column({
     type: 'enum',
     enum: FiatEnum,
   })
+  @Index()
   currency: FiatEnum;
 
+  @Expose()
+  @ApiProperty({ description: 'Current balance of the wallet', type: 'number' })
   @Column({ type: 'decimal', precision: 18, scale: 2, default: 0 })
   balance: number;
 
+  @Expose()
+  @ApiProperty({ description: 'First name of the account holder' })
   @Column({
+    name: 'first_name',
     type: 'bytea',
     transformer: createEncryptionTransformer(FIAT_KEY),
   })
-  external_customer_id: string;
+  firstName: string;
 
   @Expose()
-  @ApiProperty({ description: 'Bank name' })
+  @ApiPropertyOptional({ description: 'Middle name of the account holder' })
   @Column({
-    name: 'bank_name',
+    name: 'middle_name',
     type: 'bytea',
     transformer: createEncryptionTransformer(FIAT_KEY),
+    nullable: true,
   })
-  bankName: string;
+  middleName?: string;
 
   @Expose()
-  @ApiProperty({ description: 'Account holder name' })
+  @ApiProperty({ description: 'Last name of the account holder' })
   @Column({
-    name: 'account_name',
+    name: 'last_name',
     type: 'bytea',
     transformer: createEncryptionTransformer(FIAT_KEY),
   })
-  accountName: string;
+  lastName: string;
 
   @Expose()
   @ApiProperty({ description: 'Bank account number' })
@@ -79,49 +96,32 @@ export class FiatWalletEntity extends BaseEntity {
   iban?: string;
 
   @Expose()
-  @ApiProperty({ description: 'Indicates if this is the primary bank account' })
+  @ApiProperty({
+    description: 'Indicates if this is the primary bank account',
+    default: false,
+  })
   @Column({ name: 'is_primary', type: 'boolean', default: false })
   isPrimary: boolean;
 
-  @Column({ type: 'timestamptz' })
-  external_createdAt: Date;
-
-  @Column({ type: 'boolean', default: false })
-  require_consent: boolean;
-
   @Column({
     type: 'bytea',
     nullable: true,
     transformer: createEncryptionTransformer(FIAT_KEY),
   })
-  consent_url: string;
+  reference?: string;
 
-  @Column({
-    type: 'bytea',
-    nullable: true,
-    transformer: createEncryptionTransformer(FIAT_KEY),
-  })
-  reference: string;
-
-  @Column({
-    type: 'bytea',
-    nullable: true,
-    transformer: createEncryptionTransformer(FIAT_KEY),
-  })
-  eur: string;
-
+  @Expose()
+  @ApiProperty({ description: 'Bank name provider', enum: BankProvidersEnum })
   @Column({
     type: 'enum',
     enum: BankProvidersEnum,
     default: BankProvidersEnum.NONE,
   })
-  provider: BankProvidersEnum;
+  bankName: BankProvidersEnum;
 
-  @ManyToOne(() => UserEntity, (user) => user.fiatWalletProfile, {
+  @ManyToOne(() => FiatWalletProfileEntity, (profile) => profile.wallets, {
     onDelete: 'CASCADE',
   })
-  user: UserEntity;
-
-  @ManyToOne(() => FiatWalletProfileEntity, (profile) => profile.wallets)
+  @JoinColumn({ name: 'profile_id' })
   profile: FiatWalletProfileEntity;
 }

@@ -46,21 +46,17 @@ export abstract class AbstractFiatwalletService {
    * Create a fiat wallet profile for a user and optionally attach a default wallet
    * @param userId - ID of the user
    */
-  abstract createProfileWithWallet(userId: string): Promise<any>;
+  abstract createProfileWithWallet(userId: string): Promise<void>;
 
   /**
    * Add a new wallet to an existing fiat wallet profile
-   * @param profileId - ID of the profile
-   * @param currency - Fiat currency type (e.g., USD, NARIA)
-   * @param bankName - Optional bank name
-   * @param accountName - Optional account holder name
-   * @param accountNumber - Optional account number
+   * @param userId - ID of the profile
+   * @param bvn - Bvn of user
+   * @param dob - Date of Birth of user
    */
-  abstract addWalletToProfile(
-    profileId: string,
-    currency: string,
-    bankName?: string,
-    accountName?: string,
-    accountNumber?: string,
-  ): Promise<any>;
+  abstract addWalletToProfileWithBvn(
+    userId: string,
+    bvn: string,
+    dob: string,
+  ): Promise<void>;
 }

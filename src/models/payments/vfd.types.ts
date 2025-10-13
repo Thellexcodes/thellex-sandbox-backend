@@ -1,13 +1,19 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class VFDAuthenticateResponseDto {
+/**
+ * Authentication Response from VFD API
+ */
+export class VfdAuthResponseDto {
   access_token: string;
   scope: string;
   token_type: 'Bearer';
   expires_in: number;
 }
 
-export class VFDBankDto {
+/**
+ * Represents a single bank record from VFD
+ */
+export class VfdBankDataDto {
   id: number;
   code: string;
   name: string;
@@ -15,11 +21,26 @@ export class VFDBankDto {
   created: Date;
 }
 
-export class VFDBankResponseDto {
-  bank: VFDBankDto[];
+/**
+ * List of banks returned by VFD API
+ */
+export class VfdBankListResponseDto {
+  bank: VfdBankDataDto[];
 }
 
-export class CreateIndividualClientWithBvnDto {
+/**
+ * Generic address data
+ */
+export class VfdAddressDto {
+  @IsString()
+  @IsNotEmpty()
+  address: string;
+}
+
+/**
+ * Create Individual Client using BVN only
+ */
+export class VfdCreateClientWithBvnRequestDto {
   @IsString()
   @IsNotEmpty()
   bvn: string;
@@ -29,7 +50,10 @@ export class CreateIndividualClientWithBvnDto {
   dob: string;
 }
 
-export class CreateIndividualClientWithNinDto {
+/**
+ * Create Individual Client using NIN only
+ */
+export class VfdCreateClientWithNinRequestDto {
   @IsString()
   @IsNotEmpty()
   nin: string;
@@ -39,16 +63,39 @@ export class CreateIndividualClientWithNinDto {
   dob: string;
 }
 
-export class CreateIndividualConsentDto {
+/**
+ * Create Individual Client using both BVN and NIN
+ */
+export class VfdCreateClientWithBvnAndNinRequestDto extends VfdAddressDto {
+  @IsString()
+  @IsNotEmpty()
+  bvn: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nin: string;
+
+  @IsString()
+  @IsNotEmpty()
+  dob: string;
+}
+
+/**
+ * Create Individual Consent for Verification
+ */
+export class VfdCreateConsentRequestDto {
   type: string;
   bvn: string;
   reference?: string;
 }
 
-export class CreateIndividualClientResponseDataDto {
-  firstname: string;
-  middlename?: string;
-  lastname: string;
+/**
+ * Data returned when a client is created successfully
+ */
+export class VfdCreateClientResponseDataDto {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
   bvn: string;
   nin: string;
   phone: string;
@@ -56,22 +103,55 @@ export class CreateIndividualClientResponseDataDto {
   accountNo: string;
 }
 
-export class CreateUpgradeAccountOfBvnToTier3Dto {
+/**
+ * Request DTO for upgrading BVN-linked account to Tier 3
+ */
+export class VfdUpgradeBvnAccountRequestDto {
   accountNo: string;
   bvn: string;
   address: string;
 }
 
-export class CreateUpgradeAccountOfNinToTier3Dto {
+/**
+ * Request DTO for upgrading NIN-linked account to Tier 3
+ */
+export class VfdUpgradeNinAccountRequestDto {
   accountNo: string;
   nin: string;
   address: string;
 }
 
-export class UpdateAccountOfBvnToTier3ResponseDto {
+/**
+ * Response DTO for account upgrade via BVN
+ */
+export class VfdUpgradeAccountResponseDto {
   firstname: string;
   middlename: string;
   lastname: string;
   currentTier: string;
   bvnVerification: string;
+}
+
+/**
+ * Account types supported by VFD
+ */
+export type VfdAccountType = 'virtual' | 'individual' | 'corporate';
+
+/**
+ * Response DTO for fetching sub-accounts
+ */
+export class VfdSubAccountListResponseDto {
+  content: VfdCreateClientResponseDataDto[];
+}
+
+/**
+ * DTO for a single VFD bank account
+ */
+export class VfdBankAccountDataDto {
+  accountNo: string;
+  accountBalance: string;
+  accountId: string;
+  client: string;
+  clientId: string;
+  savingsProductName: string;
 }

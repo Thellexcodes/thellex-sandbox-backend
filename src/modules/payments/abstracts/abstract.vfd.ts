@@ -1,9 +1,4 @@
-import {
-  CreateIndividualClientResponseDataDto,
-  CreateIndividualConsentDto,
-  UpdateAccountOfBvnToTier3ResponseDto,
-  VFDBankDto,
-} from '@/models/payments/vfd.types';
+import { VfdBankListResponseDto } from '@/models/payments/vfd.types';
 import { AxiosResponse } from 'axios';
 
 export abstract class AbstractVfdService {
@@ -18,7 +13,7 @@ export abstract class AbstractVfdService {
   // ============================================
   // 1.0 Banks
   // ============================================
-  abstract getAllBanks(): Promise<VFDBankDto[]>;
+  abstract getAllBanks(): Promise<VfdBankListResponseDto[]>;
 
   // ============================================
   // 2.0 Wallet Implementations
@@ -45,6 +40,9 @@ export abstract class AbstractVfdService {
     data: any,
   ): Promise<AxiosResponse | any>;
   abstract createIndividualClientWithBvn(
+    data: any,
+  ): Promise<AxiosResponse | any>;
+  abstract createIndividualClientWithBvnAndNin(
     data: any,
   ): Promise<AxiosResponse | any>;
   abstract createCorporateClient(data: any): Promise<AxiosResponse>;
@@ -84,11 +82,23 @@ export abstract class AbstractVfdService {
   // ============================================
   // Account Enquiry
   // ============================================
-  abstract getSubAccounts(clientId: string): Promise<AxiosResponse>;
+  abstract getSubAccounts(
+    entity: VFDAccountTypes,
+    page: number,
+    size: number,
+  ): Promise<CreateIndividualClientResponseDataDto[]>;
 
   // ============================================
   // Transfer Services
   // ============================================
+  abstract accountEnquiry(
+    accountNumber: string,
+    bankCode: string,
+  ): Promise<void>;
+  abstract beneficiaryEnquiry(
+    beneficiaryAccount: string,
+    bankCode: string,
+  ): Promise<void>;
   abstract transferFunds(data: any): Promise<AxiosResponse>;
   abstract getBankList(): Promise<AxiosResponse>;
   abstract checkTransferStatus(reference: string): Promise<AxiosResponse>;

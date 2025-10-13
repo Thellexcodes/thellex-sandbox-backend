@@ -52,7 +52,7 @@ export class KycService {
     private readonly vfdService: VfdService,
   ) {
     // this.vfdService.createIndividualClientWithBvn({
-    //   bvn: '22222222253',
+    //   bvn: '22222222257',
     //   dob: '05-Apr-1994',
     // });
     // this.vfdService.requestBvnConsent({
@@ -64,6 +64,8 @@ export class KycService {
     //   bvn: '22222222253',
     //   address: '5, Johnson Str, Ikeja, Lagos',
     // });
+    // this.vfdService.getSubAccounts('individual', 0, 20000);
+    this.vfdService.accountEnquiry('1001674482');
   }
 
   async updateUserTierWithManager(

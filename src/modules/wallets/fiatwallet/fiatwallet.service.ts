@@ -1,13 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AbstractFiatwalletService } from './abstracts/abstract.fiatwalletService';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { Repository } from 'typeorm';
-import { UserService } from '@/modules/users/user.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
 import { FiatEnum } from '@/config/settings';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
+import { CustomHttpException } from '@/middleware/custom.http.exception';
+import { DynamicRepositoryService } from '@/utils/DynamicSource';
+import { BankProvidersEnum } from '@/models/banks.types';
 
 @Injectable()
 export class FiatwalletService extends AbstractFiatwalletService {
@@ -15,94 +17,158 @@ export class FiatwalletService extends AbstractFiatwalletService {
 
   constructor(
     @InjectRepository(FiatWalletProfileEntity)
-    private readonly profileRepo: Repository<FiatWalletProfileEntity>,
+    private readonly walletProfileRepo: Repository<FiatWalletProfileEntity>,
 
     @InjectRepository(FiatWalletEntity)
     private readonly walletRepo: Repository<FiatWalletEntity>,
 
-    private userService: UserService,
-    private vfdService: VfdService,
+    private readonly vfdService: VfdService,
+    private readonly dynamicRepositoryService: DynamicRepositoryService,
   ) {
     super();
   }
 
-  getUserFiatWalletProfile(userId: string): Promise<any> {
-    throw new Error('Method not implemented.');
+  async getUserFiatWalletProfile(
+    userId: string,
+  ): Promise<FiatWalletProfileEntity | null> {
+    return await this.dynamicRepositoryService.findOne<FiatWalletProfileEntity>(
+      { relations: 'wallets', id: userId },
+      FiatWalletProfileEntity,
+    );
   }
 
-  getUserFiatWalletByCountry(userId: string, country: string): Promise<any> {
-    throw new Error('Method not implemented.');
+  async getUserFiatWalletByCountry(
+    userId: string,
+    country: string,
+  ): Promise<FiatWalletEntity | null> {
+    return await this.dynamicRepositoryService.findOne<FiatWalletEntity>(
+      { relations: 'profile', userId, country },
+      FiatWalletEntity,
+    );
   }
 
-  getUserFiatWalletByTicker(userId: string, ticker: string): Promise<any> {
-    throw new Error('Method not implemented.');
+  async getUserFiatWalletByTicker(
+    userId: string,
+    ticker: string,
+  ): Promise<FiatWalletEntity | null> {
+    return await this.dynamicRepositoryService.findOne<FiatWalletEntity>(
+      { relations: 'profile', userId, ticker },
+      FiatWalletEntity,
+    );
   }
 
-  getAllFiatWallets(): Promise<any[]> {
-    throw new Error('Method not implemented.');
+  async getAllFiatWallets(): Promise<FiatWalletEntity[]> {
+    const result =
+      await this.dynamicRepositoryService.findMany<FiatWalletEntity>(
+        { relations: 'profile' },
+        FiatWalletEntity,
+      );
+
+    return Array.isArray(result) ? result : result.data;
   }
 
-  suspendFiatWallet(walletId: string): Promise<any> {
-    throw new Error('Method not implemented.');
+  async suspendFiatWallet(walletId: string): Promise<any> {
+    const wallet = await this.walletRepo.findOne({ where: { id: walletId } });
+    if (!wallet) throw new Error('Wallet not found');
+
+    // wallet.suspended = true;
+    return this.walletRepo.save(wallet);
   }
 
-  suspendFiatWallets(walletIds: string[]): Promise<any> {
-    throw new Error('Method not implemented.');
+  async suspendFiatWallets(walletIds: string[]): Promise<any[]> {
+    const wallets = await this.walletRepo.findByIds(walletIds);
+    // wallets.forEach((wallet) => (wallet.suspended = true));
+    return this.walletRepo.save(wallets);
   }
 
   /**
-   * Manually start a one-time cron job for creating fiat wallet profile.
-   * Once executed, the job stops and is deleted from memory.
+   * Create fiat wallet profile for a user.
    */
-  async createProfileWithWallet(
-    userId: string,
-  ): Promise<FiatWalletProfileEntity> {
-    // Create profile
+  async createProfileWithWallet(userId: string): Promise<void> {
+    const existingProfile =
+      await this.dynamicRepositoryService.findOne<FiatWalletProfileEntity>(
+        { 'user.id': userId, fields: 'id' },
+        FiatWalletProfileEntity,
+      );
+
+    if (existingProfile)
+      throw new CustomHttpException('Profile exists', HttpStatus.CONFLICT);
+
     const profile = new FiatWalletProfileEntity();
     profile.user = { id: userId } as UserEntity;
-
-    //[x] make request to vfd
-
-    // Create wallet for this profile (example: Naria)
-    const wallet = new FiatWalletEntity();
-    wallet.currency = FiatEnum.NGN;
-    wallet.balance = 0;
-    wallet.bankName = '';
-    wallet.accountName = '';
-    wallet.accountNumber = '';
-
-    // Attach wallet to profile
-    profile.wallets = [wallet];
-
-    // Save profile and cascade will save wallet as well
-    return await this.profileRepo.save(profile);
+    profile.wallets = [];
+    await this.walletProfileRepo.save(profile);
   }
 
-  async addWalletToProfile(
-    profileId: string,
-    currency: FiatEnum,
-    bankName = '',
-    accountName = '',
-    accountNumber = '',
-  ): Promise<FiatWalletEntity> {
-    const profile = await this.profileRepo.findOne({
-      where: { id: profileId },
-      relations: ['wallets'], // make sure to load existing wallets
-    });
+  /**
+   * Add a new wallet to an existing fiat wallet profile.
+   */
+  async addWalletToProfileWithBvn(
+    userId: string,
+    bvn: string,
+    dob: string,
+  ): Promise<void> {
+    try {
+      const profile =
+        await this.dynamicRepositoryService.findOne<FiatWalletProfileEntity>(
+          { 'user.id': userId, fields: 'id' },
+          FiatWalletProfileEntity,
+        );
 
-    if (!profile) {
-      throw new Error('Profile not found');
+      if (!profile)
+        throw new CustomHttpException(
+          'Profile not found',
+          HttpStatus.NOT_FOUND,
+        );
+
+      // Fetch all sub-accounts
+      const subAccounts = await this.vfdService.getSubAccounts(
+        'individual',
+        0,
+        20000,
+      );
+
+      // Check if the BVN already exists
+      const existingAccount = subAccounts.find(
+        (acc) => acc.bvn.replace('TX-', '') === bvn || acc.bvn === bvn,
+      );
+
+      let fiatWallet: CreateIndividualClientResponseDataDto;
+
+      if (existingAccount) {
+        fiatWallet = existingAccount;
+      } else {
+        fiatWallet = await this.vfdService.createIndividualClientWithBvn({
+          bvn,
+          dob,
+        });
+      }
+
+      // Prevent duplicate wallet creation for same profile/account number
+      const existingWallet = await this.walletRepo.findOne({
+        where: {
+          profile: { id: profile.id },
+          accountNumber: fiatWallet.accountNo,
+        },
+      });
+
+      if (existingWallet) {
+        return;
+      }
+
+      // Save new wallet
+      const wallet = new FiatWalletEntity();
+      wallet.currency = FiatEnum.NGN;
+      wallet.bankName = BankProvidersEnum.VFD;
+      wallet.firstName = fiatWallet.firstName;
+      wallet.middleName = fiatWallet?.middleName;
+      wallet.lastName = fiatWallet.lastName;
+      wallet.accountNumber = fiatWallet.accountNo;
+      wallet.profile = profile;
+
+      await this.walletRepo.save(wallet);
+    } catch (err) {
+      this.logger.log('❌ Error adding wallet:', err);
     }
-
-    const wallet = new FiatWalletEntity();
-    wallet.currency = currency;
-    wallet.balance = 0;
-    wallet.bankName = bankName;
-    wallet.accountName = accountName;
-    wallet.accountNumber = accountNumber;
-    wallet.profile = profile;
-
-    // Save wallet (profile does not need to be saved again because we set profile)
-    return await this.walletRepo.save(wallet);
   }
 }

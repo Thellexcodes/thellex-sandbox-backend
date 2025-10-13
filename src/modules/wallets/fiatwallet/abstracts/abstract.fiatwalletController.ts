@@ -7,6 +7,14 @@ export abstract class AbstractFiatwalletController {
   ) {}
 
   /**
+   * Create fiat wallet profile
+   */
+  abstract createFiatWalletProfile(
+    req: CustomRequest,
+    res: CustomResponse,
+  ): Promise<void>;
+
+  /**
    * Create fiat wallet
    */
   abstract createFiatWallet(

@@ -264,8 +264,8 @@ export class UserService {
     await Promise.all([
       this.authenticationRepository.save(auth),
       this.userRepository.save(user),
-      this.qwalletService.ensureUserHasProfileAndWallets(user),
-      this.cwalletService.ensureUserHasProfileAndWallets(user),
+      // this.qwalletService.ensureUserHasProfileAndWallets(user),
+      // this.cwalletService.ensureUserHasProfileAndWallets(user),
     ]);
 
     const updatedUser = await this.userRepository.findOne({

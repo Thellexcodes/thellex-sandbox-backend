@@ -13,6 +13,8 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verif
 import { FiatwalletService } from '../wallets/fiatwallet/fiatwallet.service';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
+import { VfdService } from '../payments/v2/vfd.service';
+import { DynamicRepositoryService } from '@/utils/DynamicSource';
 
 @Global()
 @Module({
@@ -32,8 +34,10 @@ import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fi
     QwalletService,
     HttpService,
     CwalletService,
+    VfdService,
     FiatwalletService,
+    DynamicRepositoryService,
   ],
-  exports: [UserService, UserServiceV2],
+  exports: [UserService, UserServiceV2, VfdService, DynamicRepositoryService],
 })
 export class UserModule {}

@@ -3,20 +3,13 @@ import { HttpService } from '@/middleware/http.service';
 import { Injectable } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
 import { AbstractVfdService } from '../abstracts/abstract.vfd';
-import { RequestResponseTypeDto } from '@/models/base-response.dto';
 import {
-  CreateIndividualClientResponseDataDto,
-  CreateIndividualClientWithBvnDto,
-  CreateIndividualClientWithNinDto,
-  CreateIndividualConsentDto,
-  CreateUpgradeAccountOfBvnToTier3Dto,
-  CreateUpgradeAccountOfNinToTier3Dto,
-  UpdateAccountOfBvnToTier3ResponseDto,
-  VFDAuthenticateResponseDto,
-  VFDBankDto,
-  VFDBankResponseDto,
+  VfdAuthResponseDto,
+  VfdBankAccountDataDto,
+  VfdBankListResponseDto,
 } from '@/models/payments/vfd.types';
 import { VfdWalletApiEndpoints } from '@/routes/vfd-endpoints.enum';
+import { RequestResponseTypeDto } from '@/models/base-response.dto';
 
 @Injectable()
 export class VfdService extends AbstractVfdService {
@@ -25,20 +18,6 @@ export class VfdService extends AbstractVfdService {
 
   constructor(private readonly http: HttpService) {
     super();
-
-    //     1] {
-    // [1]   status: '00',
-    // [1]   message: 'Successful Creation',
-    // [1]   data: {
-    // [1]     firstname: 'Thellex-Golaith',
-    // [1]     middlename: 'Chesnut',
-    // [1]     lastname: 'David',
-    // [1]     bvn: 'TX-22222222253',
-    // [1]     phone: 'TX-09019056934',
-    // [1]     dob: '05-Apr-1994',
-    // [1]     accountNo: '1001674530'
-    // [1]   }
-    // [1] }
   }
 
   // ============================================
@@ -51,7 +30,7 @@ export class VfdService extends AbstractVfdService {
     }
     return;
 
-    const response: RequestResponseTypeDto<VFDAuthenticateResponseDto> =
+    const response: RequestResponseTypeDto<VfdAuthResponseDto> =
       await this.http.post(
         `${this.baasUrl}${VfdWalletApiEndpoints.AUTHENTICATE}`,
         {
@@ -73,9 +52,9 @@ export class VfdService extends AbstractVfdService {
   // 1.0 Banks
   // ============================================
 
-  async getAllBanks(): Promise<VFDBankDto[]> {
+  async getAllBanks() {
     try {
-      const response: RequestResponseTypeDto<VFDBankResponseDto> =
+      const response: RequestResponseTypeDto<VfdBankListResponseDto> =
         await this.http.get(`${this.walletUrl}/bank`, this.walletHeader());
 
       return response.data.bank;
@@ -170,6 +149,24 @@ export class VfdService extends AbstractVfdService {
           data,
           this.walletHeader(),
         );
+
+      return response.data;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async createIndividualClientWithBvnAndNin(
+    data: CreateIndividualClientWithBvnAndNinDto,
+  ): Promise<CreateIndividualClientResponseDataDto> {
+    try {
+      const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
+        await this.http.post(
+          `/client/tiers/individual?bvn=${data.bvn}&nin=${data.nin}&address=${data.address}&dateOfBirth=${data.dob}`,
+          data,
+          this.walletHeader(),
+        );
+
       return response.data;
     } catch (err) {
       console.log(err);
@@ -342,16 +339,35 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   // ACCOUNT ENQUIRY
   // ============================================
-  async getSubAccounts(clientId: string): Promise<AxiosResponse> {
-    return this.http.get(
-      `${this.walletUrl}/account/${clientId}/subaccounts`,
-      this.walletHeader(),
-    );
+  async getSubAccounts(entity: VFDAccountTypes, page: number, size: number) {
+    const response: RequestResponseTypeDto<VFDBankSubAccountResponseDto> =
+      await this.http.get(
+        `${this.walletUrl}/sub-accounts?entity=${entity}&size=${size}&page=${page}`,
+        this.walletHeader(),
+      );
+
+    console.log(response.data.content);
+    return response.data.content;
   }
 
   // ============================================
   // TRANSFER SERVICES
   // ============================================
+  async accountEnquiry(accountNumber: string): Promise<void> {
+    const response: RequestResponseTypeDto<VfdBankAccountDataDto> =
+      await this.http.get(
+        `${this.walletUrl}/account/enquiry?accountNumber=${accountNumber}`,
+        this.walletHeader(),
+      );
+
+    console.log(response);
+  }
+
+  async beneficiaryEnquiry(
+    beneficiaryAccount: string,
+    bankCode: string,
+  ): Promise<void> {}
+
   async transferFunds(data: any): Promise<AxiosResponse> {
     return this.http.post(
       `${this.walletUrl}/transfer`,

@@ -1,4 +1,6 @@
+import { Injectable } from '@nestjs/common';
 import {
+  DataSource,
   FindOptionsWhere,
   In,
   Like,
@@ -48,28 +50,105 @@ export interface FindManyArgs extends BaseFindArgs {
   limit?: string;
 }
 
+// export function dynamicQuery<T = any>(
+//   type: 'findOne' | 'findMany' | 'updateOne' | 'updateMany',
+//   query: { [key: string]: string | number | undefined },
+//   updateData?: { [key: string]: any },
+// ): FindDynamicOptions<T> | FindManyDynamicOptions<T> | UpdateDynamicOptions<T> {
+//   const { fields, sortBy, page, limit, relations, ...whereParams } = query;
+
+//   // Construct where clause with support for nested properties and UUIDs
+//   const where: { [key: string]: any } = {};
+//   Object.entries(whereParams).forEach(([key, value]) => {
+//     if (value !== undefined) {
+//       if (key.includes('.')) {
+//         // Handle nested properties (e.g., 'user.id')
+//         const [parent, child] = key.split('.');
+//         where[parent] = where[parent] || {};
+//         where[parent][child] = value; // Keep UUID as-is for nested id
+//       } else if (typeof value === 'string' && value.startsWith('like:')) {
+//         where[key] = Like(value.replace('like:', ''));
+//       } else if (typeof value === 'string' && value.startsWith('in:')) {
+//         where[key] = In(value.replace('in:', '').split(','));
+//       } else {
+//         where[key] = value; // Keep id as-is (UUID or number)
+//       }
+//     }
+//   });
+
+//   if (type === 'updateOne' || type === 'updateMany') {
+//     if (!updateData || Object.keys(updateData).length === 0) {
+//       throw new Error('updateData is required for update operations');
+//     }
+//     return {
+//       where: Object.keys(where).length > 0 ? where : undefined,
+//       updateData,
+//     };
+//   }
+
+//   const baseOptions: FindDynamicOptions<T> = {
+//     where: Object.keys(where).length > 0 ? where : undefined,
+//     selectFields: fields?.toString().split(','),
+//     joinRelations: relations
+//       ? [{ relation: relations.toString(), selectFields: ['bio', 'avatar'] }]
+//       : [],
+//   };
+
+//   if (type === 'findOne') {
+//     return baseOptions;
+//   }
+
+//   // type === 'findMany'
+//   let sortOptions: SortBy[] = [];
+//   if (sortBy) {
+//     try {
+//       const [field, order] = sortBy.toString().split(':');
+//       sortOptions = [{ field, order: order as 'ASC' | 'DESC' }];
+//     } catch (error) {
+//       console.warn('Invalid sortBy format, ignoring:', sortBy);
+//     }
+//   }
+
+//   return {
+//     ...baseOptions,
+//     page: parseInt(page?.toString() || '1') || 1,
+//     limit: parseInt(limit?.toString() || '10') || 10,
+//     sortBy: sortOptions.length > 0 ? sortOptions : [],
+//     joinRelations: relations
+//       ? [{ relation: relations.toString(), selectFields: ['bio', 'avatar'] }]
+//       : [{ relation: 'profile', selectFields: ['bio', 'avatar'] }],
+//   };
+// }
+
 export function dynamicQuery<T = any>(
   type: 'findOne' | 'findMany' | 'updateOne' | 'updateMany',
   query: { [key: string]: string | number | undefined },
   updateData?: { [key: string]: any },
 ): FindDynamicOptions<T> | FindManyDynamicOptions<T> | UpdateDynamicOptions<T> {
-  const { fields, sortBy, page, limit, relations, ...whereParams } = query;
+  const {
+    fields,
+    sortBy,
+    page,
+    limit,
+    relations,
+    relationsFields,
+    ...whereParams
+  } = query;
 
-  // Construct where clause with support for nested properties and UUIDs
+  // Construct where clause with support for nested properties
   const where: { [key: string]: any } = {};
   Object.entries(whereParams).forEach(([key, value]) => {
     if (value !== undefined) {
       if (key.includes('.')) {
-        // Handle nested properties (e.g., 'user.id')
         const [parent, child] = key.split('.');
         where[parent] = where[parent] || {};
-        where[parent][child] = value; // Keep UUID as-is for nested id
+        where[parent][child] = value; // Keep UUID as-is
       } else if (typeof value === 'string' && value.startsWith('like:')) {
         where[key] = Like(value.replace('like:', ''));
       } else if (typeof value === 'string' && value.startsWith('in:')) {
         where[key] = In(value.replace('in:', '').split(','));
       } else {
-        where[key] = value; // Keep id as-is (UUID or number)
+        where[key] = value;
       }
     }
   });
@@ -84,12 +163,27 @@ export function dynamicQuery<T = any>(
     };
   }
 
+  // Handle multiple relations and their fields
+  const joinRelations: JoinOption[] = relations
+    ? relations
+        .toString()
+        .split(',')
+        .map((relation) => ({
+          relation: relation.trim(),
+          selectFields: relationsFields
+            ? relationsFields
+                .toString()
+                .split(',')
+                .filter((f) => f.startsWith(`${relation}.`))
+                .map((f) => f.replace(`${relation}.`, ''))
+            : undefined,
+        }))
+    : [];
+
   const baseOptions: FindDynamicOptions<T> = {
     where: Object.keys(where).length > 0 ? where : undefined,
     selectFields: fields?.toString().split(','),
-    joinRelations: relations
-      ? [{ relation: relations.toString(), selectFields: ['bio', 'avatar'] }]
-      : [],
+    joinRelations,
   };
 
   if (type === 'findOne') {
@@ -112,9 +206,7 @@ export function dynamicQuery<T = any>(
     page: parseInt(page?.toString() || '1') || 1,
     limit: parseInt(limit?.toString() || '10') || 10,
     sortBy: sortOptions.length > 0 ? sortOptions : [],
-    joinRelations: relations
-      ? [{ relation: relations.toString(), selectFields: ['bio', 'avatar'] }]
-      : [{ relation: 'profile', selectFields: ['bio', 'avatar'] }],
+    joinRelations,
   };
 }
 
@@ -132,9 +224,18 @@ export async function findOneDynamic<T>(
       options.selectFields?.map((f) => `${alias}.${f}`) ?? defaultFields;
     query.select(fieldsToSelect);
 
-    // Handle joinRelations
+    // Handle joinRelations with metadata validation
     const joined = new Set<string>();
     options.joinRelations?.forEach((joinOption) => {
+      const relation = repo.metadata.relations.find(
+        (r) => r.propertyName === joinOption.relation,
+      );
+      if (!relation) {
+        throw new Error(
+          `Relation with property path ${joinOption.relation} in entity was not found.`,
+        );
+      }
+
       const parts = joinOption.relation.split('.');
       let parentAlias = alias;
 
@@ -195,9 +296,18 @@ export async function findManyDynamic<T>(
       options.selectFields?.map((f) => `${alias}.${f}`) ?? defaultFields;
     query.select(fieldsToSelect);
 
-    // Handle joinRelations
+    // Handle joinRelations with metadata validation
     const joined = new Set<string>();
     options.joinRelations?.forEach((joinOption) => {
+      const relation = repo.metadata.relations.find(
+        (r) => r.propertyName === joinOption.relation,
+      );
+      if (!relation) {
+        throw new Error(
+          `Relation with property path ${joinOption.relation} in entity was not found.`,
+        );
+      }
+
       const parts = joinOption.relation.split('.');
       let parentAlias = alias;
 
@@ -301,5 +411,31 @@ export async function updateManyDynamic<T>(
   } catch (error) {
     console.error('Error in updateManyDynamic:', error);
     throw new Error(`Failed to update many: ${error.message}`);
+  }
+}
+
+@Injectable()
+export class DynamicRepositoryService {
+  constructor(private readonly dataSource: DataSource) {}
+
+  private getRepository<T>(entity: new () => T): Repository<T> {
+    return this.dataSource.getRepository(entity);
+  }
+
+  async findOne<T>(args: BaseFindArgs, entity: new () => T): Promise<T | null> {
+    const repo = this.getRepository(entity);
+    const options = dynamicQuery<T>('findOne', args);
+    return await findOneDynamic(repo, options);
+  }
+
+  async findMany<T>(
+    args: FindManyArgs,
+    entity: new () => T,
+  ): Promise<
+    { data: T[]; total: number; page: number; lastPage: number } | T[]
+  > {
+    const repo = this.getRepository(entity);
+    const options = dynamicQuery<T>('findMany', args);
+    return await findManyDynamic(repo, options);
   }
 }
