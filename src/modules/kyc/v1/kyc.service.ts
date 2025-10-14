@@ -65,7 +65,7 @@ export class KycService {
     //   address: '5, Johnson Str, Ikeja, Lagos',
     // });
     // this.vfdService.getSubAccounts('individual', 0, 20000);
-    this.vfdService.accountEnquiry('1001674482');
+    // this.vfdService.accountEnquiry('1001674482');
   }
 
   async updateUserTierWithManager(

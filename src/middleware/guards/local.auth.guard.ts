@@ -9,7 +9,7 @@ export class BasicAuthGuard extends BaseAuthGuard {
   protected async fetchUser(id: string): Promise<UserEntity | null> {
     let user = await this.userService.findOne({
       id,
-      fields: 'email, id, suspended, role, uid, tier',
+      fields: 'email,id,suspended,role,uid,tier',
     });
     return user;
   }
@@ -17,8 +17,13 @@ export class BasicAuthGuard extends BaseAuthGuard {
 
 @Injectable()
 export class VerificationAuthGuard extends BaseAuthGuard {
-  protected fetchUser(id: string): Promise<UserEntity | null> {
-    return this.userService.findOneForVerifyById(id);
+  protected async fetchUser(id: string): Promise<UserEntity | null> {
+    let user = await this.userService.findOne({
+      id,
+      fields: 'id,email,emailVerified',
+    });
+
+    return user;
   }
 }
 
@@ -27,7 +32,7 @@ export class ProfileAuthGuard extends BaseAuthGuard {
   protected async fetchUser(id: string): Promise<UserEntity | null> {
     let user = await this.userService.findOne({
       id,
-      fields: 'id, email, suspended, role, uid, tier',
+      fields: 'id,email,suspended,role,uid,tier',
     });
     return user;
   }

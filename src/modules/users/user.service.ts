@@ -152,18 +152,6 @@ export class UserService {
     }
   }
 
-  // async findOneById(id: string): Promise<UserEntity> {
-  //   try {
-  //     return await this.userRepository.findOne({ where: { id } });
-  //   } catch (error) {
-  //     this.logger.error('Error finding user by ID', error);
-  //     throw new CustomHttpException(
-  //       'Error retrieving user',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
-
   async emailVerificationComposer(
     user: UserEntity,
     fromType: TransportTypes = 'support',
@@ -264,8 +252,8 @@ export class UserService {
     await Promise.all([
       this.authenticationRepository.save(auth),
       this.userRepository.save(user),
-      // this.qwalletService.ensureUserHasProfileAndWallets(user),
-      // this.cwalletService.ensureUserHasProfileAndWallets(user),
+      this.qwalletService.ensureUserHasProfileAndWallets(user),
+      this.cwalletService.ensureUserHasProfileAndWallets(user),
     ]);
 
     const updatedUser = await this.userRepository.findOne({
@@ -284,14 +272,6 @@ export class UserService {
 
   async updateUserTier(userId: string, newTier: TierEnum): Promise<void> {
     await this.userRepository.update(userId, { tier: newTier });
-  }
-
-  async findOneForVerifyById(id: string): Promise<UserEntity | null> {
-    return await this.userRepository
-      .createQueryBuilder('user')
-      .select(['user.id', 'user.email', 'user.emailVerified'])
-      .where('user.id = :id', { id })
-      .getOne();
   }
 
   async findOne(args: BaseFindArgs) {

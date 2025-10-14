@@ -198,6 +198,7 @@ export class UserEntity extends BaseEntity {
 
   @OneToOne(() => FiatWalletProfileEntity, (profile) => profile.user, {
     cascade: true,
+    eager: true,
   })
   fiatWalletProfile: FiatWalletProfileEntity;
 }

@@ -59,7 +59,10 @@ export class VfdService extends AbstractVfdService {
 
   async getAllBanks() {
     const response: RequestResponseTypeDto<VfdBankListResponseDto> =
-      await this.http.get(`${this.walletUrl}/bank`, this.walletHeader());
+      await this.http.get(
+        `${this.walletUrl}${VfdWalletApiEndpoints.GET_BANK_LIST}`,
+        this.walletHeader(),
+      );
     return response.data.bank;
   }
 
@@ -136,7 +139,7 @@ export class VfdService extends AbstractVfdService {
   async createIndividualClientWithBvn(data: VfdCreateClientWithBvnRequestDto) {
     const response: RequestResponseTypeDto<VfdCreateClientResponseDataDto> =
       await this.http.post(
-        `${this.walletUrl}/client/create?bvn=${data.bvn}&dateOfBirth=${data.dob}`,
+        `${this.walletUrl}${VfdWalletApiEndpoints.CREATE_INDIVIDUAL_CLIENT}?bvn=${data.bvn}&dateOfBirth=${data.dob}`,
         data,
         this.walletHeader(),
       );
@@ -309,7 +312,6 @@ export class VfdService extends AbstractVfdService {
         `${this.walletUrl}/sub-accounts?entity=${entity}&size=${size}&page=${page}`,
         this.walletHeader(),
       );
-
     return response.data.content;
   }
 
@@ -322,7 +324,6 @@ export class VfdService extends AbstractVfdService {
         `${this.walletUrl}/account/enquiry?accountNumber=${accountNumber}`,
         this.walletHeader(),
       );
-
     return response.data;
   }
 

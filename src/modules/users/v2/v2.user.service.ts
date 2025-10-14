@@ -120,8 +120,8 @@ export class UserServiceV2 extends AbstractUserService {
     auth.user = user;
 
     await Promise.all([
-      this.authenticationRepository.save(auth),
       this.userRepository.save(user),
+      this.authenticationRepository.save(auth),
       this.qwalletService.ensureUserHasProfileAndWallets(user),
       this.cwalletService.ensureUserHasProfileAndWallets(user),
       this.fiatWalletService.createProfileWithWallet(user.id),

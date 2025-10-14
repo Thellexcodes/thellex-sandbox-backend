@@ -3,12 +3,11 @@ import {
   NAIRA_RATE,
   SupportedBlockchainTypeEnum,
   SupportedWalletTypes,
-  TokenEnum,
   WalletProviderEnum,
 } from '@/config/settings';
 import { QwalletService } from '../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
-import { isSupportedBlockchainToken, toNumber } from '@/utils/helpers';
+import { toNumber } from '@/utils/helpers';
 import PQueue from 'p-queue';
 import { CwalletService } from '../cwallet/cwallet.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
@@ -20,22 +19,27 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { EtherService } from '@/utils/services/ethers.service';
 import { UserService } from '@/modules/users/user.service';
+import { AbstractWalletManagerService } from './abstract/abstract.walletManager';
 
-//TODO: for each hook, you're to update the balance of the wallet in db and sue that here instead of making request everythime to fetch wallet addresses
+//TODO: for each function, you're to update the balance of the wallet in db
+// and use that here instead of making request everythime to fetch wallet addresses
 @Injectable()
-export class WalletManagerService {
+export class WalletManagerService extends AbstractWalletManagerService {
   constructor(
     private readonly qwalletService: QwalletService,
     private readonly cwalletService: CwalletService,
     private readonly ethersService: EtherService,
     private readonly userService: UserService,
-  ) {}
+  ) {
+    super();
+  }
 
   async getBalance(user: UserEntity): Promise<WalletBalanceSummaryResponseDto> {
     try {
       const userWithWallets = await this.userService.findOne({
         id: user.id,
-        relations: 'qWalletProfile.wallets, cWalletProfile.wallets',
+        relations:
+          'qWalletProfile.wallets,cWalletProfile.wallets,fiatWalletProfile.wallets',
       });
 
       if (!userWithWallets) {
@@ -44,7 +48,10 @@ export class WalletManagerService {
 
       const qwallets = userWithWallets.qWalletProfile?.wallets ?? [];
       const cwallets = userWithWallets.cWalletProfile?.wallets ?? [];
+      const fwallets = userWithWallets.fiatWalletProfile?.wallets ?? [];
       const qwalletId = userWithWallets.qWalletProfile?.qid;
+
+      console.log(fwallets);
 
       const walletMap: Record<string, WalletMapDto> = {};
       const queue = new PQueue({ concurrency: 3 });
@@ -176,64 +183,4 @@ export class WalletManagerService {
       );
     }
   }
-
-  private async getQWalletBalance(
-    token: TokenEnum,
-    network: SupportedBlockchainTypeEnum,
-    qwalletId: string,
-  ): Promise<number> {
-    return this.getWalletTokenBalance({
-      token,
-      network,
-      walletId: qwalletId,
-      type: WalletProviderEnum.QUIDAX,
-    });
-  }
-
-  private async getCWalletBalance(
-    token: TokenEnum,
-    network: SupportedBlockchainTypeEnum,
-    walletId: string,
-  ): Promise<number> {
-    return this.getWalletTokenBalance({
-      token,
-      network,
-      walletId,
-      type: WalletProviderEnum.CIRCLE,
-    });
-  }
-
-  private async getWalletTokenBalance({
-    token,
-    network,
-    walletId,
-    type,
-  }: {
-    token: TokenEnum;
-    network: SupportedBlockchainTypeEnum;
-    walletId: string;
-    type: WalletProviderEnum;
-  }): Promise<number> {
-    if (!isSupportedBlockchainToken(network, token)) return 0;
-
-    const wallet =
-      type === WalletProviderEnum.QUIDAX
-        ? await this.qwalletService.findOne(walletId)
-        : await this.cwalletService.lookupSubWalletByID(walletId);
-
-    if (!wallet || !wallet.tokens) return 0;
-
-    const matchingToken = wallet.tokens.find(
-      (t) => t.assetCode?.toLowerCase() === token.toLowerCase(),
-    );
-
-    const balance = Number(matchingToken?.balance ?? 0);
-    return isNaN(balance) || balance <= 0 ? 0 : balance;
-  }
-  async getTransactionHistory(a, b) {}
-  async getWalletAddresses(a) {}
-  async syncWallet(a) {}
-  async getRewards(a) {}
-  async getAssets(a) {}
-  async getSingleAssetBalance(a, b) {}
 }
