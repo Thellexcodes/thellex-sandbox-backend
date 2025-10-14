@@ -1,111 +1,153 @@
-import { VfdBankListResponseDto } from '@/models/payments/vfd.types';
+import {
+  VfdAccountType,
+  VfdAuthResponseDto,
+  VfdBankAccountDataDto,
+  VfdBankDataDto,
+  VfdBankListResponseDto,
+  VfdBeneficiaryEnquiryResponseDto,
+  VfdBVNResposeDto,
+  VfdCreateClientResponseDataDto,
+  VfdCreateClientWithBvnAndNinRequestDto,
+  VfdCreateClientWithBvnRequestDto,
+  VfdCreateClientWithNinRequestDto,
+  VfdCreateConsentRequestDto,
+  VfdCreateConsentResponseDto,
+  VfdNINResponseDto,
+  VfdUpgradeBvnAccountRequestDto,
+  VfdUpgradeNinAccountRequestDto,
+} from '@/models/payments/vfd.types';
 import { AxiosResponse } from 'axios';
 
+/**
+ * Abstract Service Definition for VFD Integration
+ * Defines all supported endpoints and core methods.
+ */
 export abstract class AbstractVfdService {
   // ============================================
   // 1.0 Authorization
   // ============================================
-  abstract authenticate(): Promise<{
-    baasToken: string;
-    token_type: string;
-  }>;
+  abstract authenticate(): Promise<void>;
 
   // ============================================
-  // 1.0 Banks
+  // 2.0 Banks
   // ============================================
-  abstract getAllBanks(): Promise<VfdBankListResponseDto[]>;
+  abstract getAllBanks(): Promise<VfdBankDataDto[]>;
 
   // ============================================
-  // 2.0 Wallet Implementations
+  // 3.0 Wallet Implementations
   // ============================================
   abstract createPoolWallet(): Promise<AxiosResponse>;
   abstract createOneToOneWallet(): Promise<AxiosResponse>;
 
   // ============================================
-  // 3.0 Allowed Operations
+  // 4.0 Allowed Operations
   // ============================================
   abstract getAllowedOperations(): Promise<AxiosResponse>;
 
   // ============================================
-  // 4.0 Inward Credit Notifications
+  // 5.0 Inward Credit Notifications
   // ============================================
-  abstract inwardCreditNotification(data: any): Promise<AxiosResponse>;
-  abstract initialInwardCreditNotification(data: any): Promise<AxiosResponse>;
-  abstract retriggerWebhookNotification(data: any): Promise<AxiosResponse>;
+  abstract inwardCreditNotification(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract initialInwardCreditNotification(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract retriggerWebhookNotification(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
 
   // ============================================
-  // Account Creation (No Consent)
+  // 6.0 Account Creation (No Consent)
   // ============================================
   abstract createIndividualClientWithNin(
-    data: any,
-  ): Promise<AxiosResponse | any>;
+    data: VfdCreateClientWithNinRequestDto,
+  ): Promise<VfdCreateClientResponseDataDto>;
   abstract createIndividualClientWithBvn(
-    data: any,
-  ): Promise<AxiosResponse | any>;
+    data: VfdCreateClientWithBvnRequestDto,
+  ): Promise<VfdCreateClientResponseDataDto>;
   abstract createIndividualClientWithBvnAndNin(
-    data: any,
-  ): Promise<AxiosResponse | any>;
-  abstract createCorporateClient(data: any): Promise<AxiosResponse>;
-  abstract createVirtualAccount(data: any): Promise<AxiosResponse>;
-  abstract updateVirtualAccount(data: any): Promise<AxiosResponse>;
+    data: VfdCreateClientWithBvnAndNinRequestDto,
+  ): Promise<VfdCreateClientResponseDataDto>;
+  abstract createCorporateClient(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract createVirtualAccount(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract updateVirtualAccount(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
 
   // ============================================
-  // Account Creation (Consent Method)
+  // 7.0 Account Creation (Consent Method)
   // ============================================
-  abstract createIndividualWithConsent(data: any): Promise<AxiosResponse>;
-  abstract createCorporateWithConsent(data: any): Promise<AxiosResponse>;
+  abstract createIndividualWithConsent(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract createCorporateWithConsent(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
   abstract requestBvnConsent(
-    data: CreateIndividualConsentDto,
-  ): Promise<CreateIndividualClientResponseDataDto>;
-  abstract igreeNotifications(data: any): Promise<AxiosResponse>;
-  abstract releaseAccount(data: any): Promise<AxiosResponse>;
+    data: VfdCreateConsentRequestDto,
+  ): Promise<VfdCreateConsentResponseDto>;
+  abstract igreeNotifications(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract releaseAccount(data: Record<string, any>): Promise<AxiosResponse>;
 
   // ============================================
-  // New Account Creation (Tiers)
+  // 8.0 Tiered Account Creation & Upgrades
   // ============================================
-  abstract createIndividualTierAccount(data: any): Promise<AxiosResponse>;
+  abstract createIndividualTierAccount(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
   abstract upgradeAccountOfNinToTier3(
-    data: any,
-  ): Promise<UpdateAccountOfBvnToTier3ResponseDto>;
+    data: VfdUpgradeNinAccountRequestDto,
+  ): Promise<VfdNINResponseDto>;
   abstract upgradeAccountOfBvnToTier3(
-    data: any,
-  ): Promise<UpdateAccountOfBvnToTier3ResponseDto>;
-  abstract createCorporateTierAccount(data: any): Promise<AxiosResponse>;
-  abstract createCorporateSubAccount(data: any): Promise<AxiosResponse>;
+    data: VfdUpgradeBvnAccountRequestDto,
+  ): Promise<VfdBVNResposeDto>;
+  abstract createCorporateTierAccount(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract createCorporateSubAccount(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
 
   // ============================================
-  // KYC Enquiry
+  // 9.0 KYC Enquiry
   // ============================================
   abstract getClientByBvn(bvn: string): Promise<AxiosResponse>;
-  abstract lookupBvnAccount(data: any): Promise<AxiosResponse>;
+  abstract lookupBvnAccount(data: Record<string, any>): Promise<AxiosResponse>;
 
   // ============================================
-  // Account Enquiry
+  // 10.0 Account Enquiry
   // ============================================
   abstract getSubAccounts(
-    entity: VFDAccountTypes,
+    entity: VfdAccountType,
     page: number,
     size: number,
-  ): Promise<CreateIndividualClientResponseDataDto[]>;
+  ): Promise<VfdCreateClientResponseDataDto[]>;
 
   // ============================================
-  // Transfer Services
+  // 11.0 Transfer Services
   // ============================================
   abstract accountEnquiry(
     accountNumber: string,
     bankCode: string,
-  ): Promise<void>;
+  ): Promise<VfdBankAccountDataDto>;
   abstract beneficiaryEnquiry(
     beneficiaryAccount: string,
     bankCode: string,
-  ): Promise<void>;
-  abstract transferFunds(data: any): Promise<AxiosResponse>;
-  abstract getBankList(): Promise<AxiosResponse>;
+  ): Promise<VfdBeneficiaryEnquiryResponseDto | any>;
+  abstract transferFunds(data: Record<string, any>): Promise<AxiosResponse>;
+  abstract getBankList(): Promise<VfdBankListResponseDto>;
   abstract checkTransferStatus(reference: string): Promise<AxiosResponse>;
   abstract reverseTransaction(reference: string): Promise<AxiosResponse>;
 
   // ============================================
-  // Transaction Enquiry
+  // 12.0 Transaction Enquiry
   // ============================================
   abstract getAccountTransactions(
     accountNumber: string,
@@ -113,16 +155,22 @@ export abstract class AbstractVfdService {
   abstract getTransactionLimit(): Promise<AxiosResponse>;
 
   // ============================================
-  // QR Code Services
+  // 13.0 QR Code Services
   // ============================================
-  abstract generateQrCode(data: any): Promise<AxiosResponse>;
+  abstract generateQrCode(data: Record<string, any>): Promise<AxiosResponse>;
   abstract queryQrCode(code: string): Promise<AxiosResponse>;
-  abstract payWithQrCode(data: any): Promise<AxiosResponse>;
+  abstract payWithQrCode(data: Record<string, any>): Promise<AxiosResponse>;
 
   // ============================================
-  // Account Upgrade
+  // 14.0 Account Upgrade
   // ============================================
-  abstract updateAccountWithBvn(data: any): Promise<AxiosResponse>;
-  abstract updateAccountCompliance(data: any): Promise<AxiosResponse>;
-  abstract upgradeIndividualToCorporate(data: any): Promise<AxiosResponse>;
+  abstract updateAccountWithBvn(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract updateAccountCompliance(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
+  abstract upgradeIndividualToCorporate(
+    data: Record<string, any>,
+  ): Promise<AxiosResponse>;
 }

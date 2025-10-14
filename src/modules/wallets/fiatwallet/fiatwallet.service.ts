@@ -10,6 +10,7 @@ import { VfdService } from '@/modules/payments/v2/vfd.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { DynamicRepositoryService } from '@/utils/DynamicSource';
 import { BankProvidersEnum } from '@/models/banks.types';
+import { VfdCreateClientResponseDataDto } from '@/models/payments/vfd.types';
 
 @Injectable()
 export class FiatwalletService extends AbstractFiatwalletService {
@@ -133,7 +134,7 @@ export class FiatwalletService extends AbstractFiatwalletService {
         (acc) => acc.bvn.replace('TX-', '') === bvn || acc.bvn === bvn,
       );
 
-      let fiatWallet: CreateIndividualClientResponseDataDto;
+      let fiatWallet: VfdCreateClientResponseDataDto;
 
       if (existingAccount) {
         fiatWallet = existingAccount;

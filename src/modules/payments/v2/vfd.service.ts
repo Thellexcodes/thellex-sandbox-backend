@@ -4,9 +4,20 @@ import { Injectable } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
 import { AbstractVfdService } from '../abstracts/abstract.vfd';
 import {
-  VfdAuthResponseDto,
+  UpgradeAccountOfBvnToTier3RequestDto,
+  VfdAccountType,
   VfdBankAccountDataDto,
   VfdBankListResponseDto,
+  VfdBVNResposeDto,
+  VfdCreateClientResponseDataDto,
+  VfdCreateClientWithBvnAndNinRequestDto,
+  VfdCreateClientWithBvnRequestDto,
+  VfdCreateClientWithNinRequestDto,
+  VfdCreateConsentRequestDto,
+  VfdCreateConsentResponseDto,
+  VfdNINResponseDto,
+  VfdSubAccountListResponseDto,
+  VfdUpgradeBvnAccountRequestDto,
 } from '@/models/payments/vfd.types';
 import { VfdWalletApiEndpoints } from '@/routes/vfd-endpoints.enum';
 import { RequestResponseTypeDto } from '@/models/base-response.dto';
@@ -25,27 +36,21 @@ export class VfdService extends AbstractVfdService {
   // ============================================
 
   async authenticate() {
-    if (this.baasToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
-      return { baasToken: this.baasToken, token_type: 'Bearer' };
-    }
-    return;
-
-    const response: RequestResponseTypeDto<VfdAuthResponseDto> =
-      await this.http.post(
-        `${this.baasUrl}${VfdWalletApiEndpoints.AUTHENTICATE}`,
-        {
-          consumerKey: getAppConfig().VFD.CONSUMER_KEY,
-          consumerSecret: getAppConfig().VFD.CONSUMER_SECRET,
-          validityTime: '-1',
-        },
-      );
-
-    const { token_type } = response.data;
-
-    this.baasToken = response.data.access_token;
-    this.tokenExpiry = Date.now() + 60 * 60 * 1000;
-
-    return { baasToken: this.baasToken, token_type };
+    //   if (this.baasToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+    //     return { baasToken: this.baasToken, token_type: 'Bearer' };
+    //   }
+    //   const response: RequestResponseTypeDto<VfdAuthResponseDto> =
+    //     await this.http.post(
+    //       `${this.baasUrl}${VfdWalletApiEndpoints.AUTHENTICATE}`,
+    //       {
+    //         consumerKey: getAppConfig().VFD.CONSUMER_KEY,
+    //         consumerSecret: getAppConfig().VFD.CONSUMER_SECRET,
+    //         validityTime: '-1',
+    //       },
+    //     );
+    //   const { token_type } = response.data;
+    //   this.baasToken = response.data.access_token;
+    //   this.tokenExpiry = Date.now() + 60 * 60 * 1000;
   }
 
   // ============================================
@@ -53,14 +58,9 @@ export class VfdService extends AbstractVfdService {
   // ============================================
 
   async getAllBanks() {
-    try {
-      const response: RequestResponseTypeDto<VfdBankListResponseDto> =
-        await this.http.get(`${this.walletUrl}/bank`, this.walletHeader());
-
-      return response.data.bank;
-    } catch (err) {
-      console.log(err);
-    }
+    const response: RequestResponseTypeDto<VfdBankListResponseDto> =
+      await this.http.get(`${this.walletUrl}/bank`, this.walletHeader());
+    return response.data.bank;
   }
 
   // ============================================
@@ -122,45 +122,33 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   // ACCOUNT CREATION (NO CONSENT METHOD)
   // ============================================
-  async createIndividualClientWithNin(
-    data: CreateIndividualClientWithNinDto,
-  ): Promise<CreateIndividualClientResponseDataDto> {
-    try {
-      const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
-        await this.http.post(
-          `${this.walletUrl}/client/tiers/individual?nin=${data.nin}&dateOfBirth=${data.dob}`,
-          data,
-          this.walletHeader(),
-        );
+  async createIndividualClientWithNin(data: VfdCreateClientWithNinRequestDto) {
+    const response: RequestResponseTypeDto<VfdCreateClientResponseDataDto> =
+      await this.http.post(
+        `${this.walletUrl}/client/tiers/individual?nin=${data.nin}&dateOfBirth=${data.dob}`,
+        data,
+        this.walletHeader(),
+      );
 
-      return response.data;
-    } catch (err) {
-      console.log(err);
-    }
+    return response.data;
   }
 
-  async createIndividualClientWithBvn(
-    data: CreateIndividualClientWithBvnDto,
-  ): Promise<CreateIndividualClientResponseDataDto> {
-    try {
-      const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
-        await this.http.post(
-          `${this.walletUrl}/client/create?bvn=${data.bvn}&dateOfBirth=${data.dob}`,
-          data,
-          this.walletHeader(),
-        );
+  async createIndividualClientWithBvn(data: VfdCreateClientWithBvnRequestDto) {
+    const response: RequestResponseTypeDto<VfdCreateClientResponseDataDto> =
+      await this.http.post(
+        `${this.walletUrl}/client/create?bvn=${data.bvn}&dateOfBirth=${data.dob}`,
+        data,
+        this.walletHeader(),
+      );
 
-      return response.data;
-    } catch (err) {
-      console.log(err);
-    }
+    return response.data;
   }
 
   async createIndividualClientWithBvnAndNin(
-    data: CreateIndividualClientWithBvnAndNinDto,
-  ): Promise<CreateIndividualClientResponseDataDto> {
+    data: VfdCreateClientWithBvnAndNinRequestDto,
+  ) {
     try {
-      const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
+      const response: RequestResponseTypeDto<VfdCreateClientResponseDataDto> =
         await this.http.post(
           `/client/tiers/individual?bvn=${data.bvn}&nin=${data.nin}&address=${data.address}&dateOfBirth=${data.dob}`,
           data,
@@ -216,21 +204,15 @@ export class VfdService extends AbstractVfdService {
     );
   }
 
-  async requestBvnConsent(
-    data: CreateIndividualConsentDto,
-  ): Promise<CreateIndividualClientResponseDataDto | any> {
-    try {
-      const response: RequestResponseTypeDto<CreateIndividualClientResponseDataDto> =
-        await this.http.post(
-          `${this.walletUrl}/v2/wallet2/bvn-consent?bvn=${data.bvn}&type=${data.type}&reference=${data.reference}`,
-          data,
-          this.walletHeader(),
-        );
+  async requestBvnConsent(data: VfdCreateConsentRequestDto) {
+    const response: RequestResponseTypeDto<VfdCreateConsentResponseDto> =
+      await this.http.post(
+        `${this.walletUrl}/v2/wallet2/bvn-consent?bvn=${data.bvn}&type=${data.type}&reference=${data.reference}`,
+        data,
+        this.walletHeader(),
+      );
 
-      return response.data;
-    } catch (err) {
-      console.log(err);
-    }
+    return response.data;
   }
 
   async igreeNotifications(data: any): Promise<AxiosResponse> {
@@ -260,54 +242,36 @@ export class VfdService extends AbstractVfdService {
     );
   }
 
-  async upgradeAccountOfBvnToTier3(
-    data: CreateUpgradeAccountOfBvnToTier3Dto,
-  ): Promise<UpdateAccountOfBvnToTier3ResponseDto> {
-    try {
-      const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3ResponseDto> =
-        await this.http.post(
-          `${this.walletUrl}/client/update`,
-          data,
-          this.walletHeader(),
-        );
+  async upgradeAccountOfBvnToTier3(data: VfdUpgradeBvnAccountRequestDto) {
+    const res: RequestResponseTypeDto<VfdBVNResposeDto> = await this.http.post(
+      `${this.walletUrl}/client/update`,
+      data,
+      this.walletHeader(),
+    );
 
-      return res.data;
-    } catch (err) {
-      console.log(err);
-    }
+    return res.data;
   }
 
-  async upgradeAccountOfNinToTier3(
-    data: CreateUpgradeAccountOfNinToTier3Dto,
-  ): Promise<UpdateAccountOfBvnToTier3ResponseDto> {
-    try {
-      const res: RequestResponseTypeDto<UpdateAccountOfBvnToTier3ResponseDto> =
-        await this.http.post(
-          `${this.walletUrl}/client/update`,
-          data,
-          this.walletHeader(),
-        );
+  async upgradeAccountOfNinToTier3(data: UpgradeAccountOfBvnToTier3RequestDto) {
+    const res: RequestResponseTypeDto<VfdNINResponseDto> = await this.http.post(
+      `${this.walletUrl}/client/update`,
+      data,
+      this.walletHeader(),
+    );
 
-      console.log(res);
+    console.log(res);
 
-      return res.data;
-    } catch (err) {
-      console.log(err);
-    }
+    return res.data;
   }
 
   async createCorporateTierAccount(data: any): Promise<AxiosResponse | any> {
-    try {
-      const response = await this.http.post(
-        `${this.walletUrl}/client/tiers/corporate`,
-        data,
-        this.walletHeader(),
-      );
+    const response = await this.http.post(
+      `${this.walletUrl}/client/tiers/corporate`,
+      data,
+      this.walletHeader(),
+    );
 
-      console.log(response);
-    } catch (err) {
-      console.log(err);
-    }
+    console.log(response);
   }
 
   async createCorporateSubAccount(data: any): Promise<AxiosResponse> {
@@ -339,34 +303,30 @@ export class VfdService extends AbstractVfdService {
   // ============================================
   // ACCOUNT ENQUIRY
   // ============================================
-  async getSubAccounts(entity: VFDAccountTypes, page: number, size: number) {
-    const response: RequestResponseTypeDto<VFDBankSubAccountResponseDto> =
+  async getSubAccounts(entity: VfdAccountType, page: number, size: number) {
+    const response: RequestResponseTypeDto<VfdSubAccountListResponseDto> =
       await this.http.get(
         `${this.walletUrl}/sub-accounts?entity=${entity}&size=${size}&page=${page}`,
         this.walletHeader(),
       );
 
-    console.log(response.data.content);
     return response.data.content;
   }
 
   // ============================================
   // TRANSFER SERVICES
   // ============================================
-  async accountEnquiry(accountNumber: string): Promise<void> {
+  async accountEnquiry(accountNumber: string) {
     const response: RequestResponseTypeDto<VfdBankAccountDataDto> =
       await this.http.get(
         `${this.walletUrl}/account/enquiry?accountNumber=${accountNumber}`,
         this.walletHeader(),
       );
 
-    console.log(response);
+    return response.data;
   }
 
-  async beneficiaryEnquiry(
-    beneficiaryAccount: string,
-    bankCode: string,
-  ): Promise<void> {}
+  async beneficiaryEnquiry(beneficiaryAccount: string, bankCode: string) {}
 
   async transferFunds(data: any): Promise<AxiosResponse> {
     return this.http.post(
@@ -376,8 +336,10 @@ export class VfdService extends AbstractVfdService {
     );
   }
 
-  async getBankList(): Promise<AxiosResponse> {
-    return this.http.get(`${this.walletUrl}/banks`, this.walletHeader());
+  async getBankList() {
+    const response: RequestResponseTypeDto<VfdBankListResponseDto> =
+      await this.http.get(`${this.walletUrl}/banks`, this.walletHeader());
+    return response.data;
   }
 
   async checkTransferStatus(reference: string): Promise<AxiosResponse> {
