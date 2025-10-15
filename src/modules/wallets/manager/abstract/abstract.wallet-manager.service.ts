@@ -15,9 +15,7 @@ export abstract class AbstractWalletManagerService {
    * Get the total balance summary (including all wallet providers and tokens)
    * for a given user.
    */
-  abstract getBalance(
-    user: UserEntity,
-  ): Promise<WalletBalanceSummaryResponseDto>;
+  getBalance?: (user: UserEntity) => Promise<WalletBalanceSummaryResponseDto>;
 
   /**
    * Retrieve transaction history for a specific wallet or user.
@@ -84,4 +82,17 @@ export abstract class AbstractWalletManagerService {
   //   walletId: string;
   //   type: WalletProviderEnum;
   // }): Promise<number>;
+}
+
+export abstract class V2AbstractWalletManagerService extends AbstractWalletManagerService {
+  /**
+   * Get overall wallet balance across all assets
+   * Optionally activates QWallet if user has none and `action=activate`
+   *
+   * @param req CustomRequest - request containing authenticated user
+   * @param res CustomResponse - custom response handler
+   * @param query optional query parameter { action?: string }
+   */
+
+  abstract getV2Balance(): Promise<void>;
 }

@@ -5,21 +5,21 @@ import {
   SupportedWalletTypes,
   WalletProviderEnum,
 } from '@/config/settings';
-import { QwalletService } from '../qwallet/qwallet.service';
+import { QwalletService } from '../../qwallet/qwallet.service';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { toNumber } from '@/utils/helpers';
 import PQueue from 'p-queue';
-import { CwalletService } from '../cwallet/cwallet.service';
+import { CwalletService } from '../../cwallet/cwallet.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { walletConfig } from '@/utils/tokenChains';
 import {
   WalletBalanceSummaryResponseDto,
   WalletMapDto,
-} from './dto/get-balance-response.dto';
+} from '../dto/get-balance-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { EtherService } from '@/utils/services/ethers.service';
 import { UserService } from '@/modules/users/user.service';
-import { AbstractWalletManagerService } from './abstract/abstract.walletManager';
+import { AbstractWalletManagerService } from '../abstract/abstract.wallet-manager.service';
 
 //TODO: for each function, you're to update the balance of the wallet in db
 // and use that here instead of making request everythime to fetch wallet addresses
@@ -34,7 +34,9 @@ export class WalletManagerService extends AbstractWalletManagerService {
     super();
   }
 
-  async getBalance(user: UserEntity): Promise<WalletBalanceSummaryResponseDto> {
+  getBalance = async (
+    user: UserEntity,
+  ): Promise<WalletBalanceSummaryResponseDto> => {
     try {
       const userWithWallets = await this.userService.findOne({
         id: user.id,
@@ -182,5 +184,5 @@ export class WalletManagerService extends AbstractWalletManagerService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
+  };
 }

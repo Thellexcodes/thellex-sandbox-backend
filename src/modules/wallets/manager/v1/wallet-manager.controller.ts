@@ -1,4 +1,4 @@
-import { Get, Post, Param, Query, UseGuards, Req, Res } from '@nestjs/common';
+import { Get, Query, UseGuards, Req, Res } from '@nestjs/common';
 import { WalletManagerService } from './wallet-manager.service';
 import {
   ApiBearerAuth,
@@ -11,15 +11,15 @@ import { responseHandler } from '@/utils/helpers';
 import {
   WalletBalanceSummaryResponseDto,
   WalletMapDto,
-} from './dto/get-balance-response.dto';
+} from '../dto/get-balance-response.dto';
 import { VersionedController101 } from '@/modules/controller/base.controller';
 import { BasicAuthGuard } from '@/middleware/guards/local.auth.guard';
-import { QwalletService } from '../qwallet/qwallet.service';
+import { QwalletService } from '../../qwallet/qwallet.service';
 
 @ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
-@UseGuards(BasicAuthGuard)
 @VersionedController101('wallet-manager')
+@UseGuards(BasicAuthGuard)
 export class WalletManagerController {
   constructor(
     private readonly walletManagerService: WalletManagerService,

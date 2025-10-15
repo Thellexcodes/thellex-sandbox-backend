@@ -29,7 +29,7 @@ import { GeoLocationMiddleware } from './middleware/geo-location.middleware';
 import { QwalletModule } from './modules/wallets/qwallet/qwallet.module';
 import { CwalletModule } from './modules/wallets/cwallet/cwallet.module';
 import { AuthEntity } from './utils/typeorm/entities/auth.entity';
-import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.module';
+import { WalletManagerModule } from './modules/wallets/manager/v1/wallet-manager.module';
 import { CrashReportModule } from './crash-report/crash-report.module';
 import { BetaTesterEntity } from './utils/typeorm/entities/beta.testers.entity';
 import { FirebaseModule } from './modules/firebase/firebase.module';
