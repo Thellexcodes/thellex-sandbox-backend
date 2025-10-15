@@ -66,7 +66,7 @@ export function dynamicQuery<T = any>(
     ...whereParams
   } = query;
 
-  // Construct where clause with support for nested properties
+  // Build where clause
   const where: { [key: string]: any } = {};
   Object.entries(whereParams).forEach(([key, value]) => {
     if (value !== undefined) {
@@ -117,19 +117,14 @@ export function dynamicQuery<T = any>(
     joinRelations,
   };
 
-  if (type === 'findOne') {
-    return baseOptions;
-  }
+  if (type === 'findOne') return baseOptions;
 
-  // type === 'findMany'
   let sortOptions: SortBy[] = [];
   if (sortBy) {
     try {
       const [field, order] = sortBy.toString().split(':');
       sortOptions = [{ field, order: order as 'ASC' | 'DESC' }];
-    } catch (error) {
-      console.warn('Invalid sortBy format, ignoring:', sortBy);
-    }
+    } catch (error) {}
   }
 
   return {
@@ -141,71 +136,71 @@ export function dynamicQuery<T = any>(
   };
 }
 
+async function applyJoinsAndSelects<T>(
+  repo: Repository<T>,
+  query: SelectQueryBuilder<T>,
+  alias: string,
+  joinRelations?: JoinOption[],
+) {
+  const joined = new Set<string>();
+
+  joinRelations?.forEach((joinOption) => {
+    const parts = joinOption.relation.split('.'); // e.g., 'fiatWalletProfile.wallets'
+    let currentMetadata = repo.metadata;
+    let parentAlias = alias;
+
+    parts.forEach((part, index) => {
+      const relation = currentMetadata.relations.find(
+        (r) => r.propertyName === part,
+      );
+      if (!relation) {
+        throw new Error(`Relation ${joinOption.relation} not found at ${part}`);
+      }
+
+      const joinAlias = parts.slice(0, index + 1).join('_');
+      if (!joined.has(joinAlias)) {
+        query.leftJoinAndSelect(`${parentAlias}.${part}`, joinAlias);
+        joined.add(joinAlias);
+      }
+
+      // **Select fields for this relation if provided**
+      if (joinOption.selectFields?.length) {
+        const selectFields = joinOption.selectFields
+          .filter((f) => f.startsWith(`${part}.`))
+          .map((f) => `${joinAlias}.${f.replace(`${part}.`, '')}`);
+        if (selectFields.length > 0) {
+          query.addSelect(selectFields);
+        }
+      }
+
+      parentAlias = joinAlias;
+      currentMetadata = relation.inverseEntityMetadata;
+    });
+  });
+}
+
 export async function findOneDynamic<T>(
   repo: Repository<T>,
   options: FindDynamicOptions<T> = {},
 ): Promise<T | null> {
-  try {
-    const alias = repo.metadata.tableName;
-    const query: SelectQueryBuilder<T> = repo.createQueryBuilder(alias);
+  const alias = repo.metadata.tableName;
+  const query = repo.createQueryBuilder(alias);
 
-    // Select fields
-    const defaultFields = [`${alias}.id`];
-    const fieldsToSelect =
-      options.selectFields?.map((f) => `${alias}.${f}`) ?? defaultFields;
-    query.select(fieldsToSelect);
+  // Select top-level fields
+  const fieldsToSelect = options.selectFields?.map((f) => `${alias}.${f}`) ?? [
+    `${alias}.id`,
+  ];
+  query.select(fieldsToSelect);
 
-    // Handle joinRelations with metadata validation
-    const joined = new Set<string>();
-    options.joinRelations?.forEach((joinOption) => {
-      const parts = joinOption.relation.split('.'); // e.g., ['qWalletProfile', 'wallets']
-      let currentMetadata = repo.metadata;
-      let parentAlias = alias; // Use entity table name (e.g., 'users')
+  await applyJoinsAndSelects(repo, query, alias, options.joinRelations);
 
-      // Validate and join each part of the relation path
-      parts.forEach((part, index) => {
-        const relation = currentMetadata.relations.find(
-          (r) => r.propertyName === part,
-        );
-        if (!relation) {
-          throw new Error(
-            `Relation with property path ${joinOption.relation} in entity was not found at ${part}.`,
-          );
-        }
-
-        const joinAlias = parts.slice(0, index + 1).join('_'); // e.g., 'qWalletProfile', 'qWalletProfile_wallets'
-        if (!joined.has(joinAlias)) {
-          // Use leftJoinAndSelect to include related data
-          query.leftJoinAndSelect(`${parentAlias}.${part}`, joinAlias);
-          joined.add(joinAlias);
-        }
-
-        // Apply selectFields for the last relation in the path
-        if (index === parts.length - 1 && joinOption.selectFields?.length) {
-          const selectFields = joinOption.selectFields.map(
-            (f) => `${joinAlias}.${f}`,
-          );
-          query.addSelect(selectFields);
-        }
-
-        parentAlias = joinAlias;
-        currentMetadata = relation.inverseEntityMetadata;
-      });
+  // Apply where conditions
+  if (options.where)
+    Object.entries(options.where).forEach(([key, value]) => {
+      query.andWhere(`${alias}.${key} = :${key}`, { [key]: value });
     });
 
-    // Handle where conditions
-    if (options.where) {
-      query.andWhere(options.where);
-    }
-
-    // Default sorting
-    query.addOrderBy(`${alias}.createdAt`, 'DESC');
-
-    return await query.getOne();
-  } catch (error) {
-    console.error('Error in findOneDynamic:', error);
-    throw new Error(`Failed to find one: ${error.message}`);
-  }
+  return query.getOne();
 }
 
 export async function findManyDynamic<T>(
@@ -217,137 +212,45 @@ export async function findManyDynamic<T>(
   page: number;
   lastPage: number;
 }> {
-  try {
-    const page = options.page ?? 1;
-    const limit = options.limit ?? 10;
-    const offset = (page - 1) * limit;
+  const alias = repo.metadata.tableName;
+  const query = repo.createQueryBuilder(alias);
 
-    const alias = repo.metadata.tableName;
-    const query: SelectQueryBuilder<T> = repo.createQueryBuilder(alias);
+  // Select top-level fields
+  const fieldsToSelect = options.selectFields?.map((f) => `${alias}.${f}`) ?? [
+    `${alias}.id`,
+  ];
+  query.select(fieldsToSelect);
 
-    // Select fields
-    const defaultFields = [`${alias}.id`];
-    const fieldsToSelect =
-      options.selectFields?.map((f) => `${alias}.${f}`) ?? defaultFields;
-    query.select(fieldsToSelect);
+  await applyJoinsAndSelects(repo, query, alias, options.joinRelations);
 
-    // Handle joinRelations with metadata validation
-    const joined = new Set<string>();
-    options.joinRelations?.forEach((joinOption) => {
-      const parts = joinOption.relation.split('.');
-      let currentMetadata = repo.metadata;
-      let parentAlias = alias;
-
-      parts.forEach((part, index) => {
-        const relation = currentMetadata.relations.find(
-          (r) => r.propertyName === part,
-        );
-        if (!relation) {
-          throw new Error(
-            `Relation with property path ${joinOption.relation} in entity was not found at ${part}.`,
-          );
-        }
-
-        const joinAlias = parts.slice(0, index + 1).join('_');
-        if (!joined.has(joinAlias)) {
-          query.leftJoinAndSelect(`${parentAlias}.${part}`, joinAlias);
-          joined.add(joinAlias);
-        }
-
-        if (index === parts.length - 1 && joinOption.selectFields?.length) {
-          const selectFields = joinOption.selectFields.map(
-            (f) => `${joinAlias}.${f}`,
-          );
-          query.addSelect(selectFields);
-        }
-
-        parentAlias = joinAlias;
-        currentMetadata = relation.inverseEntityMetadata;
-      });
+  // Apply where
+  if (options.where)
+    Object.entries(options.where).forEach(([key, value]) => {
+      query.andWhere(`${alias}.${key} = :${key}`, { [key]: value });
     });
 
-    // Handle where conditions
-    if (options.where) {
-      query.andWhere(options.where);
-    }
+  // Pagination
+  const page = options.page ?? 1;
+  const limit = options.limit ?? 10;
+  const offset = (page - 1) * limit;
+  query.skip(offset).take(limit);
 
-    // Pagination
-    query.skip(offset).take(limit);
-
-    // Sorting
-    if (options.sortBy?.length) {
-      options.sortBy.forEach((sort) => {
-        query.addOrderBy(`${alias}.${sort.field}`, sort.order ?? 'DESC');
-      });
-    } else {
-      query.addOrderBy(`${alias}.createdAt`, 'DESC');
-    }
-
-    const [items, total] = await query.getManyAndCount();
-
-    return {
-      data: items,
-      total,
-      page,
-      lastPage: Math.ceil(total / limit),
-    };
-  } catch (error) {
-    console.error('Error in findManyDynamic:', error);
-    throw new Error(`Failed to find many: ${error.message}`);
+  // Sorting
+  if (options.sortBy?.length) {
+    options.sortBy.forEach((sort) =>
+      query.addOrderBy(`${alias}.${sort.field}`, sort.order ?? 'DESC'),
+    );
+  } else {
+    query.addOrderBy(`${alias}.createdAt`, 'DESC');
   }
-}
 
-export async function updateOneDynamic<T>(
-  repo: Repository<T>,
-  options: UpdateDynamicOptions<T>,
-): Promise<T | null> {
-  try {
-    const alias = repo.metadata.tableName;
-    const query: SelectQueryBuilder<T> = repo.createQueryBuilder(alias);
-
-    if (options.where) {
-      query.andWhere(options.where);
-    }
-
-    const entity = await query.getOne();
-    if (!entity) {
-      return null;
-    }
-
-    Object.assign(entity, options.updateData);
-    return await repo.save(entity);
-  } catch (error) {
-    console.error('Error in updateOneDynamic:', error);
-    throw new Error(`Failed to update one: ${error.message}`);
-  }
-}
-
-export async function updateManyDynamic<T>(
-  repo: Repository<T>,
-  options: UpdateDynamicOptions<T>,
-): Promise<T[]> {
-  try {
-    const alias = repo.metadata.tableName;
-    const query: SelectQueryBuilder<T> = repo.createQueryBuilder(alias);
-
-    if (options.where) {
-      query.andWhere(options.where);
-    }
-
-    const entities = await query.getMany();
-    if (!entities.length) {
-      return [];
-    }
-
-    entities.forEach((entity) => {
-      Object.assign(entity, options.updateData);
-    });
-
-    return await repo.save(entities);
-  } catch (error) {
-    console.error('Error in updateManyDynamic:', error);
-    throw new Error(`Failed to update many: ${error.message}`);
-  }
+  const [items, total] = await query.getManyAndCount();
+  return {
+    data: items,
+    total,
+    page,
+    lastPage: Math.ceil(total / limit),
+  };
 }
 
 @Injectable()
@@ -360,8 +263,8 @@ export class DynamicRepositoryService {
 
   async findOne<T>(args: BaseFindArgs, entity: new () => T): Promise<T | null> {
     const repo = this.getRepository(entity);
-    const options = dynamicQuery<T>('findOne', args);
-    return await findOneDynamic(repo, options);
+    const options = dynamicQuery<T>('findOne', args) as FindDynamicOptions<T>;
+    return findOneDynamic(repo, options);
   }
 
   async findMany<T>(
@@ -371,7 +274,10 @@ export class DynamicRepositoryService {
     { data: T[]; total: number; page: number; lastPage: number } | T[]
   > {
     const repo = this.getRepository(entity);
-    const options = dynamicQuery<T>('findMany', args);
-    return await findManyDynamic(repo, options);
+    const options = dynamicQuery<T>(
+      'findMany',
+      args,
+    ) as FindManyDynamicOptions<T>;
+    return findManyDynamic(repo, options);
   }
 }

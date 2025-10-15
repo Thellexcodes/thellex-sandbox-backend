@@ -1,45 +1,73 @@
+import { BankInfoDto } from '@/modules/payments/dto/fiat-to-crypto-request.dto';
 import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-transaction-history.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 
-export class WalletMapDto {
-  @ApiProperty()
+/**
+ * Represents a single wallet (crypto or fiat)
+ */
+export class WalletEntryDto {
+  @ApiProperty({ description: 'Total balance in asset unit' })
   totalBalance: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Equivalent value in local currency' })
   valueInLocal: number;
 
-  @ApiProperty({ description: 'Supported blockchain network' })
+  @ApiProperty({ description: 'Blockchain network or fiat type' })
   network: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Asset or fiat code, e.g., USDC, NGN' })
   assetCode: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Wallet or account address' })
   address: string;
 
-  @ApiProperty({ type: [TransactionHistoryDto] })
+  @ApiPropertyOptional({ description: 'Wallet or account address' })
+  bankInfo?: BankInfoDto;
+
+  @ApiProperty({
+    type: [TransactionHistoryDto],
+    description: 'Transaction history',
+  })
   transactionHistory: TransactionHistoryDto[];
 }
 
-export class WalletMapRecord {
-  @ApiProperty({ type: WalletMapDto })
-  usdc: WalletMapDto;
+/**
+ * Map of wallet entries by asset/fiat code
+ */
+export class WalletEntriesRecord {
+  @ApiProperty({ type: WalletEntryDto, required: false })
+  usdc?: WalletEntryDto;
 
-  @ApiProperty({ type: WalletMapDto })
-  usdt: WalletMapDto;
+  @ApiProperty({ type: WalletEntryDto, required: false })
+  usdt?: WalletEntryDto;
+
+  @ApiProperty({ type: WalletEntryDto, required: false })
+  btc?: WalletEntryDto;
+
+  @ApiProperty({ type: WalletEntryDto, required: false })
+  eth?: WalletEntryDto;
+
+  @ApiProperty({ type: WalletEntryDto, required: false })
+  ngn?: WalletEntryDto;
+
+  @ApiProperty({ type: WalletEntryDto, required: false })
+  usd?: WalletEntryDto;
 }
 
+/**
+ * Wallet balance summary DTO (for V2 endpoints)
+ */
 @Exclude()
-export class WalletBalanceSummaryResponseDto {
+export class WalletBalanceSummaryV2ResponseDto {
   @Expose()
-  @ApiProperty()
+  @ApiProperty({ description: 'Total balance across all wallets in USD' })
   totalInUsd: number;
 
   @Expose()
-  @ApiProperty({ type: WalletMapRecord })
-  wallets: {
-    usdc: WalletMapDto;
-    usdt: WalletMapDto;
-  };
+  @ApiProperty({
+    type: WalletEntriesRecord,
+    description: 'All wallet balances by asset/fiat',
+  })
+  wallets: WalletEntriesRecord;
 }

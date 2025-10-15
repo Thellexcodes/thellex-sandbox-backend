@@ -5,9 +5,12 @@ import { AxiosResponse } from 'axios';
 import { AbstractVfdService } from '../abstracts/abstract.vfd';
 import {
   UpgradeAccountOfBvnToTier3RequestDto,
+  UpgradeAccountToCorporateResponseDto,
+  UpgradeToCorporateDto,
   VfdAccountType,
   VfdBankAccountDataDto,
   VfdBankListResponseDto,
+  VfdBeneficiaryEnquiryDto,
   VfdBVNResposeDto,
   VfdCreateClientResponseDataDto,
   VfdCreateClientWithBvnAndNinRequestDto,
@@ -17,6 +20,8 @@ import {
   VfdCreateConsentResponseDto,
   VfdNINResponseDto,
   VfdSubAccountListResponseDto,
+  VfdTransferPayloadDto,
+  VfdTransferType,
   VfdUpgradeBvnAccountRequestDto,
 } from '@/models/payments/vfd.types';
 import { VfdWalletApiEndpoints } from '@/routes/vfd-endpoints.enum';
@@ -327,9 +332,16 @@ export class VfdService extends AbstractVfdService {
     return response.data;
   }
 
-  async beneficiaryEnquiry(beneficiaryAccount: string, bankCode: string) {}
+  async beneficiaryEnquiry(query: VfdBeneficiaryEnquiryDto) {
+    const response: RequestResponseTypeDto<VfdBankAccountDataDto> =
+      await this.http.get(
+        `${this.walletUrl}/transfer/recipient?accountNo=${query.beneficiaryAccount}&bank=${query.bankCode}&transfer_type=${query.transfer_type}`,
+        this.walletHeader(),
+      );
+    return response.data;
+  }
 
-  async transferFunds(data: any): Promise<AxiosResponse> {
+  async transferFunds(data: VfdTransferPayloadDto): Promise<any> {
     return this.http.post(
       `${this.walletUrl}/transfer`,
       data,
@@ -420,7 +432,9 @@ export class VfdService extends AbstractVfdService {
     );
   }
 
-  async upgradeIndividualToCorporate(data: any): Promise<AxiosResponse> {
+  async upgradeIndividualToCorporate(
+    data: UpgradeAccountToCorporateResponseDto,
+  ) {
     return this.http.post(
       `${this.walletUrl}/account/upgrade/corporate`,
       data,

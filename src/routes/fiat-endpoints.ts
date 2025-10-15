@@ -73,4 +73,33 @@ export enum FiatEndpoints {
    * Delete a wallet
    */
   DELETE_WALLET = '/delete/:walletId',
+
+  /**
+   * Account Enquiry Endpoint
+   *
+   * Used to verify or fetch details of a specific account number
+   * before initiating a transfer.
+   */
+  ACCOUNT_ENQUIRY = '/account/enquiry',
+
+  /**
+   * Beneficiary Enquiry Endpoint
+   *
+   * Used to validate a beneficiary’s account information and bank code
+   * before transfer initiation.
+   */
+  BENEFICIARY_ENQUIRY = '/beneficiary/enquiry',
+
+  /**
+   * Initiate Transfer Endpoint
+   *
+   * Used to trigger a transfer between accounts once
+   * account and beneficiary details have been validated.
+   */
+  INITIATE_TRANSFER = '/transfer/initiate',
+
+  /**
+   *
+   */
+  CREDIT = '/credit',
 }

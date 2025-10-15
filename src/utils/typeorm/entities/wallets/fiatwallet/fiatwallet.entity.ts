@@ -95,14 +95,6 @@ export class FiatWalletEntity extends BaseEntity {
   })
   iban?: string;
 
-  @Expose()
-  @ApiProperty({
-    description: 'Indicates if this is the primary bank account',
-    default: false,
-  })
-  @Column({ name: 'is_primary', type: 'boolean', default: false })
-  isPrimary: boolean;
-
   @Column({
     type: 'bytea',
     nullable: true,

@@ -158,6 +158,7 @@ export enum SupportedWalletTypes {
   EVM = 'evm',
   STELLAR = 'stellar',
   BTC = 'btc',
+  FIAT = 'fiat',
 }
 
 export enum WalletProviderEnum {

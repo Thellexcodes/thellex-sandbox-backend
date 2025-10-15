@@ -11,6 +11,7 @@ export class BasicAuthGuard extends BaseAuthGuard {
       id,
       fields: 'email,id,suspended,role,uid,tier',
     });
+
     return user;
   }
 }

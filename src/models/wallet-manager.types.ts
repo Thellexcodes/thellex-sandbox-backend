@@ -1,3 +1,6 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
+
 export enum WalletWebhookEventEnum {
   DepositTransactionConfirmation = 'deposit.transaction.confirmation',
   DepositSuccessful = 'deposit.successful',
@@ -110,4 +113,15 @@ export enum FeeLevel {
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
   LOW = 'LOW',
+}
+
+export class WalletManagerQueryDto {
+  @ApiPropertyOptional({
+    description:
+      'Optional action to perform, e.g., "activate" to initialize wallet',
+    example: 'activate',
+  })
+  @IsOptional()
+  @IsString()
+  action?: 'activate';
 }

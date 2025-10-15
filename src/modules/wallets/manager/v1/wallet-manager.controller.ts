@@ -8,13 +8,14 @@ import {
 } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
-import {
-  WalletBalanceSummaryResponseDto,
-  WalletMapDto,
-} from '../dto/get-balance-response.dto';
 import { VersionedController101 } from '@/modules/controller/base.controller';
 import { BasicAuthGuard } from '@/middleware/guards/local.auth.guard';
 import { QwalletService } from '../../qwallet/qwallet.service';
+import { WalletManagerQueryDto } from '@/models/wallet-manager.types';
+import {
+  WalletBalanceSummaryV2ResponseDto,
+  WalletEntryDto,
+} from '../dto/get-balance-response.dto';
 
 @ApiTags('Wallet Manager')
 @ApiBearerAuth('access-token')
@@ -26,14 +27,13 @@ export class WalletManagerController {
     private readonly qwalletService: QwalletService,
   ) {}
 
-  // Get overall wallet balance across all assets
-  @ApiExtraModels(WalletMapDto)
+  @ApiOkResponse({ type: WalletBalanceSummaryV2ResponseDto })
+  @ApiExtraModels(WalletEntryDto)
   @Get('balance')
-  @ApiOkResponse({ type: WalletBalanceSummaryResponseDto })
   async getBalance(
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
-    @Query() query: { action?: string },
+    @Query() query: WalletManagerQueryDto,
   ) {
     const user = req.user;
     if (query.action === 'activate' && !user.qWalletProfile) {

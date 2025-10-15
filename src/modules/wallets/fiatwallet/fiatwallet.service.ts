@@ -2,15 +2,21 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AbstractFiatwalletService } from './abstracts/abstract.fiatwalletService';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
-import { Repository } from 'typeorm';
+import { QueryResult, Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
-import { FiatEnum } from '@/config/settings';
+import { CountryCodeEnum, CountryEnum, FiatEnum } from '@/config/settings';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { DynamicRepositoryService } from '@/utils/DynamicSource';
 import { BankProvidersEnum } from '@/models/banks.types';
-import { VfdCreateClientResponseDataDto } from '@/models/payments/vfd.types';
+import {
+  CreditSimulationDto,
+  VfdBeneficiaryEnquiryDto,
+  VfdCreateClientResponseDataDto,
+  VfdTransferPayloadDto,
+  VfdTransferType,
+} from '@/models/payments/vfd.types';
 
 @Injectable()
 export class FiatwalletService extends AbstractFiatwalletService {
@@ -32,15 +38,38 @@ export class FiatwalletService extends AbstractFiatwalletService {
   async getUserFiatWalletProfile(
     userId: string,
   ): Promise<FiatWalletProfileEntity | null> {
-    return await this.dynamicRepositoryService.findOne<FiatWalletProfileEntity>(
-      { relations: 'wallets', id: userId },
-      FiatWalletProfileEntity,
-    );
+    const fiatProfile =
+      await this.dynamicRepositoryService.findOne<FiatWalletProfileEntity>(
+        {
+          userId: userId.toString(),
+          relations: 'wallets',
+          relationsFields:
+            'wallets.id,wallets.balance,wallets.currency,wallets.bankName,wallets.accountNumber,wallets.firstName,wallets.lastName',
+          fields: 'id,userId',
+        },
+        FiatWalletProfileEntity,
+      );
+
+    return fiatProfile;
+  }
+
+  async getAllFiatWalletsForUser(profile_id: string) {
+    const result =
+      await this.dynamicRepositoryService.findMany<FiatWalletEntity>(
+        {
+          profile_id: 'f6f3fce2-d291-4ac2-b3b1-d8b97bd21aa4',
+          // 'currency.code': 'NGN',
+          fields: 'id',
+        },
+        FiatWalletEntity,
+      );
+
+    return result;
   }
 
   async getUserFiatWalletByCountry(
     userId: string,
-    country: string,
+    country: CountryEnum,
   ): Promise<FiatWalletEntity | null> {
     return await this.dynamicRepositoryService.findOne<FiatWalletEntity>(
       { relations: 'profile', userId, country },
@@ -50,7 +79,7 @@ export class FiatwalletService extends AbstractFiatwalletService {
 
   async getUserFiatWalletByTicker(
     userId: string,
-    ticker: string,
+    ticker: FiatEnum,
   ): Promise<FiatWalletEntity | null> {
     return await this.dynamicRepositoryService.findOne<FiatWalletEntity>(
       { relations: 'profile', userId, ticker },
@@ -85,7 +114,7 @@ export class FiatwalletService extends AbstractFiatwalletService {
   /**
    * Create fiat wallet profile for a user.
    */
-  async createProfileWithWallet(userId: string): Promise<void> {
+  async createProfileWithWallet(userId: string) {
     const existingProfile =
       await this.dynamicRepositoryService.findOne<FiatWalletProfileEntity>(
         { 'user.id': userId, fields: 'id' },
@@ -171,5 +200,70 @@ export class FiatwalletService extends AbstractFiatwalletService {
     } catch (err) {
       this.logger.log('❌ Error adding wallet:', err);
     }
+  }
+
+  async accountEnquiry(userId, accountNumber: string): Promise<any> {
+    try {
+      const account = await this.vfdService.accountEnquiry(accountNumber);
+      if (!account)
+        throw new CustomHttpException(
+          'Account not found',
+          HttpStatus.NOT_FOUND,
+        );
+    } catch (err) {}
+  }
+
+  async beneficiaryEnquiry(query: VfdBeneficiaryEnquiryDto): Promise<void> {
+    try {
+      const beneficiary = await this.vfdService.beneficiaryEnquiry(query);
+      console.log(beneficiary);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async initiateTransfer(): Promise<void> {
+    try {
+      // const signature = crypto
+      //   .createHash('sha512')
+      //   .update(fromAccount + toAccount)
+      //   .digest('hex');
+
+      //     During Transfer the first process is to call the account enquiry API (a) to get the From details for the transfer payload.
+
+      // The second process is to call the bank list API to get the bank codes.
+
+      // The third process is to call the transfer recipient endpoint (b) to get the beneficiary or ‘’TO’’ details.
+
+      // The fourth process is to generate the signature using SHA512(fromAccount ToAccount). The accounts should be concatenated together. There is a table below that shows how to populate the transfer payload
+
+      const payload: VfdTransferPayloadDto = {
+        fromAccount: '',
+        fromClientId: '',
+        fromClient: '',
+        fromSavingsId: '',
+        fromBvn: '',
+        toClientId: '',
+        toClient: '',
+        toSavingsId: '',
+        toBvn: '',
+        toAccount: '',
+        toBank: '',
+        signature: '',
+        amount: '',
+        remark: '',
+        transferType: '',
+        reference: '',
+      };
+
+      const transferResponse = await this.vfdService.transferFunds(payload);
+      // console.log({ transferResponse });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async simulateCredit(data: CreditSimulationDto): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }

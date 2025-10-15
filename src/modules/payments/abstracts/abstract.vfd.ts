@@ -1,9 +1,11 @@
 import {
+  UpgradeAccountToCorporateResponseDto,
+  UpgradeToCorporateDto,
   VfdAccountType,
-  VfdAuthResponseDto,
   VfdBankAccountDataDto,
   VfdBankDataDto,
   VfdBankListResponseDto,
+  VfdBeneficiaryEnquiryDto,
   VfdBeneficiaryEnquiryResponseDto,
   VfdBVNResposeDto,
   VfdCreateClientResponseDataDto,
@@ -13,6 +15,7 @@ import {
   VfdCreateConsentRequestDto,
   VfdCreateConsentResponseDto,
   VfdNINResponseDto,
+  VfdTransferType,
   VfdUpgradeBvnAccountRequestDto,
   VfdUpgradeNinAccountRequestDto,
 } from '@/models/payments/vfd.types';
@@ -37,6 +40,7 @@ export abstract class AbstractVfdService {
   // 3.0 Wallet Implementations
   // ============================================
   abstract createPoolWallet(): Promise<AxiosResponse>;
+
   abstract createOneToOneWallet(): Promise<AxiosResponse>;
 
   // ============================================
@@ -50,9 +54,11 @@ export abstract class AbstractVfdService {
   abstract inwardCreditNotification(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract initialInwardCreditNotification(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract retriggerWebhookNotification(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
@@ -63,18 +69,23 @@ export abstract class AbstractVfdService {
   abstract createIndividualClientWithNin(
     data: VfdCreateClientWithNinRequestDto,
   ): Promise<VfdCreateClientResponseDataDto>;
+
   abstract createIndividualClientWithBvn(
     data: VfdCreateClientWithBvnRequestDto,
   ): Promise<VfdCreateClientResponseDataDto>;
+
   abstract createIndividualClientWithBvnAndNin(
     data: VfdCreateClientWithBvnAndNinRequestDto,
   ): Promise<VfdCreateClientResponseDataDto>;
+
   abstract createCorporateClient(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract createVirtualAccount(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract updateVirtualAccount(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
@@ -102,15 +113,19 @@ export abstract class AbstractVfdService {
   abstract createIndividualTierAccount(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract upgradeAccountOfNinToTier3(
     data: VfdUpgradeNinAccountRequestDto,
   ): Promise<VfdNINResponseDto>;
+
   abstract upgradeAccountOfBvnToTier3(
     data: VfdUpgradeBvnAccountRequestDto,
   ): Promise<VfdBVNResposeDto>;
+
   abstract createCorporateTierAccount(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract createCorporateSubAccount(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
@@ -119,6 +134,7 @@ export abstract class AbstractVfdService {
   // 9.0 KYC Enquiry
   // ============================================
   abstract getClientByBvn(bvn: string): Promise<AxiosResponse>;
+
   abstract lookupBvnAccount(data: Record<string, any>): Promise<AxiosResponse>;
 
   // ============================================
@@ -137,13 +153,17 @@ export abstract class AbstractVfdService {
     accountNumber: string,
     bankCode: string,
   ): Promise<VfdBankAccountDataDto>;
+
   abstract beneficiaryEnquiry(
-    beneficiaryAccount: string,
-    bankCode: string,
+    query: VfdBeneficiaryEnquiryDto,
   ): Promise<VfdBeneficiaryEnquiryResponseDto | any>;
+
   abstract transferFunds(data: Record<string, any>): Promise<AxiosResponse>;
+
   abstract getBankList(): Promise<VfdBankListResponseDto>;
+
   abstract checkTransferStatus(reference: string): Promise<AxiosResponse>;
+
   abstract reverseTransaction(reference: string): Promise<AxiosResponse>;
 
   // ============================================
@@ -158,7 +178,9 @@ export abstract class AbstractVfdService {
   // 13.0 QR Code Services
   // ============================================
   abstract generateQrCode(data: Record<string, any>): Promise<AxiosResponse>;
+
   abstract queryQrCode(code: string): Promise<AxiosResponse>;
+
   abstract payWithQrCode(data: Record<string, any>): Promise<AxiosResponse>;
 
   // ============================================
@@ -167,10 +189,12 @@ export abstract class AbstractVfdService {
   abstract updateAccountWithBvn(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract updateAccountCompliance(
     data: Record<string, any>,
   ): Promise<AxiosResponse>;
+
   abstract upgradeIndividualToCorporate(
-    data: Record<string, any>,
-  ): Promise<AxiosResponse>;
+    data: UpgradeAccountToCorporateResponseDto,
+  ): Promise<any>;
 }

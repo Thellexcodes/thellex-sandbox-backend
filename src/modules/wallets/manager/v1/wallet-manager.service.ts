@@ -13,8 +13,8 @@ import { CwalletService } from '../../cwallet/cwallet.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { walletConfig } from '@/utils/tokenChains';
 import {
-  WalletBalanceSummaryResponseDto,
-  WalletMapDto,
+  WalletBalanceSummaryV2ResponseDto,
+  WalletEntryDto,
 } from '../dto/get-balance-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { EtherService } from '@/utils/services/ethers.service';
@@ -34,10 +34,11 @@ export class WalletManagerService extends AbstractWalletManagerService {
     super();
   }
 
-  getBalance = async (
+  async getBalance(
     user: UserEntity,
-  ): Promise<WalletBalanceSummaryResponseDto> => {
+  ): Promise<WalletBalanceSummaryV2ResponseDto> {
     try {
+      // Fetch user with optional joins
       const userWithWallets = await this.userService.findOne({
         id: user.id,
         relations:
@@ -50,12 +51,9 @@ export class WalletManagerService extends AbstractWalletManagerService {
 
       const qwallets = userWithWallets.qWalletProfile?.wallets ?? [];
       const cwallets = userWithWallets.cWalletProfile?.wallets ?? [];
-      const fwallets = userWithWallets.fiatWalletProfile?.wallets ?? [];
       const qwalletId = userWithWallets.qWalletProfile?.qid;
 
-      console.log(fwallets);
-
-      const walletMap: Record<string, WalletMapDto> = {};
+      const walletMap: Record<string, WalletEntryDto> = {};
       const queue = new PQueue({ concurrency: 3 });
       const tasks: Promise<void>[] = [];
 
@@ -74,7 +72,7 @@ export class WalletManagerService extends AbstractWalletManagerService {
           )) {
             const network =
               networkKey.toLowerCase() as SupportedBlockchainTypeEnum;
-            const tokenSymbols = networkDetails.tokens;
+            const tokenSymbols = (networkDetails as any).tokens;
 
             for (const token of tokenSymbols) {
               const tokenLower = token.toLowerCase();
@@ -170,7 +168,7 @@ export class WalletManagerService extends AbstractWalletManagerService {
         .reduce((sum, val) => sum + val, 0);
 
       return plainToInstance(
-        WalletBalanceSummaryResponseDto,
+        WalletBalanceSummaryV2ResponseDto,
         {
           totalInUsd: totalSum.toFixed(2),
           wallets: walletMap,
@@ -184,5 +182,5 @@ export class WalletManagerService extends AbstractWalletManagerService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  };
+  }
 }

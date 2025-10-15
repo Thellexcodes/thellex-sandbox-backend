@@ -1,14 +1,7 @@
 import { CustomRequest, CustomResponse } from '@/models/request.types';
-import { QwalletService } from '../../qwallet/qwallet.service';
-import { WalletManagerService } from '../v1/wallet-manager.service';
-import { AbstractWalletManagerService } from './abstract.wallet-manager.service';
-import { WalletBalanceSummaryResponseDto } from '../dto/get-balance-response.dto';
 
 export abstract class AbstractWalletManagerController {
-  protected constructor(
-    protected readonly walletManagerService: WalletManagerService,
-    protected readonly qwalletService: QwalletService,
-  ) {}
+  constructor() {}
 
   /**
    * Get overall wallet balance across all assets
@@ -22,5 +15,5 @@ export abstract class AbstractWalletManagerController {
     req: CustomRequest,
     res: CustomResponse,
     query: { action?: string },
-  ): Promise<WalletBalanceSummaryResponseDto>;
+  ): Promise<void>;
 }
