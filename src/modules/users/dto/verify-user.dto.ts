@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseResponseDto } from '@/models/base-response.dto';
-import { IUserDto } from '@/utils/typeorm/entities/user.entity';
+import { IUserDto } from '@/utils/typeorm/entities/user/user.entity';
 
 export class VerifyUserDto {
   @ApiProperty()

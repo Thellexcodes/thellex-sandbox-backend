@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
@@ -23,6 +22,10 @@ import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
 import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
 import { CreateUserDto } from '../dto/user.dto';
 import { VerifyUserDto } from '../dto/verify-user.dto';
+import {
+  IUserDto,
+  UserEntity,
+} from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class UserService {

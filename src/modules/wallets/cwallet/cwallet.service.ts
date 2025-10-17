@@ -17,7 +17,6 @@ import {
   ICWalletResponse,
   ICWalletTransactionResponse,
 } from '@/models/cwallet.types';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -47,6 +46,7 @@ import { TransactionHistoryDto } from '@/modules/transaction-history/dto/create-
 import { plainToInstance } from 'class-transformer';
 import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
 import { TransactionsService } from '@/modules/transactions/transactions.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class CwalletService {

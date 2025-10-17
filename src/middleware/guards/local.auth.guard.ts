@@ -1,8 +1,8 @@
 import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { BaseAuthGuard } from './base-auth.guard';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { TierEnum } from '@/config/tier.lists';
 import { AuthErrorEnum } from '@/models/auth-error.enum';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class BasicAuthGuard extends BaseAuthGuard {

@@ -1,11 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
-import { AuthController } from './auth.controller';
-import { AuthnService } from './auth.service';
+import { AuthController } from './v2/auth.controller';
+import { AuthnService } from './v2/auth.service';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { MailService } from '../email/mail.service';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
@@ -15,6 +14,7 @@ import { QwalletService } from '../wallets/qwallet/qwallet.service';
 import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
 import { UserService } from '../users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Global()
 @Module({

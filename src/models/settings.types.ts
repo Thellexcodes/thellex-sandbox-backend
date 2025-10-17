@@ -35,6 +35,10 @@ export type ApiConfig = {
     DATABASE: string;
     PASSWORD: string;
   };
+  AUTH: {
+    CLIENT_URL: string;
+    RP_ID: string;
+  };
   AUTH_JWT_SECRET: string;
   CLIENT: {
     RP_ID: string;

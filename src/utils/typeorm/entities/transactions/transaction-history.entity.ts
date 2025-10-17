@@ -20,8 +20,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEnum } from 'class-validator';
 import { BaseEntity } from '../base.entity';
-import { UserEntity } from '../user.entity';
 import { TokenEnum } from '@/config/settings';
+import { UserEntity } from '../user/user.entity';
 
 type CombinedEventEnum = WalletWebhookEventEnum | YCRampPaymentEventEnum;
 

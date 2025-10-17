@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { UserEntity } from './user.entity';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserEntity } from './user/user.entity';
 
 @Entity({ name: 'auth' })
 export class AuthEntity extends BaseEntity {

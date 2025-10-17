@@ -1,4 +1,3 @@
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   BasicTierKycDto,
   VerifySelfieWithPhotoIdDto,

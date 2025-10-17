@@ -4,9 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { jwtConfigurations } from 'src/config/jwt.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { typeOrmConfig } from '@/utils/typeorm/typeOrm.config';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 
 @Global()
 @Module({

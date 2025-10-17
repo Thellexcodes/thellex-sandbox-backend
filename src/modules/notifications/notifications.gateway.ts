@@ -16,7 +16,7 @@ import {
   INotificationDto,
   NotificationEntity,
 } from '@/utils/typeorm/entities/notification.entity';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';

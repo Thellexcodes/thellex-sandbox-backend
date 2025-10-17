@@ -1,10 +1,10 @@
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { QWalletsEntity } from './qwallets.entity';
 import { BaseEntity } from '../../base.entity';
 import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserEntity } from '../../user/user.entity';
 
 @Entity({ name: 'qwallet_profiles' })
 export class QWalletProfileEntity extends BaseEntity {

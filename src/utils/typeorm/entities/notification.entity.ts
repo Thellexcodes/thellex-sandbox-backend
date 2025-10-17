@@ -5,11 +5,11 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { TransactionTypeEnum } from '@/models/payment.types';
+import { UserEntity } from './user/user.entity';
 
 export enum NotificationKindEnum {
   Transaction = 'txn',

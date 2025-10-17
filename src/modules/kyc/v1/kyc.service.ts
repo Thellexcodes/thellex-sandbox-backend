@@ -10,7 +10,6 @@ import {
 } from '@/models/identifications.types';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   BasicTierKycDto,
   DocumentAnalysisEntityDto,
@@ -36,6 +35,7 @@ import { VerifyBvnDto } from '../dto/validate-bvn.dto';
 import { VfdService } from '../../payments/v2/vfd.service';
 import { CountryEnum } from '@/config/settings';
 import { UserService } from '@/modules/users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 //TODO: Handle errors with enum
 //[x]: Move the Dojah services out

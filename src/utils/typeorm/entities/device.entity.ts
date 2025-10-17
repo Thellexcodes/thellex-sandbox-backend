@@ -1,10 +1,10 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import { AuthenticatorTransportFuture } from '@simplewebauthn/server';
 import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { PlatformEnum } from '@/config/settings';
+import { UserEntity } from './user/user.entity';
 
 @Entity({ name: 'devices' })
 export class DeviceEntity extends BaseEntity {
@@ -84,6 +84,12 @@ export class DeviceEntity extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   deviceId?: string;
+
+  @Column({ type: 'boolean', default: false })
+  hasBiometric: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  biometricEnabled: boolean;
 }
 
 @Exclude()

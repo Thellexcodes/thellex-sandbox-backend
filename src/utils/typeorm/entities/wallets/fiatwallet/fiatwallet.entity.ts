@@ -1,6 +1,5 @@
 import { FiatEnum } from '@/config/settings';
 import { BaseEntity } from '@/utils/typeorm/entities/base.entity';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   Column,
   Entity,

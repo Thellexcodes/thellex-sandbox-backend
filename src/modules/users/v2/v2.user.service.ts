@@ -7,7 +7,6 @@ import {
   dynamicQuery,
   findOneDynamic,
 } from '@/utils/DynamicSource';
-import { UserEntity, IUserDto } from '@/utils/typeorm/entities/user.entity';
 import { VerifyUserDto } from '../dto/verify-user.dto';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { UserErrorEnum } from '@/models/user-error.enum';
@@ -22,6 +21,11 @@ import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
 import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
 import { FiatwalletService } from '@/modules/wallets/fiatwallet/fiatwallet.service';
 import { UserService } from '../v1/user.service';
+import * as bcrypt from 'bcrypt';
+import {
+  IUserDto,
+  UserEntity,
+} from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class UserServiceV2 extends AbstractUserService {
@@ -158,5 +162,25 @@ export class UserServiceV2 extends AbstractUserService {
     user: UserEntity,
   ): Promise<{ code: number; expires_at: Date }> {
     throw new Error('Method not implemented.');
+  }
+
+  protected async setUserPin(userId: string, pin: string): Promise<boolean> {
+    // const hashed = await bcrypt.hash(pin, 10);
+    // let userSec = await this.userSecurityRepo.findOne({
+    //   where: { user: { id: userId } },
+    // });
+
+    // if (!userSec) {
+    //   userSec = this.userSecurityRepo.create({
+    //     user: { id: userId },
+    //     hasPin: true,
+    //     pinHash: hashed,
+    //   });
+    // } else {
+    //   userSec.hasPin = true;
+    //   userSec.pinHash = hashed;
+    // }
+
+    return true;
   }
 }

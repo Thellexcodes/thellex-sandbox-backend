@@ -1,4 +1,4 @@
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 import { WalletBalanceSummaryV2ResponseDto } from '../dto/get-balance-response.dto';
 
 export abstract class AbstractWalletManagerService<

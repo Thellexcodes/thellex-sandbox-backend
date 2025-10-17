@@ -9,10 +9,10 @@ import {
 } from 'typeorm';
 import { CwalletsEntity } from './cwallet.entity';
 import { Exclude, Expose } from 'class-transformer';
-import { UserEntity } from '../../user.entity';
 import { BaseEntity } from '../../base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { SupportedWalletTypes, WalletProviderEnum } from '@/config/settings';
+import { UserEntity } from '../../user/user.entity';
 
 @Entity({ name: 'cwallet_profiles' })
 export class CwalletProfilesEntity extends BaseEntity {

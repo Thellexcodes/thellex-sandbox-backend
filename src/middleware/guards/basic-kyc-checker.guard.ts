@@ -4,8 +4,8 @@ import {
   ExecutionContext,
   Logger,
 } from '@nestjs/common';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { TierEnum } from '@/config/tier.lists';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class BasicKycCheckerGuard implements CanActivate {

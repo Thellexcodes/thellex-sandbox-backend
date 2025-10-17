@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { PaymentsService } from './v1/payments.service';
 import { HttpService } from '@/middleware/http.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '../email/mail.service';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
@@ -10,6 +9,7 @@ import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { VfdService } from './v2/vfd.service';
 import { PaymentsController } from './v1/payments.controller';
 import { UserService } from '../users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],

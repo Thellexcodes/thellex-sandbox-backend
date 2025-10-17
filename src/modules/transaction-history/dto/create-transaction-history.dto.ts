@@ -9,7 +9,7 @@ import {
   FeeLevel,
   WalletWebhookEventEnum,
 } from '@/models/wallet-manager.types';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 export class TransactionHistoryDto {
   event?: WalletWebhookEventEnum | YCRampPaymentEventEnum;

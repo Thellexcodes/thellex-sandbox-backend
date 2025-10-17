@@ -1,6 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
-import { UserEntity } from './user.entity';
 import { BaseEntity } from './base.entity';
 import {
   PaymentReasonEnum,
@@ -25,6 +24,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ITransactionHistoryDto } from './transactions/transaction-history.entity';
+import { UserEntity } from './user/user.entity';
 
 //[x] improve with all treasuery addresses
 const TREASURY_ADDRESSES = ['0xYourERC20TreasuryAddressHere'].map((addr) =>

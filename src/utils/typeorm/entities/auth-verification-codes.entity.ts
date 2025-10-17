@@ -7,9 +7,9 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { UserEntity } from './user.entity';
 import { Exclude } from 'class-transformer';
 import { AUTH_VERIFICATION_CODE_TTL } from '@/config/settings';
+import { UserEntity } from './user/user.entity';
 
 @Entity({ name: 'auth_verification_codes' })
 export class AuthVerificationCodesEntity extends BaseEntity {

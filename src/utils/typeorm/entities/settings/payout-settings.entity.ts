@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
-import { UserEntity } from '../user.entity';
 import { Exclude } from 'class-transformer';
+import { UserEntity } from '../user/user.entity';
 
 @Entity('payout_settings')
 export class PayoutSettingEntity extends BaseEntity {

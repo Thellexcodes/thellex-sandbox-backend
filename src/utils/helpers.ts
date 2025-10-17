@@ -2,7 +2,6 @@ import { RateDto } from '@/modules/aggregators/swap/dto/rate.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { Token } from '@uniswap/sdk-core';
 import { Repository } from 'typeorm';
-import { IUserDto, UserEntity } from './typeorm/entities/user.entity';
 import {
   BlockchainNetworkSettings,
   SUPPORTED_RAMP_COUNTRIES,
@@ -33,6 +32,7 @@ import { createReadStream } from 'fs';
 import { BaseResponseDto } from '@/models/base-response.dto';
 import { Response } from 'express';
 import { BaseFindArgs, dynamicQuery, findOneDynamic } from './DynamicSource';
+import { IUserDto, UserEntity } from './typeorm/entities/user/user.entity';
 
 //TODO: handle errors with enums
 

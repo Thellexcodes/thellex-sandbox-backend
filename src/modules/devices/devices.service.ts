@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateDeviceDto } from './dto/create-device.dto';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { Repository } from 'typeorm';
 import { isDev } from '@/utils/helpers';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 //[x] handle errors with enums
 @Injectable()

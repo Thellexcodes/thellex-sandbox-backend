@@ -3,7 +3,7 @@ import { BaseEntity } from '../base.entity';
 import { PaymentStatus, TransactionTypeEnum } from '@/models/payment.types';
 import { FiatEnum, TokenEnum } from '@/config/settings';
 import { Exclude } from 'class-transformer';
-import { UserEntity } from '../user.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Entity('transactions')
 export class TransactionEntity extends BaseEntity {

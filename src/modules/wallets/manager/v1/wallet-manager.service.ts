@@ -6,7 +6,6 @@ import {
   WalletProviderEnum,
 } from '@/config/settings';
 import { QwalletService } from '../../qwallet/qwallet.service';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { toNumber } from '@/utils/helpers';
 import PQueue from 'p-queue';
 import { CwalletService } from '../../cwallet/cwallet.service';
@@ -20,6 +19,7 @@ import { plainToInstance } from 'class-transformer';
 import { EtherService } from '@/utils/services/ethers.service';
 import { AbstractWalletManagerService } from '../abstract/abstract.wallet-manager.service';
 import { UserService } from '@/modules/users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 //TODO: for each function, you're to update the balance of the wallet in db
 // and use that here instead of making request everythime to fetch wallet addresses

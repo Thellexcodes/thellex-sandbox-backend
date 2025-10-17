@@ -3,7 +3,6 @@ import { AbstractFiatwalletService } from './abstracts/abstract.fiatwalletServic
 import { InjectRepository } from '@nestjs/typeorm';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { Repository } from 'typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
 import { CountryEnum, FiatEnum } from '@/config/settings';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
@@ -16,6 +15,7 @@ import {
   VfdCreateClientResponseDataDto,
   VfdTransferPayloadDto,
 } from '@/models/payments/vfd.types';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class FiatwalletService extends AbstractFiatwalletService {

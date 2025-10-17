@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import {
   BASIS_POINTS_DIVISOR,
   BlockchainNetworkSettings,
@@ -74,6 +73,7 @@ import {
   FindManyDynamicOptions,
 } from '@/utils/DynamicSource';
 import { MapleradService } from './maplerad.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 //[x] properly throw error using enum
 @Injectable()

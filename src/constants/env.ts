@@ -104,6 +104,10 @@ export function getAppConfig(): ApiConfig {
     IPINFO_TOKEN: config.get('IPINFO_TOKEN'),
     ENABLE_HTTPS: config.get('ENABLE_HTTPS'),
     APP_CERTIFICATE_FINGERPRINT: config.get('APP_CERTIFICATE_FINGERPRINT'),
+    AUTH: {
+      CLIENT_URL: config.get('CLIENT_URL'),
+      RP_ID: config.get('CLIENT_RP_ID'),
+    },
   };
 }
 

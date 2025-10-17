@@ -1,7 +1,7 @@
 import { BaseEntity } from '@/utils/typeorm/entities/base.entity';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { UserEntity } from './user/user.entity';
 
 @Entity({ name: 'card_management' })
 export class CardManagementEntity extends BaseEntity {

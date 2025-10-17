@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { FiatEnum, ThemeMode } from '@/config/settings';
+import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'user_settings' })
 export class UserSettingEntity extends BaseEntity {

@@ -1,7 +1,7 @@
 import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
-import { UserEntity } from '../user.entity';
 import { BankingNetworkProviderEnum } from '@/config/settings';
 import { BaseEntity } from '../base.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Index(['provider', 'external_customer_id'])
 @Entity('banking_networks')

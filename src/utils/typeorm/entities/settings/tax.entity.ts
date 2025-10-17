@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
-import { UserEntity } from '../user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
+import { UserEntity } from '../user/user.entity';
 
 @Entity('tax_settings')
 export class TaxSettingEntity extends BaseEntity {

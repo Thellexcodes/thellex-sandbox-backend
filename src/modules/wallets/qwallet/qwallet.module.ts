@@ -5,10 +5,10 @@ import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { jwtConfigurations } from '@/config/jwt.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { HttpService } from '@/middleware/http.service';
 import { AuthEntity } from '@/utils/typeorm/entities/auth.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Module({
   imports: [

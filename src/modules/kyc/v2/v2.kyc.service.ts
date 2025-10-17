@@ -6,7 +6,6 @@ import {
   KycResultDto,
   VerifySelfieWithPhotoIdDto,
 } from '../dto/kyc-data.dto';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { DataSource } from 'typeorm';
 import {
   BvnLookupResponse,
@@ -22,6 +21,7 @@ import { TierEnum } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
 import { UserService } from '@/modules/users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 //[x] move all v1 to v2 after version enforcement
 /**

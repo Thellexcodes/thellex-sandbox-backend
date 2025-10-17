@@ -1,6 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { V2AbstractWalletManagerService } from '../abstract/abstract.wallet-manager.service';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { QwalletService } from '../../qwallet/qwallet.service';
 import { CwalletService } from '../../cwallet/cwallet.service';
 import { EtherService } from '@/utils/services/ethers.service';
@@ -24,6 +23,7 @@ import { FiatwalletService } from '../../fiatwallet/fiatwallet.service';
 import { BankProvidersEnum } from '@/models/banks.types';
 import { flexiTruncate } from '@/utils/helpers';
 import { UserService } from '@/modules/users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class WalletManagerServiceV2 extends V2AbstractWalletManagerService {

@@ -3,7 +3,6 @@ import { CardManagementEntity } from '@/utils/typeorm/entities/card-management.e
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { DeviceEntity } from '@/utils/typeorm/entities/device.entity';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity';
 import { QWalletsEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallets.entity';
 import { TokenEntity } from '@/utils/typeorm/entities/token/token.entity';
@@ -22,6 +21,8 @@ import { BetaTesterEntity } from './entities/beta.testers.entity';
 import { isDev, isProd } from '../helpers';
 import { FiatWalletProfileEntity } from './entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { FiatWalletEntity } from './entities/wallets/fiatwallet/fiatwallet.entity';
+import { UserEntity } from './entities/user/user.entity';
+import { UserSecurityEntity } from './entities/user/user.security.entity';
 
 export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
   return {
@@ -33,9 +34,9 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
     password: getAppConfig().POSTGRES.PASSWORD,
     entities: [
       KycEntity,
+      AuthEntity,
       UserEntity,
       TokenEntity,
-      AuthEntity,
       DeviceEntity,
       CwalletsEntity,
       QWalletsEntity,
@@ -44,6 +45,7 @@ export const typeOrmConfig = async (): Promise<TypeOrmModuleOptions> => {
       TaxSettingEntity,
       TransactionEntity,
       UserSettingEntity,
+      UserSecurityEntity,
       NotificationEntity,
       PayoutSettingEntity,
       CardManagementEntity,

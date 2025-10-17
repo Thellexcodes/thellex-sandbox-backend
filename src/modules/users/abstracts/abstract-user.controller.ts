@@ -1,4 +1,3 @@
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { VerifyUserDto } from '../dto/verify-user.dto';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 
@@ -54,4 +53,6 @@ export abstract class AbstractUserController {
   //   res: CustomResponse,
   //   query: { page?: string; limit?: string },
   // ): Promise<void>;
+
+  protected abstract setPin(): Promise<void>;
 }

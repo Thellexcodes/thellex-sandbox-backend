@@ -1,6 +1,5 @@
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -18,6 +17,7 @@ import { FiatwalletService } from '../fiatwallet/fiatwallet.service';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
 import { UserService } from '@/modules/users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Module({
   imports: [

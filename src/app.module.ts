@@ -5,9 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/users/user.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ErrorInterceptor } from './middleware/error.interceptor';
-import { AuthnService } from './modules/auth/auth.service';
+import { AuthnService } from './modules/auth/v2/auth.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { UserEntity } from './utils/typeorm/entities/user.entity';
 import { DeviceEntity } from './utils/typeorm/entities/device.entity';
 import { MailModule } from './modules/email/mail.module';
 import { MailService } from './modules/email/mail.service';
@@ -34,7 +33,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
 import { ProcessedBuildEntity } from './utils/typeorm/entities/processed-build.entity';
 import { GlobalJwtModule } from './modules/jwt/jwt.module';
 import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.module';
-import { UserService } from './modules/users/v1/user.service';
+import { UserEntity } from './utils/typeorm/entities/user/user.entity';
 
 @Module({
   imports: [

@@ -4,10 +4,10 @@ import {
   KycResultDto,
   VerifySelfieWithPhotoIdDto,
 } from '../../dto/kyc-data.dto';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
 import { UserService } from '@/modules/users/v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 /**
  * Abstract base class for all KYC service versions.

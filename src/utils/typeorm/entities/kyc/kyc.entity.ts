@@ -1,6 +1,5 @@
 import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
-import { IUserDto, UserEntity } from '../user.entity';
 import { BaseEntity } from '../base.entity';
 import {
   CustomerTypesEnum,
@@ -13,6 +12,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { EncryptionErrorType } from '@/models/encryption-types';
 import { EncryptionError } from '@/models/encrypto-error.class';
 import { createEncryptionTransformer } from '@/utils/encryption.transformer';
+import { IUserDto, UserEntity } from '../user/user.entity';
 
 const KYC_KEY = Buffer.from(
   getAppConfig()

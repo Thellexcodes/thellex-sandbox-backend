@@ -12,7 +12,6 @@ import {
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { CreateSubAccountDto } from './dto/create-qwallet.dto';
 import {
@@ -45,6 +44,7 @@ import { toUTCDate } from '@/utils/helpers';
 import { plainToInstance } from 'class-transformer';
 import { ITransactionHistoryDto } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
 import { TransactionsService } from '@/modules/transactions/transactions.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 //TODO: handle errors with enum
 @Injectable()

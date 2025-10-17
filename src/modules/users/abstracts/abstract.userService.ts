@@ -5,12 +5,15 @@ import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
 import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
 import { BaseFindArgs, FindManyArgs } from '@/utils/DynamicSource';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
-import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DataSource, Repository } from 'typeorm';
 import { FiatwalletService } from '@/modules/wallets/fiatwallet/fiatwallet.service';
 import { UserService } from '../v1/user.service';
+import {
+  IUserDto,
+  UserEntity,
+} from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export abstract class AbstractUserService {
@@ -59,4 +62,6 @@ export abstract class AbstractUserService {
     type: 'email' | 'phone',
     user: UserEntity,
   ): Promise<{ code: number; expires_at: Date }>;
+
+  protected abstract setUserPin(userId: string, pin: string): Promise<boolean>;
 }

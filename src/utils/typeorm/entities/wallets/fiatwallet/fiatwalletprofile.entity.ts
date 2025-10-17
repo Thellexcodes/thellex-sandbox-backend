@@ -1,7 +1,7 @@
 import { Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
-import { UserEntity } from '../../user.entity';
 import { FiatWalletEntity } from './fiatwallet.entity';
 import { BaseEntity } from '../../base.entity';
+import { UserEntity } from '../../user/user.entity';
 
 @Entity('fiat_wallet_profiles')
 export class FiatWalletProfileEntity extends BaseEntity {

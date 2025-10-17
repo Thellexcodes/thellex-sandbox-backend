@@ -20,7 +20,7 @@ import { TransactionHistoryService } from '../transaction-history/transaction-hi
 import { DevicesService } from '../devices/devices.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { ALL_ADMIN_ERRORS } from '@/models/admin-error.enum';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Injectable()
 export class AdminService {

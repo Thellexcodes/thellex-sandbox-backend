@@ -1,6 +1,5 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { MailService } from '../email/mail.service';
 import { HttpService } from '@/middleware/http.service';
 import { QwalletService } from '../wallets/qwallet/qwallet.service';
@@ -15,6 +14,7 @@ import { VfdService } from '../payments/v2/vfd.service';
 import { DynamicRepositoryService } from '@/utils/DynamicSource';
 import { UserController } from './v1/user.controller';
 import { UserService } from './v1/user.service';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 @Global()
 @Module({

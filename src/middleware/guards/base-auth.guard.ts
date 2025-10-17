@@ -1,7 +1,7 @@
 import { jwtConfigurations } from '@/config/jwt.config';
 import { AuthErrorEnum } from '@/models/auth-error.enum';
 import { UserService } from '@/modules/users/v1/user.service';
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 import {
   CanActivate,
   ExecutionContext,

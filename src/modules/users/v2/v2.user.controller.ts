@@ -30,4 +30,8 @@ export class UserControllerV2 extends AbstractUserController {
     const result = await this.userServiceV2.verifyUser(verifyUserDto, user);
     responseHandler(result, res, req);
   }
+
+  protected async setPin(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }

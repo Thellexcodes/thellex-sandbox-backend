@@ -1,7 +1,7 @@
-import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Response } from 'express';
 import { WalletType } from './wallet-manager.types';
 import { TokenEnum } from '@/config/settings';
+import { UserEntity } from '@/utils/typeorm/entities/user/user.entity';
 
 interface UserSession {
   id: string;

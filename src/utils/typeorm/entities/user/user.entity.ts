@@ -1,38 +1,39 @@
+import { TierEnum } from '@/config/tier.lists';
+import { RoleEnum } from '@/models/roles-actions.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose, plainToInstance, Type } from 'class-transformer';
 import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
-import { BaseEntity } from './base.entity';
-import { AuthEntity } from './auth.entity';
-import { AuthVerificationCodesEntity } from './auth-verification-codes.entity';
-import { DeviceEntity, IDeviceDto } from './device.entity';
+import { AuthVerificationCodesEntity } from '../auth-verification-codes.entity';
+import { AuthEntity } from '../auth.entity';
+import { DeviceEntity, IDeviceDto } from '../device.entity';
 import {
   CardManagementEntity,
   ICardManagementDto,
-} from '@/utils/typeorm/entities/card-management.entity';
-import { NotificationEntity } from './notification.entity';
+} from '../card-management.entity';
+import { IKycDto, KycEntity } from '../kyc/kyc.entity';
+import { TransactionHistoryEntity } from '../transactions/transaction-history.entity';
+import { NotificationEntity } from '../notification.entity';
 import {
   IQWalletProfileDto,
   QWalletProfileEntity,
-} from './wallets/qwallet/qwallet-profile.entity';
-import { IKycDto, KycEntity } from './kyc/kyc.entity';
-import { TierEnum } from '@/config/tier.lists';
-import { UserSettingEntity } from './settings/user.settings.entity';
-import { PayoutSettingEntity } from './settings/payout-settings.entity';
-import { TaxSettingEntity } from './settings/tax.entity';
+} from '../wallets/qwallet/qwallet-profile.entity';
 import {
   CwalletProfilesEntity,
   ICwalletProfilesDto,
-} from './wallets/cwallet/cwallet-profiles.entity';
-import { Exclude, Expose, plainToInstance, Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+} from '../wallets/cwallet/cwallet-profiles.entity';
+import { UserSettingEntity } from '../settings/user.settings.entity';
+import { TransactionEntity } from '../transactions/transaction.entity';
+import { PayoutSettingEntity } from '../settings/payout-settings.entity';
+import { TaxSettingEntity } from '../settings/tax.entity';
+import { FiatCryptoRampTransactionEntity } from '../fiat-crypto-ramp-transaction.entity';
+import { BankingNetworkEntity } from '../banking/banking-network.entity';
+import { FiatWalletProfileEntity } from '../wallets/fiatwallet/fiatwalletprofile.entity';
+import { BaseEntity } from '../base.entity';
 import { TierInfoDto } from '@/modules/users/dto/tier-info.dto';
-import { FiatCryptoRampTransactionEntity } from './fiat-crypto-ramp-transaction.entity';
 import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.dto';
 import { TRANSACTION_POLICY } from '@/config/settings';
-import { RoleEnum } from '@/models/roles-actions.enum';
-import { BankingNetworkEntity } from './banking/banking-network.entity';
-import { TransactionHistoryEntity } from './transactions/transaction-history.entity';
 import { NGBankDto } from '@/utils/nigeria-banks';
-import { TransactionEntity } from './transactions/transaction.entity';
-import { FiatWalletProfileEntity } from './wallets/fiatwallet/fiatwalletprofile.entity';
+import { UserSecurityEntity } from './user.security.entity';
 
 @Index(['email'])
 @Entity({ name: 'users' })
@@ -201,6 +202,9 @@ export class UserEntity extends BaseEntity {
     eager: true,
   })
   fiatWalletProfile: FiatWalletProfileEntity;
+
+  @OneToOne(() => UserSecurityEntity, (security) => security.user)
+  security: UserSecurityEntity;
 }
 
 @Exclude()
