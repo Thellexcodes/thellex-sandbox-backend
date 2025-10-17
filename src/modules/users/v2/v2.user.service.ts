@@ -20,8 +20,8 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from '@/modules/email/mail.service';
 import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
 import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
-import { UserService } from '../user.service';
 import { FiatwalletService } from '@/modules/wallets/fiatwallet/fiatwallet.service';
+import { UserService } from '../v1/user.service';
 
 @Injectable()
 export class UserServiceV2 extends AbstractUserService {

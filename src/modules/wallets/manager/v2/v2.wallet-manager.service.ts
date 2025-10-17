@@ -4,7 +4,6 @@ import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { QwalletService } from '../../qwallet/qwallet.service';
 import { CwalletService } from '../../cwallet/cwallet.service';
 import { EtherService } from '@/utils/services/ethers.service';
-import { UserService } from '@/modules/users/user.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import {
   WalletBalanceSummaryV2ResponseDto,
@@ -24,6 +23,7 @@ import { plainToInstance } from 'class-transformer';
 import { FiatwalletService } from '../../fiatwallet/fiatwallet.service';
 import { BankProvidersEnum } from '@/models/banks.types';
 import { flexiTruncate } from '@/utils/helpers';
+import { UserService } from '@/modules/users/v1/user.service';
 
 @Injectable()
 export class WalletManagerServiceV2 extends V2AbstractWalletManagerService {

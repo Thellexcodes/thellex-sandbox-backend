@@ -31,11 +31,11 @@ import {
 } from '@/utils/helpers';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { TierEnum } from '@/config/tier.lists';
-import { UserService } from '../../users/user.service';
 import { plainToInstance } from 'class-transformer';
 import { VerifyBvnDto } from '../dto/validate-bvn.dto';
 import { VfdService } from '../../payments/v2/vfd.service';
 import { CountryEnum } from '@/config/settings';
+import { UserService } from '@/modules/users/v1/user.service';
 
 //TODO: Handle errors with enum
 //[x]: Move the Dojah services out

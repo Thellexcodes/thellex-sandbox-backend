@@ -19,9 +19,9 @@ import { KycEntity } from '@/utils/typeorm/entities/kyc/kyc.entity';
 import { IdTypeEnum, KycProviderEnum } from '@/models/kyc.types';
 import { CountryEnum } from '@/config/settings';
 import { TierEnum } from '@/config/tier.lists';
-import { UserService } from '@/modules/users/user.service';
 import { plainToInstance } from 'class-transformer';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
+import { UserService } from '@/modules/users/v1/user.service';
 
 //[x] move all v1 to v2 after version enforcement
 /**
@@ -32,10 +32,10 @@ export class KycServiceV2 extends BaseKycService {
   constructor(
     protected readonly dataSource: DataSource,
     protected readonly kycV1Service: KycService,
-    protected readonly userService: UserService,
+    protected readonly userServiceV1: UserService,
     protected readonly vfdService: VfdService,
   ) {
-    super(dataSource, kycV1Service, userService, vfdService);
+    super(dataSource, kycV1Service, userServiceV1, vfdService);
   }
 
   /**

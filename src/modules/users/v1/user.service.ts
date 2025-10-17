@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { CreateUserDto } from './dto/user.dto';
 import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,12 +6,8 @@ import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verif
 import { JwtPayload } from '@/config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
-import { MailService } from '../email/mail.service';
-import { VerifyUserDto } from './dto/verify-user.dto';
 import { formatUserWithTiers, generateUniqueUid } from '@/utils/helpers';
 import { UserErrorEnum } from '@/models/user-error.enum';
-import { QwalletService } from '../wallets/qwallet/qwallet.service';
-import { CwalletService } from '../wallets/cwallet/cwallet.service';
 import { TierEnum } from '@/config/tier.lists';
 import { plainToInstance } from 'class-transformer';
 import { SendEmailOptions, TransportTypes } from '@/models/email-types';
@@ -23,6 +18,11 @@ import {
   findManyDynamic,
   findOneDynamic,
 } from '@/utils/DynamicSource';
+import { MailService } from '@/modules/email/mail.service';
+import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
+import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
+import { CreateUserDto } from '../dto/user.dto';
+import { VerifyUserDto } from '../dto/verify-user.dto';
 
 @Injectable()
 export class UserService {
@@ -232,8 +232,8 @@ export class UserService {
     if (user.emailVerified) {
       const verifiedUser = await this.findOne({
         id: user.id,
-        fields: 'id, email, emailVerified, role, tier, uid',
-        relations: 'kyc, bankAccounts',
+        fields: 'email,id,role,tier,uid,emailVerified',
+        relations: 'kyc',
       });
 
       if (!verifiedUser)

@@ -18,8 +18,8 @@ import {
 } from '../dto/get-balance-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { EtherService } from '@/utils/services/ethers.service';
-import { UserService } from '@/modules/users/user.service';
 import { AbstractWalletManagerService } from '../abstract/abstract.wallet-manager.service';
+import { UserService } from '@/modules/users/v1/user.service';
 
 //TODO: for each function, you're to update the balance of the wallet in db
 // and use that here instead of making request everythime to fetch wallet addresses

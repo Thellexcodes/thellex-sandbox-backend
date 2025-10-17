@@ -1,6 +1,5 @@
 import { SettingsService } from './settings.service';
 import { VersionedController101 } from '../controller/base.controller';
-import { ICreateBankRequestAccountDto } from './dto/payment-settings';
 import {
   BasicAuthGuard,
   ProfileAuthGuard,

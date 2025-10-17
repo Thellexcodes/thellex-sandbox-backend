@@ -7,7 +7,6 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ErrorInterceptor } from './middleware/error.interceptor';
 import { AuthnService } from './modules/auth/auth.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { UserService } from './modules/users/user.service';
 import { UserEntity } from './utils/typeorm/entities/user.entity';
 import { DeviceEntity } from './utils/typeorm/entities/device.entity';
 import { MailModule } from './modules/email/mail.module';
@@ -35,6 +34,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
 import { ProcessedBuildEntity } from './utils/typeorm/entities/processed-build.entity';
 import { GlobalJwtModule } from './modules/jwt/jwt.module';
 import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.module';
+import { UserService } from './modules/users/v1/user.service';
 
 @Module({
   imports: [
@@ -71,7 +71,6 @@ import { WalletManagerModule } from './modules/wallets/manager/wallet-manager.mo
   providers: [
     AppService,
     AuthnService,
-    UserService,
     MailService,
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
   ],

@@ -1,4 +1,5 @@
 import { getAppConfig } from '@/constants/env';
+import { AppVersionDto, PlatformVersionDto } from '@/models/base/app.type';
 import { NetworkSettings } from '@/models/network-settings';
 import { PaymentPartnerEnum } from '@/models/payments.providers';
 import { TransactionPolicyDto } from '@/modules/users/dto/transaction-settings.dto';
@@ -392,3 +393,31 @@ export const TRANSACTION_REQUIREMENTS: TransactionRequirements = {
     decimals: 18,
   },
 };
+
+export const APP_VERSIONS: AppVersionDto = {
+  android: [
+    {
+      latestVersion: '1.0.3',
+      minSupportedVersion: '1.0.2',
+      releaseNotes: `
+      - Bug fixes and performance improvements
+      - reason two update
+      - reason three up`,
+      updateType: 'major',
+      forceUpdate: false,
+      downloadUrl: 'https://thellex.com/apk',
+      majorUpdate: false,
+    },
+  ],
+  ios: [
+    {
+      latestVersion: '1.0.0',
+      minSupportedVersion: '1.0.0',
+      releaseNotes: 'Minor UI updates and stability improvements',
+      updateType: 'patch',
+      forceUpdate: false,
+      downloadUrl: 'https://apps.apple.com/app/thellex',
+      majorUpdate: false,
+    },
+  ],
+} as const;

@@ -2,10 +2,10 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { AbstractFiatwalletService } from './abstracts/abstract.fiatwalletService';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
-import { QueryResult, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
-import { CountryCodeEnum, CountryEnum, FiatEnum } from '@/config/settings';
+import { CountryEnum, FiatEnum } from '@/config/settings';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
 import { CustomHttpException } from '@/middleware/custom.http.exception';
 import { DynamicRepositoryService } from '@/utils/DynamicSource';
@@ -15,7 +15,6 @@ import {
   VfdBeneficiaryEnquiryDto,
   VfdCreateClientResponseDataDto,
   VfdTransferPayloadDto,
-  VfdTransferType,
 } from '@/models/payments/vfd.types';
 
 @Injectable()
@@ -202,7 +201,7 @@ export class FiatwalletService extends AbstractFiatwalletService {
     }
   }
 
-  async accountEnquiry(userId, accountNumber: string): Promise<any> {
+  async accountEnquiry(accountNumber: string): Promise<any> {
     try {
       const account = await this.vfdService.accountEnquiry(accountNumber);
       if (!account)
@@ -257,7 +256,6 @@ export class FiatwalletService extends AbstractFiatwalletService {
       };
 
       const transferResponse = await this.vfdService.transferFunds(payload);
-      // console.log({ transferResponse });
     } catch (err) {
       console.log(err);
     }

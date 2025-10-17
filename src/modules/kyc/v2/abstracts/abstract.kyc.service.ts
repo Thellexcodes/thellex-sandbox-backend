@@ -6,8 +6,8 @@ import {
 } from '../../dto/kyc-data.dto';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { DataSource } from 'typeorm';
-import { UserService } from '@/modules/users/user.service';
 import { VfdService } from '@/modules/payments/v2/vfd.service';
+import { UserService } from '@/modules/users/v1/user.service';
 
 /**
  * Abstract base class for all KYC service versions.

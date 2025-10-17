@@ -1,6 +1,4 @@
 import { Global, Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { MailService } from '../email/mail.service';
@@ -15,6 +13,8 @@ import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwa
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
 import { VfdService } from '../payments/v2/vfd.service';
 import { DynamicRepositoryService } from '@/utils/DynamicSource';
+import { UserController } from './v1/user.controller';
+import { UserService } from './v1/user.service';
 
 @Global()
 @Module({

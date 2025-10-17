@@ -1,6 +1,5 @@
 import { Post, Body, Req, Res, UseGuards, Get, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AccessResponseDto, CreateUserDto } from './dto/user.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -9,13 +8,14 @@ import {
 } from '@nestjs/swagger';
 import { CustomRequest, CustomResponse } from '@/models/request.types';
 import { responseHandler } from '@/utils/helpers';
-import { VerifiedResponseDto, VerifyUserDto } from './dto/verify-user.dto';
-import { VersionedController101 } from '../controller/base.controller';
 import { VerificationAuthGuard } from '@/middleware/guards/local.auth.guard';
-import { PaymentsService } from '../payments/v1/payments.service';
-import { TransactionHistoryService } from '../transaction-history/transaction-history.service';
-import { NotificationsService } from '../notifications/notifications.service';
 import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
+import { VersionedController101 } from '@/modules/controller/base.controller';
+import { PaymentsService } from '@/modules/payments/v1/payments.service';
+import { TransactionHistoryService } from '@/modules/transaction-history/transaction-history.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { AccessResponseDto, CreateUserDto } from '../dto/user.dto';
+import { VerifiedResponseDto, VerifyUserDto } from '../dto/verify-user.dto';
 // import { ClientAuthGuard } from '@/middleware/guards/client-auth.guard';
 
 //TODO: middleware for outstanding verifications
@@ -35,9 +35,9 @@ export class UserController {
   @ApiBody({ type: CreateUserDto, description: 'Data required to create user' })
   @ApiOkResponse({ type: AccessResponseDto })
   async create(
-    @Body() createUserDto: CreateUserDto,
     @Req() req: CustomRequest,
     @Res() res: CustomResponse,
+    @Body() createUserDto: CreateUserDto,
   ) {
     const newUserData = await this.userService.create(createUserDto);
     responseHandler(newUserData, res, req);

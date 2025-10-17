@@ -6,7 +6,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WalletManagerController } from './v1/wallet-manager.controller';
 import { HttpService } from '@/middleware/http.service';
-import { UserService } from '@/modules/users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '@/modules/email/mail.service';
 import { QwalletService } from '../qwallet/qwallet.service';
@@ -18,6 +17,7 @@ import { WalletManagerServiceV2 } from './v2/v2.wallet-manager.service';
 import { FiatwalletService } from '../fiatwallet/fiatwallet.service';
 import { FiatWalletProfileEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwalletprofile.entity';
 import { FiatWalletEntity } from '@/utils/typeorm/entities/wallets/fiatwallet/fiatwallet.entity';
+import { UserService } from '@/modules/users/v1/user.service';
 
 @Module({
   imports: [

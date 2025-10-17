@@ -6,7 +6,6 @@ import { NotificationEntity } from '@/utils/typeorm/entities/notification.entity
 import { UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { AuthVerificationCodesEntity } from '@/utils/typeorm/entities/auth-verification-codes.entity';
 import { QWalletProfileEntity } from '@/utils/typeorm/entities/wallets/qwallet/qwallet-profile.entity';
-import { UserService } from '@/modules/users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from '@/modules/email/mail.service';
 import { HttpService } from '@/middleware/http.service';
@@ -14,6 +13,7 @@ import { TransactionHistoryService } from '@/modules/transaction-history/transac
 import { QwalletService } from '@/modules/wallets/qwallet/qwallet.service';
 import { CwalletService } from '@/modules/wallets/cwallet/cwallet.service';
 import { TransactionHistoryEntity } from '@/utils/typeorm/entities/transactions/transaction-history.entity';
+import { UserService } from '@/modules/users/v1/user.service';
 
 @Module({
   imports: [

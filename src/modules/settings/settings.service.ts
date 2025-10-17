@@ -1,24 +1,8 @@
-import { UserSettingEntity } from '@/utils/typeorm/entities/settings/user.settings.entity';
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Injectable, Logger } from '@nestjs/common';
 import { UpdateStoreSettingsDto } from './dto/update-setting.dto';
-import { CustomHttpException } from '@/middleware/custom.http.exception';
-import {
-  BankAccountErrorEnum,
-  SettingsErrorEnum,
-} from '@/models/settings.types';
-import {
-  ICreateBankRequestAccountDto,
-  UpdatePaymentSettingsDto,
-} from './dto/payment-settings';
+import { UpdatePaymentSettingsDto } from './dto/payment-settings';
 import { UpdateTaxSettingsDto } from './dto/tax-settings.dto';
 import { UpdatePayoutSettingsDto } from './dto/payout-settings.dto';
-import { v4 as uuidV4 } from 'uuid';
-import { YellowCardService } from '../payments/v1/yellowcard.service';
-import { toUTCDate } from '@/utils/helpers';
-import { UserService } from '../users/user.service';
-import { MapleradService } from '../payments/v1/maplerad.service';
 
 //[x] handle erros with enums
 @Injectable()

@@ -7,45 +7,6 @@ import {
   IsString,
 } from 'class-validator';
 
-export class ICreateBankRequestAccountDto {
-  @ApiProperty()
-  @IsString()
-  @IsOptional()
-  currency: string;
-
-  @ApiProperty({ example: 'First National Bank' })
-  @IsString()
-  bankName: string;
-
-  @ApiPropertyOptional({ example: 'John Doe' })
-  @IsString()
-  @IsOptional()
-  accountName: string;
-
-  @ApiProperty({ example: '1234567890' })
-  @IsString()
-  accountNumber: string;
-
-  @ApiPropertyOptional({ example: 'FNBBZWHX' })
-  @IsOptional()
-  @IsString()
-  swiftCode?: string;
-
-  @ApiPropertyOptional({ example: 'ZW12345678901234567890' })
-  @IsOptional()
-  @IsString()
-  iban?: string;
-
-  @ApiPropertyOptional({ example: true })
-  @IsOptional()
-  @IsBoolean()
-  isPrimary?: boolean;
-
-  @ApiProperty({ example: '123' })
-  @IsString()
-  bankCode: string;
-}
-
 // export class UpdateBankAccountDto extends PartialType(
 //   ICreateBankRequestAccountDto,
 // ) {

@@ -9,8 +9,8 @@ import { IUserDto, UserEntity } from '@/utils/typeorm/entities/user.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DataSource, Repository } from 'typeorm';
-import { UserService } from '../user.service';
 import { FiatwalletService } from '@/modules/wallets/fiatwallet/fiatwallet.service';
+import { UserService } from '../v1/user.service';
 
 @Injectable()
 export abstract class AbstractUserService {

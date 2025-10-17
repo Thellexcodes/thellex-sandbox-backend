@@ -127,7 +127,6 @@ export class FiatwalletController extends AbstractFiatwalletController {
   ): Promise<void> {
     const user = req.user;
     const result = await this.fiatwalletService.accountEnquiry(
-      user.id,
       query.accountNumber,
     );
     responseHandler(result, res, req);
